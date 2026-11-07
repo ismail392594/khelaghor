@@ -1,0 +1,24 @@
+// সব মজার ডায়লগ খুঁজে api/_voice-lines.js বানায়। ডায়লগ বদলালে আবার চালান: node tools/build-voice-lines.mjs
+import { readFileSync, writeFileSync } from 'node:fs';
+const files = ['js/fun.js', 'js/online.js', 'index.html', 'games/ludo/index.html', 'games/mosha/index.html'];
+const BN = /[ঀ-৿]/, lines = new Set();
+const lit = /(['"])((?:(?!\1)[^\\\n]|\\.)*?)\1/g;
+for (const f of files) {
+  const src = readFileSync(f, 'utf8');
+  for (const m of src.matchAll(lit)) {
+    const s = m[2].trim();
+    if (!BN.test(s) || s.length < 2 || s.length > 160 || /[<>{}=]|\$\{/.test(s)) continue;
+    lines.add(s);
+  }
+}
+// "{g} খেলবেন?" ধরনের লাইন সব গেমের নাম দিয়ে
+const hub = readFileSync('index.html', 'utf8'), fun = readFileSync('js/fun.js', 'utf8');
+const games = [...hub.matchAll(/\['([^']+)','(?:launch|trad|viral)'/g)].map(m => m[1]);
+const tpl = [...fun.matchAll(/'([^'\n]*\{g\}[^'\n]*)'/g)].map(m => m[1]);
+for (const t of tpl) for (const g of games) lines.add(t.replace('{g}', g));
+// মশা মারোর রেকর্ডের লাইন
+const mosha = readFileSync('games/mosha/index.html', 'utf8');
+for (const m of mosha.matchAll(/\[\d+, '([^']+)'\]/g)) lines.add('নতুন রেকর্ড! আপনি ' + m[1]);
+const out = [...lines].sort();
+writeFileSync('api/_voice-lines.js', '// স্বয়ংক্রিয়ভাবে তৈরি: tools/build-voice-lines.mjs\nexport default ' + JSON.stringify(out, null, 0).replace(/","/g, '",\n"') + ';\n');
+console.log(out.length + ' lines, ' + out.join('').length + ' chars');

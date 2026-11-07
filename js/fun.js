@@ -151,18 +151,19 @@
   }
   if (synth) { findVoice(); synth.onvoiceschanged = findVoice; }
   function speak(text) {
-    if (!voiceOn || !synth || !unlocked) return;
-    if (!bnVoice && !findVoice()) {
+    if (!voiceOn || !unlocked) return;
+    if (window.KHVoice) { window.KHVoice.say(text, true); return; }
+    if (!synth || (!bnVoice && !findVoice())) {
       if (!warnedVoice) { warnedVoice = true; K.toast('ফোনে বাংলা ভয়েস নেই। Settings → Text-to-speech → Google → বাংলা ভাষা ডাউনলোড করুন'); }
       return;
     }
     synth.cancel();
-    const u = new SpeechSynthesisUtterance(text.replace(/[!?]+/g, m => m[0]));
-    u.voice = bnVoice; u.lang = bnVoice.lang;
-    u.rate = 1.05 + Math.random() * 0.15; u.pitch = 0.8 + Math.random() * 0.7; u.volume = 1;
+    const u = new SpeechSynthesisUtterance(text);
+    u.voice = bnVoice; u.lang = bnVoice.lang; u.rate = 1.1; u.pitch = 1.2;
     u.onstart = () => duck(true); u.onend = u.onerror = () => duck(false);
     synth.speak(u);
   }
+  if (window.KHVoice) window.KHVoice.onstart = a => { duck(true); a.addEventListener('ended', () => duck(false)); a.addEventListener('pause', () => duck(false)); };
   K.speak = speak;
 
   // ব্রাউজার নিয়ম: প্রথম ছোঁয়ার পরেই শব্দ চালু করা যায়
@@ -207,7 +208,7 @@
   sv.onclick = e => {
     e.stopPropagation(); unlock();
     voiceOn = !voiceOn; store.set('kh-voice', voiceOn); drawSound();
-    if (voiceOn) setTimeout(() => speak('ঠিক আছে, এখন থেকে সব ডায়লগ আমি পড়ে শোনাবো!'), 150); else synth && synth.cancel();
+    if (voiceOn) setTimeout(() => speak('ঠিক আছে, এখন থেকে সব ডায়লগ আমি পড়ে শোনাবো!'), 150); else { synth && synth.cancel(); window.KHVoice && window.KHVoice.stop(); }
   };
   drawSound();
 

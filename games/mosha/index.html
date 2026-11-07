@@ -128,6 +128,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:cro
   </div>
 </div>
 
+<script src="/js/voice.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -174,9 +175,12 @@ function findVoice() { if (!synth) return null; const v = synth.getVoices(); bnV
 if (synth) { findVoice(); synth.onvoiceschanged = findVoice; }
 let lastSay = 0;
 function say(t, force) {
-  if (!voiceOn || !synth || (!bnVoice && !findVoice())) return;
-  if (!force && (synth.speaking || performance.now() - lastSay < 2500)) return;
-  lastSay = performance.now(); if (force) synth.cancel();
+  if (!voiceOn) return;
+  if (!force && performance.now() - lastSay < 2500) return;
+  lastSay = performance.now();
+  if (window.KHVoice) { window.KHVoice.say(t, force); return; }
+  if (!synth || (!bnVoice && !findVoice())) return;
+  if (force) synth.cancel(); else if (synth.speaking) return;
   const u = new SpeechSynthesisUtterance(t); u.voice = bnVoice; u.lang = bnVoice.lang; u.rate = 1.15; u.pitch = 1 + Math.random() * .5; synth.speak(u);
 }
 $('snd').onclick = () => { sndOn = !sndOn; store.set('kh-sfx', sndOn); $('snd').classList.toggle('off', !sndOn); if (!sndOn) setBuzz(0); };

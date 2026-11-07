@@ -1,7 +1,7 @@
 // খেলাঘর service worker: পেজগুলো ক্যাশে রাখে, যাতে দুর্বল নেটেও দ্রুত খোলে।
 // নতুন ভার্সন পাবলিশ করলে VERSION বাড়ান।
-const VERSION = 'khelaghor-v14';
-const CORE = ['/', '/games/ludo/', '/games/mosha/', '/offline.html', '/js/game-info.js', '/js/fun.js', '/js/ludo-engine.js', '/js/online.js', '/js/firebase-config.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
+const VERSION = 'khelaghor-v15';
+const CORE = ['/', '/games/ludo/', '/games/mosha/', '/offline.html', '/js/game-info.js', '/js/fun.js', '/js/voice.js', '/js/ludo-engine.js', '/js/online.js', '/js/firebase-config.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));

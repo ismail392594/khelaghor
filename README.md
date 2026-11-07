@@ -26,3 +26,8 @@
 ছক্কা, চাল যাচাই, জয়-হার আর পয়েন্ট সব সার্ভারে হয় (Vercel Function), তাই ফোন থেকে কারচুপি সম্ভব না।
 চালু করতে Vercel → Settings → Environment Variables-এ `FIREBASE_SERVICE_ACCOUNT` নামে
 Firebase-এর service account JSON বসাতে হবে। নিয়ম আছে `js/ludo-engine.js`-এ।
+
+## AI ভয়েস (`api/voice.js`)
+মজার ডায়লগ Google Cloud Text-to-Speech-এর বাংলা কণ্ঠে বাজে, একবার তৈরি হয়ে ক্যাশে থাকে।
+শুধু `api/_voice-lines.js`-এর লাইন বাজানো যায়। ডায়লগ বদলালে চালান: `node tools/build-voice-lines.mjs`
+Google Cloud-এ Text-to-Speech API চালু না থাকলে ফোনের নিজের বাংলা কণ্ঠ ব্যবহার হয়।

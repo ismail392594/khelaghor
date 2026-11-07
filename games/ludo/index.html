@@ -216,6 +216,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--teal);outline-offse
   </div>
 </div>
 
+<script src="/js/voice.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -253,13 +254,15 @@ const synth = window.speechSynthesis; let bnVoice = null;
 function findVoice() { if (!synth) return null; const v = synth.getVoices(); bnVoice = v.find(x => /^bn[-_]BD/i.test(x.lang)) || v.find(x => /^bn/i.test(x.lang)) || null; return bnVoice; }
 if (synth) { findVoice(); synth.onvoiceschanged = findVoice; }
 function say(text, urgent) {
-  if (!vcOn || !synth || (!bnVoice && !findVoice())) return;
+  if (!vcOn) return;
+  if (window.KHVoice) { window.KHVoice.say(text, urgent); return; }
+  if (!synth || (!bnVoice && !findVoice())) return;
   if (urgent) synth.cancel(); else if (synth.speaking) return;
   const u = new SpeechSynthesisUtterance(text); u.voice = bnVoice; u.lang = bnVoice.lang; u.rate = 1.12; u.pitch = 1 + Math.random() * .4; synth.speak(u);
 }
 function drawSnd() { $('sndBtn').classList.toggle('off', !sndOn); $('vcBtn').classList.toggle('off', !vcOn); }
 $('sndBtn').onclick = () => { sndOn = !sndOn; store.set('kh-sfx', sndOn); drawSnd(); sfx('turn'); };
-$('vcBtn').onclick = () => { vcOn = !vcOn; store.set('kh-voice', vcOn); drawSnd(); if (vcOn) say(bnVoice ? 'ভয়েস চালু' : '', true); else synth && synth.cancel(); if (vcOn && !findVoice()) flash('ফোনে বাংলা ভয়েস নেই: Settings → Text-to-speech → বাংলা ডাউনলোড করুন'); };
+$('vcBtn').onclick = () => { vcOn = !vcOn; store.set('kh-voice', vcOn); drawSnd(); if (vcOn) say('ভয়েস চালু', true); else { synth && synth.cancel(); window.KHVoice && window.KHVoice.stop(); } };
 drawSnd();
 addEventListener('pointerdown', () => audio(), { once: true });
 
