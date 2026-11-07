@@ -1,17 +1,24 @@
 {
+  "id": "/",
   "name": "খেলাঘর - বাংলার গেমিং হাব",
   "short_name": "খেলাঘর",
   "description": "বাংলার ঐতিহ্যবাহী আর ভাইরাল গেম, বন্ধুদের সাথে অনলাইনে খেলুন",
   "lang": "bn",
-  "start_url": "/",
+  "dir": "ltr",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#1a1460",
   "theme_color": "#2f3cc9",
+  "categories": ["games", "entertainment"],
   "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "লুডু খেলুন", "short_name": "লুডু", "url": "/games/ludo/", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }

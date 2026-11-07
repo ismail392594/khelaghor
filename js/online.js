@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, writeBatch, onSnapshot, collection, query, where, orderBy, limit, addDoc, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { firebaseConfig, START_POINTS, DAILY_BONUS } from "./firebase-config.js";
+import { firebaseConfig, START_POINTS, DAILY_BONUS, ADSENSE_CLIENT, ADSENSE_SLOT, PREMIUM_PRICE } from "./firebase-config.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -84,7 +84,7 @@ onAuthStateChanged(auth, u => {
     const first = !me; me = snap.data(); K.closeS('userSheet');
     K.setProfile({ name: me.name });
     $('bal').textContent = bn(me.points);
-    drawDaily();
+    drawDaily(); drawPremium();
     if (first) { listenInvites(); if (pendingRoom) joinRoom(pendingRoom); }
   }, e => K.toast('প্রোফাইল লোড হয়নি: ' + e.code)));
   listenLeaderboard();
@@ -107,6 +107,47 @@ $('dailyBtn').onclick = async () => {
     K.showModal(DAILY_BONUS, 'আজকেও আসছেন? এই নেন চা-নাস্তার পয়েন্ট!');
   } catch (e) { K.toast('বোনাস নেওয়া যায়নি, একটু পরে চেষ্টা করুন'); drawDaily(); }
 };
+
+/* ---------- প্রিমিয়াম ও বিজ্ঞাপন ---------- */
+const isPremium = () => !!(me && me.premiumUntil && me.premiumUntil.toMillis() > Date.now());
+$('premBtn').textContent = '৳' + bn(PREMIUM_PRICE) + '/মাস';
+function drawPremium() {
+  const p = isPremium();
+  $('ava').classList.toggle('premium', p);
+  if (p) {
+    const d = me.premiumUntil.toDate();
+    $('premTxt').textContent = 'আপনি প্রিমিয়াম! মেয়াদ ' + bn(d.getDate()) + '/' + bn(d.getMonth() + 1) + '/' + bn(d.getFullYear()) + ' পর্যন্ত, কোনো বিজ্ঞাপন নেই';
+    $('premBtn').textContent = 'চালু আছে ✓'; $('premBtn').disabled = true;
+  }
+  setupAds();
+}
+$('premBtn').onclick = () => {
+  if (!user) { K.openS('loginSheet'); return; }
+  if (!me) return;
+  K.toast('প্রিমিয়াম নিতে অ্যাডমিনকে ৳' + bn(PREMIUM_PRICE) + ' পাঠিয়ে ইউজারনেম @' + me.username + ' জানান। অনলাইন পেমেন্ট শিগগিরই।');
+};
+document.querySelectorAll('.adfree').forEach(b => b.onclick = () => { document.getElementById('n-shop').click(); });
+let adsLoaded = false;
+function setupAds() {
+  const slots = document.querySelectorAll('.adslot');
+  if (!ADSENSE_CLIENT || isPremium()) { slots.forEach(s => s.hidden = true); return; }
+  slots.forEach(s => s.hidden = false);
+  if (adsLoaded) return; adsLoaded = true;
+  const sc = document.createElement('script');
+  sc.async = true; sc.crossOrigin = 'anonymous';
+  sc.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + encodeURIComponent(ADSENSE_CLIENT);
+  document.head.appendChild(sc);
+  slots.forEach(s => {
+    const ins = document.createElement('ins');
+    ins.className = 'adsbygoogle'; ins.style.display = 'block';
+    ins.setAttribute('data-ad-client', ADSENSE_CLIENT);
+    if (ADSENSE_SLOT) ins.setAttribute('data-ad-slot', ADSENSE_SLOT);
+    ins.setAttribute('data-ad-format', 'auto'); ins.setAttribute('data-full-width-responsive', 'true');
+    s.querySelector('.adbox').appendChild(ins);
+    try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
+  });
+}
+setupAds();
 
 /* দোকান: পেমেন্ট গেটওয়ে চালুর আগ পর্যন্ত অ্যাডমিন পয়েন্ট দেবে */
 $('packs').onclick = e => {

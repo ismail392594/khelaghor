@@ -1,7 +1,7 @@
 // খেলাঘর service worker: পেজগুলো ক্যাশে রাখে, যাতে দুর্বল নেটেও দ্রুত খোলে।
 // নতুন ভার্সন পাবলিশ করলে VERSION বাড়ান।
-const VERSION = 'khelaghor-v3';
-const CORE = ['/', '/index.html', '/games/ludo/', '/games/ludo/index.html', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
+const VERSION = 'khelaghor-v4';
+const CORE = ['/', '/games/ludo/', '/offline.html', '/js/game-info.js', '/js/online.js', '/js/firebase-config.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
@@ -22,7 +22,7 @@ self.addEventListener('fetch', e => {
   if (!url.pathname.startsWith('/icons/')) {
     e.respondWith(
       fetch(req).then(res => { const copy = res.clone(); caches.open(VERSION).then(c => c.put(req, copy)); return res; })
-        .catch(() => caches.match(req).then(r => r || caches.match('/')))
+        .catch(() => caches.match(req).then(r => r || (req.mode === 'navigate' ? caches.match('/offline.html') : undefined)))
     );
     return;
   }

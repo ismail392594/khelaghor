@@ -7,9 +7,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="খেলাঘর">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>html{background:#1a1460;color:#fff}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>খেলাঘর গেমিং হাব</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atma:wght@500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Atma:wght@500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atma:wght@500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap"></noscript>
 <style>
 /* Layout: mobile game lobby — sticky profile/coin bar, hero "featured" card, category chips, glossy game tile grid, shop view, fixed bottom nav. Deliberate single bright-on-deep look (like a game app). */
 :root{
@@ -190,6 +193,18 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 .invpop{position:fixed;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));top:calc(10px + env(safe-area-inset-top,0px));z-index:18;max-width:520px;margin:0 auto;background:linear-gradient(135deg,#ff4f8b,#7c3aed);border-radius:18px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 24px rgba(0,0,0,.4);animation:pop .35s cubic-bezier(.2,1.6,.4,1)}
 .invpop .acts{display:flex;gap:8px;align-items:center}
 .invpop .gbtn{padding:8px 16px;font-size:1rem}
+.adslot{background:rgba(255,255,255,.1);border:1px dashed rgba(255,255,255,.3);border-radius:16px;padding:8px;display:flex;flex-direction:column;gap:6px;min-height:110px}
+.adlbl{font-size:.7rem;color:var(--muted);letter-spacing:.04em}
+.adbox{min-height:90px;overflow:hidden}
+.adfree{align-self:flex-end;background:none;border:0;color:#ffd23f;font-weight:700;font-size:.82rem;cursor:pointer}
+.prem{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;border-radius:22px;padding:16px;color:#3a2200;
+  background:linear-gradient(135deg,#fff3c4,#ffd23f 55%,#f5a300);box-shadow:0 6px 0 #b77800,0 10px 20px rgba(0,0,0,.25)}
+.prem .crown{width:58px;height:58px;border-radius:16px;background:#3a2a8a;display:grid;place-items:center}
+.prem .crown svg{width:42px;height:42px}
+.prem b{font-family:var(--display);font-size:1.35rem;display:block;line-height:1.1}
+.prem span{font-size:.85rem}
+.prem .gbtn{grid-column:1/-1;background:linear-gradient(180deg,#5a67ff,#3b3fd8);box-shadow:0 5px 0 #2a2aa0;color:#fff;text-shadow:none}
+.ava.premium{box-shadow:0 0 0 3px #ffd23f,0 3px 0 #b8611a}
 @media (max-width:360px){.grid{grid-template-columns:repeat(2,1fr)}.mini{width:84px;height:84px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -229,6 +244,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
       <button class="gbtn gold" id="dailyBtn">নিন</button>
     </section>
 
+    <div class="adslot" hidden><span class="adlbl">বিজ্ঞাপন</span><div class="adbox"></div><button class="adfree" type="button">বিজ্ঞাপন ছাড়া খেলুন →</button></div>
     <div class="sec"><h2>আজকের ভাইরাল ডায়লগ</h2><span id="dCount"></span></div>
     <section class="dlg">
       <span class="badge18" id="b18" hidden>১৮+</span>
@@ -250,6 +266,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
     </div>
     <div class="grid" id="grid"></div>
 
+    <div class="adslot" hidden><span class="adlbl">বিজ্ঞাপন</span><div class="adbox"></div><button class="adfree" type="button">বিজ্ঞাপন ছাড়া খেলুন →</button></div>
     <div class="sec"><h2>সাপ্তাহিক সেরা</h2><span>এই সপ্তাহ</span></div>
     <div class="board" id="lb"></div>
   </main>
@@ -257,6 +274,11 @@ label.f input:focus{outline:none;border-color:#6d5cff}
   <!-- SHOP -->
   <main id="v-shop" class="wrap" style="gap:16px" hidden>
     <div class="sec"><h2>কয়েনের দোকান</h2><span>বিকাশ · নগদ · রকেট · কার্ড</span></div>
+    <section class="prem" id="prem">
+      <div class="crown" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M6 36 L10 14 L19 24 L24 8 L29 24 L38 14 L42 36 Z" fill="#ffd23f"/><rect x="6" y="36" width="36" height="6" rx="2" fill="#f2a900"/><circle cx="24" cy="8" r="3" fill="#fff"/></svg></div>
+      <div class="pt"><b>খেলাঘর প্রিমিয়াম</b><span id="premTxt">কোনো বিজ্ঞাপন নেই · প্রতি মাসে বোনাস পয়েন্ট · প্রোফাইলে সোনালি মুকুট</span></div>
+      <button class="gbtn gold" id="premBtn">৳৪৯/মাস</button>
+    </section>
     <div class="packs" id="packs"></div>
     <p class="note"><b>ডেমো:</b> এখন কোনো আসল টাকা কাটা হবে না, শুধু কয়েন যোগ হবে। আসল সাইটে এখানে পেমেন্ট গেটওয়ে বসবে।<br><b>নিয়ম:</b> কয়েন শুধু খেলার জন্য, টাকায় ফেরত বা উইথড্র করা যায় না।</p>
   </main>

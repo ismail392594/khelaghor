@@ -62,6 +62,10 @@ th{color:var(--muted);font-weight:600;font-size:.82rem}
         <button class="minus" data-a="-100">−১০০</button><button class="plus" data-a="100">+১০০</button>
         <button class="plus" data-a="500">+৫০০</button><button class="plus" data-a="1000">+১০০০</button>
       </div>
+      <div class="quick" style="margin-top:8px">
+        <button id="prem30" style="background:#ffd23f;color:#3a2200">প্রিমিয়াম +৩০ দিন</button>
+        <button id="premOff" class="ghost">প্রিমিয়াম বন্ধ</button>
+      </div>
       <form class="row" id="custom" novalidate style="margin-top:8px">
         <input id="amt" inputmode="numeric" placeholder="নিজের সংখ্যা, যেমন 250 বা -50" aria-label="পয়েন্টের পরিমাণ">
         <button type="submit">প্রয়োগ করুন</button>
@@ -79,7 +83,7 @@ th{color:var(--muted);font-weight:600;font-size:.82rem}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, onSnapshot, runTransaction, collection, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, onSnapshot, runTransaction, collection, query, orderBy, limit, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAILS } from "/js/firebase-config.js";
 
 const app=initializeApp(firebaseConfig), auth=getAuth(app), db=getFirestore(app);
@@ -112,7 +116,7 @@ $('find').onsubmit=async e=>{
   if(!s||!s.exists()){say('@'+name+' নামে কাউকে পাওয়া যায়নি');return}
   target=s.data().uid;
   if(unsubT)unsubT();
-  unsubT=onSnapshot(doc(db,'users',target),d=>{const r=d.data();if(!r)return;$('fName').textContent=r.name;$('fUser').textContent='@'+r.username+' · খেলা '+bn(r.games||0)+' · জয় '+bn(r.wins||0);$('fPts').textContent=bn(r.points)});
+  unsubT=onSnapshot(doc(db,'users',target),d=>{const r=d.data();if(!r)return;$('fName').textContent=r.name;$('fUser').textContent='@'+r.username+' · খেলা '+bn(r.games||0)+' · জয় '+bn(r.wins||0);$('fPts').textContent=bn(r.points);const pu=r.premiumUntil&&r.premiumUntil.toMillis()>Date.now()?r.premiumUntil.toDate():null;$('fUser').textContent+=pu?' · প্রিমিয়াম '+bn(pu.getDate())+'/'+bn(pu.getMonth()+1)+' পর্যন্ত':' · প্রিমিয়াম নেই'});
   $('found').hidden=false;
 };
 async function apply(a){
@@ -125,6 +129,19 @@ async function apply(a){
     say((a>0?'+':'')+bn(a)+' পয়েন্ট প্রয়োগ হয়েছে, এখন '+bn(left),true);
   }catch(e){say('হয়নি: '+(e.code||e.message))}
 }
+async function premium(days){
+  if(!target)return;
+  try{
+    await runTransaction(db,async tx=>{
+      const ref=doc(db,'users',target),d=await tx.get(ref),cur=d.data().premiumUntil;
+      if(days===0){tx.update(ref,{premiumUntil:null});return}
+      const base=Math.max(Date.now(),cur?cur.toMillis():0);
+      tx.update(ref,{premiumUntil:Timestamp.fromMillis(base+days*864e5)});
+    });
+    say(days?'প্রিমিয়াম ৩০ দিন বাড়ানো হয়েছে':'প্রিমিয়াম বন্ধ করা হয়েছে',true);
+  }catch(e){say('হয়নি: '+(e.code||e.message))}
+}
+$('prem30').onclick=()=>premium(30);$('premOff').onclick=()=>premium(0);
 $('quick').onclick=e=>{const b=e.target.closest('button');if(b)apply(parseInt(b.dataset.a,10))};
 $('custom').onsubmit=e=>{e.preventDefault();const v=parseInt($('amt').value.replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭৮৯'.indexOf(d)),10);if(isNaN(v)){say('সংখ্যা লিখুন');return}apply(v);$('amt').value=''};
 </script>

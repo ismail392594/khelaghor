@@ -15,3 +15,11 @@ export const ADMIN_EMAILS = ["ismail392594@gmail.com"];
 // পয়েন্টের নিয়ম
 export const START_POINTS = 500;
 export const DAILY_BONUS = 100;
+
+// ---- আয় ----
+// Google AdSense অনুমোদন পেলে এখানে আপনার Publisher ID বসান, যেমন "ca-pub-1234567890123456"
+// খালি থাকলে কোনো বিজ্ঞাপন দেখাবে না।
+export const ADSENSE_CLIENT = "";
+export const ADSENSE_SLOT = "";      // AdSense-এ বানানো Display ad unit-এর slot নম্বর
+// বিজ্ঞাপন ছাড়া প্রিমিয়াম প্ল্যানের দাম (টাকা/মাস)
+export const PREMIUM_PRICE = 49;
