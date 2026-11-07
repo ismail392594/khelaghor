@@ -205,6 +205,36 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 .prem span{font-size:.85rem}
 .prem .gbtn{grid-column:1/-1;background:linear-gradient(180deg,#5a67ff,#3b3fd8);box-shadow:0 5px 0 #2a2aa0;color:#fff;text-shadow:none}
 .ava.premium{box-shadow:0 0 0 3px #ffd23f,0 3px 0 #b8611a}
+.bgfx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1}
+.soundBtn{position:fixed;z-index:7;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(96px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:6px;border:0;border-radius:999px;padding:8px 14px 8px 10px;
+  background:linear-gradient(180deg,#ff6fa5,#ff4f8b);color:#fff;font:700 .85rem var(--body);cursor:pointer;box-shadow:0 4px 0 #b8245a,0 8px 18px rgba(0,0,0,.35)}
+.soundBtn svg{width:22px;height:22px}
+.soundBtn:not(.on){animation:nudge 1.6s ease-in-out infinite}
+.soundBtn.on{background:linear-gradient(180deg,#5ee28a,#22c55e);box-shadow:0 4px 0 #15803d,0 8px 18px rgba(0,0,0,.35)}
+.soundBtn.on svg path:last-child{animation:wave 1s ease-in-out infinite}
+@keyframes nudge{0%,100%{transform:scale(1)}50%{transform:scale(1.08) rotate(-3deg)}}
+@keyframes wave{50%{opacity:.3}}
+.bubbles{position:fixed;left:0;right:0;bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:8;pointer-events:none;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding-inline:max(14px,env(safe-area-inset-left,0px)) max(14px,env(safe-area-inset-right,0px))}
+.bubble{max-width:min(320px,82%);display:flex;align-items:flex-start;gap:8px;background:#fff;color:var(--ink);border-radius:20px;padding:10px 14px 10px 10px;font-weight:600;font-size:.95rem;line-height:1.35;
+  box-shadow:0 6px 0 rgba(0,0,0,.15),0 10px 24px rgba(0,0,0,.35);animation:bin .45s cubic-bezier(.2,1.6,.4,1) both}
+.bubble.l{align-self:flex-start;border-bottom-left-radius:6px}
+.bubble.r{align-self:flex-end;border-bottom-right-radius:6px;background:#fff6c9}
+.bubble .face{font-size:1.5rem;line-height:1;flex:none}
+.bubble.out{animation:bout .45s ease-in both}
+@keyframes bin{from{opacity:0;transform:translateY(20px) scale(.7)}}
+@keyframes bout{to{opacity:0;transform:translateY(-16px) scale(.9)}}
+.minv{display:flex;align-items:flex-start;gap:10px;background:linear-gradient(135deg,#ffecb3,#ffd23f);border-radius:18px 18px 18px 6px;padding:10px 14px;font-weight:700;color:#3a2200;font-size:1rem;line-height:1.35;animation:bin .45s cubic-bezier(.2,1.6,.4,1) both}
+.minv .face{font-size:1.6rem;line-height:1}
+.hero h1{animation:float 3s ease-in-out infinite}
+.hero .mini{animation:spinIn .9s cubic-bezier(.2,1.4,.4,1) both,bob2 4s 1s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-3px)}}
+@keyframes spinIn{from{transform:rotate(-30deg) scale(.4);opacity:0}}
+@keyframes bob2{0%,100%{transform:rotate(8deg)}50%{transform:rotate(2deg) translateY(-6px)}}
+.tile{animation:tileIn .5s cubic-bezier(.2,1.3,.4,1) both}
+.tile .logo{transition:transform .2s}
+.tile:hover .logo,.tile:focus-visible .logo{transform:rotate(-6deg) scale(1.08)}
+@keyframes tileIn{from{opacity:.4;transform:translateY(14px) scale(.96)}}
 @media (max-width:360px){.grid{grid-template-columns:repeat(2,1fr)}.mini{width:84px;height:84px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -293,6 +323,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 <!-- game mode sheet -->
 <div class="sheet" id="modeSheet" hidden>
   <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="modeT">
+    <div class="minv" id="modeInvite"><span class="face" aria-hidden="true">😎</span><span class="txt">চলেন এক দান হয়ে যাক!</span></div>
     <h3 id="modeT">লুডু</h3>
     <p id="modeP">কীভাবে খেলবেন বেছে নিন</p>
     <a class="mode" id="mCpu" ><i style="background:#3b78f0">ক</i><div><b>কম্পিউটারের সাথে</b><small>একা খেলুন, যখন ইচ্ছা</small></div><span class="ptag">১ জন</span></a>
@@ -410,7 +441,7 @@ function drawGrid(){
     const [a,b]=PAL[i%PAL.length];
     const el=document.createElement('button');
     el.className='tile '+(url?'live':'soon');el.style.setProperty('--a',a);el.style.setProperty('--b',b);
-    el.onclick=()=>url?openModes(name,url):toast(SOON[i%SOON.length]);
+    el.onclick=()=>window.KH.tapGame?window.KH.tapGame(name,url):(url?openModes(name,url):toast(SOON[i%SOON.length]));
     const inf=(window.GAME_INFO||{})[name]||['',''];
     el.innerHTML=`<span class="no">#${bn(i+1)}</span><span class="logo" aria-hidden="true"><svg viewBox="0 0 48 48">${inf[1]}</svg></span><b>${name}</b><span class="ds">${inf[0]}</span><span class="meta">${PL[name]?`<span class="pp">${PL[name]} জন</span>`:'<span class="pp">১ জন</span>'}<span class="st">${url?'খেলুন':'শিগগিরই'}</span></span>`;
     g.appendChild(el);
@@ -544,5 +575,6 @@ $('n-home').onclick=()=>nav('home');$('n-shop').onclick=()=>nav('shop');$('n-top
 setCoins(coins);drawGrid();drawDaily();nextDlg();setProfile(profile);
 </script>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
+<script src="/js/fun.js"></script>
 <script type="module" src="/js/online.js"></script>
 </body></html>

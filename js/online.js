@@ -72,7 +72,7 @@ $('userForm').onsubmit = async e => {
 
 /* ---------- লগইন অবস্থা ---------- */
 onAuthStateChanged(auth, u => {
-  unsubs.forEach(f => f()); unsubs = []; user = u; me = null;
+  unsubs.forEach(f => f()); unsubs = []; user = u; me = null; K.authed = false;
   if (!u) {
     K.setProfile({ name: 'খেলোয়াড়' });
     if (!isGuest()) K.openS('loginSheet');
@@ -81,7 +81,7 @@ onAuthStateChanged(auth, u => {
   K.closeS('loginSheet');
   unsubs.push(onSnapshot(doc(db, 'users', u.uid), snap => {
     if (!snap.exists()) { $('dnInput').value = (u.displayName || '').slice(0, 20); K.openS('userSheet'); return; }
-    const first = !me; me = snap.data(); K.closeS('userSheet');
+    const first = !me; me = snap.data(); K.authed = true; K.closeS('userSheet'); $('loginT').textContent = 'খেলাঘরে স্বাগতম!';
     K.setProfile({ name: me.name });
     $('bal').textContent = bn(me.points);
     drawDaily(); drawPremium();

@@ -335,5 +335,20 @@ $('startBtn').onclick=start;
 /* sample position before first game */
 pos=[[-1,-1,9,22],[-1,-1,4,31]];render();setCoins(coins);ui();
 </script>
+<div id="gate" hidden style="position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:rgba(10,6,40,.88);padding:20px">
+  <div style="background:#fff;color:#1d1640;border-radius:24px;padding:22px 18px;max-width:330px;text-align:center;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 0 rgba(0,0,0,.25)">
+    <div style="font-size:2.4rem;line-height:1">🙄</div>
+    <b style="font-family:var(--display);font-size:1.4rem;color:#5a1fa8" id="gateT">দাঁড়ান ভাই! আগে লগইন, তারপর খেলা।</b>
+    <p style="margin:0;color:#5b5290">গেস্ট হইয়া শুধু দেখা যায়, খেলতে হইলে একাউন্ট লাগে মামা!</p>
+    <a href="/" style="text-decoration:none;border-radius:14px;padding:12px;font-weight:700;color:#fff;background:linear-gradient(180deg,#5ee28a,#22c55e);box-shadow:0 4px 0 #15803d">হাবে গিয়ে লগইন করুন</a>
+  </div>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { firebaseConfig } from "/js/firebase-config.js";
+const auth = getAuth(initializeApp(firebaseConfig));
+onAuthStateChanged(auth, u => { document.getElementById('gate').hidden = !!u; });
+</script>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
 </body></html>
