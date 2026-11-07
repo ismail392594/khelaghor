@@ -112,10 +112,10 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--teal);outline-offse
 .boardWrap{position:relative;width:100%;aspect-ratio:1;border-radius:16px;padding:5px;background:linear-gradient(145deg,#3c3170,#231c45);box-shadow:0 18px 40px rgba(0,0,0,.45)}
 .board{position:relative;width:100%;height:100%;border-radius:11px;overflow:hidden}
 .board svg{display:block;width:100%;height:100%}
-.tok{position:absolute;width:calc(100%/15);height:calc(100%/15);display:grid;place-items:center;padding:0;border:0;background:none;transition:left .07s linear,top .07s linear,transform .2s;z-index:2;cursor:default}
+.tok{position:absolute;width:calc(100%/15);height:calc(100%/15);display:grid;place-items:center;padding:0;border:0;background:none;transition:left .09s linear,top .09s linear,transform .2s;z-index:2;cursor:default}
 .tok i{display:block;width:80%;height:80%;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.9) 0 12%,transparent 30%),var(--tc);
   border:2.5px solid #fff;box-shadow:0 2px 0 rgba(0,0,0,.25),0 4px 8px rgba(0,0,0,.3),inset 0 -3px 0 rgba(0,0,0,.18)}
-.tok.hop i{animation:hop .075s ease-out}
+.tok.hop i{animation:hop .1s ease-out}
 @keyframes hop{50%{transform:translateY(-35%) scale(1.1)}}
 .tok.can{cursor:pointer;z-index:4}
 .tok.can i{animation:bob .55s ease-in-out infinite alternate}
@@ -422,9 +422,9 @@ async function playEvent(e) {
   else if (e.k === 'turn') { document.querySelectorAll('.pod').forEach(x => x.classList.toggle('active', +x.dataset.p === e.p)); if (canControl(e.p)) { sfx('turn'); } await sleep(120); }
   else if (e.k === 'end') { await sleep(400); }
 }
-const HOP_MS = 75;
+const HOP_MS = 100;
 async function hopTo(p, t, from, to) {
-  if (from < 0) { D[p][t] = 0; placeTokens(); sfx('hop'); await sleep(140); return; }
+  if (from < 0) { D[p][t] = 0; placeTokens(); sfx('hop'); await sleep(170); return; }
   for (let v = from + 1; v <= to; v++) { D[p][t] = v; placeTokens(); const el = toks[p][t]; el.classList.remove('hop'); void el.offsetWidth; el.classList.add('hop'); sfx('hop'); await sleep(HOP_MS); }
 }
 async function pump() {

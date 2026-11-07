@@ -109,6 +109,16 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // গেমের সেরা স্কোর (যেমন মশা মারো): নিজের স্কোর শুধু বাড়ানো যায়
+    match /scores/{game}/players/{uid} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['score','name','username','at'])
+        && request.resource.data.score is int && request.resource.data.score > 0 && request.resource.data.score <= 100000
+        && (resource == null || request.resource.data.score > resource.data.score);
+      allow delete: if isAdmin();
+    }
+
     // সাইটের সেটিং (ঘোষণা, যোগাযোগের তথ্য) আর গেমের অবস্থা: সবাই পড়বে, শুধু অ্যাডমিন বদলাবে
     match /config/{id} {
       allow read: if true;

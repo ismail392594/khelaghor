@@ -258,7 +258,7 @@ const say=(id,t,ok)=>{$(id).textContent=t;$(id).className='say '+(ok?'ok':'err')
 
 // গেমের তালিকা (হাবের সিরিয়াল অনুযায়ী) — কোন গেমের পেজ তৈরি হয়ে গেছে
 const NAMES=Object.keys(window.GAME_INFO||{});
-const BUILT={'লুডু':'/games/ludo/'};
+const BUILT={'লুডু':'/games/ludo/','মশা মারো':'/games/mosha/'};
 
 /* ট্যাব */
 let tab='dash';
@@ -374,11 +374,12 @@ $('banBtn').onclick=()=>{if(!cur)return;const b=!cur.banned;tx((t,ref)=>{t.updat
 const ST={live:['চালু','p-live'],maint:['মেরামত','p-maint'],soon:['শিগগিরই','p-soon'],hidden:['লুকানো','p-hidden']};
 let gs={};
 function defStatus(n){return BUILT[n]?'live':'soon'}
+const stOf=n=>{const s=gs[n]||defStatus(n);return BUILT[n]&&s==='soon'?'live':s};
 function drawGames(){
-  $('gList').innerHTML=NAMES.map((n,i)=>{const s=gs[n]||defStatus(n);
-    const opts=Object.entries(ST).filter(([k])=>BUILT[n]||k!=='live'&&k!=='maint').map(([k,[l]])=>`<option value="${k}"${k===s?' selected':''}>${l}</option>`).join('');
+  $('gList').innerHTML=NAMES.map((n,i)=>{const s=stOf(n);
+    const opts=Object.entries(ST).filter(([k])=>BUILT[n]?k!=='soon':k!=='live'&&k!=='maint').map(([k,[l]])=>`<option value="${k}"${k===s?' selected':''}>${l}</option>`).join('');
     return `<div class="g"><span class="no">#${bn(i+1)}</span><div><b>${esc(n)}</b><small>${BUILT[n]?'তৈরি হয়েছে':'এখনো বানানো হয়নি'} · <span class="pill ${ST[s][1]}">${ST[s][0]}</span></small></div><select data-g="${esc(n)}" aria-label="${esc(n)} এর অবস্থা">${opts}</select></div>`}).join('');
-  $('sLive').textContent=bn(NAMES.filter(n=>(gs[n]||defStatus(n))==='live').length);
+  $('sLive').textContent=bn(NAMES.filter(n=>stOf(n)==='live').length);
 }
 function listenGames(){unsubs.push(onSnapshot(doc(db,'config','games'),d=>{gs=(d.exists()&&d.data().status)||{};drawGames()}))}
 $('gList').onchange=async e=>{
