@@ -6,7 +6,7 @@
 // - প্রতিপক্ষের গুটি কাটলে সেটা ঘরে ফেরে, আর আপনি আবার চাল পান।
 // - তারকা আর শুরুর ঘর নিরাপদ, সেখানে কাটা যায় না।
 // - নিজের রঙের রাস্তা দিয়ে মাঝখানে পৌঁছাতে ঠিক সংখ্যা লাগে। গুটি পৌঁছালে আবার চাল।
-// - ৩০ সেকেন্ডে চাল না দিলে নিজে থেকে চাল হয়; টানা ৩ বার হলে খেলোয়াড় বাদ।
+// - ৩০ সেকেন্ডে চাল না দিলে নিজে থেকে চাল হয় (সব মোডে); অনলাইনে টানা ৩ বার হলে খেলোয়াড় বাদ।
 // - কেউ চারটা গুটি তুলে ফেললে খেলা শেষ। বাকিদের অবস্থান কে কতদূর এগিয়েছে তা দিয়ে।
 
 export const START = [0, 13, 26, 39];          // লাল, সবুজ, হলুদ, নীল কোথা থেকে শুরু করে
@@ -167,10 +167,10 @@ export function act(game, a, rand, now) {
   if (a.type === 'tick') {
     const cur = g.turn, cp = g.players[cur];
     if (cp.cpu) { runCpu(g, rand, now); return g; }
-    if (g.mode === 'cpu' || g.mode === 'local' || now - g.turnAt < TURN_MS) throw new LudoError('early', 'এখনো সময় আছে');
+    if (now - g.turnAt < TURN_MS) throw new LudoError('early', 'এখনো সময় আছে');
     cp.afk += 1;
     ev(g, { k: 'skip', p: cur, why: 'afk' });
-    if (cp.afk >= AFK_LIMIT) {
+    if (g.mode === 'online' && cp.afk >= AFK_LIMIT) { // শুধু অনলাইনে বাদ পড়ে; কম্পিউটার বা এক ফোনের খেলায় শুধু নিজে থেকে চাল হয়
       cp.out = true; ev(g, { k: 'out', p: cur, why: 'afk' });
       if (!checkLastStanding(g)) nextTurn(g, false, now);
     } else if (!g.rolled) {

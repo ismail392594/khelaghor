@@ -44,5 +44,13 @@
         }
       ]
     }
-  ]
+  ],
+  "regions": [
+    "bom1"
+  ],
+  "functions": {
+    "api/ludo.js": {
+      "maxDuration": 10
+    }
+  }
 }

@@ -101,8 +101,9 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--teal);outline-offse
 .face{position:absolute;inset:0;border-radius:8px;background:linear-gradient(145deg,#fff,#e8e2f6);box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:5px;backface-visibility:hidden}
 .face i{width:7px;height:7px;border-radius:50%;place-self:center;background:transparent}
 .face i.on{background:var(--pc,#1d1640);box-shadow:inset 0 1px 2px rgba(0,0,0,.35)}
-.cube.rolling{transition:none;animation:tumble .45s linear infinite}
-@keyframes tumble{from{transform:rotateX(0) rotateY(0) rotateZ(0)}to{transform:rotateX(360deg) rotateY(720deg) rotateZ(180deg)}}
+.dice.shake{animation:shake .32s ease-in-out infinite}
+@keyframes shake{25%{transform:rotate(-10deg) translateY(-3px)}75%{transform:rotate(10deg) translateY(-3px)}}
+.pava .rfg.hurry{stroke:#ff4d5e}
 .f1{transform:translateZ(20px)}.f6{transform:rotateY(180deg) translateZ(20px)}
 .f2{transform:rotateY(90deg) translateZ(20px)}.f5{transform:rotateY(-90deg) translateZ(20px)}
 .f3{transform:rotateX(90deg) translateZ(20px)}.f4{transform:rotateX(-90deg) translateZ(20px)}
@@ -111,10 +112,10 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--teal);outline-offse
 .boardWrap{position:relative;width:100%;aspect-ratio:1;border-radius:16px;padding:5px;background:linear-gradient(145deg,#3c3170,#231c45);box-shadow:0 18px 40px rgba(0,0,0,.45)}
 .board{position:relative;width:100%;height:100%;border-radius:11px;overflow:hidden}
 .board svg{display:block;width:100%;height:100%}
-.tok{position:absolute;width:calc(100%/15);height:calc(100%/15);display:grid;place-items:center;padding:0;border:0;background:none;transition:left .11s linear,top .11s linear,transform .2s;z-index:2;cursor:default}
+.tok{position:absolute;width:calc(100%/15);height:calc(100%/15);display:grid;place-items:center;padding:0;border:0;background:none;transition:left .07s linear,top .07s linear,transform .2s;z-index:2;cursor:default}
 .tok i{display:block;width:80%;height:80%;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.9) 0 12%,transparent 30%),var(--tc);
   border:2.5px solid #fff;box-shadow:0 2px 0 rgba(0,0,0,.25),0 4px 8px rgba(0,0,0,.3),inset 0 -3px 0 rgba(0,0,0,.18)}
-.tok.hop i{animation:hop .11s ease-out}
+.tok.hop i{animation:hop .075s ease-out}
 @keyframes hop{50%{transform:translateY(-35%) scale(1.1)}}
 .tok.can{cursor:pointer;z-index:4}
 .tok.can i{animation:bob .55s ease-in-out infinite alternate}
@@ -172,7 +173,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--teal);outline-offse
       <li>প্রতিপক্ষের গুটির উপর পড়লে সেটা কাটা যায়, আর আপনি আবার চাল পান।</li>
       <li>তারকা চিহ্ন আর রঙিন শুরুর ঘর নিরাপদ, সেখানে কাটা যায় না।</li>
       <li>মাঝখানে পৌঁছাতে ঠিক সংখ্যা লাগবে। গুটি পৌঁছালে আবার চাল।</li>
-      <li>অনলাইনে ৩০ সেকেন্ডে চাল না দিলে নিজে থেকে চাল হবে, টানা ৩ বার হলে বাদ।</li>
+      <li>৩০ সেকেন্ডে চাল না দিলে নিজে থেকে চাল হবে। অনলাইনে টানা ৩ বার হলে বাদ।</li>
       <li>যে আগে চারটা গুটি তুলবে সে জিতবে। বাকিদের অবস্থান কে কতদূর এগিয়েছে তা দিয়ে।</li>
       <li>ছক্কা আর চাল সার্ভারে হয়, তাই কেউ পয়েন্ট বা ছক্কায় কারচুপি করতে পারে না।</li>
     </ul></details>
@@ -303,12 +304,17 @@ const cellOf = (color, v, t) => v < 0 ? BASE[color][t] : v <= 50 ? TRACK[(L.STAR
 const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
 const FACE_ROT = { 1: [0, 0], 6: [0, 180], 2: [0, -90], 5: [0, 90], 3: [-90, 0], 4: [90, 0] };
 function cubeHTML() { return [1, 2, 3, 4, 5, 6].map(n => `<div class="face f${n}">${Array.from({ length: 9 }, (_, i) => `<i class="${PIPS[n].includes(i) ? 'on' : ''}"></i>`).join('')}</div>`).join(''); }
-const spins = new WeakMap();
+// প্রতিবার ঠিক একই রকম ঘোরা: দুই পাক ঘুরে আসল সংখ্যায় থামে
+const ROLL_MS = 700;
 function setCube(cube, n, roll) {
-  let k = spins.get(cube) || 0; if (roll) k += 1; spins.set(cube, k);
   const [x, y] = FACE_ROT[n];
-  cube.style.transition = roll ? '' : 'none';
-  cube.style.transform = `rotateX(${x + k * 720 + (roll ? 360 : 0)}deg) rotateY(${y + k * 720}deg)`;
+  cube.classList.remove('shake');
+  if (!roll) { cube.style.transition = 'none'; cube.style.transform = `rotateX(${x}deg) rotateY(${y}deg)`; return; }
+  cube.style.transition = 'none';
+  cube.style.transform = `rotateX(${x - 720}deg) rotateY(${y - 720}deg) rotateZ(-180deg)`;
+  void cube.offsetWidth;
+  cube.style.transition = `transform ${ROLL_MS}ms cubic-bezier(.12,.7,.25,1)`;
+  cube.style.transform = `rotateX(${x}deg) rotateY(${y}deg) rotateZ(0deg)`;
 }
 $('wCube').innerHTML = cubeHTML();
 setInterval(() => { if (!$('waiting').hidden) setCube($('wCube'), 1 + Math.floor(Math.random() * 6), true); }, 900);
@@ -318,7 +324,7 @@ let user = null, me = null;              // লগইন, প্রোফাই�
 let matchId = null, unsubM = null;       // সার্ভারের খেলা
 let local = null;                         // অনুশীলন / এক ফোনে
 let G = null, D = null, lastSeq = 0, myIdx = -1;
-let queue = [], busy = false, acting = false, lastMode = null, loaded = false;
+let queue = [], busy = false, acting = false, lastMode = null, loaded = false, predicted = null;
 
 function flash(t) { $('msg').textContent = t; if (!$('lobby').hidden) $('lerr').textContent = t; }
 function show(view) { ['lobby', 'waiting', 'game'].forEach(v => $(v).hidden = v !== view); }
@@ -380,39 +386,51 @@ function placeTokens() {
 /* ---------- ঘটনা একটা একটা করে দেখানো ---------- */
 function boardPop(text, color) { const d = document.createElement('div'); d.className = 'pop'; d.textContent = text; if (color) d.style.color = color; $('board').appendChild(d); setTimeout(() => d.remove(), 1100); }
 const nameOf = p => G.players[p].cpu ? G.players[p].name.replace(/ \(.*\)/, '') : (p === myIdx ? 'আপনি' : G.players[p].name);
+// বাংলা ষষ্ঠী: আপনার / রহিম চাচার / ইসমাইলের
+function poss(p) {
+  if (p === myIdx) return 'আপনার';
+  const n = nameOf(p).trim();
+  if (!/[\u0980-\u09FF]$/.test(n)) return n + '-এর';
+  return /[\u0985-\u0994\u09BE-\u09CC]$/.test(n) ? n + 'র' : n + 'ের';
+}
 async function playEvent(e) {
   const pl = G.players[e.p];
   if (e.k === 'roll') {
     const el = pod(e.p); if (!el) return;
     el.classList.add('active');
-    const cube = el.querySelector('.cube'), wasRolling = cube.classList.contains('rolling');
-    cube.classList.remove('rolling'); if (!wasRolling) sfx('dice'); setCube(cube, e.d, true);
-    await sleep(780);
+    el.querySelector('.dice').classList.remove('shake');
+    sfx('dice'); setCube(el.querySelector('.cube'), e.d, true);
+    await sleep(ROLL_MS + 40);
     if (e.d === 6) { sfx('six'); boardPop('৬!', COL[pl.color]); say(pick(LINES.six), true); }
     else say(NUM[e.d], true);
-    $('msg').textContent = (e.p === myIdx ? 'আপনার' : nameOf(e.p) + '-এর') + ' ' + (e.d === 6 ? 'ছক্কা (৬)' : bn(e.d)) + ' উঠেছে';
-    await sleep(250);
+    $('msg').textContent = poss(e.p) + ' ' + (e.d === 6 ? 'ছক্কা (৬)' : bn(e.d)) + ' উঠেছে';
+    await sleep(120);
   } else if (e.k === 'move') {
-    if (e.from < 0) { D[e.p][e.t] = 0; placeTokens(); sfx('hop'); await sleep(200); }
-    else for (let v = e.from + 1; v <= e.to; v++) { D[e.p][e.t] = v; placeTokens(); const el = toks[e.p][e.t]; el.classList.remove('hop'); void el.offsetWidth; el.classList.add('hop'); sfx('hop'); await sleep(120); }
+    if (predicted && predicted.p === e.p && predicted.t === e.t && predicted.to === e.to) { predicted = null; D[e.p][e.t] = e.to; placeTokens(); return; } // আগেই চালানো হয়েছে
+    await hopTo(e.p, e.t, e.from, e.to);
   } else if (e.k === 'cap') {
     D[e.q][e.t] = -1; placeTokens(); sfx('cap'); boardPop('কাটা!', '#fff');
     const mineHit = myIdx >= 0 && e.q === myIdx, mineDid = myIdx >= 0 && e.p === myIdx;
     say(pick(mineHit ? LINES.capped : LINES.capMe), true);
-    $('msg').textContent = nameOf(e.p) + ' ' + nameOf(e.q) + '-এর গুটি কেটে দিয়েছে!' + (mineDid ? ' 🔥' : '');
+    $('msg').textContent = nameOf(e.p) + ' ' + poss(e.q) + ' গুটি কেটে দিয়েছে!' + (mineDid ? ' 🔥' : '');
     await sleep(650);
   } else if (e.k === 'home') { sfx('home'); boardPop('ঘরে!', COL[pl.color]); say(pick(LINES.home)); await sleep(500); }
   else if (e.k === 'skip') {
-    const t = e.why === '3six' ? pick(LINES.three) : e.why === 'afk' ? nameOf(e.p) + ' সময়মতো চাল দেয়নি, নিজে থেকে চাল হলো' : nameOf(e.p) + ': ' + pick(LINES.nomove);
+    const t = e.why === '3six' ? pick(LINES.three) : e.why === 'afk' ? 'সময় শেষ! ' + (e.p === myIdx ? 'আপনার' : poss(e.p)) + ' হয়ে নিজে থেকে চাল হলো' : nameOf(e.p) + ': ' + pick(LINES.nomove);
     $('msg').textContent = t; if (e.why !== 'nomove') { sfx('buzz'); say(t); } await sleep(e.why === 'nomove' ? 350 : 700);
   } else if (e.k === 'out') { $('msg').textContent = nameOf(e.p) + (e.why === 'afk' ? ' টানা ৩ বার চাল দেয়নি, বাদ!' : ' খেলা ছেড়ে চলে গেছে'); sfx('buzz'); await sleep(600); }
   else if (e.k === 'turn') { document.querySelectorAll('.pod').forEach(x => x.classList.toggle('active', +x.dataset.p === e.p)); if (canControl(e.p)) { sfx('turn'); } await sleep(120); }
   else if (e.k === 'end') { await sleep(400); }
 }
+const HOP_MS = 75;
+async function hopTo(p, t, from, to) {
+  if (from < 0) { D[p][t] = 0; placeTokens(); sfx('hop'); await sleep(140); return; }
+  for (let v = from + 1; v <= to; v++) { D[p][t] = v; placeTokens(); const el = toks[p][t]; el.classList.remove('hop'); void el.offsetWidth; el.classList.add('hop'); sfx('hop'); await sleep(HOP_MS); }
+}
 async function pump() {
   if (busy) return; busy = true; placeTokens();
   while (queue.length) { const e = queue.shift(); try { await playEvent(e); } catch (err) {} }
-  busy = false;
+  busy = false; readyAt = Date.now(); lastBeep = -1;
   D = JSON.parse(JSON.stringify(G.pos));
   placeTokens(); drawPods(); status();
   if (G.status === 'finished') showResult();
@@ -422,7 +440,7 @@ function status() {
   const p = G.turn, mine = canControl(p);
   if (mine) $('msg').textContent = (myIdx < 0 ? G.players[p].name + ': ' : '') + (G.rolled ? 'জ্বলজ্বলে গুটিতে চাপ দিন' : 'আপনার ছক্কায় চাপ দিন');
   else if (G.players[p].cpu) $('msg').textContent = nameOf(p) + ' ভাবছে…';
-  else $('msg').textContent = nameOf(p) + '-এর চাল';
+  else $('msg').textContent = poss(p) + ' চাল';
 }
 function ingest(g) {
   const fresh = !loaded || !G || g.seq < lastSeq;
@@ -431,7 +449,7 @@ function ingest(g) {
   G = g;
   myIdx = local ? (G.mode === 'local' && G.players.every(p => !p.cpu) ? -1 : 0) : G.players.findIndex(p => p.uid === (user && user.uid));
   if (fresh || prevPlayers !== G.players.length || !toks.length) {
-    D = JSON.parse(JSON.stringify(G.pos)); buildPods(); buildTokens(); lastSeq = G.seq; placeTokens(); drawPods(); status();
+    D = JSON.parse(JSON.stringify(G.pos)); buildPods(); buildTokens(); lastSeq = G.seq; readyAt = Date.now(); placeTokens(); drawPods(); status();
     if (G.status === 'finished') showResult();
     return;
   }
@@ -440,13 +458,21 @@ function ingest(g) {
   queue.push(...ev); pump();
 }
 
-/* ---------- টাইমার (অনলাইন) ---------- */
-let lastTick = 0;
+/* ---------- ৩০ সেকেন্ডের টাইমার (সব মোডে, লুডু কিং-এর মতো) ---------- */
+let lastTick = 0, readyAt = Date.now(), lastBeep = -1;
+const RING = 138.2;
 setInterval(() => {
-  if (!G || G.status !== 'playing' || local || G.mode === 'cpu') { document.querySelectorAll('.rfg').forEach(c => c.style.strokeDashoffset = 138.2); return; }
-  const left = Math.max(0, L.TURN_MS - (Date.now() - G.turnAt));
-  document.querySelectorAll('.pod').forEach(el => { const c = el.querySelector('.rfg'); if (c) c.style.strokeDashoffset = +el.dataset.p === G.turn ? 138.2 * (1 - left / L.TURN_MS) : 138.2; });
-  if (left <= 0 && Date.now() - G.turnAt > L.TURN_MS + 2500 && Date.now() - lastTick > 6000) { lastTick = Date.now(); api({ action: 'tick', matchId }).catch(() => {}); }
+  const rings = document.querySelectorAll('.pod');
+  if (!G || G.status !== 'playing' || busy || acting || G.players[G.turn].cpu) { rings.forEach(el => { const c = el.querySelector('.rfg'); if (c) c.style.strokeDashoffset = RING; }); return; }
+  const left = Math.max(0, L.TURN_MS - (Date.now() - readyAt)), mine = canControl(G.turn);
+  rings.forEach(el => { const c = el.querySelector('.rfg'); if (!c) return; const on = +el.dataset.p === G.turn; c.style.strokeDashoffset = on ? RING * (1 - left / L.TURN_MS) : RING; c.classList.toggle('hurry', on && left < 10000); });
+  const sec = Math.ceil(left / 1000);
+  if (mine && sec <= 5 && sec > 0 && sec !== lastBeep) { lastBeep = sec; sfx('turn'); if (sec === 5) say('জলদি চালেন!'); }
+  if (left > 0 || Date.now() - lastTick < 3000) return;
+  lastTick = Date.now();
+  if (local) { doLocal({ type: 'tick', p: G.turn }); return; }
+  if (G.mode === 'cpu' && G.turn !== myIdx) return;
+  api({ action: 'tick', matchId }).catch(() => {});
 }, 250);
 
 /* ---------- খেলোয়াড়ের কাজ ---------- */
@@ -456,15 +482,20 @@ async function onDice(i) {
   audio();
   if (local) { doLocal({ type: 'roll', p: i }); return; }
   acting = true; drawPods();
-  const cube = pod(i).querySelector('.cube'); sfx('dice'); cube.classList.add('rolling'); // সার্ভারের উত্তর না আসা পর্যন্ত শুধু ঘুরবে, কোনো সংখ্যায় থামবে না
-  try { await api({ action: 'roll', matchId }); } catch (e) { cube.classList.remove('rolling'); flash(e.message); }
+  const dz = pod(i).querySelector('.dice'); dz.classList.add('shake'); // সার্ভারের উত্তর না আসা পর্যন্ত হাতে ঝাঁকানো
+  try { await api({ action: 'roll', matchId }); } catch (e) { dz.classList.remove('shake'); flash(e.message); }
   acting = false; drawPods(); placeTokens();
 }
 async function onToken(p, t) {
   if (!G || G.status !== 'playing' || G.turn !== p || !G.rolled || !G.movable.includes(t) || !canControl(p) || busy || acting) return;
   if (local) { doLocal({ type: 'move', p, t }); return; }
-  acting = true; placeTokens();
-  try { await api({ action: 'move', matchId, t }); } catch (e) { flash(e.message); }
+  acting = true;
+  toks[p].forEach(el => el.classList.remove('can'));
+  const from = D[p][t], to = from < 0 ? 0 : from + G.dice;
+  predicted = { p, t, from, to };
+  const req = api({ action: 'move', matchId, t }).catch(e => { predicted = null; flash(e.message); D = JSON.parse(JSON.stringify(G.pos)); placeTokens(); });
+  await hopTo(p, t, from, to);   // সার্ভারের অপেক্ষা না করে এখনই চালানো
+  await req;
   acting = false; placeTokens(); drawPods();
 }
 function doLocal(a) {
