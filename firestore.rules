@@ -73,5 +73,24 @@ service cloud.firestore {
       );
       allow delete: if signedIn() && resource.data.host == request.auth.uid;
     }
+
+    // সাইটের সেটিং (ঘোষণা, যোগাযোগের তথ্য) আর গেমের অবস্থা: সবাই পড়বে, শুধু অ্যাডমিন বদলাবে
+    match /config/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // খেলোয়াড়দের বার্তা (যোগাযোগ)
+    match /messages/{id} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['uid','username','name','topic','text','createdAt','status','reply','repliedAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 1000
+        && request.resource.data.status == 'open'
+        && request.resource.data.reply == null
+        && request.resource.data.createdAt == request.time;
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
   }
 }

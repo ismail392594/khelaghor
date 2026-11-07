@@ -264,8 +264,11 @@
     const any = INVITE_ANY.map(s => s.replace('{g}', name));
     return pick(own.length && Math.random() < 0.7 ? own : any);
   }
-  K.tapGame = (name, url) => {
+  const MAINT = ['মিস্ত্রি ভাই কাজ করতেছে, একটু পরে আসেন!', 'এই গেম এখন সার্ভিসিংয়ে, চা খাইয়া আসেন!', 'স্ক্রু টাইট দেওয়া হইতেছে, ধৈর্য ধরেন!'];
+  K.tapGame = (name, url, st) => {
+    if (st === 'maint') { bubble(pick(MAINT), { sound: 'boing' }); return; }
     if (!url) { bubble(pick(SOON), { sound: 'boing' }); return; }
+    if (K.banned) { bubble('আপনার একাউন্ট আপাতত বন্ধ। যোগাযোগ পাতায় অ্যাডমিনকে লিখুন।', { sound: 'boing' }); return; }
     if (!K.authed) {
       $('loginT').textContent = pick(GATE);
       sfx('boing'); K.openS('loginSheet'); speak($('loginT').textContent); return;
@@ -275,7 +278,7 @@
     openModes(name, url); sfx('tada'); if (iv) setTimeout(() => speak(iv.querySelector('.txt').textContent), 300);
   };
   // হাবের "খেলুন" বোতামও একই পথে
-  const hp = $('heroPlay'); if (hp) hp.onclick = () => K.tapGame('লুডু', '/games/ludo/');
+  const hp = $('heroPlay'); if (hp) hp.onclick = () => { const st = (K.gameStatus || {})['লুডু'] || 'live'; K.tapGame('লুডু', st === 'live' ? '/games/ludo/' : null, st); };
   // কম্পিউটারের সাথে খেলতে গেলেও লগইন লাগবে
   const cpu = $('mCpu');
   if (cpu) cpu.addEventListener('click', e => { if (!K.authed) { e.preventDefault(); K.closeS('modeSheet'); $('loginT').textContent = pick(GATE); K.openS('loginSheet'); } }, true);

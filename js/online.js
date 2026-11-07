@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, writeBatch, onSnapshot, collection, query, where, orderBy, limit, addDoc, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { firebaseConfig, START_POINTS, DAILY_BONUS, ADSENSE_CLIENT, ADSENSE_SLOT, PREMIUM_PRICE } from "./firebase-config.js";
+import { firebaseConfig, START_POINTS, DAILY_BONUS, ADSENSE_CLIENT, ADSENSE_SLOT, PREMIUM_PRICE, ADMIN_EMAILS } from "./firebase-config.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -72,7 +72,7 @@ $('userForm').onsubmit = async e => {
 
 /* ---------- লগইন অবস্থা ---------- */
 onAuthStateChanged(auth, u => {
-  unsubs.forEach(f => f()); unsubs = []; user = u; me = null; K.authed = false;
+  unsubs.forEach(f => f()); unsubs = []; user = u; me = null; K.authed = false; K.banned = false; drawMyMsgs([]); checkMaint();
   if (!u) {
     K.setProfile({ name: 'খেলোয়াড়' });
     if (!isGuest()) K.openS('loginSheet');
@@ -81,11 +81,11 @@ onAuthStateChanged(auth, u => {
   K.closeS('loginSheet');
   unsubs.push(onSnapshot(doc(db, 'users', u.uid), snap => {
     if (!snap.exists()) { $('dnInput').value = (u.displayName || '').slice(0, 20); K.openS('userSheet'); return; }
-    const first = !me; me = snap.data(); K.authed = true; K.closeS('userSheet'); $('loginT').textContent = 'খেলাঘরে স্বাগতম!';
+    const first = !me; me = snap.data(); K.authed = !me.banned; K.banned = !!me.banned; K.closeS('userSheet'); $('loginT').textContent = 'খেলাঘরে স্বাগতম!';
     K.setProfile({ name: me.name });
     $('bal').textContent = bn(me.points);
     drawDaily(); drawPremium();
-    if (first) { listenInvites(); if (pendingRoom) joinRoom(pendingRoom); }
+    if (first) { listenInvites(); listenMyMsgs(); if (pendingRoom) joinRoom(pendingRoom); if (me.banned) K.toast('আপনার একাউন্ট আপাতত বন্ধ করা আছে। যোগাযোগ পাতায় অ্যাডমিনকে লিখুন।'); }
   }, e => K.toast('প্রোফাইল লোড হয়নি: ' + e.code)));
   listenLeaderboard();
 });
@@ -124,7 +124,7 @@ function drawPremium() {
 $('premBtn').onclick = () => {
   if (!user) { K.openS('loginSheet'); return; }
   if (!me) return;
-  K.toast('প্রিমিয়াম নিতে অ্যাডমিনকে ৳' + bn(PREMIUM_PRICE) + ' পাঠিয়ে ইউজারনেম @' + me.username + ' জানান। অনলাইন পেমেন্ট শিগগিরই।');
+  K.toast('প্রিমিয়াম নিতে ' + (site.payNumber ? 'বিকাশ/নগদে ' + site.payNumber + ' নম্বরে ' : 'অ্যাডমিনকে ') + '৳' + bn(PREMIUM_PRICE) + ' পাঠিয়ে যোগাযোগ পাতায় ইউজারনেম @' + me.username + ' জানান।');
 };
 document.querySelectorAll('.adfree').forEach(b => b.onclick = () => { document.getElementById('n-shop').click(); });
 let adsLoaded = false;
@@ -152,7 +152,7 @@ setupAds();
 /* দোকান: পেমেন্ট গেটওয়ে চালুর আগ পর্যন্ত অ্যাডমিন পয়েন্ট দেবে */
 $('packs').onclick = e => {
   if (!e.target.closest('button')) return;
-  K.toast(me ? 'পয়েন্ট নিতে অ্যাডমিনকে আপনার ইউজারনেম @' + me.username + ' জানান' : 'আগে লগইন করুন');
+  K.toast(me ? 'পয়েন্ট কিনতে ' + (site.payNumber ? 'বিকাশ/নগদে ' + site.payNumber + ' নম্বরে টাকা পাঠিয়ে ' : '') + 'যোগাযোগ পাতায় ইউজারনেম @' + me.username + ' জানান' : 'আগে লগইন করুন');
 };
 
 /* ---------- লিডারবোর্ড ---------- */
@@ -276,3 +276,72 @@ $('joinForm').onsubmit = e => {
 
 /* হাব পেজের "বন্ধুকে ইনভাইট" বোতামে আসল রুম */
 K.onFriend = (game, max) => createRoom(game, max);
+
+
+/* ---------- অ্যাডমিন থেকে লাইভ: গেমের অবস্থা ---------- */
+onSnapshot(doc(db, 'config', 'games'), d => {
+  K.gameStatus = (d.exists() && d.data().status) || {};
+  if (typeof window.drawGrid === 'function') window.drawGrid();
+}, () => {});
+
+/* ---------- সাইট সেটিং: ঘোষণা, যোগাযোগ, মেরামত মোড ---------- */
+let site = {};
+const isAdminUser = () => !!(user && ADMIN_EMAILS.includes(user.email));
+function checkMaint() { $('maintAll').hidden = !(site.maintenance && !isAdminUser()); }
+onSnapshot(doc(db, 'config', 'site'), d => {
+  site = (d.exists() && d.data()) || {};
+  // ঘোষণা
+  let closed = ''; try { closed = localStorage.getItem('kh-notice-x') || ''; } catch (e) {}
+  const n = (site.notice || '').trim();
+  $('notice').hidden = !n || closed === n;
+  $('noticeTxt').textContent = n;
+  checkMaint();
+  drawContacts();
+}, () => {});
+$('noticeX').onclick = () => { $('notice').hidden = true; try { localStorage.setItem('kh-notice-x', (site.notice || '').trim()); } catch (e) {} };
+
+function drawContacts() {
+  const C = [];
+  if (site.whatsapp) C.push(['#25d366', 'W', 'WhatsApp', site.whatsapp, 'https://wa.me/88' + site.whatsapp.replace(/\D/g, '').replace(/^88/, '')]);
+  if (site.facebook) C.push(['#1877f2', 'f', 'Facebook পেজ', site.facebook.replace(/^https:\/\/(www\.)?/, ''), site.facebook]);
+  if (site.email) C.push(['#ea4335', '@', 'ইমেইল', site.email, '']);
+  if (site.payNumber) C.push(['#e2136e', '৳', 'বিকাশ / নগদ', site.payNumber, '']);
+  $('ctcCards').innerHTML = C.map(([c, i, t, v, href]) =>
+    (href ? `<a class="cc" href="${esc(href)}" target="_blank" rel="noopener">` : '<div class="cc">') +
+    `<i style="background:${c}">${i}</i><b>${t}</b><span>${esc(v)}</span>${href ? '<small>চাপ দিয়ে খুলুন</small>' : '<small>চেপে ধরে কপি করুন</small>'}` + (href ? '</a>' : '</div>')).join('');
+  $('ctcCards').hidden = !C.length;
+}
+
+/* ---------- যোগাযোগ: বার্তা পাঠানো ও উত্তর দেখা ---------- */
+$('cForm').onsubmit = async e => {
+  e.preventDefault();
+  const err = $('cErr'), text = $('cText').value.trim();
+  if (!user) { K.openS('loginSheet'); return; }
+  if (!me) { K.openS('userSheet'); return; }
+  if (text.length < 5) { err.textContent = 'একটু বিস্তারিত লিখুন'; return; }
+  err.textContent = ''; $('cSend').disabled = true;
+  try {
+    await addDoc(collection(db, 'messages'), { uid: user.uid, username: me.username, name: me.name, topic: $('cTopic').value, text, createdAt: serverTimestamp(), status: 'open', reply: null, repliedAt: null });
+    $('cText').value = ''; K.showModal ? K.toast('বার্তা পৌঁছে গেছে! উত্তর এখানেই দেখবেন') : 0;
+    K.bubble && K.bubble('বার্তা পাঠাইছেন, অ্যাডমিন ভাই চা শেষ কইরাই উত্তর দিবো!');
+  } catch (e2) { err.textContent = 'পাঠানো যায়নি: ' + (e2.code || e2.message); }
+  $('cSend').disabled = false;
+};
+const TOPIC = { problem: 'সমস্যা', points: 'পয়েন্ট/প্রিমিয়াম', idea: 'নতুন আইডিয়া', other: 'অন্যান্য' };
+const when = ts => { if (!ts) return 'এইমাত্র'; const d = ts.toDate(); return bn(d.getDate()) + '/' + bn(d.getMonth() + 1) + ' ' + bn(String(d.getHours()).padStart(2, '0')) + ':' + bn(String(d.getMinutes()).padStart(2, '0')); };
+function drawMyMsgs(list) {
+  $('myCount').textContent = list.length ? bn(list.length) + 'টি' : '';
+  $('myMsgs').innerHTML = list.length ? list.map(m => `<div class="mm"><div class="h"><span>${TOPIC[m.topic] || 'অন্যান্য'}</span><span>${when(m.createdAt)}</span></div><p>${esc(m.text)}</p>${m.reply ? `<div class="rp"><b>অ্যাডমিনের উত্তর:</b> ${esc(m.reply)}</div>` : m.status === 'closed' ? '<span class="wait">বন্ধ করা হয়েছে</span>' : '<span class="wait">উত্তরের অপেক্ষায়…</span>'}</div>`).join('')
+    : '<p class="empty">' + (user ? 'এখনো কোনো বার্তা পাঠাননি।' : 'লগইন করে বার্তা পাঠালে এখানে উত্তর দেখবেন।') + '</p>';
+  const answered = list.filter(m => m.reply).length;
+  let seen = 0; try { seen = +localStorage.getItem('kh-replies-seen') || 0; } catch (e) {}
+  $('replyDot').hidden = answered <= seen;
+  if (!$('v-contact').hidden) try { localStorage.setItem('kh-replies-seen', answered); $('replyDot').hidden = true; } catch (e) {}
+  if (answered > seen && seen >= 0 && list.length && $('v-contact').hidden) K.bubble && K.bubble('অ্যাডমিন আপনার বার্তার উত্তর দিছে! যোগাযোগ পাতায় দেখেন');
+}
+function listenMyMsgs() {
+  unsubs.push(onSnapshot(query(collection(db, 'messages'), where('uid', '==', user.uid)), s => {
+    drawMyMsgs(s.docs.map(d => d.data()).sort((a, b) => ((b.createdAt && b.createdAt.toMillis()) || Date.now()) - ((a.createdAt && a.createdAt.toMillis()) || Date.now())));
+  }, () => {}));
+}
+$('n-contact').addEventListener('click', () => { const n = document.querySelectorAll('#myMsgs .rp').length; try { localStorage.setItem('kh-replies-seen', n); } catch (e) {} $('replyDot').hidden = true; });

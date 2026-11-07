@@ -346,9 +346,19 @@ pos=[[-1,-1,9,22],[-1,-1,4,31]];render();setCoins(coins);ui();
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { firebaseConfig } from "/js/firebase-config.js";
-const auth = getAuth(initializeApp(firebaseConfig));
-onAuthStateChanged(auth, u => { document.getElementById('gate').hidden = !!u; });
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { firebaseConfig, ADMIN_EMAILS } from "/js/firebase-config.js";
+const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
+let user = null, gameSt = 'live', siteMaint = false;
+function draw() {
+  const g = document.getElementById('gate'), admin = user && ADMIN_EMAILS.includes(user.email);
+  const off = !admin && (gameSt === 'maint' || gameSt === 'hidden' || siteMaint);
+  g.hidden = !!user && !off;
+  if (off) { document.getElementById('gateT').textContent = 'লুডুতে মেরামত চলছে!'; g.querySelector('p').textContent = 'মিস্ত্রি ভাই কাজ করতেছে, একটু পরে আসেন।'; g.querySelector('a').textContent = 'হাবে ফিরে যান'; }
+}
+onAuthStateChanged(auth, u => { user = u; draw(); });
+onSnapshot(doc(db, 'config', 'games'), d => { gameSt = ((d.exists() && d.data().status) || {})['লুডু'] || 'live'; draw(); }, () => {});
+onSnapshot(doc(db, 'config', 'site'), d => { siteMaint = !!(d.exists() && d.data().maintenance); draw(); }, () => {});
 </script>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
 </body></html>

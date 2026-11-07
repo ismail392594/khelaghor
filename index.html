@@ -98,6 +98,8 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--cyan);outline-offse
 .tile .meta .pp{background:rgba(255,255,255,.92);color:var(--ink)}
 .tile.live .meta .st{background:#fff;color:var(--greenD)}
 .tile.soon{filter:saturate(.8)}
+.tile.maint{filter:grayscale(.55)}
+.tile.maint .meta .st{background:#fef3c7;color:#b45309}
 .grid .tile:last-child:nth-child(odd){grid-column:span 2;flex-direction:row;flex-wrap:wrap;align-items:center;column-gap:12px}
 .grid .tile:last-child:nth-child(odd) b{flex:1;min-width:0}
 .grid .tile:last-child:nth-child(odd) .ds,.grid .tile:last-child:nth-child(odd) .meta{flex-basis:100%}
@@ -127,7 +129,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--cyan);outline-offse
 
 /* bottom nav */
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:6;padding:8px max(14px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));background:linear-gradient(180deg,rgba(26,20,96,0),#1a1460 35%)}
-.nav div{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:#fff;border-radius:22px;padding:6px;box-shadow:0 -2px 0 rgba(0,0,0,.08),0 8px 20px rgba(0,0,0,.35)}
+.nav div{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:#fff;border-radius:22px;padding:6px;box-shadow:0 -2px 0 rgba(0,0,0,.08),0 8px 20px rgba(0,0,0,.35)}
 .nav button{border:0;background:none;border-radius:16px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:1px;color:#7a70b8;font-weight:700;font-size:.8rem;cursor:pointer}
 .nav button svg{width:24px;height:24px}
 .nav button[aria-current="true"]{background:linear-gradient(180deg,#5a67ff,#3b3fd8);color:#fff;box-shadow:0 3px 0 #2a2aa0}
@@ -207,6 +209,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 .ava.premium{box-shadow:0 0 0 3px #ffd23f,0 3px 0 #b8611a}
 .bgfx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
 .wrap{position:relative;z-index:1}
+.wrap>main.wrap{width:100%}
 .soundBar{position:fixed;z-index:7;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(96px + env(safe-area-inset-bottom,0px));display:flex;gap:6px;align-items:center}
 .soundBar button{display:flex;align-items:center;gap:6px;border:0;border-radius:999px;padding:8px 12px;color:#fff;font:700 .85rem var(--body);cursor:pointer;
   background:linear-gradient(180deg,#ff6fa5,#ff4f8b);box-shadow:0 4px 0 #b8245a,0 8px 18px rgba(0,0,0,.35)}
@@ -240,6 +243,34 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 .tile .logo{transition:transform .2s}
 .tile:hover .logo,.tile:focus-visible .logo{transform:rotate(-6deg) scale(1.08)}
 @keyframes tileIn{from{opacity:.4;transform:translateY(14px) scale(.96)}}
+.notice{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#ffe27a,#ffc727);color:#3a2200;border-radius:16px;padding:10px 12px;font-weight:700;box-shadow:0 4px 0 #c98a00}
+.notice svg{width:24px;height:24px;flex:none}
+.notice span{flex:1;min-width:0}
+.notice button{background:none;border:0;font-size:1.1rem;color:#3a2200;cursor:pointer;padding:4px 6px}
+.nav button{position:relative}
+.ndot{position:absolute;top:4px;right:calc(50% - 18px);width:10px;height:10px;border-radius:50%;background:var(--pink);box-shadow:0 0 0 2px #fff}
+.ctc{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.ctc .cc{background:#fff;color:var(--ink);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:4px;box-shadow:0 5px 0 rgba(0,0,0,.2);min-width:0;text-decoration:none}
+.ctc .cc i{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;color:#fff;font-style:normal;font-weight:700}
+.ctc .cc b{font-size:.95rem}
+.ctc .cc span{font-size:.82rem;color:#5b5290;word-break:break-all;user-select:all}
+.ctc .cc small{font-size:.72rem;color:#7a70b8}
+.cform{background:#fff;color:var(--ink);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 6px 0 rgba(0,0,0,.2)}
+.cform>b{font-family:var(--display);font-size:1.25rem}
+.cf{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:.9rem}
+.cf select,.cf textarea{border:2px solid #e3dcff;border-radius:12px;padding:10px;font-family:var(--body);font-size:1rem;color:var(--ink);background:#fff;resize:vertical}
+.cerr{margin:0;color:#d61f4f;font-weight:600;font-size:.86rem;min-height:1.2em}
+.mymsgs{display:flex;flex-direction:column;gap:10px}
+.mymsgs .empty{margin:0;color:var(--muted);text-align:center}
+.mm{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.mm .h{display:flex;justify-content:space-between;gap:8px;font-size:.78rem;color:var(--muted)}
+.mm p{margin:0;white-space:pre-wrap;word-break:break-word}
+.mm .rp{background:#fff;color:var(--ink);border-radius:12px 12px 12px 4px;padding:8px 10px;font-size:.92rem;white-space:pre-wrap}
+.mm .rp b{color:#5a1fa8}
+.mm .wait{font-size:.8rem;color:#ffd23f;font-weight:600}
+.maintAll{position:fixed;inset:0;z-index:30;display:grid;place-items:center;text-align:center;padding:24px;background:linear-gradient(180deg,#2f3cc9,#5a1fa8 60%,#1a1460)}
+.maintAll h2{font-family:var(--display);font-size:2rem;margin:8px 0}
+.maintAll p{margin:0;max-width:30ch;color:#e6e1ff}
 @media (max-width:360px){.grid{grid-template-columns:repeat(2,1fr)}.mini{width:84px;height:84px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -254,6 +285,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 
   <!-- HOME -->
   <main id="v-home" class="wrap" style="gap:16px">
+    <div class="notice" id="notice" hidden role="status"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4h3l6 5V5L6 10z" fill="currentColor"/><path d="M15 9a4 4 0 0 1 0 6M17.5 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span id="noticeTxt"></span><button id="noticeX" aria-label="ঘোষণা বন্ধ করুন">✕</button></div>
     <section class="hero">
       <div>
         <small>এখন জনপ্রিয়</small>
@@ -306,6 +338,22 @@ label.f input:focus{outline:none;border-color:#6d5cff}
     <div class="board" id="lb"></div>
   </main>
 
+  <!-- CONTACT -->
+  <main id="v-contact" class="wrap" style="gap:16px" hidden>
+    <div class="sec"><h2>যোগাযোগ</h2><span>আমরা উত্তর দিই!</span></div>
+    <section class="ctc" id="ctcCards"></section>
+    <form class="cform" id="cForm" novalidate>
+      <b>আমাদের বার্তা পাঠান</b>
+      <label class="cf">বিষয়
+        <select id="cTopic"><option value="problem">কোনো সমস্যা হচ্ছে</option><option value="points">পয়েন্ট / প্রিমিয়াম</option><option value="idea">নতুন গেমের আইডিয়া</option><option value="other">অন্যান্য</option></select></label>
+      <label class="cf">বার্তা<textarea id="cText" rows="4" maxlength="1000" placeholder="যা বলতে চান লিখুন… যেমন: লুডুতে আমার পয়েন্ট যোগ হয়নি"></textarea></label>
+      <p class="cerr" id="cErr"></p>
+      <button class="gbtn" type="submit" id="cSend">পাঠান</button>
+    </form>
+    <div class="sec"><h2>আমার বার্তা</h2><span id="myCount"></span></div>
+    <div class="mymsgs" id="myMsgs"><p class="empty">লগইন করে বার্তা পাঠালে এখানে উত্তর দেখবেন।</p></div>
+  </main>
+
   <!-- SHOP -->
   <main id="v-shop" class="wrap" style="gap:16px" hidden>
     <div class="sec"><h2>কয়েনের দোকান</h2><span>বিকাশ · নগদ · রকেট · কার্ড</span></div>
@@ -323,6 +371,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
   <button id="n-home" aria-current="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2 11h3v9h5v-6h4v6h5v-9h3z"/></svg>হোম</button>
   <button id="n-shop" aria-current="false"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#fff" stroke-width="1.6" opacity=".7"/></svg>দোকান</button>
   <button id="n-top" aria-current="false"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 20h4v-7H4zm6 0h4V5h-4zm6 0h4v-11h-4z"/></svg>সেরা</button>
+  <button id="n-contact" aria-current="false"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>যোগাযোগ<span class="ndot" id="replyDot" hidden></span></button>
 </div></nav>
 
 <!-- game mode sheet -->
@@ -343,6 +392,8 @@ label.f input:focus{outline:none;border-color:#6d5cff}
     <button class="link" data-close="modeSheet">বন্ধ করুন</button>
   </div>
 </div>
+
+<div class="maintAll" id="maintAll" hidden><div><div style="font-size:3rem">🛠️</div><h2>মেরামত চলছে!</h2><p>মিস্ত্রি ভাই কাজ করতেছে, একটু পরে আসেন। চা খেয়ে আসলেই ঠিক হয়ে যাবে!</p></div></div>
 
 <!-- invite room sheet -->
 <div class="sheet" id="roomSheet" hidden>
@@ -442,16 +493,23 @@ let filter='all', curGame=null;
 function drawGrid(){
   const g=$('grid');g.innerHTML='';
   const list=GAMES.map((x,i)=>[x[0],x[1],x[2]||null,i]).filter(x=>filter==='all'||x[1]===filter);
+  const GS=(window.KH&&window.KH.gameStatus)||{};
+  let shown=0;
   list.forEach(([name,cat,url,i])=>{
+    let st=GS[name]||(url?'live':'soon');
+    if(st==='hidden')return;
+    if(!url&&(st==='live'||st==='maint'))st='soon';
+    shown++;
     const [a,b]=PAL[i%PAL.length];
     const el=document.createElement('button');
-    el.className='tile '+(url?'live':'soon');el.style.setProperty('--a',a);el.style.setProperty('--b',b);
-    el.onclick=()=>window.KH.tapGame?window.KH.tapGame(name,url):(url?openModes(name,url):toast(SOON[i%SOON.length]));
+    el.className='tile '+(st==='live'?'live':st==='maint'?'maint':'soon');el.style.setProperty('--a',a);el.style.setProperty('--b',b);
+    el.onclick=()=>window.KH.tapGame?window.KH.tapGame(name,st==='live'?url:null,st):(st==='live'?openModes(name,url):toast(SOON[i%SOON.length]));
     const inf=(window.GAME_INFO||{})[name]||['',''];
-    el.innerHTML=`<span class="no">#${bn(i+1)}</span><span class="logo" aria-hidden="true"><svg viewBox="0 0 48 48">${inf[1]}</svg></span><b>${name}</b><span class="ds">${inf[0]}</span><span class="meta">${PL[name]?`<span class="pp">${PL[name]} জন</span>`:'<span class="pp">১ জন</span>'}<span class="st">${url?'খেলুন':'শিগগিরই'}</span></span>`;
+    const lbl=st==='live'?'খেলুন':st==='maint'?'মেরামত চলছে':'শিগগিরই';
+    el.innerHTML=`<span class="no">#${bn(i+1)}</span><span class="logo" aria-hidden="true"><svg viewBox="0 0 48 48">${inf[1]}</svg></span><b>${name}</b><span class="ds">${inf[0]}</span><span class="meta">${PL[name]?`<span class="pp">${PL[name]} জন</span>`:'<span class="pp">১ জন</span>'}<span class="st">${lbl}</span></span>`;
     g.appendChild(el);
   });
-  $('count').textContent=bn(list.length)+'টি গেম';
+  $('count').textContent=bn(shown)+'টি গেম';
 }
 
 /* sheets */
@@ -571,11 +629,11 @@ function drawDaily(){const got=ls.get('kh-daily','')===today;$('dailyBtn').disab
 $('dailyBtn').onclick=()=>{ls.set('kh-daily',today);setCoins(coins+100);drawDaily();showModal(100,'আজকেও আসছেন? এই নেন চা-নাস্তার টাকা!')};
 
 function nav(v){
-  $('v-home').hidden=v==='shop';$('v-shop').hidden=v!=='shop';
-  ['home','shop','top'].forEach(k=>$('n-'+k).setAttribute('aria-current',k===v));
+  $('v-home').hidden=v==='shop'||v==='contact';$('v-shop').hidden=v!=='shop';$('v-contact').hidden=v!=='contact';
+  ['home','shop','top','contact'].forEach(k=>$('n-'+k).setAttribute('aria-current',k===v));
   if(v==='top'){$('v-home').hidden=false;setTimeout(()=>$('lb').scrollIntoView({behavior:'smooth',block:'center'}),30)}else window.scrollTo({top:0,behavior:'smooth'});
 }
-$('n-home').onclick=()=>nav('home');$('n-shop').onclick=()=>nav('shop');$('n-top').onclick=()=>nav('top');$('plus').onclick=()=>nav('shop');
+$('n-home').onclick=()=>nav('home');$('n-shop').onclick=()=>nav('shop');$('n-top').onclick=()=>nav('top');$('n-contact').onclick=()=>nav('contact');$('plus').onclick=()=>nav('shop');
 
 setCoins(coins);drawGrid();drawDaily();nextDlg();setProfile(profile);
 </script>
