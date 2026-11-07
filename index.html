@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>খেলাঘর গেমিং হাব</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atma:wght@500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: mobile game lobby — sticky profile/coin bar, hero "featured" card, category chips, glossy game tile grid, shop view, fixed bottom nav. Deliberate single bright-on-deep look (like a game app). */
+:root{
+  --sky1:#2f3cc9; --sky2:#5a1fa8; --deep:#1a1460; --card:#ffffff; --ink:#1d1640;
+  --gold:#ffc727; --goldD:#c98a00; --green:#22c55e; --greenD:#15803d; --pink:#ff4f8b; --cyan:#22d3ee;
+  --muted:#c9c3f5;
+  --display:'Atma','Hind Siliguri',system-ui,sans-serif;
+  --body:'Hind Siliguri','Noto Sans Bengali',system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--deep);color:#fff}
+body{font-family:var(--body);font-size:16px;line-height:1.5;min-height:100%;
+  background:radial-gradient(900px 420px at 50% -80px,#4b5cff 0,transparent 70%),linear-gradient(180deg,var(--sky1) 0,var(--sky2) 55%,var(--deep) 100%) fixed;
+  padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px));padding-block:0 110px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:#2a33b8}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+button,a{font-family:var(--body)}
+button:focus-visible,a:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;gap:10px;padding:10px 0;background:linear-gradient(180deg,#2c36bf 70%,rgba(44,54,191,0));margin:0 -2px}
+.ava{position:relative;width:46px;height:46px;border-radius:14px;background:linear-gradient(160deg,#ffd76a,#ff9a3c);display:grid;place-items:center;font-family:var(--display);font-size:1.4rem;color:var(--ink);box-shadow:0 3px 0 #b8611a,inset 0 2px 0 rgba(255,255,255,.6);flex:none}
+.lvl{position:absolute;bottom:-6px;right:-6px;background:var(--pink);color:#fff;font-size:.68rem;font-weight:700;border-radius:999px;padding:0 6px;border:2px solid #2c36bf}
+.who{min-width:0;flex:1}
+.who b{display:block;font-family:var(--display);font-size:1.05rem;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xp{height:7px;background:rgba(0,0,0,.3);border-radius:9px;margin-top:4px;overflow:hidden;max-width:140px}
+.xp i{display:block;height:100%;width:62%;background:linear-gradient(90deg,var(--cyan),#7dd3fc);border-radius:9px}
+.wallet{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.35);border-radius:999px;padding:3px 3px 3px 6px;box-shadow:inset 0 2px 4px rgba(0,0,0,.3)}
+.coin{display:inline-block;width:24px;height:24px;border-radius:50%;flex:none;background:radial-gradient(circle at 35% 30%,#fff6c9 0,#ffd23f 38%,#e39400 82%);box-shadow:inset 0 0 0 2px #b77400,0 1px 0 rgba(0,0,0,.3)}
+.wallet b{font-variant-numeric:tabular-nums;font-weight:700;min-width:3ch}
+.plus{width:28px;height:28px;border-radius:50%;border:0;background:linear-gradient(180deg,#4ade80,var(--green));color:#fff;font-size:1.2rem;font-weight:700;cursor:pointer;box-shadow:0 2px 0 var(--greenD);line-height:1}
+
+/* glossy button */
+.gbtn{border:0;border-radius:16px;padding:12px 20px;font-family:var(--display);font-size:1.15rem;font-weight:700;color:#fff;cursor:pointer;
+  background:linear-gradient(180deg,#5ee28a 0,var(--green) 55%,#16a34a 100%);box-shadow:0 5px 0 var(--greenD),0 8px 14px rgba(0,0,0,.25),inset 0 2px 0 rgba(255,255,255,.45);text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-shadow:0 2px 0 rgba(0,0,0,.2)}
+.gbtn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--greenD)}
+.gbtn.gold{background:linear-gradient(180deg,#ffe27a 0,var(--gold) 55%,#f2a900);box-shadow:0 5px 0 var(--goldD),0 8px 14px rgba(0,0,0,.25),inset 0 2px 0 rgba(255,255,255,.6);color:#4a2a00;text-shadow:none}
+.gbtn:disabled{filter:grayscale(.8);opacity:.6;cursor:default}
+
+/* hero */
+.hero{position:relative;border-radius:24px;padding:18px;overflow:hidden;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
+  background:linear-gradient(135deg,#ff5f6d,#ffb347);box-shadow:0 10px 24px rgba(0,0,0,.3),inset 0 2px 0 rgba(255,255,255,.4)}
+.hero::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,.07) 0 14px,transparent 14px 28px);pointer-events:none}
+.hero>*{position:relative;z-index:1}
+.hero small{font-weight:700;letter-spacing:.04em;background:rgba(0,0,0,.2);border-radius:999px;padding:2px 10px;font-size:.75rem}
+.hero h1{font-family:var(--display);font-size:2.1rem;line-height:1.05;margin:8px 0 4px;text-shadow:0 3px 0 rgba(0,0,0,.18);text-wrap:balance}
+.hero p{margin:0 0 12px;font-size:.92rem;max-width:30ch}
+.mini{width:112px;height:112px;border-radius:18px;transform:rotate(8deg);box-shadow:0 8px 0 rgba(0,0,0,.18);background:#fff;padding:6px}
+.mini svg{width:100%;height:100%;display:block}
+
+/* daily */
+.daily{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:12px}
+.gift{width:48px;height:48px;flex:none}
+.daily div{flex:1;min-width:0}
+.daily b{font-family:var(--display);font-size:1.1rem;display:block;line-height:1.2}
+.daily span{font-size:.85rem;color:var(--muted)}
+.daily .gbtn{padding:8px 14px;font-size:1rem}
+
+/* sections */
+.sec{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.sec h2{font-family:var(--display);font-size:1.45rem;margin:0}
+.sec span{color:var(--muted);font-size:.85rem;font-variant-numeric:tabular-nums}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.chip{flex:none;border:0;border-radius:999px;padding:7px 14px;font-weight:600;font-size:.92rem;cursor:pointer;background:rgba(255,255,255,.14);color:#fff}
+.chip[aria-pressed="true"]{background:#fff;color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.2)}
+
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.tile{position:relative;border-radius:20px;aspect-ratio:3/3.6;padding:10px;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;overflow:hidden;color:#fff;text-decoration:none;border:0;text-align:left;cursor:pointer;
+  background:linear-gradient(160deg,var(--a),var(--b));box-shadow:0 5px 0 rgba(0,0,0,.25),inset 0 2px 0 rgba(255,255,255,.35)}
+.tile:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.tile .big{position:absolute;top:6px;right:8px;font-family:var(--display);font-size:3.2rem;line-height:1;opacity:.28}
+.tile .no{position:absolute;top:8px;left:9px;font-size:.7rem;font-weight:700;background:rgba(0,0,0,.25);border-radius:999px;padding:0 7px;font-variant-numeric:tabular-nums}
+.tile b{font-family:var(--display);font-size:1rem;line-height:1.15;text-shadow:0 2px 0 rgba(0,0,0,.2)}
+.tile em{font-style:normal;font-size:.7rem;font-weight:700;align-self:flex-start;border-radius:999px;padding:1px 8px;background:rgba(0,0,0,.28)}
+.tile.live em{background:#fff;color:var(--greenD)}
+.tile.soon{filter:saturate(.75)}
+.tile.soon::before{content:"";position:absolute;inset:0;background:rgba(20,14,70,.18)}
+
+/* leaderboard */
+.board{background:#fff;color:var(--ink);border-radius:20px;padding:12px;display:flex;flex-direction:column;gap:6px;box-shadow:0 6px 0 rgba(0,0,0,.2)}
+.row{display:grid;grid-template-columns:32px 36px 1fr auto;align-items:center;gap:10px;padding:6px 4px;border-bottom:1px solid #ece8ff}
+.row:last-child{border:0}
+.rk{font-family:var(--display);font-size:1.2rem;text-align:center;color:#7a70b8}
+.row:nth-child(2) .rk{color:#e3a400}.row:nth-child(3) .rk{color:#94a3b8}.row:nth-child(4) .rk{color:#c2763a}
+.ra{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-weight:700;color:#fff}
+.row b{font-size:.95rem;display:block;line-height:1.2}
+.row small{color:#7a70b8;font-size:.75rem}
+.row .pts{display:flex;align-items:center;gap:4px;font-weight:700;font-variant-numeric:tabular-nums}
+.row .pts .coin{width:18px;height:18px}
+.sample{font-size:.75rem;color:#7a70b8;text-align:center;margin:2px 0 0}
+
+/* shop */
+.packs{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.pack{position:relative;background:#fff;color:var(--ink);border-radius:20px;padding:16px 12px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 5px 0 rgba(0,0,0,.2)}
+.stack{display:flex}.stack .coin{width:30px;height:30px;margin-left:-10px}.stack .coin:first-child{margin-left:0}
+.pack b{font-family:var(--display);font-size:1.5rem;font-variant-numeric:tabular-nums;line-height:1}
+.pack .tagb{position:absolute;top:-8px;right:-4px;background:var(--pink);color:#fff;font-size:.72rem;font-weight:700;border-radius:999px;padding:1px 8px;box-shadow:0 2px 0 #b8245a}
+.pack .gbtn{width:100%;padding:8px;font-size:1.05rem}
+.note{background:rgba(0,0,0,.25);border-radius:14px;padding:10px 12px;font-size:.85rem;margin:0;color:var(--muted)}
+.note b{color:#fff}
+
+/* bottom nav */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:6;padding:8px max(14px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));background:linear-gradient(180deg,rgba(26,20,96,0),#1a1460 35%)}
+.nav div{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:#fff;border-radius:22px;padding:6px;box-shadow:0 -2px 0 rgba(0,0,0,.08),0 8px 20px rgba(0,0,0,.35)}
+.nav button{border:0;background:none;border-radius:16px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:1px;color:#7a70b8;font-weight:700;font-size:.8rem;cursor:pointer}
+.nav button svg{width:24px;height:24px}
+.nav button[aria-current="true"]{background:linear-gradient(180deg,#5a67ff,#3b3fd8);color:#fff;box-shadow:0 3px 0 #2a2aa0}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:20;background:rgba(10,6,40,.7);display:grid;place-items:center;padding:20px}
+.mbox{background:linear-gradient(180deg,#fff,#efeaff);color:var(--ink);border-radius:26px;padding:22px 18px 18px;max-width:340px;width:100%;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;box-shadow:0 10px 0 rgba(0,0,0,.25);animation:pop .35s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+.mbox h3{font-family:var(--display);font-size:1.7rem;margin:0;color:#5a1fa8}
+.mbox p{margin:0}
+.mbox .amt{display:flex;align-items:center;gap:8px;font-family:var(--display);font-size:2.4rem}
+.mbox .amt .coin{width:40px;height:40px}
+.toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#fff;color:var(--ink);font-weight:700;border-radius:999px;padding:8px 16px;box-shadow:0 6px 16px rgba(0,0,0,.3);z-index:21;max-width:calc(100% - 32px);text-align:center}
+/* players badge */
+.tile .pp{position:absolute;top:30px;left:9px;font-size:.66rem;font-weight:700;background:rgba(255,255,255,.9);color:var(--ink);border-radius:999px;padding:0 7px}
+/* dialogue card */
+.dlg{background:#fff;color:var(--ink);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 6px 0 rgba(0,0,0,.2);position:relative}
+.dlg q{font-family:var(--display);font-size:1.35rem;line-height:1.35;quotes:"“" "”";display:block;text-wrap:balance}
+.dlg small{color:#7a70b8;font-weight:600}
+.dlg .acts{display:flex;gap:8px;flex-wrap:wrap}
+.dlg .gbtn{padding:8px 14px;font-size:1rem}
+.adult{display:flex;align-items:center;gap:8px;font-size:.88rem;font-weight:600;color:#5a1fa8;cursor:pointer}
+.adult input{width:20px;height:20px;accent-color:var(--pink)}
+.badge18{position:absolute;top:12px;right:12px;background:var(--pink);color:#fff;font-weight:700;font-size:.75rem;border-radius:8px;padding:1px 7px}
+/* sheets / login */
+.sheet{position:fixed;inset:0;z-index:15;background:rgba(10,6,40,.7);display:flex;align-items:flex-end;justify-content:center}
+.sbox{background:linear-gradient(180deg,#fff,#f1edff);color:var(--ink);width:100%;max-width:560px;border-radius:26px 26px 0 0;padding:18px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:10px;animation:up .3s ease-out;max-height:92vh;overflow:auto}
+@keyframes up{from{transform:translateY(40%);opacity:0}}
+.sbox h3{font-family:var(--display);font-size:1.6rem;margin:0;color:#3b2a9a}
+.sbox p{margin:0;color:#5b5290;font-size:.92rem}
+.mode{display:flex;align-items:center;gap:12px;border:2px solid #e3dcff;background:#fff;border-radius:16px;padding:12px;text-align:left;cursor:pointer;color:var(--ink);text-decoration:none}
+.mode:hover{border-color:#8b7bff}
+.mode i{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-style:normal;font-weight:700;color:#fff;flex:none;font-family:var(--display);font-size:1.2rem}
+.mode b{display:block}.mode small{color:#7a70b8}
+.mode .ptag{margin-left:auto;font-size:.72rem;font-weight:700;background:#efeaff;color:#5a1fa8;border-radius:999px;padding:1px 8px;flex:none}
+.room{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#1d1640;color:#fff;border-radius:16px;padding:12px 14px}
+.room b{font-family:var(--display);font-size:1.8rem;letter-spacing:.12em;font-variant-numeric:tabular-nums}
+.seats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.seat{border:2px dashed #cfc6ff;border-radius:14px;padding:8px 4px;text-align:center;font-size:.78rem;font-weight:600;color:#7a70b8;display:flex;flex-direction:column;align-items:center;gap:4px}
+.seat span{width:34px;height:34px;border-radius:50%;background:#efeaff;display:grid;place-items:center;font-weight:700}
+.seat.on{border-style:solid;border-color:var(--c);color:var(--ink)}.seat.on span{background:var(--c);color:#fff}
+.inv{width:100%;border:2px solid #e3dcff;border-radius:12px;padding:10px;font-family:var(--body);font-size:.88rem;color:var(--ink);background:#fff;resize:none}
+label.f{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:.9rem}
+label.f input{border:2px solid #e3dcff;border-radius:12px;padding:11px 12px;font-family:var(--body);font-size:1rem;color:var(--ink);background:#fff}
+label.f input:focus{outline:none;border-color:#6d5cff}
+.or{display:flex;align-items:center;gap:8px;color:#9a91c9;font-size:.82rem}.or::before,.or::after{content:"";flex:1;height:1px;background:#ddd6ff}
+.soc{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sbtn{border:2px solid #e3dcff;background:#fff;border-radius:14px;padding:10px;font-weight:700;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.sbtn i{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;color:#fff;font-style:normal;font-size:.8rem;font-weight:700}
+.link{background:none;border:0;color:#5a1fa8;font-weight:700;cursor:pointer;text-decoration:underline;padding:4px}
+.err{color:#d61f4f;font-weight:600;font-size:.86rem;margin:0;min-height:1.2em}
+.demo{font-size:.78rem;color:#7a70b8;text-align:center}
+@media (max-width:360px){.grid{grid-template-columns:repeat(2,1fr)}.mini{width:84px;height:84px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head><body>
+
+<div class="wrap">
+  <div class="top">
+    <button class="ava" id="ava" aria-label="প্রোফাইল ও লগইন" style="border:0;cursor:pointer"><span id="avaL">খ</span><span class="lvl">লেভেল ৭</span></button>
+    <div class="who"><b id="pName">খেলোয়াড়</b><div class="xp" aria-label="লেভেল অগ্রগতি"><i></i></div></div>
+    <div class="wallet"><span class="coin"></span><b id="bal">০</b><button class="plus" id="plus" aria-label="কয়েন কিনুন">+</button></div>
+  </div>
+
+  <!-- HOME -->
+  <main id="v-home" class="wrap" style="gap:16px">
+    <section class="hero">
+      <div>
+        <small>এখন জনপ্রিয়</small>
+        <h1>লুডু খেলুন</h1>
+        <p>কম্পিউটারের সাথে ক্লাসিক লুডু। জিতলেই ২০০ কয়েন!</p>
+        <button class="gbtn" id="heroPlay">খেলুন ▶</button>
+      </div>
+      <div class="mini" aria-hidden="true">
+        <svg viewBox="0 0 15 15"><rect width="15" height="15" fill="#fbf8f2"/><rect width="6" height="6" fill="#e5484d"/><rect x="9" width="6" height="6" fill="#2fa36b"/><rect x="9" y="9" width="6" height="6" fill="#f2b100"/><rect y="9" width="6" height="6" fill="#3b78f0"/><rect x=".9" y=".9" width="4.2" height="4.2" rx=".5" fill="#fff"/><rect x="9.9" y=".9" width="4.2" height="4.2" rx=".5" fill="#fff"/><rect x="9.9" y="9.9" width="4.2" height="4.2" rx=".5" fill="#fff"/><rect x=".9" y="9.9" width="4.2" height="4.2" rx=".5" fill="#fff"/><circle cx="2.2" cy="2.2" r=".7" fill="#e5484d"/><circle cx="3.8" cy="3.8" r=".7" fill="#e5484d"/><circle cx="11.2" cy="2.2" r=".7" fill="#2fa36b"/><circle cx="12.8" cy="12.8" r=".7" fill="#f2b100"/><circle cx="2.2" cy="12.8" r=".7" fill="#3b78f0"/><rect x="1" y="7" width="5" height="1" fill="#e5484d"/><rect x="7" y="1" width="1" height="5" fill="#2fa36b"/><rect x="9" y="7" width="5" height="1" fill="#f2b100"/><rect x="7" y="9" width="1" height="5" fill="#3b78f0"/><polygon points="6,6 7.5,7.5 6,9" fill="#e5484d"/><polygon points="6,6 9,6 7.5,7.5" fill="#2fa36b"/><polygon points="9,6 9,9 7.5,7.5" fill="#f2b100"/><polygon points="6,9 9,9 7.5,7.5" fill="#3b78f0"/></svg>
+      </div>
+    </section>
+
+    <section class="daily">
+      <svg class="gift" viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="18" width="36" height="26" rx="5" fill="#ff4f8b"/><rect x="4" y="12" width="40" height="10" rx="4" fill="#ff7aa8"/><rect x="21" y="12" width="6" height="32" fill="#ffc727"/><path d="M24 12c-4-8-14-8-12-2 1 3 7 3 12 2zm0 0c4-8 14-8 12-2-1 3-7 3-12 2z" fill="#ffc727"/></svg>
+      <div><b>দৈনিক বোনাস</b><span id="dailyTxt">প্রতিদিন ফ্রি কয়েন নিন</span></div>
+      <button class="gbtn gold" id="dailyBtn">নিন</button>
+    </section>
+
+    <div class="sec"><h2>আজকের ভাইরাল ডায়লগ</h2><span id="dCount"></span></div>
+    <section class="dlg">
+      <span class="badge18" id="b18" hidden>১৮+</span>
+      <q id="dText"></q>
+      <small id="dTag"></small>
+      <div class="acts">
+        <button class="gbtn" id="dNext">আরেকটা</button>
+        <button class="gbtn gold" id="dCopy">কপি করে শেয়ার</button>
+      </div>
+      <label class="adult"><input type="checkbox" id="adultChk"> বড়দের মজা (১৮+) চালু করুন</label>
+    </section>
+
+    <div class="sec"><h2>সব গেম</h2><span id="count"></span></div>
+    <div class="chips" id="chips">
+      <button class="chip" data-f="all" aria-pressed="true">সব</button>
+      <button class="chip" data-f="launch" aria-pressed="false">নতুন লঞ্চ</button>
+      <button class="chip" data-f="trad" aria-pressed="false">ঐতিহ্যবাহী</button>
+      <button class="chip" data-f="viral" aria-pressed="false">ভাইরাল</button>
+    </div>
+    <div class="grid" id="grid"></div>
+
+    <div class="sec"><h2>সাপ্তাহিক সেরা</h2><span>এই সপ্তাহ</span></div>
+    <div class="board" id="lb"></div>
+  </main>
+
+  <!-- SHOP -->
+  <main id="v-shop" class="wrap" style="gap:16px" hidden>
+    <div class="sec"><h2>কয়েনের দোকান</h2><span>বিকাশ · নগদ · রকেট · কার্ড</span></div>
+    <div class="packs" id="packs"></div>
+    <p class="note"><b>ডেমো:</b> এখন কোনো আসল টাকা কাটা হবে না, শুধু কয়েন যোগ হবে। আসল সাইটে এখানে পেমেন্ট গেটওয়ে বসবে।<br><b>নিয়ম:</b> কয়েন শুধু খেলার জন্য, টাকায় ফেরত বা উইথড্র করা যায় না।</p>
+  </main>
+</div>
+
+<nav class="nav" aria-label="মূল মেনু"><div>
+  <button id="n-home" aria-current="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2 11h3v9h5v-6h4v6h5v-9h3z"/></svg>হোম</button>
+  <button id="n-shop" aria-current="false"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#fff" stroke-width="1.6" opacity=".7"/></svg>দোকান</button>
+  <button id="n-top" aria-current="false"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 20h4v-7H4zm6 0h4V5h-4zm6 0h4v-11h-4z"/></svg>সেরা</button>
+</div></nav>
+
+<!-- game mode sheet -->
+<div class="sheet" id="modeSheet" hidden>
+  <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="modeT">
+    <h3 id="modeT">লুডু</h3>
+    <p id="modeP">কীভাবে খেলবেন বেছে নিন</p>
+    <a class="mode" id="mCpu" ><i style="background:#3b78f0">ক</i><div><b>কম্পিউটারের সাথে</b><small>একা খেলুন, যখন ইচ্ছা</small></div><span class="ptag">১ জন</span></a>
+    <button class="mode" id="mLocal"><i style="background:#2fa36b">এ</i><div><b>এক ফোনে কয়েকজন</b><small>পাশে বসে পালা করে খেলুন</small></div><span class="ptag" id="mLocalTag">২-৪ জন</span></button>
+    <button class="mode" id="mOnline"><i style="background:#ff4f8b">অ</i><div><b>অনলাইনে র‍্যান্ডম খেলোয়াড়</b><small>সারা দেশের কারো সাথে ম্যাচ</small></div><span class="ptag" id="mOnTag">২-৪ জন</span></button>
+    <button class="mode" id="mFriend"><i style="background:#f2b100">ব</i><div><b>বন্ধুকে ইনভাইট</b><small>রুম বানিয়ে লিংক পাঠান</small></div><span class="ptag">প্রাইভেট রুম</span></button>
+    <button class="link" data-close="modeSheet">বন্ধ করুন</button>
+  </div>
+</div>
+
+<!-- invite room sheet -->
+<div class="sheet" id="roomSheet" hidden>
+  <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="roomT">
+    <h3 id="roomT">প্রাইভেট রুম</h3>
+    <p>এই কোড বা লিংক বন্ধুদের পাঠান। সবাই ঢুকলে খেলা শুরু।</p>
+    <div class="room"><div><small style="opacity:.7">রুম কোড</small><br><b id="roomCode">----</b></div><button class="gbtn gold" id="roomCopy" style="padding:8px 14px;font-size:1rem">কপি</button></div>
+    <textarea class="inv" id="invTxt" rows="3" readonly aria-label="ইনভাইট মেসেজ"></textarea>
+    <div class="seats" id="seats"></div>
+    <button class="gbtn" id="roomStart" disabled>সবাই আসলে শুরু হবে</button>
+    <p class="demo">ডেমো: আসল সাইটে বন্ধু লিংকে চাপলেই এই রুমে ঢুকে যাবে। এখানে বন্ধু আসা দেখানো হচ্ছে নমুনা হিসেবে।</p>
+    <button class="link" data-close="roomSheet">বন্ধ করুন</button>
+  </div>
+</div>
+
+<!-- login -->
+<div class="sheet" id="loginSheet" hidden>
+  <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="loginT">
+    <h3 id="loginT">খেলাঘরে স্বাগতম!</h3>
+    <p>লগইন করলে কয়েন, লেভেল আর বন্ধু তালিকা সেভ থাকবে।</p>
+    <form id="loginForm" novalidate style="display:flex;flex-direction:column;gap:10px">
+      <div id="step1" style="display:flex;flex-direction:column;gap:10px">
+        <label class="f">আপনার নাম<input id="lgName" autocomplete="nickname" maxlength="20" placeholder="যেমন: রাশেদ"></label>
+        <label class="f">মোবাইল নম্বর<input id="lgPhone" inputmode="numeric" autocomplete="tel" maxlength="11" placeholder="01XXXXXXXXX"></label>
+      </div>
+      <div id="step2" hidden style="display:flex;flex-direction:column;gap:10px">
+        <label class="f">OTP কোড<input id="lgOtp" inputmode="numeric" maxlength="4" placeholder="৪ সংখ্যার কোড"></label>
+        <p class="demo" style="text-align:left">ডেমো: আসল সাইটে কোড SMS-এ যাবে। এখন কোড হলো ১২৩৪</p>
+      </div>
+      <p class="err" id="lgErr"></p>
+      <button class="gbtn" type="submit" id="lgBtn">OTP পাঠান</button>
+    </form>
+    <div class="or">অথবা</div>
+    <div class="soc">
+      <button class="sbtn" data-soc="Google"><i style="background:#ea4335">G</i>Google</button>
+      <button class="sbtn" data-soc="Facebook"><i style="background:#1877f2">f</i>Facebook</button>
+    </div>
+    <button class="link" id="guest">গেস্ট হিসেবে খেলুন</button>
+  </div>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="mbox" role="dialog" aria-modal="true" aria-labelledby="mt">
+    <h3 id="mt">অভিনন্দন!</h3>
+    <div class="amt"><span class="coin"></span><span id="mAmt">১০০</span></div>
+    <p id="mTxt">আজকেও আসছেন? এই নেন চা-নাস্তার টাকা!</p>
+    <button class="gbtn" id="mOk">ধন্যবাদ</button>
+  </div>
+</div>
+
+<script>
+const bn=n=>String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
+const $=id=>document.getElementById(id);
+const ls={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let coins=ls.get('kh-coins',500);
+function setCoins(v){coins=v;ls.set('kh-coins',v);$('bal').textContent=bn(v)}
+
+const LUDO='games/ludo/';
+const GAMES=[
+ ['লুডু','launch',LUDO],['মশা মারো','launch'],['ঢাকা জ্যাম রানার','launch'],['বাজার দর চ্যালেঞ্জ','launch'],['আর্জেন্টিনা বনাম ব্রাজিল','launch'],
+ ['ক্যারম','trad'],['ষোলোগুটি','trad'],['বাঘবন্দি','trad'],['ঘুড়ি কাটাকাটি','trad'],['হাডুডু','trad'],['কলব্রিজ','trad'],['টুয়েন্টি নাইন','trad'],['দাবা','trad'],['গোল্লাছুট','trad'],['দাড়িয়াবান্ধা','trad'],['কানামাছি','trad'],['ডাংগুলি','trad'],['লাটিম','trad'],['মার্বেল','trad'],['এক্কা-দোক্কা','trad'],['রুমাল চুরি','trad'],['নৌকা বাইচ','trad'],['বউচি','trad'],
+ ['লোকাল বাস হেলপার','viral'],['লোডশেডিং সারভাইভাল','viral'],['রিকশা ভাড়া দরদাম','viral'],['ঈদের বাস টিকিট','viral'],['মেট্রোরেল রাশ','viral'],['ফুচকা মাস্টার','viral'],['বিয়েবাড়ির বিরিয়ানি','viral'],['কোরবানির হাট','viral'],['জলাবদ্ধতা রাইড','viral'],['শেষ বলে ছক্কা','viral'],['পরীক্ষার আগের রাত','viral'],['অটোরিকশা উল্টো পথে','viral'],['চিৎকার করো না','viral'],['গ্যাস সিলিন্ডার মিশন','viral'],['ফেসবুক কমেন্ট যোদ্ধা','viral'],['ডেলিভারি রাইডার','viral'],['বাড়িওয়ালা বনাম ভাড়াটিয়া','viral'],['শীতের পিঠা মেলা','viral'],['ইন্টারভিউ সারভাইভাল','viral'],['পটকা পাহারা','viral']
+];
+const PAL=[['#ff6a5c','#e0335a'],['#ffb03a','#f27a1a'],['#33c27a','#13915a'],['#38bdf8','#2563eb'],['#a78bfa','#7c3aed'],['#f472b6','#db2777'],['#2dd4bf','#0f9488'],['#facc15','#e08a00']];
+const SOON=['শিগগিরই আসছে! ততক্ষণ লুডু খেলেন, মাথা ঠান্ডা থাকবে।','এই গেম এখনো রান্না হইতেছে, একটু ধৈর্য ধরেন!','ডেভেলপার চা খেতে গেছে, ফিরেই বানাবে!'];
+/* how many can play together */
+const PL={'লুডু':'২-৪','আর্জেন্টিনা বনাম ব্রাজিল':'২','ক্যারম':'২-৪','ষোলোগুটি':'২','বাঘবন্দি':'২','ঘুড়ি কাটাকাটি':'২-৪','হাডুডু':'২','কলব্রিজ':'৪','টুয়েন্টি নাইন':'৪','দাবা':'২','মার্বেল':'২-৪','লাটিম':'২-৪','নৌকা বাইচ':'২-৪','কানামাছি':'২-৪','শেষ বলে ছক্কা':'২','রিকশা ভাড়া দরদাম':'২','বাড়িওয়ালা বনাম ভাড়াটিয়া':'২','ফুচকা মাস্টার':'২-৪','মশা মারো':'১-৪','ঢাকা জ্যাম রানার':'১-৪'};
+let filter='all', curGame=null;
+function drawGrid(){
+  const g=$('grid');g.innerHTML='';
+  const list=GAMES.map((x,i)=>[...x,i]).filter(x=>filter==='all'||x[1]===filter);
+  list.forEach(([name,cat,url,i])=>{
+    const [a,b]=PAL[i%PAL.length];
+    const el=document.createElement('button');
+    el.className='tile '+(url?'live':'soon');el.style.setProperty('--a',a);el.style.setProperty('--b',b);
+    el.onclick=()=>url?openModes(name,url):toast(SOON[i%SOON.length]);
+    el.innerHTML=`<span class="no">#${bn(i+1)}</span>${PL[name]?`<span class="pp">${PL[name]} জন</span>`:''}<span class="big" aria-hidden="true">${name[0]}</span><b>${name}</b><em>${url?'খেলুন':'শিগগিরই'}</em>`;
+    g.appendChild(el);
+  });
+  $('count').textContent=bn(list.length)+'টি গেম';
+}
+
+/* sheets */
+const openS=id=>{$(id).hidden=false};const closeS=id=>{$(id).hidden=true};
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>closeS(b.dataset.close));
+document.querySelectorAll('.sheet').forEach(s=>s.addEventListener('click',e=>{if(e.target===s&&s.id!=='loginSheet')s.hidden=true}));
+function openModes(name,url){
+  curGame=name;$('modeT').textContent=name;$('mCpu').href=url;
+  $('mLocalTag').textContent=$('mOnTag').textContent=(PL[name]||'২')+' জন';openS('modeSheet');
+}
+$('mCpu').addEventListener('click',()=>closeS('modeSheet'));
+$('mLocal').onclick=()=>toast('এক ফোনে কয়েকজন খেলার মোড শিগগিরই আসছে');
+$('mOnline').onclick=()=>toast('অনলাইন ম্যাচ চালু হবে সার্ভার বসানোর পর');
+$('mFriend').onclick=()=>{closeS('modeSheet');makeRoom()};
+let joinT=[];
+function makeRoom(){
+  joinT.forEach(clearTimeout);joinT=[];
+  const code=String(1000+Math.floor(Math.random()*9000));
+  $('roomT').textContent=curGame+' · প্রাইভেট রুম';$('roomCode').textContent=bn(code);
+  const base=location.href.split('#')[0];
+  $('invTxt').value=`চলো ${curGame} খেলি! খেলাঘরে আমার রুমে আসো।\nরুম কোড: ${code}\n${base}#room-${code}`;
+  const max=(PL[curGame]||'২').includes('৪')?4:2;
+  const C=['#e5484d','#2fa36b','#f2b100','#3b78f0'];
+  const seats=[{n:profile.name,c:C[0]}];
+  const draw=()=>{
+    $('seats').innerHTML=Array.from({length:4},(_,i)=>{const s=seats[i];if(i>=max)return '';return s?`<div class="seat on" style="--c:${s.c}"><span>${s.n[0]}</span>${s.n}</div>`:`<div class="seat"><span>+</span>খালি</div>`}).join('');
+    $('roomStart').disabled=seats.length<2;$('roomStart').textContent=seats.length<2?'বন্ধুর জন্য অপেক্ষা…':'খেলা শুরু ('+bn(seats.length)+' জন)';
+  };
+  draw();openS('roomSheet');
+  ['তানিয়া','সাকিব','মিম'].slice(0,max-1).forEach((n,k)=>joinT.push(setTimeout(()=>{if($('roomSheet').hidden)return;seats.push({n:n+' (নমুনা)',c:C[k+1]});draw();toast(n+' রুমে ঢুকেছে!')},2200*(k+1))));
+}
+function copyText(t,el){
+  const done=()=>toast('কপি হয়েছে, এখন মেসেঞ্জার বা হোয়াটসঅ্যাপে পাঠান');
+  try{navigator.clipboard.writeText(t).then(done,()=>{if(el){el.select();toast('লেখাটা সিলেক্ট করা আছে, কপি করে নিন')}})}catch(e){if(el)el.select()}
+}
+$('roomCopy').onclick=()=>copyText($('invTxt').value,$('invTxt'));
+$('roomStart').onclick=()=>toast('ডেমো: আসল সাইটে এখন সবার ফোনে একসাথে খেলা শুরু হবে');
+
+/* dialogues */
+const DLG=[
+ ['ভাই, ২ কিলো রাস্তা, ২ ঘণ্টা লাগল। এর চেয়ে হাঁটলে চাকরি বাঁচত!','ঢাকা জ্যাম রানার'],
+ ['ওস্তাদ বামে চাপান, আরো দুইজন উঠব, পিছনে খালি!','লোকাল বাস হেলপার'],
+ ['পেঁয়াজের দাম শুনে চোখে পানি, কাটার আগেই!','বাজার দর চ্যালেঞ্জ'],
+ ['কারেন্ট আসছে! সবাই চার্জার লাগা... গেল আবার!','লোডশেডিং সারভাইভাল'],
+ ['এই মশা আমার রক্ত খাইছে, এখন আমার হাতের থাপ্পড় খাবে!','মশা মারো'],
+ ['মামা যাবেন? ১০০ টাকা। এই রাস্তা তো আমি হেঁটেই চিনি!','রিকশা ভাড়া দরদাম'],
+ ['দরজা বন্ধ হইতেছে! ব্যাগ ভিতরে, আমি বাইরে!','মেট্রোরেল রাশ'],
+ ['মামা আরেকটু টক দেন, ঝাল কম... না না, ঝাল বেশি!','ফুচকা মাস্টার'],
+ ['আমি বরপক্ষ না কনেপক্ষ? যেই পক্ষে রোস্ট বেশি!','বিয়েবাড়ির বিরিয়ানি'],
+ ['ভাই গরুর নাম কী? শাহেনশাহ! দামটাও শাহেনশাহ!','কোরবানির হাট'],
+ ['এইটা রাস্তা না নদী? নৌকা আনতাম!','জলাবদ্ধতা রাইড'],
+ ['আর ৫ মিনিট রিলস দেখি... সকাল হয়ে গেল!','পরীক্ষার আগের রাত'],
+ ['ঘরে যা বাবা, আবার ছক্কা তুলে আয়!','লুডু'],
+ ['ভোকাট্টা! নাটাই নিয়া বাসায় যাও!','ঘুড়ি কাটাকাটি'],
+ ['দম ফুরাইছে ভাই, কিন্তু ইজ্জত ফুরায় নাই!','হাডুডু'],
+ ['তোর মেসি আমার নেইমারের পায়ের ধুলা!','আর্জেন্টিনা বনাম ব্রাজিল'],
+ ['আপা আমি গেটে, গেট কোনটা? সব গেট একরকম!','ডেলিভারি রাইডার'],
+ ['৫ বছরের অভিজ্ঞতা লাগবে, বয়স ২২। আমি কি মায়ের পেট থেকে কাজ শুরু করব?','ইন্টারভিউ সারভাইভাল'],
+ ['ডাল সিদ্ধ হয় নাই, গ্যাস বিদায় নিল!','গ্যাস সিলিন্ডার মিশন'],
+ ['আমি না পড়েই শেয়ার দিছি, কারণ শিরোনাম জোস ছিল!','ফেসবুক কমেন্ট যোদ্ধা'],
+ ['হারছেন তো কী হইছে, কাল আবার আসবেন, কয়েন রেডি থাকবে!','খেলাঘর']
+];
+const DLG18=[
+ ['বিয়ের আগে বলছিল চাঁদ এনে দিবে, বিয়ের পর বলে বাজার থেকে আলুটা নিয়া আসো।','সংসার জীবন'],
+ ['বেতন আসে ১ তারিখে, চলে যায় ২ তারিখে, বাকি ২৮ দিন আমি শুধু অভিনয় করি।','চাকরিজীবী'],
+ ['বউ বলে "কিছু না"। এই কিছু না-র মানে বুঝতে আমার ৫ বছর লাগছে, এখনো শিখতেছি।','সংসার জীবন'],
+ ['বস বলে "একটু থাকো"। ওই একটু শেষ হয় রাত ১০টায়।','অফিস'],
+ ['এক্স ফোন দিয়া বলে "কেমন আছো?" আগে কই ছিলা যখন আমার ডাটা প্যাক শেষ ছিল?','প্রেম-ছ্যাঁকা'],
+ ['ক্রাশের বিয়ের দাওয়াত পাইছি। রোস্টটা অন্তত ভালো হইলে কষ্ট কম পাইতাম।','প্রেম-ছ্যাঁকা'],
+ ['সংসার মানে রিমোট আমার হাতে, কিন্তু চ্যানেল চলবে বউয়ের পছন্দে।','সংসার জীবন'],
+ ['ব্যাচেলর লাইফ: সকালে ডিম ভাজি, রাতে ডিম ভাজি, আর মা ফোনে বলে "ঠিকমতো খাস তো?"','ব্যাচেলর'],
+ ['বিয়ের পর ওজন বাড়ছে কেন? শাশুড়ির ভালোবাসা প্রতি বেলা ৩ প্লেট।','শ্বশুরবাড়ি'],
+ ['প্রেমিকা বলছিল তোমার জন্য জান দিতে পারি। রেস্টুরেন্টের বিল আসতেই বলে আজ তুমি দাও না!','প্রেম'],
+ ['অফিসের মিটিং: ১ ঘণ্টা আলোচনা, সিদ্ধান্ত হলো পরের মিটিংয়ে দেখা যাবে।','অফিস'],
+ ['রাত ২টায় ফ্রিজ খুলি, কিছু খাই না, শুধু তাকাই। এইটাই আমার ডেট নাইট।','ব্যাচেলর'],
+ ['শ্বশুরবাড়িতে জামাই আদর ৩ দিন। ৪ নম্বর দিনে শাশুড়ি বলে, বাবা বাজারটা একটু করে দিবা?','শ্বশুরবাড়ি'],
+ ['ঘটক বলছিল ছেলে সরকারি চাকরি করে। পরে জানলাম সরকারি অফিসের সামনে চায়ের দোকান।','বিয়ের বাজার'],
+ ['বন্ধুরা সবাই বিয়ে করে ফেলছে, আমি এখনো লুডুতে গুটি কাটতেছি।','সিঙ্গেল লাইফ'],
+ ['বউয়ের সাথে ঝগড়ায় জিতছিলাম একবার, স্বপ্নে।','সংসার জীবন']
+];
+let adult=false, dIdx=-1;
+function curList(){return adult?DLG18:DLG}
+function nextDlg(){
+  const L=curList();let k;do{k=Math.floor(Math.random()*L.length)}while(L.length>1&&k===dIdx);dIdx=k;
+  $('dText').textContent=L[k][0];$('dTag').textContent='#'+L[k][1].replace(/\s+/g,'_');$('b18').hidden=!adult;
+  $('dCount').textContent=bn(L.length)+'টি ডায়লগ';
+}
+$('dNext').onclick=nextDlg;
+$('dCopy').onclick=()=>copyText('"'+$('dText').textContent+'"\n— খেলাঘর '+$('dTag').textContent);
+$('adultChk').onchange=e=>{
+  if(e.target.checked&&!ls.get('kh-18',false)){
+    $('mt').textContent='বয়স নিশ্চিত করুন';$('mAmt').parentElement.hidden=true;
+    $('mTxt').textContent='বড়দের মজার ডায়লগে বিয়ে, শ্বশুরবাড়ি আর অফিস জীবনের কৌতুক আছে। আপনার বয়স কি ১৮ বা তার বেশি?';
+    $('mOk').textContent='হ্যাঁ, ১৮+';$('modal').hidden=false;
+    $('mOk').onclick=()=>{ls.set('kh-18',true);adult=true;dIdx=-1;nextDlg();resetModal()};
+    const no=document.createElement('button');no.className='link';no.id='mNo';no.textContent='না';no.onclick=()=>{e.target.checked=false;resetModal()};$('mOk').after(no);
+    return;
+  }
+  adult=e.target.checked;dIdx=-1;nextDlg();
+};
+function resetModal(){$('modal').hidden=true;$('mt').textContent='অভিনন্দন!';$('mAmt').parentElement.hidden=false;$('mOk').textContent='ধন্যবাদ';$('mOk').onclick=()=>$('modal').hidden=true;const n=$('mNo');if(n)n.remove()}
+
+/* login */
+const toEn=s=>s.replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭৮৯'.indexOf(d));
+let profile=ls.get('kh-profile',null)||{name:'খেলোয়াড়'}, otpStep=false;
+function setProfile(p,save){profile=p;if(save)ls.set('kh-profile',p);$('pName').textContent=p.name;$('avaL').textContent=p.name[0]}
+function openLogin(){otpStep=false;$('step1').hidden=false;$('step2').hidden=true;$('lgBtn').textContent='OTP পাঠান';$('lgErr').textContent='';openS('loginSheet')}
+$('loginForm').onsubmit=e=>{
+  e.preventDefault();const err=$('lgErr');
+  if(!otpStep){
+    const n=$('lgName').value.trim(),ph=toEn($('lgPhone').value.trim());
+    if(!n){err.textContent='নাম লিখুন';return}
+    if(!/^01[3-9]\d{8}$/.test(ph)){err.textContent='সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন, যেমন 017XXXXXXXX';return}
+    otpStep=true;err.textContent='';$('step1').hidden=true;$('step2').hidden=false;$('lgBtn').textContent='লগইন করুন';$('lgOtp').focus();
+  }else{
+    if(toEn($('lgOtp').value.trim())!=='1234'){err.textContent='কোড মেলেনি, আবার দেখুন (ডেমো কোড ১২৩৪)';return}
+    finishLogin({name:$('lgName').value.trim(),via:'মোবাইল'});
+  }
+};
+document.querySelectorAll('[data-soc]').forEach(b=>b.onclick=()=>finishLogin({name:b.dataset.soc+' খেলোয়াড়',via:b.dataset.soc}));
+$('guest').onclick=()=>finishLogin({name:'অতিথি',via:'গেস্ট'});
+function finishLogin(p){setProfile(p,true);closeS('loginSheet');toast('স্বাগতম, '+p.name+'! ('+p.via+' দিয়ে লগইন, ডেমো)')}
+$('ava').onclick=openLogin;
+$('heroPlay').onclick=()=>openModes('লুডু',LUDO);
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{filter=c.dataset.f;document.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===c));drawGrid()});
+
+const LB=[['রাশেদ','লুডু',8420,'#e5484d'],['তানিয়া','লুডু',7310,'#3b78f0'],['সাকিব','লুডু',6980,'#2fa36b'],['মিম','লুডু',5120,'#f2b100'],['আরিফ','লুডু',4300,'#7c3aed']];
+$('lb').innerHTML=LB.map((r,i)=>`<div class="row"><span class="rk">${bn(i+1)}</span><span class="ra" style="background:${r[3]}">${r[0][0]}</span><div><b>${r[0]}</b><small>${r[1]}</small></div><span class="pts"><span class="coin"></span>${bn(r[2])}</span></div>`).join('')+'<p class="sample">নমুনা তালিকা · আসল সাইটে খেলোয়াড়দের স্কোর দেখাবে</p>';
+
+const PACKS=[[200,20],[550,50,'+১০%'],[1150,100,'+১৫%'],[3000,250,'সেরা ডিল']];
+$('packs').innerHTML=PACKS.map((p,i)=>`<div class="pack">${p[2]?`<span class="tagb">${p[2]}</span>`:''}<div class="stack">${'<span class="coin"></span>'.repeat(Math.min(i+1,4))}</div><b>${bn(p[0])}</b><button class="gbtn gold" data-i="${i}">৳${bn(p[1])}</button></div>`).join('');
+$('packs').onclick=e=>{const b=e.target.closest('button');if(!b)return;const p=PACKS[b.dataset.i];setCoins(coins+p[0]);showModal(p[0],'কয়েন যোগ হয়েছে (ডেমো)। এবার খেলা জমবে!')};
+
+function toast(t){const o=document.querySelector('.toast');if(o)o.remove();const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
+function showModal(amt,txt){$('mAmt').textContent=bn(amt);$('mTxt').textContent=txt;$('modal').hidden=false;$('mOk').focus()}
+$('mOk').onclick=()=>$('modal').hidden=true;
+
+const today=new Date().toDateString();
+function drawDaily(){const got=ls.get('kh-daily','')===today;$('dailyBtn').disabled=got;$('dailyBtn').textContent=got?'নেওয়া হয়েছে':'নিন';$('dailyTxt').textContent=got?'কাল আবার আসবেন!':'প্রতিদিন ফ্রি ১০০ কয়েন'}
+$('dailyBtn').onclick=()=>{ls.set('kh-daily',today);setCoins(coins+100);drawDaily();showModal(100,'আজকেও আসছেন? এই নেন চা-নাস্তার টাকা!')};
+
+function nav(v){
+  $('v-home').hidden=v==='shop';$('v-shop').hidden=v!=='shop';
+  ['home','shop','top'].forEach(k=>$('n-'+k).setAttribute('aria-current',k===v));
+  if(v==='top'){$('v-home').hidden=false;setTimeout(()=>$('lb').scrollIntoView({behavior:'smooth',block:'center'}),30)}else window.scrollTo({top:0,behavior:'smooth'});
+}
+$('n-home').onclick=()=>nav('home');$('n-shop').onclick=()=>nav('shop');$('n-top').onclick=()=>nav('top');$('plus').onclick=()=>nav('shop');
+
+setCoins(coins);drawGrid();drawDaily();nextDlg();setProfile(profile,false);
+if(!ls.get('kh-profile',null))openLogin();
+</script>
+</body></html>
