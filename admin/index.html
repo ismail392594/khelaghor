@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>খেলাঘর অ্যাডমিন</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atma:wght@600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one-column admin console — sign-in gate, user search with point adjuster, top players table. Plain, utilitarian. */
+:root{--bg:#f3f1fb;--card:#fff;--ink:#1d1640;--muted:#6b6496;--line:#e3dcff;--accent:#3b3fd8;--good:#15803d;--bad:#d61f4f;
+  --display:'Atma','Hind Siliguri',system-ui,sans-serif;--body:'Hind Siliguri','Noto Sans Bengali',system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--display);font-size:1.8rem;margin:0}
+h2{font-family:var(--display);font-size:1.25rem;margin:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.muted{color:var(--muted);margin:0;font-size:.92rem}
+button{font-family:var(--body);font-weight:700;font-size:1rem;border:0;border-radius:12px;padding:10px 16px;cursor:pointer;background:var(--accent);color:#fff}
+button.ghost{background:#efeaff;color:var(--accent)}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible,input:focus-visible{outline:3px solid #22d3ee;outline-offset:2px}
+input{font-family:var(--body);font-size:1rem;border:2px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0;color:var(--ink);background:#fff}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row input{flex:1}
+.user{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;background:#f8f6ff;border-radius:12px;padding:12px}
+.user b{font-size:1.1rem}.user .pts{font-family:var(--display);font-size:1.6rem;grid-row:span 2;font-variant-numeric:tabular-nums}
+.quick{display:flex;gap:6px;flex-wrap:wrap}
+.quick button{padding:6px 12px;font-size:.92rem}
+.quick .minus{background:#fde6ec;color:var(--bad)}
+.quick .plus{background:#dcfce7;color:var(--good)}
+.msg{margin:0;font-weight:600;min-height:1.4em}
+.msg.ok{color:var(--good)}.msg.err{color:var(--bad)}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
+td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+th{color:var(--muted);font-weight:600;font-size:.82rem}
+</style>
+</head><body>
+<div class="wrap">
+  <header class="row" style="justify-content:space-between">
+    <h1>খেলাঘর অ্যাডমিন</h1>
+    <button class="ghost" id="out" hidden>লগআউট</button>
+  </header>
+
+  <section class="card" id="gate">
+    <h2>অ্যাডমিন লগইন</h2>
+    <p class="muted" id="gateTxt">অ্যাডমিন Gmail দিয়ে ঢুকুন।</p>
+    <button id="login">Gmail দিয়ে লগইন</button>
+  </section>
+
+  <section class="card" id="panel" hidden>
+    <h2>খেলোয়াড়কে পয়েন্ট দিন বা কাটুন</h2>
+    <form class="row" id="find" novalidate>
+      <input id="q" placeholder="ইউজারনেম, যেমন rashed_99" autocapitalize="off" spellcheck="false" aria-label="ইউজারনেম">
+      <button type="submit">খুঁজুন</button>
+    </form>
+    <div id="found" hidden>
+      <div class="user"><b id="fName"></b><span class="pts" id="fPts"></span><span class="muted" id="fUser"></span></div>
+      <div class="quick" id="quick">
+        <button class="minus" data-a="-100">−১০০</button><button class="plus" data-a="100">+১০০</button>
+        <button class="plus" data-a="500">+৫০০</button><button class="plus" data-a="1000">+১০০০</button>
+      </div>
+      <form class="row" id="custom" novalidate style="margin-top:8px">
+        <input id="amt" inputmode="numeric" placeholder="নিজের সংখ্যা, যেমন 250 বা -50" aria-label="পয়েন্টের পরিমাণ">
+        <button type="submit">প্রয়োগ করুন</button>
+      </form>
+    </div>
+    <p class="msg" id="msg"></p>
+  </section>
+
+  <section class="card" id="topCard" hidden>
+    <h2>সেরা ২০ খেলোয়াড়</h2>
+    <div class="tbl"><table><thead><tr><th>#</th><th>নাম</th><th>ইউজারনেম</th><th style="text-align:right">পয়েন্ট</th></tr></thead><tbody id="top"></tbody></table></div>
+  </section>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, onSnapshot, runTransaction, collection, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { firebaseConfig, ADMIN_EMAILS } from "/js/firebase-config.js";
+
+const app=initializeApp(firebaseConfig), auth=getAuth(app), db=getFirestore(app);
+const $=id=>document.getElementById(id);
+const bn=n=>String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let target=null, unsubT=null, unsubTop=null;
+const say=(t,ok)=>{$('msg').textContent=t;$('msg').className='msg '+(ok?'ok':'err')};
+
+$('login').onclick=()=>signInWithPopup(auth,new GoogleAuthProvider()).catch(e=>$('gateTxt').textContent='লগইন হয়নি: '+e.code);
+$('out').onclick=()=>signOut(auth);
+
+onAuthStateChanged(auth,u=>{
+  const ok=u&&ADMIN_EMAILS.includes(u.email);
+  $('gate').hidden=!!ok; $('panel').hidden=!ok; $('topCard').hidden=!ok; $('out').hidden=!u;
+  if(u&&!ok)$('gateTxt').textContent=u.email+' অ্যাডমিন না। অ্যাডমিন Gmail দিয়ে ঢুকুন।';
+  if(unsubTop){unsubTop();unsubTop=null}
+  if(!ok)return;
+  unsubTop=onSnapshot(query(collection(db,'users'),orderBy('points','desc'),limit(20)),s=>{
+    $('top').innerHTML=s.docs.map((d,i)=>{const r=d.data();return `<tr><td>${bn(i+1)}</td><td>${esc(r.name)}</td><td>@${esc(r.username)}</td><td class="n">${bn(r.points)}</td></tr>`}).join('')||'<tr><td colspan="4">এখনো কেউ নেই</td></tr>';
+  });
+});
+
+$('find').onsubmit=async e=>{
+  e.preventDefault();
+  const name=$('q').value.trim().replace(/^@/,'').toLowerCase();
+  $('found').hidden=true; say('');
+  if(!name)return;
+  const s=await getDoc(doc(db,'usernames',name)).catch(()=>null);
+  if(!s||!s.exists()){say('@'+name+' নামে কাউকে পাওয়া যায়নি');return}
+  target=s.data().uid;
+  if(unsubT)unsubT();
+  unsubT=onSnapshot(doc(db,'users',target),d=>{const r=d.data();if(!r)return;$('fName').textContent=r.name;$('fUser').textContent='@'+r.username+' · খেলা '+bn(r.games||0)+' · জয় '+bn(r.wins||0);$('fPts').textContent=bn(r.points)});
+  $('found').hidden=false;
+};
+async function apply(a){
+  if(!target||!Number.isInteger(a)||a===0)return;
+  try{
+    const left=await runTransaction(db,async tx=>{
+      const ref=doc(db,'users',target),d=await tx.get(ref),cur=d.data().points;
+      const next=Math.max(0,cur+a); tx.update(ref,{points:next}); return next;
+    });
+    say((a>0?'+':'')+bn(a)+' পয়েন্ট প্রয়োগ হয়েছে, এখন '+bn(left),true);
+  }catch(e){say('হয়নি: '+(e.code||e.message))}
+}
+$('quick').onclick=e=>{const b=e.target.closest('button');if(b)apply(parseInt(b.dataset.a,10))};
+$('custom').onsubmit=e=>{e.preventDefault();const v=parseInt($('amt').value.replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭৮৯'.indexOf(d)),10);if(isNaN(v)){say('সংখ্যা লিখুন');return}apply(v);$('amt').value=''};
+</script>
+</body></html>

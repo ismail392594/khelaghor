@@ -1,0 +1,77 @@
+rules_version = '2';
+// খেলাঘর ডেটাবেসের নিরাপত্তা নিয়ম।
+// Firebase Console → Firestore Database → Rules ট্যাবে পুরোটা পেস্ট করে Publish চাপুন।
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in ['ismail392594@gmail.com'];
+    }
+
+    // খেলোয়াড়ের প্রোফাইল ও পয়েন্ট
+    match /users/{uid} {
+      allow read: if signedIn();
+      // নতুন একাউন্ট: শুধু নিজের, ৫০০ পয়েন্ট দিয়ে শুরু, ইউজারনেম আগে থেকে নিজের নামে বুক করা থাকতে হবে
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['username','name','points','games','wins','createdAt','lastDaily'])
+        && request.resource.data.points == 500
+        && request.resource.data.games == 0
+        && request.resource.data.wins == 0
+        && request.resource.data.lastDaily == null
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 20
+        && getAfter(/databases/$(database)/documents/usernames/$(request.resource.data.username)).data.uid == request.auth.uid;
+      // অ্যাডমিন যেকোনো পয়েন্ট বদলাতে পারে।
+      // খেলোয়াড় নিজে শুধু দৈনিক বোনাস (+১০০) নিতে পারে, ২০ ঘণ্টায় একবার।
+      allow update: if isAdmin() || (
+        signedIn() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['points','lastDaily'])
+        && request.resource.data.points == resource.data.points + 100
+        && request.resource.data.lastDaily == request.time
+        && (resource.data.lastDaily == null || request.time > resource.data.lastDaily + duration.value(20, 'h'))
+      );
+      allow delete: if false;
+    }
+
+    // ইউজারনেম যাতে দুইজন একই না পায়
+    match /usernames/{name} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && name.matches('^[a-z0-9_]{3,15}$')
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // বন্ধুকে খেলার দাওয়াত
+    match /invites/{id} {
+      allow read: if signedIn() && (resource.data.to == request.auth.uid || resource.data.from == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.from == request.auth.uid && request.resource.data.status == 'pending';
+      allow update: if signedIn() && resource.data.to == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+      allow delete: if signedIn() && resource.data.from == request.auth.uid;
+    }
+
+    // খেলার রুম
+    match /rooms/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.host == request.auth.uid
+        && request.resource.data.uids.size() == 1 && request.auth.uid in request.resource.data.uids;
+      allow update: if signedIn() && (
+        resource.data.host == request.auth.uid
+        || (
+          // অন্য কেউ শুধু নিজেকে খালি সিটে যোগ করতে পারে
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['players','uids'])
+          && !(request.auth.uid in resource.data.uids)
+          && request.auth.uid in request.resource.data.uids
+          && request.resource.data.uids.size() == resource.data.uids.size() + 1
+          && request.resource.data.uids.size() <= resource.data.max
+          && resource.data.status == 'waiting'
+        )
+      );
+      allow delete: if signedIn() && resource.data.host == request.auth.uid;
+    }
+  }
+}

@@ -172,6 +172,16 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 .install div{flex:1;min-width:0}.install b{font-family:var(--display);font-size:1.1rem;display:block;line-height:1.2}.install span{font-size:.84rem}
 .install .x{background:none;border:0;color:#fff;font-size:1.3rem;cursor:pointer;padding:4px 8px}
 .install .gbtn{padding:8px 14px;font-size:1rem}
+.sbtn.big{padding:14px;font-size:1.05rem;border-color:#c9bfff}
+.invrow{display:flex;gap:8px;align-items:flex-end}
+.seat small{font-size:.66rem;color:#9a91c9;font-weight:500;word-break:break-all}
+.pstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pstats div{background:#fff;border:2px solid #e3dcff;border-radius:14px;padding:8px;text-align:center}
+.pstats b{display:block;font-family:var(--display);font-size:1.5rem;font-variant-numeric:tabular-nums}
+.pstats span{font-size:.8rem;color:#7a70b8}
+.invpop{position:fixed;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));top:calc(10px + env(safe-area-inset-top,0px));z-index:18;max-width:520px;margin:0 auto;background:linear-gradient(135deg,#ff4f8b,#7c3aed);border-radius:18px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 24px rgba(0,0,0,.4);animation:pop .35s cubic-bezier(.2,1.6,.4,1)}
+.invpop .acts{display:flex;gap:8px;align-items:center}
+.invpop .gbtn{padding:8px 16px;font-size:1rem}
 @media (max-width:360px){.grid{grid-template-columns:repeat(2,1fr)}.mini{width:84px;height:84px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -259,6 +269,11 @@ label.f input:focus{outline:none;border-color:#6d5cff}
     <button class="mode" id="mLocal"><i style="background:#2fa36b">এ</i><div><b>এক ফোনে কয়েকজন</b><small>পাশে বসে পালা করে খেলুন</small></div><span class="ptag" id="mLocalTag">২-৪ জন</span></button>
     <button class="mode" id="mOnline"><i style="background:#ff4f8b">অ</i><div><b>অনলাইনে র‍্যান্ডম খেলোয়াড়</b><small>সারা দেশের কারো সাথে ম্যাচ</small></div><span class="ptag" id="mOnTag">২-৪ জন</span></button>
     <button class="mode" id="mFriend"><i style="background:#f2b100">ব</i><div><b>বন্ধুকে ইনভাইট</b><small>রুম বানিয়ে লিংক পাঠান</small></div><span class="ptag">প্রাইভেট রুম</span></button>
+    <form id="joinForm" class="invrow" novalidate>
+      <label class="f" style="flex:1">বন্ধুর রুম কোড আছে?<input id="joinCode" autocapitalize="characters" spellcheck="false" maxlength="6" placeholder="যেমন: K7QX2M"></label>
+      <button class="gbtn gold" type="submit" style="padding:10px 14px;font-size:1rem">ঢুকুন</button>
+    </form>
+    <p class="err" id="joinErr"></p>
     <button class="link" data-close="modeSheet">বন্ধ করুন</button>
   </div>
 </div>
@@ -267,13 +282,18 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 <div class="sheet" id="roomSheet" hidden>
   <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="roomT">
     <h3 id="roomT">প্রাইভেট রুম</h3>
-    <p>এই কোড বা লিংক বন্ধুদের পাঠান। সবাই ঢুকলে খেলা শুরু।</p>
-    <div class="room"><div><small style="opacity:.7">রুম কোড</small><br><b id="roomCode">----</b></div><button class="gbtn gold" id="roomCopy" style="padding:8px 14px;font-size:1rem">কপি</button></div>
+    <form id="invForm" class="invrow" novalidate>
+      <label class="f" style="flex:1">বন্ধুর ইউজারনেম<input id="invUser" autocapitalize="off" spellcheck="false" maxlength="16" placeholder="@rashed_99"></label>
+      <button class="gbtn" type="submit" style="padding:10px 14px;font-size:1rem">ইনভাইট</button>
+    </form>
+    <p class="err" id="invErr"></p>
+    <p>অথবা কোড বা লিংক পাঠান:</p>
+    <div class="room"><div><small style="opacity:.7">রুম কোড</small><br><b id="roomCode">------</b></div><button class="gbtn gold" id="roomCopy" style="padding:8px 14px;font-size:1rem">কপি</button></div>
     <textarea class="inv" id="invTxt" rows="3" readonly aria-label="ইনভাইট মেসেজ"></textarea>
     <div class="seats" id="seats"></div>
-    <button class="gbtn" id="roomStart" disabled>সবাই আসলে শুরু হবে</button>
-    <p class="demo">ডেমো: আসল সাইটে বন্ধু লিংকে চাপলেই এই রুমে ঢুকে যাবে। এখানে বন্ধু আসা দেখানো হচ্ছে নমুনা হিসেবে।</p>
-    <button class="link" data-close="roomSheet">বন্ধ করুন</button>
+    <button class="gbtn" id="roomStart" disabled>বন্ধুর জন্য অপেক্ষা…</button>
+    <p class="demo" id="roomWait" hidden></p>
+    <button class="link" id="roomClose">বন্ধ করুন</button>
   </div>
 </div>
 
@@ -281,26 +301,48 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 <div class="sheet" id="loginSheet" hidden>
   <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="loginT">
     <h3 id="loginT">খেলাঘরে স্বাগতম!</h3>
-    <p>লগইন করলে কয়েন, লেভেল আর বন্ধু তালিকা সেভ থাকবে।</p>
-    <form id="loginForm" novalidate style="display:flex;flex-direction:column;gap:10px">
-      <div id="step1" style="display:flex;flex-direction:column;gap:10px">
-        <label class="f">আপনার নাম<input id="lgName" autocomplete="nickname" maxlength="20" placeholder="যেমন: রাশেদ"></label>
-        <label class="f">মোবাইল নম্বর<input id="lgPhone" inputmode="numeric" autocomplete="tel" maxlength="11" placeholder="01XXXXXXXXX"></label>
-      </div>
-      <div id="step2" hidden style="display:flex;flex-direction:column;gap:10px">
-        <label class="f">OTP কোড<input id="lgOtp" inputmode="numeric" maxlength="4" placeholder="৪ সংখ্যার কোড"></label>
-        <p class="demo" style="text-align:left">ডেমো: আসল সাইটে কোড SMS-এ যাবে। এখন কোড হলো ১২৩৪</p>
-      </div>
-      <p class="err" id="lgErr"></p>
-      <button class="gbtn" type="submit" id="lgBtn">OTP পাঠান</button>
-    </form>
-    <div class="or">অথবা</div>
+    <p>লগইন করলে পয়েন্ট, লিডারবোর্ড আর বন্ধুদের সাথে খেলা সেভ থাকবে।</p>
+    <button class="sbtn big" id="gLogin"><i style="background:#ea4335">G</i>Gmail দিয়ে লগইন</button>
     <div class="soc">
-      <button class="sbtn" data-soc="Google"><i style="background:#ea4335">G</i>Google</button>
-      <button class="sbtn" data-soc="Facebook"><i style="background:#1877f2">f</i>Facebook</button>
+      <button class="sbtn" id="phLogin"><i style="background:#22c55e">☎</i>ফোন নম্বর</button>
+      <button class="sbtn" id="fbLogin"><i style="background:#1877f2">f</i>Facebook</button>
     </div>
-    <button class="link" id="guest">গেস্ট হিসেবে খেলুন</button>
+    <p class="demo">ফোন আর Facebook লগইন শিগগিরই চালু হবে</p>
+    <p class="err" id="lgErr"></p>
+    <button class="link" id="guest">আপাতত গেস্ট হিসেবে দেখুন</button>
   </div>
+</div>
+
+<div class="sheet" id="userSheet" hidden>
+  <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="userT">
+    <h3 id="userT">ইউজারনেম বেছে নিন</h3>
+    <p>বন্ধুরা এই নাম দিয়ে খুঁজে আপনাকে খেলায় ডাকবে। ইংরেজি ছোট অক্ষর, সংখ্যা আর _ দিয়ে ৩-১৫ অক্ষর, পরে বদলানো যাবে না।</p>
+    <form id="userForm" novalidate style="display:flex;flex-direction:column;gap:10px">
+      <label class="f">ইউজারনেম<input id="unInput" autocapitalize="off" autocomplete="username" spellcheck="false" maxlength="15" placeholder="যেমন: rashed_99"></label>
+      <label class="f">দেখানোর নাম<input id="dnInput" maxlength="20" placeholder="যেমন: রাশেদ"></label>
+      <p class="err" id="unErr"></p>
+      <button class="gbtn" type="submit" id="unBtn">শুরু করি</button>
+    </form>
+  </div>
+</div>
+
+<div class="sheet" id="profSheet" hidden>
+  <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="pfName">
+    <h3 id="pfName">-</h3>
+    <p id="pfUser">@-</p>
+    <div class="pstats">
+      <div><b id="pfPts">০</b><span>পয়েন্ট</span></div>
+      <div><b id="pfGames">০</b><span>খেলা</span></div>
+      <div><b id="pfWins">০</b><span>জয়</span></div>
+    </div>
+    <button class="sbtn" id="pfOut">লগআউট</button>
+    <button class="link" data-close="profSheet">বন্ধ করুন</button>
+  </div>
+</div>
+
+<div class="invpop" id="invPop" hidden role="alert">
+  <div><b id="invFrom"></b> আপনাকে <b id="invGame"></b> খেলতে ডাকছে!</div>
+  <div class="acts"><button class="gbtn" id="invYes">যোগ দিন</button><button class="link" id="invNo" style="color:#fff">না</button></div>
 </div>
 
 <div class="modal" id="modal" hidden>
@@ -347,7 +389,7 @@ function drawGrid(){
 /* sheets */
 const openS=id=>{$(id).hidden=false};const closeS=id=>{$(id).hidden=true};
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>closeS(b.dataset.close));
-document.querySelectorAll('.sheet').forEach(s=>s.addEventListener('click',e=>{if(e.target===s&&s.id!=='loginSheet')s.hidden=true}));
+document.querySelectorAll('.sheet').forEach(s=>s.addEventListener('click',e=>{if(e.target===s&&!['loginSheet','userSheet'].includes(s.id))s.hidden=true}));
 function openModes(name,url){
   curGame=name;$('modeT').textContent=name;$('mCpu').href=url;
   $('mLocalTag').textContent=$('mOnTag').textContent=(PL[name]||'২')+' জন';openS('modeSheet');
@@ -355,30 +397,12 @@ function openModes(name,url){
 $('mCpu').addEventListener('click',()=>closeS('modeSheet'));
 $('mLocal').onclick=()=>toast('এক ফোনে কয়েকজন খেলার মোড শিগগিরই আসছে');
 $('mOnline').onclick=()=>toast('অনলাইন ম্যাচ চালু হবে সার্ভার বসানোর পর');
-$('mFriend').onclick=()=>{closeS('modeSheet');makeRoom()};
-let joinT=[];
-function makeRoom(){
-  joinT.forEach(clearTimeout);joinT=[];
-  const code=String(1000+Math.floor(Math.random()*9000));
-  $('roomT').textContent=curGame+' · প্রাইভেট রুম';$('roomCode').textContent=bn(code);
-  const base=location.href.split('#')[0];
-  $('invTxt').value=`চলো ${curGame} খেলি! খেলাঘরে আমার রুমে আসো।\nরুম কোড: ${code}\n${base}#room-${code}`;
-  const max=(PL[curGame]||'২').includes('৪')?4:2;
-  const C=['#e5484d','#2fa36b','#f2b100','#3b78f0'];
-  const seats=[{n:profile.name,c:C[0]}];
-  const draw=()=>{
-    $('seats').innerHTML=Array.from({length:4},(_,i)=>{const s=seats[i];if(i>=max)return '';return s?`<div class="seat on" style="--c:${s.c}"><span>${s.n[0]}</span>${s.n}</div>`:`<div class="seat"><span>+</span>খালি</div>`}).join('');
-    $('roomStart').disabled=seats.length<2;$('roomStart').textContent=seats.length<2?'বন্ধুর জন্য অপেক্ষা…':'খেলা শুরু ('+bn(seats.length)+' জন)';
-  };
-  draw();openS('roomSheet');
-  ['তানিয়া','সাকিব','মিম'].slice(0,max-1).forEach((n,k)=>joinT.push(setTimeout(()=>{if($('roomSheet').hidden)return;seats.push({n:n+' (নমুনা)',c:C[k+1]});draw();toast(n+' রুমে ঢুকেছে!')},2200*(k+1))));
-}
+$('mFriend').onclick=()=>{closeS('modeSheet');const mx=(PL[curGame]||'২').includes('৪')?4:2;if(window.KH.onFriend)window.KH.onFriend(curGame,mx);else toast('সংযোগ হচ্ছে, একটু পরে আবার চাপুন')};
 function copyText(t,el){
   const done=()=>toast('কপি হয়েছে, এখন মেসেঞ্জার বা হোয়াটসঅ্যাপে পাঠান');
   try{navigator.clipboard.writeText(t).then(done,()=>{if(el){el.select();toast('লেখাটা সিলেক্ট করা আছে, কপি করে নিন')}})}catch(e){if(el)el.select()}
 }
 $('roomCopy').onclick=()=>copyText($('invTxt').value,$('invTxt'));
-$('roomStart').onclick=()=>toast('ডেমো: আসল সাইটে এখন সবার ফোনে একসাথে খেলা শুরু হবে');
 
 /* dialogues */
 const DLG=[
@@ -444,27 +468,10 @@ $('adultChk').onchange=e=>{
 };
 function resetModal(){$('modal').hidden=true;$('mt').textContent='অভিনন্দন!';$('mAmt').parentElement.hidden=false;$('mOk').textContent='ধন্যবাদ';$('mOk').onclick=()=>$('modal').hidden=true;const n=$('mNo');if(n)n.remove()}
 
-/* login */
-const toEn=s=>s.replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭৮৯'.indexOf(d));
-let profile=ls.get('kh-profile',null)||{name:'খেলোয়াড়'}, otpStep=false;
-function setProfile(p,save){profile=p;if(save)ls.set('kh-profile',p);$('pName').textContent=p.name;$('avaL').textContent=p.name[0]}
-function openLogin(){otpStep=false;$('step1').hidden=false;$('step2').hidden=true;$('lgBtn').textContent='OTP পাঠান';$('lgErr').textContent='';openS('loginSheet')}
-$('loginForm').onsubmit=e=>{
-  e.preventDefault();const err=$('lgErr');
-  if(!otpStep){
-    const n=$('lgName').value.trim(),ph=toEn($('lgPhone').value.trim());
-    if(!n){err.textContent='নাম লিখুন';return}
-    if(!/^01[3-9]\d{8}$/.test(ph)){err.textContent='সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন, যেমন 017XXXXXXXX';return}
-    otpStep=true;err.textContent='';$('step1').hidden=true;$('step2').hidden=false;$('lgBtn').textContent='লগইন করুন';$('lgOtp').focus();
-  }else{
-    if(toEn($('lgOtp').value.trim())!=='1234'){err.textContent='কোড মেলেনি, আবার দেখুন (ডেমো কোড ১২৩৪)';return}
-    finishLogin({name:$('lgName').value.trim(),via:'মোবাইল'});
-  }
-};
-document.querySelectorAll('[data-soc]').forEach(b=>b.onclick=()=>finishLogin({name:b.dataset.soc+' খেলোয়াড়',via:b.dataset.soc}));
-$('guest').onclick=()=>finishLogin({name:'অতিথি',via:'গেস্ট'});
-function finishLogin(p){setProfile(p,true);closeS('loginSheet');toast('স্বাগতম, '+p.name+'! ('+p.via+' দিয়ে লগইন, ডেমো)')}
-$('ava').onclick=openLogin;
+/* profile shim (real login lives in /js/online.js) */
+let profile={name:'খেলোয়াড়'};
+function setProfile(p){profile=p;$('pName').textContent=p.name;$('avaL').textContent=p.name[0]}
+window.KH={toast,openS,closeS,setProfile,showModal,onFriend:null};
 $('heroPlay').onclick=()=>openModes('লুডু',LUDO);
 /* PWA install */
 let deferred=null;
@@ -502,8 +509,8 @@ function nav(v){
 }
 $('n-home').onclick=()=>nav('home');$('n-shop').onclick=()=>nav('shop');$('n-top').onclick=()=>nav('top');$('plus').onclick=()=>nav('shop');
 
-setCoins(coins);drawGrid();drawDaily();nextDlg();setProfile(profile,false);
-if(!ls.get('kh-profile',null))openLogin();
+setCoins(coins);drawGrid();drawDaily();nextDlg();setProfile(profile);
 </script>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
+<script type="module" src="/js/online.js"></script>
 </body></html>
