@@ -512,7 +512,12 @@ function openMatch(id) {
     const m = s.data();
     if (m.status === 'waiting') { drawWaiting(m); return; }
     show('game'); ingest(m);
-  }, e => { flash('খেলা দেখা যাচ্ছে না: ' + e.code); show('lobby'); });
+  }, e => {
+    show('lobby');
+    $('lerr').textContent = e.code === 'permission-denied'
+      ? 'বোর্ড দেখার অনুমতি নেই। অ্যাডমিন: Firebase Rules-এ matches অংশ যোগ করুন। আপনার খেলা আর পয়েন্ট নিরাপদে আছে, পরে "ফিরে যান" চাপলেই চলবে।'
+      : 'খেলা দেখা যাচ্ছে না: ' + e.code;
+  });
 }
 let wTimer = null;
 function drawWaiting(m) {
