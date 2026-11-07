@@ -103,6 +103,12 @@ service cloud.firestore {
       allow delete: if signedIn() && resource.data.host == request.auth.uid;
     }
 
+    // লুডুর খেলা: শুধু খেলোয়াড়রা দেখতে পারে, বদলাতে পারে শুধু সার্ভার
+    match /matches/{id} {
+      allow read: if signedIn() && request.auth.uid in resource.data.uids;
+      allow write: if false;
+    }
+
     // সাইটের সেটিং (ঘোষণা, যোগাযোগের তথ্য) আর গেমের অবস্থা: সবাই পড়বে, শুধু অ্যাডমিন বদলাবে
     match /config/{id} {
       allow read: if true;

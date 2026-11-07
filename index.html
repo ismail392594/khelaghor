@@ -425,7 +425,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
     <div class="minv" id="modeInvite"><span class="face" aria-hidden="true">😎</span><span class="txt">চলেন এক দান হয়ে যাক!</span></div>
     <h3 id="modeT">লুডু</h3>
     <p id="modeP">কীভাবে খেলবেন বেছে নিন</p>
-    <a class="mode" id="mCpu" ><i style="background:#3b78f0">ক</i><div><b>কম্পিউটারের সাথে</b><small>একা খেলুন, যখন ইচ্ছা</small></div><span class="ptag">১ জন</span></a>
+    <a class="mode" id="mCpu" ><i style="background:#3b78f0">ক</i><div><b>কম্পিউটারের সাথে</b><small>এন্ট্রি ১০০, জিতলে ২০০ পয়েন্ট</small></div><span class="ptag">১ জন</span></a>
     <button class="mode" id="mLocal"><i style="background:#2fa36b">এ</i><div><b>এক ফোনে কয়েকজন</b><small>পাশে বসে পালা করে খেলুন</small></div><span class="ptag" id="mLocalTag">২-৪ জন</span></button>
     <button class="mode" id="mOnline"><i style="background:#ff4f8b">অ</i><div><b>অনলাইনে র‍্যান্ডম খেলোয়াড়</b><small>সারা দেশের কারো সাথে ম্যাচ</small></div><span class="ptag" id="mOnTag">২-৪ জন</span></button>
     <button class="mode" id="mFriend"><i style="background:#f2b100">ব</i><div><b>বন্ধুকে ইনভাইট</b><small>রুম বানিয়ে লিংক পাঠান</small></div><span class="ptag">প্রাইভেট রুম</span></button>
@@ -573,12 +573,12 @@ const openS=id=>{$(id).hidden=false};const closeS=id=>{$(id).hidden=true};
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>closeS(b.dataset.close));
 document.querySelectorAll('.sheet').forEach(s=>s.addEventListener('click',e=>{if(e.target===s&&s.id!=='loginSheet')s.hidden=true}));
 function openModes(name,url){
-  curGame=name;$('modeT').textContent=name;$('mCpu').href=url;
+  curGame=name;$('modeT').textContent=name;$('mCpu').href=url+(url.includes('?')?'':'?mode=cpu');
   $('mLocalTag').textContent=$('mOnTag').textContent=(PL[name]||'২')+' জন';openS('modeSheet');
 }
 $('mCpu').addEventListener('click',()=>closeS('modeSheet'));
-$('mLocal').onclick=()=>toast('এক ফোনে কয়েকজন খেলার মোড শিগগিরই আসছে');
-$('mOnline').onclick=()=>toast('অনলাইন ম্যাচ চালু হবে সার্ভার বসানোর পর');
+$('mLocal').onclick=()=>{if(curGame==='লুডু')location.href='/games/ludo/?mode=local';else toast('এই গেমের এই মোড শিগগিরই আসছে')};
+$('mOnline').onclick=()=>{if(curGame==='লুডু')location.href='/games/ludo/?mode=quick';else toast('এই গেমের অনলাইন মোড শিগগিরই আসছে')};
 $('mFriend').onclick=()=>{closeS('modeSheet');const mx=(PL[curGame]||'২').includes('৪')?4:2;if(window.KH.onFriend)window.KH.onFriend(curGame,mx);else toast('সংযোগ হচ্ছে, একটু পরে আবার চাপুন')};
 function copyText(t,el){
   const done=()=>toast('কপি হয়েছে, এখন মেসেঞ্জার বা হোয়াটসঅ্যাপে পাঠান');

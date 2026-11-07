@@ -275,13 +275,22 @@ function openRoom(id) {
     $('roomStart').disabled = n < 2;
     $('roomStart').textContent = n < 2 ? 'বন্ধুর জন্য অপেক্ষা…' : 'খেলা শুরু (' + bn(n) + ' জন)';
     $('roomWait').hidden = host; $('roomWait').textContent = r.status === 'started' ? 'খেলা শুরু হয়েছে!' : 'হোস্ট খেলা শুরু করার অপেক্ষায়…';
-    if (r.status === 'started') K.toast('অনলাইন খেলার বোর্ড পরের আপডেটে আসছে। রুম, ইনভাইট আর পয়েন্ট এখন চালু।');
+    if (r.matchId && r.game === 'লুডু') { K.toast('খেলা শুরু! বোর্ডে নিয়ে যাচ্ছি…'); setTimeout(() => { location.href = '/games/ludo/?m=' + r.matchId; }, 600); }
+    else if (r.status === 'started' && r.game !== 'লুডু') K.toast(r.game + ' এর অনলাইন খেলা শিগগিরই আসছে');
   });
   K.openS('roomSheet');
 }
 $('roomStart').onclick = async () => {
-  if (!roomId) return;
-  await updateDoc(doc(db, 'rooms', roomId), { status: 'started' }).catch(e => K.toast('শুরু করা যায়নি: ' + e.code));
+  if (!roomId || !roomData) return;
+  if (roomData.game !== 'লুডু') { K.toast(roomData.game + ' এর অনলাইন খেলা শিগগিরই আসছে, এখন লুডু খেলুন'); return; }
+  const b = $('roomStart'); b.disabled = true; b.textContent = 'শুরু হচ্ছে…';
+  try {
+    const t = await user.getIdToken();
+    const r = await fetch('/api/ludo', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t }, body: JSON.stringify({ action: 'room', roomId, entry: 100 }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || j.error) throw new Error(j.error || 'শুরু করা যায়নি');
+    location.href = '/games/ludo/?m=' + j.matchId;
+  } catch (e) { K.toast(e.message); b.disabled = false; b.textContent = 'খেলা শুরু'; }
 };
 $('roomClose').onclick = () => { if (roomUnsub) roomUnsub(); roomUnsub = null; K.closeS('roomSheet'); };
 

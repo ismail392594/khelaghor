@@ -21,3 +21,8 @@
 - `js/online.js` — Gmail লগইন, ইউজারনেম, পয়েন্ট, দৈনিক বোনাস, লিডারবোর্ড, ইনভাইট, রুম
 - `admin/` — অ্যাডমিন প্যানেল (পয়েন্ট দেওয়া/কাটা, সেরা খেলোয়াড়)
 - `firestore.rules` — ডেটাবেসের নিরাপত্তা নিয়ম, Firebase Console → Firestore → Rules-এ পেস্ট করে Publish করতে হবে
+
+## লুডু সার্ভার (`api/ludo.js`)
+ছক্কা, চাল যাচাই, জয়-হার আর পয়েন্ট সব সার্ভারে হয় (Vercel Function), তাই ফোন থেকে কারচুপি সম্ভব না।
+চালু করতে Vercel → Settings → Environment Variables-এ `FIREBASE_SERVICE_ACCOUNT` নামে
+Firebase-এর service account JSON বসাতে হবে। নিয়ম আছে `js/ludo-engine.js`-এ।
