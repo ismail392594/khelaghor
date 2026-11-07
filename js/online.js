@@ -45,7 +45,15 @@ $('ava').onclick = () => {
   if (!me) { K.openS('userSheet'); return; }
   $('pfName').textContent = me.name; $('pfUser').textContent = '@' + me.username;
   $('pfPts').textContent = bn(me.points); $('pfGames').textContent = bn(me.games || 0); $('pfWins').textContent = bn(me.wins || 0);
+  getDoc(doc(db, 'private', user.uid)).then(d => { $('pfPhone').value = (d.exists() && d.data().phone) || ''; }).catch(() => {});
+  $('pfErr').textContent = '';
   K.openS('profSheet');
+};
+$('pfPhForm').onsubmit = async e => {
+  e.preventDefault();
+  const p = toEn($('pfPhone').value.trim());
+  if (p && !/^01[3-9]\d{8}$/.test(p)) { $('pfErr').textContent = 'সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন'; return; }
+  await savePrivate(p || null); $('pfErr').textContent = ''; K.toast('নম্বর সেভ হয়েছে');
 };
 $('pfOut').onclick = async () => { await signOut(auth); K.closeS('profSheet'); K.toast('লগআউট হয়েছে'); };
 
@@ -55,6 +63,7 @@ $('userForm').onsubmit = async e => {
   const un = $('unInput').value.trim().toLowerCase(), dn = $('dnInput').value.trim(), err = $('unErr');
   if (!/^[a-z0-9_]{3,15}$/.test(un)) { err.textContent = 'ইংরেজি ছোট অক্ষর, সংখ্যা আর _ দিয়ে ৩-১৫ অক্ষরের নাম দিন'; return; }
   if (!dn) { err.textContent = 'দেখানোর নাম লিখুন'; return; }
+  if ($('phInput').value.trim() && !phoneVal()) { err.textContent = 'সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন, অথবা খালি রাখুন'; return; }
   err.textContent = ''; $('unBtn').disabled = true;
   try {
     const taken = await getDoc(doc(db, 'usernames', un));
@@ -63,12 +72,23 @@ $('userForm').onsubmit = async e => {
     b.set(doc(db, 'usernames', un), { uid: user.uid });
     b.set(doc(db, 'users', user.uid), { username: un, name: dn, points: START_POINTS, games: 0, wins: 0, createdAt: serverTimestamp(), lastDaily: null });
     await b.commit();
+    savePrivate(phoneVal());
     K.toast('স্বাগতম @' + un + '! উপহার হিসেবে ' + bn(START_POINTS) + ' পয়েন্ট পেলেন');
   } catch (e2) {
     err.textContent = e2.code === 'permission-denied' ? 'এই নামটা নেওয়া যাচ্ছে না, অন্য নাম দিন' : 'সেভ হয়নি: ' + (e2.code || e2.message);
   }
   $('unBtn').disabled = false;
 };
+
+/* Gmail ও ফোন আলাদা গোপন জায়গায়: শুধু খেলোয়াড় নিজে আর অ্যাডমিন দেখবে */
+const toEn = s => s.replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d));
+function phoneVal() { const p = toEn($('phInput').value.trim()); return /^01[3-9]\d{8}$/.test(p) ? p : null; }
+async function savePrivate(phone) {
+  if (!user || !user.email) return;
+  const data = { email: user.email, updatedAt: serverTimestamp() };
+  if (phone !== undefined) data.phone = phone;
+  try { await setDoc(doc(db, 'private', user.uid), data, { merge: true }); } catch (e) {}
+}
 
 /* ---------- লগইন অবস্থা ---------- */
 onAuthStateChanged(auth, u => {
@@ -84,8 +104,8 @@ onAuthStateChanged(auth, u => {
     const first = !me; me = snap.data(); K.authed = !me.banned; K.banned = !!me.banned; K.closeS('userSheet'); $('loginT').textContent = 'খেলাঘরে স্বাগতম!';
     K.setProfile({ name: me.name });
     $('bal').textContent = bn(me.points);
-    drawDaily(); drawPremium();
-    if (first) { listenInvites(); listenMyMsgs(); if (pendingRoom) joinRoom(pendingRoom); if (me.banned) K.toast('আপনার একাউন্ট আপাতত বন্ধ করা আছে। যোগাযোগ পাতায় অ্যাডমিনকে লিখুন।'); }
+    drawDaily(); drawPremium(); drawMission();
+    if (first) { savePrivate(); listenInvites(); listenMyMsgs(); drawMission(); if (pendingRoom) joinRoom(pendingRoom); if (me.banned) K.toast('আপনার একাউন্ট আপাতত বন্ধ করা আছে। যোগাযোগ পাতায় অ্যাডমিনকে লিখুন।'); }
   }, e => K.toast('প্রোফাইল লোড হয়নি: ' + e.code)));
   listenLeaderboard();
 });
@@ -345,3 +365,44 @@ function listenMyMsgs() {
   }, () => {}));
 }
 $('n-contact').addEventListener('click', () => { const n = document.querySelectorAll('#myMsgs .rp').length; try { localStorage.setItem('kh-replies-seen', n); } catch (e) {} $('replyDot').hidden = true; });
+
+
+/* ---------- বোনাস মিশন: টেলিগ্রাম ও ফেসবুক শেয়ার ---------- */
+let bonusCfg = {};
+const opened = { tg: false, fb: false };
+try { Object.assign(opened, JSON.parse(sessionStorage.getItem('kh-mission') || '{}')); } catch (e) {}
+const saveOpened = () => { try { sessionStorage.setItem('kh-mission', JSON.stringify(opened)); } catch (e) {} };
+onSnapshot(doc(db, 'config', 'bonus'), d => { bonusCfg = (d.exists() && d.data()) || {}; drawMission(); }, () => {});
+function drawMission() {
+  const b = bonusCfg, tgOn = !!(b.tgOn && b.tgLink), fbOn = !!b.fbOn;
+  const tgDone = !!(me && me.tgDone), fbDone = !!(me && me.fbDone);
+  const showTg = tgOn && !tgDone, showFb = fbOn && !fbDone;
+  $('mission').hidden = !(showTg || showFb);
+  $('tTg').hidden = !showTg; $('tFb').hidden = !showFb;
+  const total = (showTg ? b.tgAmount || 0 : 0) + (showFb ? b.fbAmount || 0 : 0);
+  $('mTotal').textContent = 'মোট +' + bn(total) + ' পয়েন্ট';
+  $('tTgAmt').textContent = '+' + bn(b.tgAmount || 0) + ' পয়েন্ট';
+  $('tFbAmt').textContent = '+' + bn(b.fbAmount || 0) + ' পয়েন্ট';
+  if (b.tgLink) $('tTgGo').href = b.tgLink;
+  const site = location.origin + '/';
+  $('tFbGo').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(site) + '&quote=' + encodeURIComponent(b.fbText || 'খেলাঘরে চলো একসাথে খেলি!');
+  $('tTgClaim').hidden = !opened.tg; $('tFbClaim').hidden = !opened.fb;
+}
+function goTask(key, e) {
+  if (!user || !me) { e.preventDefault(); $('loginT').textContent = 'আগে লগইন করেন, তারপর বোনাস নেন!'; K.openS('loginSheet'); return; }
+  setTimeout(() => { opened[key] = true; saveOpened(); drawMission(); K.bubble && K.bubble('কাজ শেষ হইলে ফিরে এসে "নিন" চাপেন!'); }, 1500);
+}
+$('tTgGo').addEventListener('click', e => goTask('tg', e));
+$('tFbGo').addEventListener('click', e => goTask('fb', e));
+async function claim(key) {
+  if (!user || !me) return;
+  const amt = key === 'tg' ? bonusCfg.tgAmount : bonusCfg.fbAmount, field = key + 'Done';
+  const btn = $(key === 'tg' ? 'tTgClaim' : 'tFbClaim'); btn.disabled = true;
+  try {
+    await updateDoc(doc(db, 'users', user.uid), { points: me.points + amt, [field]: true });
+    K.showModal(amt, key === 'tg' ? 'টেলিগ্রামে আসার জন্য ধন্যবাদ! এই নেন বোনাস!' : 'শেয়ার করার জন্য ধন্যবাদ! বন্ধুরাও আসুক!');
+  } catch (e) { K.toast('বোনাস নেওয়া যায়নি, একটু পরে চেষ্টা করুন'); }
+  btn.disabled = false;
+}
+$('tTgClaim').onclick = () => claim('tg');
+$('tFbClaim').onclick = () => claim('fb');

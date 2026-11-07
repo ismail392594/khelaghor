@@ -271,6 +271,18 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 .maintAll{position:fixed;inset:0;z-index:30;display:grid;place-items:center;text-align:center;padding:24px;background:linear-gradient(180deg,#2f3cc9,#5a1fa8 60%,#1a1460)}
 .maintAll h2{font-family:var(--display);font-size:2rem;margin:8px 0}
 .maintAll p{margin:0;max-width:30ch;color:#e6e1ff}
+.mission{background:linear-gradient(135deg,#ff5f6d22,#22d3ee22),rgba(255,255,255,.1);border:2px solid rgba(255,210,63,.6);border-radius:20px;padding:12px;display:flex;flex-direction:column;gap:10px;box-shadow:0 0 24px rgba(255,210,63,.25)}
+.mhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.mhead b{font-family:var(--display);font-size:1.25rem;color:#ffd23f}
+.mhead span{font-size:.85rem;color:#fff;font-weight:700}
+.mtask{display:flex;align-items:center;gap:10px;background:#fff;color:var(--ink);border-radius:16px;padding:10px}
+.mtask i{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;flex:none}
+.mtask i svg{width:24px;height:24px}
+.mtask div{flex:1;min-width:0}
+.mtask b{display:block;font-size:.95rem;line-height:1.2}
+.mtask span{font-size:.82rem;color:#15803d;font-weight:700}
+.mtask .gbtn{padding:8px 12px;font-size:.95rem;flex:none}
+.mtask.done{opacity:.6}
 @media (max-width:360px){.grid{grid-template-columns:repeat(2,1fr)}.mini{width:84px;height:84px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -303,6 +315,22 @@ label.f input:focus{outline:none;border-color:#6d5cff}
       <div><b>খেলাঘর ফোনে ইনস্টল করুন</b><span id="instTxt">হোম স্ক্রিন থেকে এক চাপে খেলুন, Play Store লাগবে না</span></div>
       <button class="gbtn gold" id="instBtn">ইনস্টল</button>
       <button class="x" id="instX" aria-label="বন্ধ করুন">✕</button>
+    </section>
+
+    <section class="mission" id="mission" hidden>
+      <div class="mhead"><b>ফ্রি বোনাস মিশন</b><span id="mTotal"></span></div>
+      <div class="mtask" id="tTg" hidden>
+        <i style="background:#229ed9"><svg viewBox="0 0 24 24"><path d="M21 4 3 11l6 2 2 6 3-4 5 4z" fill="#fff"/></svg></i>
+        <div><b>টেলিগ্রাম চ্যানেলে যোগ দিন</b><span id="tTgAmt"></span></div>
+        <a class="gbtn" id="tTgGo" target="_blank" rel="noopener">যোগ দিন</a>
+        <button class="gbtn gold" id="tTgClaim" hidden>নিন</button>
+      </div>
+      <div class="mtask" id="tFb" hidden>
+        <i style="background:#1877f2"><svg viewBox="0 0 24 24"><path d="M14 8h3V4h-3c-2.8 0-4 1.8-4 4.5V11H7v4h3v7h4v-7h3l1-4h-4V9c0-.6.4-1 1-1z" fill="#fff"/></svg></i>
+        <div><b>ফেসবুকে খেলাঘর শেয়ার করুন</b><span id="tFbAmt"></span></div>
+        <a class="gbtn" id="tFbGo" target="_blank" rel="noopener">শেয়ার</a>
+        <button class="gbtn gold" id="tFbClaim" hidden>নিন</button>
+      </div>
     </section>
 
     <section class="daily">
@@ -437,6 +465,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
     <form id="userForm" novalidate style="display:flex;flex-direction:column;gap:10px">
       <label class="f">ইউজারনেম<input id="unInput" autocapitalize="off" autocomplete="username" spellcheck="false" maxlength="15" placeholder="যেমন: rashed_99"></label>
       <label class="f">দেখানোর নাম<input id="dnInput" maxlength="20" placeholder="যেমন: রাশেদ"></label>
+      <label class="f">মোবাইল নম্বর (ঐচ্ছিক, শুধু অ্যাডমিন দেখবে)<input id="phInput" inputmode="numeric" autocomplete="tel" maxlength="11" placeholder="01XXXXXXXXX"></label>
       <p class="err" id="unErr"></p>
       <button class="gbtn" type="submit" id="unBtn">শুরু করি</button>
     </form>
@@ -452,6 +481,11 @@ label.f input:focus{outline:none;border-color:#6d5cff}
       <div><b id="pfGames">০</b><span>খেলা</span></div>
       <div><b id="pfWins">০</b><span>জয়</span></div>
     </div>
+    <form id="pfPhForm" class="invrow" novalidate>
+      <label class="f" style="flex:1">মোবাইল নম্বর (শুধু অ্যাডমিন দেখবে)<input id="pfPhone" inputmode="numeric" maxlength="11" placeholder="01XXXXXXXXX"></label>
+      <button class="gbtn" type="submit" style="padding:10px 14px;font-size:1rem">সেভ</button>
+    </form>
+    <p class="err" id="pfErr"></p>
     <button class="sbtn" id="pfOut">লগআউট</button>
     <button class="link" data-close="profSheet">বন্ধ করুন</button>
   </div>

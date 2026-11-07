@@ -11,6 +11,7 @@
 :root{--bg:#f3f1fb;--card:#fff;--ink:#1d1640;--muted:#6b6496;--line:#e6e0fb;--accent:#3b3fd8;--good:#15803d;--goodBg:#dcfce7;--warn:#b45309;--warnBg:#fef3c7;--bad:#d61f4f;--badBg:#fde6ec;--top:#1d1640;
   --display:'Atma','Hind Siliguri',system-ui,sans-serif;--body:'Hind Siliguri','Noto Sans Bengali',system-ui,sans-serif}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html{background:var(--bg)}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
 .top{background:var(--top);color:#fff;position:sticky;top:0;z-index:5;padding-top:env(safe-area-inset-top,0px)}
@@ -45,6 +46,10 @@ label.f{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:.88
 .stat b{font-family:var(--display);font-size:2rem;line-height:1.1;font-variant-numeric:tabular-nums}
 .stat span{color:var(--muted);font-size:.85rem}
 .stat.alert b{color:var(--bad)}
+button.stat{text-align:left;font:inherit;color:inherit;cursor:pointer;transition:transform .15s,box-shadow .15s}
+button.stat:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(29,22,64,.12)}
+button.stat small{color:var(--accent);font-weight:700;font-size:.78rem;margin-top:4px}
+.sub{font-size:.8rem;color:var(--muted);word-break:break-all}
 .tbl{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:560px}
 th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
@@ -94,21 +99,34 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
     <h2>অ্যাডমিন লগইন</h2>
     <p class="muted" id="gateTxt">অ্যাডমিন Gmail দিয়ে ঢুকুন।</p>
     <button id="login">Gmail দিয়ে লগইন</button>
+    <form id="pwForm" class="row" novalidate hidden>
+      <input id="pw" type="password" autocomplete="current-password" placeholder="অ্যাডমিন পাসওয়ার্ড" aria-label="অ্যাডমিন পাসওয়ার্ড">
+      <button type="submit">ঢুকুন</button>
+    </form>
+    <button class="ghost" id="forgot" hidden>পাসওয়ার্ড ভুলে গেছি</button>
+    <form id="resetForm" novalidate hidden style="display:flex;flex-direction:column;gap:8px">
+      <p class="muted">আপনার Gmail দিয়ে আবার যাচাই হয়েছে। এবার নতুন পাসওয়ার্ড দিন (কমপক্ষে ৮ অক্ষর)।</p>
+      <input id="np1" type="password" autocomplete="new-password" placeholder="নতুন পাসওয়ার্ড" aria-label="নতুন পাসওয়ার্ড">
+      <input id="np2" type="password" autocomplete="new-password" placeholder="আবার লিখুন" aria-label="নতুন পাসওয়ার্ড আবার">
+      <button type="submit">নতুন পাসওয়ার্ড সেভ করে ঢুকুন</button>
+    </form>
   </section>
 
   <!-- ড্যাশবোর্ড -->
   <section id="p-dash" class="panel" hidden>
     <div class="stats">
-      <div class="stat"><b id="sTotal">-</b><span>মোট খেলোয়াড়</span></div>
-      <div class="stat"><b id="sToday">-</b><span>আজ নতুন রেজিস্ট্রেশন</span></div>
-      <div class="stat"><b id="sWeek">-</b><span>গত ৭ দিনে নতুন</span></div>
-      <div class="stat"><b id="sPrem">-</b><span>প্রিমিয়াম সদস্য</span></div>
-      <div class="stat alert"><b id="sOpen">-</b><span>উত্তরের অপেক্ষায় বার্তা</span></div>
-      <div class="stat"><b id="sLive">-</b><span>চালু গেম</span></div>
+      <button class="stat" data-go="users" data-sort="createdAt"><b id="sTotal">-</b><span>মোট খেলোয়াড়</span><small>তালিকা দেখুন →</small></button>
+      <button class="stat" data-go="users" data-sort="createdAt"><b id="sToday">-</b><span>আজ নতুন রেজিস্ট্রেশন</span><small>নতুনদের দেখুন →</small></button>
+      <button class="stat" data-go="users" data-sort="createdAt"><b id="sWeek">-</b><span>গত ৭ দিনে নতুন</span><small>নতুনদের দেখুন →</small></button>
+      <button class="stat" data-go="users" data-sort="points"><b id="sPrem">-</b><span>প্রিমিয়াম সদস্য</span><small>খেলোয়াড় দেখুন →</small></button>
+      <button class="stat alert" data-go="msgs"><b id="sOpen">-</b><span>উত্তরের অপেক্ষায় বার্তা</span><small>উত্তর দিন →</small></button>
+      <button class="stat" data-go="games"><b id="sLive">-</b><span>চালু গেম</span><small>গেম চালু/বন্ধ →</small></button>
+      <button class="stat" data-go="settings"><b id="sBonus">-</b><span>বোনাস মিশন</span><small>চালু/বন্ধ করুন →</small></button>
+    </div>
     </div>
     <div class="card" style="margin-top:14px">
       <h2>সাম্প্রতিক রেজিস্ট্রেশন</h2>
-      <div class="tbl"><table><thead><tr><th>নাম</th><th>ইউজারনেম</th><th>যোগ দিয়েছে</th><th style="text-align:right">পয়েন্ট</th></tr></thead><tbody id="recent"></tbody></table></div>
+      <div class="tbl"><table><thead><tr><th>নাম</th><th>ইউজারনেম</th><th>যোগ দিয়েছে</th><th style="text-align:right">পয়েন্ট</th><th></th></tr></thead><tbody id="recent"></tbody></table></div>
     </div>
   </section>
 
@@ -121,7 +139,7 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
         <button type="submit">খুঁজুন</button>
       </form>
       <div id="found" hidden style="display:flex;flex-direction:column;gap:10px">
-        <div class="user"><b id="fName"></b><span class="pts" id="fPts"></span><span class="muted" id="fUser"></span></div>
+        <div class="user"><b id="fName"></b><span class="pts" id="fPts"></span><span class="muted" id="fUser"></span><span class="sub" id="fContact"></span></div>
         <div class="quick">
           <button class="sm danger" data-a="-100">−১০০</button><button class="sm okb" data-a="100">+১০০</button>
           <button class="sm okb" data-a="500">+৫০০</button><button class="sm okb" data-a="1000">+১০০০</button>
@@ -143,7 +161,7 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
         <select id="uSort" style="width:auto" aria-label="সাজানো">
           <option value="createdAt">নতুনরা আগে</option><option value="points">বেশি পয়েন্ট আগে</option>
         </select></div>
-      <div class="tbl"><table><thead><tr><th>নাম</th><th>ইউজারনেম</th><th>যোগ দিয়েছে</th><th>অবস্থা</th><th style="text-align:right">পয়েন্ট</th><th></th></tr></thead><tbody id="uList"></tbody></table></div>
+      <div class="tbl"><table><thead><tr><th>নাম</th><th>Gmail / ফোন</th><th>যোগ দিয়েছে</th><th>অবস্থা</th><th style="text-align:right">পয়েন্ট</th><th></th></tr></thead><tbody id="uList"></tbody></table></div>
       <button class="ghost" id="uMore">আরও দেখুন</button>
     </div>
   </section>
@@ -182,9 +200,27 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
         <label class="f">ইমেইল<input id="sEmail" inputmode="email" placeholder="support@khelaghor.com"></label>
         <label class="f">বিকাশ/নগদ নম্বর (টপ-আপ ও প্রিমিয়ামের জন্য)<input id="sPay" inputmode="tel" placeholder="01XXXXXXXXX (পার্সোনাল/মার্চেন্ট)"></label>
       </div>
+      <h2 style="margin-top:6px">বোনাস মিশন (নতুন খেলোয়াড় টানতে)</h2>
+      <p class="muted">খেলোয়াড় কাজটা করে "নিন" চাপলে পয়েন্ট পাবে, প্রতিটা একবার। চালু/বন্ধ আর পরিমাণ এখান থেকে।</p>
+      <div class="grid2">
+        <label class="f">টেলিগ্রাম চ্যানেলের লিংক<input id="bTgLink" inputmode="url" placeholder="https://t.me/khelaghor"></label>
+        <label class="f">টেলিগ্রাম মিশন<select id="bTgOn"><option value="on">চালু</option><option value="off">বন্ধ</option></select></label>
+        <label class="f">টেলিগ্রামে যোগ দিলে পয়েন্ট<input id="bTgAmt" inputmode="numeric" placeholder="25000"></label>
+        <label class="f">ফেসবুক শেয়ার মিশন<select id="bFbOn"><option value="on">চালু</option><option value="off">বন্ধ</option></select></label>
+        <label class="f">ফেসবুকে শেয়ার করলে পয়েন্ট<input id="bFbAmt" inputmode="numeric" placeholder="25000"></label>
+        <label class="f">শেয়ারের লেখা<input id="bFbText" maxlength="200" placeholder="খেলাঘরে লুডু খেলছি, তুমিও আসো!"></label>
+      </div>
       <label class="f">পুরো সাইট মেরামত মোড
         <select id="sMaint"><option value="off">বন্ধ (সাইট স্বাভাবিক)</option><option value="on">চালু (সবাই "মেরামত চলছে" দেখবে, অ্যাডমিন বাদে)</option></select></label>
       <div class="row"><button type="submit">সেভ করুন</button><span class="say" id="sSay"></span></div>
+    </form>
+    <form class="card" id="chgForm" novalidate>
+      <h2>অ্যাডমিন পাসওয়ার্ড বদলান</h2>
+      <div class="grid2">
+        <input id="cp1" type="password" autocomplete="new-password" placeholder="নতুন পাসওয়ার্ড (কমপক্ষে ৮ অক্ষর)" aria-label="নতুন পাসওয়ার্ড">
+        <input id="cp2" type="password" autocomplete="new-password" placeholder="আবার লিখুন" aria-label="নতুন পাসওয়ার্ড আবার">
+      </div>
+      <div class="row"><button type="submit">পাসওয়ার্ড বদলান</button><span class="say" id="cSay"></span></div>
     </form>
   </section>
 </div>
@@ -192,11 +228,26 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
 <script src="/js/game-info.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, reauthenticateWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot, runTransaction, collection, query, where, orderBy, limit, startAfter, Timestamp, serverTimestamp, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAILS } from "/js/firebase-config.js";
 
 const app=initializeApp(firebaseConfig), auth=getAuth(app), db=getFirestore(app);
+// অ্যাডমিন পাসওয়ার্ডের হ্যাশ (আসল পাসওয়ার্ড কোডে নেই)। বদলাতে চাইলে Claude-কে নতুন পাসওয়ার্ড দিন।
+// প্রথম পাসওয়ার্ডের হ্যাশ। একবার পাসওয়ার্ড বদলালে এটা আর কাজ করে না, তখন ডেটাবেসের গোপন হ্যাশ ব্যবহার হয়।
+const INIT={salt:'khelaghor',hash:'b751527804406f7721c2f13c01fda7bbef85d3a9d792966ac0aa802e1e1e05f4'};
+async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+let secret=null;
+async function getSecret(){if(secret)return secret;const d=await getDoc(doc(db,'admin','secret'));secret=d.exists()?d.data():INIT;return secret}
+const pwOk=()=>{try{return !!sessionStorage.getItem('kh-admin-pw')&&sessionStorage.getItem('kh-admin-pw')===(secret&&secret.hash)}catch(e){return false}};
+async function savePw(p1,p2,sayId){
+  if(p1.length<8){say(sayId,'কমপক্ষে ৮ অক্ষরের পাসওয়ার্ড দিন');return false}
+  if(p1!==p2){say(sayId,'দুইবার একই পাসওয়ার্ড লিখুন');return false}
+  const salt=[...crypto.getRandomValues(new Uint8Array(16))].map(x=>x.toString(16).padStart(2,'0')).join('');
+  const hash=await sha(salt+':'+p1);
+  try{await setDoc(doc(db,'admin','secret'),{salt,hash,updatedAt:serverTimestamp()});secret={salt,hash};try{sessionStorage.setItem('kh-admin-pw',hash)}catch(e){}return true}
+  catch(e){say(sayId,'সেভ হয়নি: '+e.code+' (Firebase-এ নতুন Rules পাবলিশ করেছেন তো?)');return false}
+}
 const $=id=>document.getElementById(id);
 const bn=n=>String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -213,16 +264,37 @@ const BUILT={'লুডু':'/games/ludo/'};
 let tab='dash';
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{tab=b.dataset.t;document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===b));document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!=='p-'+tab);if(tab==='users'&&!uLoaded)loadUsers(true)});
 
+document.querySelector('#p-dash .stats').onclick=e=>{const b=e.target.closest('[data-go]');if(!b)return;if(b.dataset.sort){$('uSort').value=b.dataset.sort;uLoaded=false}document.querySelector('.tab[data-t="'+b.dataset.go+'"]').click()};
 $('login').onclick=()=>signInWithPopup(auth,new GoogleAuthProvider()).catch(e=>$('gateTxt').textContent='লগইন হয়নি: '+e.code);
-$('out').onclick=()=>signOut(auth);
+$('out').onclick=()=>{try{sessionStorage.removeItem('kh-admin-pw')}catch(e){}secret=null;signOut(auth)};
 
-let unsubs=[];
-onAuthStateChanged(auth,u=>{
+let unsubs=[],curUser=null;
+function enter(){$('gate').hidden=true;$('tabs').hidden=false;document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!=='p-'+tab);loadStats();listenRecent();listenGames();listenMsgs();loadSettings()}
+$('pwForm').onsubmit=async e=>{e.preventDefault();const sc=await getSecret().catch(()=>INIT);const h=await sha(sc.salt+':'+$('pw').value);if(h!==sc.hash){$('gateTxt').textContent='পাসওয়ার্ড ভুল, আবার চেষ্টা করুন';$('pw').value='';return}try{sessionStorage.setItem('kh-admin-pw',h)}catch(e2){}$('pw').value='';if(curUser)enter()};
+// পাসওয়ার্ড ভুলে গেলে: Gmail দিয়ে আবার যাচাই, তারপর নতুন পাসওয়ার্ড
+$('forgot').onclick=async()=>{
+  if(!curUser)return;
+  try{
+    const pr=new GoogleAuthProvider();pr.setCustomParameters({prompt:'select_account',login_hint:curUser.email});
+    const r=await reauthenticateWithPopup(curUser,pr);
+    if(!ADMIN_EMAILS.includes(r.user.email)){$('gateTxt').textContent='এটা অ্যাডমিন Gmail না';return}
+    $('pwForm').hidden=true;$('forgot').hidden=true;$('resetForm').hidden=false;$('gateTxt').textContent='যাচাই সফল ✓';$('np1').focus();
+  }catch(e){$('gateTxt').textContent='Gmail যাচাই হয়নি: '+(e.code||e.message)}
+};
+$('resetForm').onsubmit=async e=>{e.preventDefault();$('gateTxt').className='muted';if(await savePw($('np1').value,$('np2').value,'gateTxt')){$('np1').value=$('np2').value='';enter();toast('নতুন পাসওয়ার্ড সেভ হয়েছে')}};
+$('chgForm').onsubmit=async e=>{e.preventDefault();if(await savePw($('cp1').value,$('cp2').value,'cSay')){$('cp1').value=$('cp2').value='';say('cSay','পাসওয়ার্ড বদলানো হয়েছে, পরেরবার নতুনটা দিয়ে ঢুকবেন',true)}};
+onAuthStateChanged(auth,async u=>{
   unsubs.forEach(f=>f());unsubs=[];
-  const ok=u&&ADMIN_EMAILS.includes(u.email);
+  curUser=u;
+  const mail=u&&ADMIN_EMAILS.includes(u.email);
+  if(mail){try{await getSecret()}catch(e){secret=INIT}}
+  const ok=mail&&pwOk();
+  $('forgot').hidden=!mail||ok;$('resetForm').hidden=true;
   $('gate').hidden=!!ok;$('tabs').hidden=!ok;$('out').hidden=!u;$('whoEmail').textContent=u?u.email:'';
+  $('login').hidden=!!mail;$('pwForm').hidden=!mail||ok;
   document.querySelectorAll('.panel').forEach(p=>p.hidden=!ok||p.id!=='p-'+tab);
-  if(u&&!ok)$('gateTxt').textContent=u.email+' অ্যাডমিন না। অ্যাডমিন Gmail দিয়ে ঢুকুন।';
+  if(u&&!mail)$('gateTxt').textContent=u.email+' অ্যাডমিন না। অ্যাডমিন Gmail দিয়ে ঢুকুন।';
+  else if(mail&&!ok){$('gateTxt').textContent='Gmail ঠিক আছে। এবার অ্যাডমিন পাসওয়ার্ড দিন।';setTimeout(()=>$('pw').focus(),50)}
   if(!ok)return;
   loadStats();listenRecent();listenGames();listenMsgs();loadSettings();
 });
@@ -242,7 +314,7 @@ async function loadStats(){
 }
 function listenRecent(){
   unsubs.push(onSnapshot(query(collection(db,'users'),orderBy('createdAt','desc'),limit(8)),s=>{
-    $('recent').innerHTML=s.docs.map(d=>{const r=d.data();return `<tr><td>${esc(r.name)}</td><td>@${esc(r.username)}</td><td>${date(r.createdAt)}</td><td class="n">${bn(r.points)}</td></tr>`}).join('')||'<tr><td colspan="4">এখনো কেউ নেই</td></tr>';
+    $('recent').innerHTML=s.docs.map(d=>{const r=d.data();return `<tr><td>${esc(r.name)}</td><td>@${esc(r.username)}</td><td>${date(r.createdAt)}</td><td class="n">${bn(r.points)}</td><td><button class="sm ghost" data-open="${esc(r.username)}">খুলুন</button></td></tr>`}).join('')||'<tr><td colspan="5">এখনো কেউ নেই</td></tr>';
   }));
 }
 
@@ -257,13 +329,15 @@ async function loadUsers(reset){
   const s=await getDocs(q);
   uLast=s.docs[s.docs.length-1]||uLast;
   $('uMore').hidden=s.size<25;
-  $('uList').insertAdjacentHTML('beforeend',s.docs.map(d=>{const r=d.data();
-    const st=(r.banned?'<span class="pill p-ban">ব্লকড</span> ':'')+(isPrem(r)?'<span class="pill p-prem">প্রিমিয়াম</span>':'');
-    return `<tr><td>${esc(r.name)}</td><td>@${esc(r.username)}</td><td>${date(r.createdAt)}</td><td>${st||'-'}</td><td class="n">${bn(r.points)}</td><td><button class="sm ghost" data-open="${esc(r.username)}">খুলুন</button></td></tr>`}).join(''));
+  const priv=await Promise.all(s.docs.map(d=>getDoc(doc(db,'private',d.id)).then(x=>x.exists()?x.data():{}).catch(()=>({}))));
+  $('uList').insertAdjacentHTML('beforeend',s.docs.map((d,i)=>{const r=d.data(),p=priv[i];
+    const st=(r.banned?'<span class="pill p-ban">ব্লকড</span> ':'')+(isPrem(r)?'<span class="pill p-prem">প্রিমিয়াম</span> ':'')+(r.tgDone?'<span class="pill p-soon">টেলিগ্রাম</span> ':'')+(r.fbDone?'<span class="pill p-soon">শেয়ার</span>':'');
+    return `<tr><td><b>${esc(r.name)}</b><div class="sub">@${esc(r.username)}</div></td><td><div class="sub">${esc(p.email||'-')}</div><div class="sub">${esc(p.phone||'')}</div></td><td>${date(r.createdAt)}</td><td>${st||'-'}</td><td class="n">${bn(r.points)}</td><td><button class="sm ghost" data-open="${esc(r.username)}">খুলুন</button></td></tr>`}).join(''));
   if(!s.size&&reset)$('uList').innerHTML='<tr><td colspan="6">এখনো কেউ নেই</td></tr>';
 }
 $('uSort').onchange=()=>loadUsers(true);
 $('uMore').onclick=()=>loadUsers(false);
+$('recent').onclick=e=>{const b=e.target.closest('[data-open]');if(!b)return;document.querySelector('.tab[data-t="users"]').click();$('q').value=b.dataset.open;$('find').requestSubmit()};
 $('uList').onclick=e=>{const b=e.target.closest('[data-open]');if(!b)return;$('q').value=b.dataset.open;$('find').requestSubmit();scrollTo({top:0,behavior:'smooth'})};
 
 let target=null,unsubT=null,cur=null;
@@ -281,6 +355,7 @@ $('find').onsubmit=async e=>{
     const pu=isPrem(r)?r.premiumUntil.toDate():null;
     $('fUser').textContent='@'+r.username+' · যোগ '+date(r.createdAt)+' · খেলা '+bn(r.games||0)+' · জয় '+bn(r.wins||0)+(pu?' · প্রিমিয়াম '+bn(pu.getDate())+'/'+bn(pu.getMonth()+1)+' পর্যন্ত':'');
     $('banBtn').textContent=r.banned?'ব্লক তুলে দিন':'ব্লক করুন';});
+  getDoc(doc(db,'private',target)).then(x=>{const p=x.exists()?x.data():{};$('fContact').textContent='Gmail: '+(p.email||'-')+' · ফোন: '+(p.phone||'দেয়নি')}).catch(()=>{$('fContact').textContent=''});
   $('found').hidden=false;
 };
 async function tx(fn,ok){
@@ -351,12 +426,20 @@ $('mList').addEventListener('click',async e=>{
 /* ---------- সেটিংস ---------- */
 async function loadSettings(){
   const d=await getDoc(doc(db,'config','site')).catch(()=>null),s=(d&&d.exists())?d.data():{};
+  const bd=await getDoc(doc(db,'config','bonus')).catch(()=>null),b=(bd&&bd.exists())?bd.data():{};
+  $('bTgLink').value=b.tgLink||'';$('bTgOn').value=b.tgOn?'on':'off';$('bTgAmt').value=b.tgAmount??25000;
+  $('bFbOn').value=b.fbOn?'on':'off';$('bFbAmt').value=b.fbAmount??25000;$('bFbText').value=b.fbText||'খেলাঘরে বাংলার সব মজার গেম! চলো একসাথে খেলি';
+  $('sBonus').textContent=(b.tgOn||b.fbOn)?'চালু':'বন্ধ';
   $('sNotice').value=s.notice||'';$('sWa').value=s.whatsapp||'';$('sFb').value=s.facebook||'';$('sEmail').value=s.email||'';$('sPay').value=s.payNumber||'';$('sMaint').value=s.maintenance?'on':'off';
 }
 $('setForm').onsubmit=async e=>{
   e.preventDefault();
   const fb=$('sFb').value.trim();
   if(fb&&!/^https:\/\//.test(fb)){say('sSay','Facebook লিংক https:// দিয়ে শুরু হতে হবে');return}
+  const tgL=$('bTgLink').value.trim(),tgA=parseInt($('bTgAmt').value,10),fbA=parseInt($('bFbAmt').value,10);
+  if($('bTgOn').value==='on'&&!/^https:\/\/t\.me\//.test(tgL)){say('sSay','টেলিগ্রাম লিংক https://t.me/ দিয়ে শুরু হতে হবে');return}
+  if(!(tgA>=0&&tgA<=1000000)||!(fbA>=0&&fbA<=1000000)){say('sSay','পয়েন্টের পরিমাণ ০ থেকে ১০,০০,০০০ এর মধ্যে দিন');return}
+  try{await setDoc(doc(db,'config','bonus'),{tgLink:tgL,tgOn:$('bTgOn').value==='on',tgAmount:tgA,fbOn:$('bFbOn').value==='on',fbAmount:fbA,fbText:$('bFbText').value.trim()},{merge:true});$('sBonus').textContent=($('bTgOn').value==='on'||$('bFbOn').value==='on')?'চালু':'বন্ধ'}catch(err){say('sSay','বোনাস সেভ হয়নি: '+err.code);return}
   try{await setDoc(doc(db,'config','site'),{notice:$('sNotice').value.trim(),whatsapp:$('sWa').value.trim(),facebook:fb,email:$('sEmail').value.trim(),payNumber:$('sPay').value.trim(),maintenance:$('sMaint').value==='on',updatedAt:serverTimestamp()},{merge:true});say('sSay','সেভ হয়েছে, সবার ফোনে সাথে সাথে দেখাবে',true)}
   catch(err){say('sSay','হয়নি: '+err.code)}
 };

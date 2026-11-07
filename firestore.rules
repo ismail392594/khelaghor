@@ -5,6 +5,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function signedIn() { return request.auth != null; }
+    function bonus() { return get(/databases/$(database)/documents/config/bonus).data; }
     function isAdmin() {
       return signedIn()
         && request.auth.token.email_verified == true
@@ -25,14 +26,42 @@ service cloud.firestore {
         && getAfter(/databases/$(database)/documents/usernames/$(request.resource.data.username)).data.uid == request.auth.uid;
       // অ্যাডমিন যেকোনো পয়েন্ট বদলাতে পারে।
       // খেলোয়াড় নিজে শুধু দৈনিক বোনাস (+১০০) নিতে পারে, ২০ ঘণ্টায় একবার।
+      // অ্যাডমিন যেকোনো কিছু বদলাতে পারে। খেলোয়াড় নিজে শুধু:
+      // (১) দৈনিক বোনাস +১০০, ২০ ঘণ্টায় একবার
+      // (২) বোনাস মিশন (টেলিগ্রাম / ফেসবুক শেয়ার), প্রতিটা একবার, অ্যাডমিন চালু রাখলে, অ্যাডমিনের ঠিক করা পরিমাণে
       allow update: if isAdmin() || (
-        signedIn() && request.auth.uid == uid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['points','lastDaily'])
-        && request.resource.data.points == resource.data.points + 100
-        && request.resource.data.lastDaily == request.time
-        && (resource.data.lastDaily == null || request.time > resource.data.lastDaily + duration.value(20, 'h'))
+        signedIn() && request.auth.uid == uid && resource.data.get('banned', false) != true && (
+          (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['points','lastDaily'])
+            && request.resource.data.points == resource.data.points + 100
+            && request.resource.data.lastDaily == request.time
+            && (resource.data.lastDaily == null || request.time > resource.data.lastDaily + duration.value(20, 'h'))
+          ) || (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['points','tgDone'])
+            && resource.data.get('tgDone', false) == false
+            && request.resource.data.tgDone == true
+            && bonus().tgOn == true
+            && request.resource.data.points == resource.data.points + bonus().tgAmount
+          ) || (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['points','fbDone'])
+            && resource.data.get('fbDone', false) == false
+            && request.resource.data.fbDone == true
+            && bonus().fbOn == true
+            && request.resource.data.points == resource.data.points + bonus().fbAmount
+          )
+        )
       );
       allow delete: if false;
+    }
+
+    // খেলোয়াড়ের ব্যক্তিগত তথ্য (Gmail, ফোন): শুধু সে নিজে আর অ্যাডমিন দেখবে
+    match /private/{uid} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['email','phone','updatedAt'])
+        && request.resource.data.email == request.auth.token.email
+        && (request.resource.data.phone == null || (request.resource.data.phone is string && request.resource.data.phone.matches('^01[3-9][0-9]{8}$')));
+      allow delete: if isAdmin();
     }
 
     // ইউজারনেম যাতে দুইজন একই না পায়
@@ -78,6 +107,11 @@ service cloud.firestore {
     match /config/{id} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    // অ্যাডমিন পাসওয়ার্ডের গোপন হ্যাশ: শুধু অ্যাডমিন Gmail পড়তে-লিখতে পারবে
+    match /admin/{id} {
+      allow read, write: if isAdmin();
     }
 
     // খেলোয়াড়দের বার্তা (যোগাযোগ)
