@@ -101,6 +101,8 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--teal);outline-offse
 .face{position:absolute;inset:0;border-radius:8px;background:linear-gradient(145deg,#fff,#e8e2f6);box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:5px;backface-visibility:hidden}
 .face i{width:7px;height:7px;border-radius:50%;place-self:center;background:transparent}
 .face i.on{background:var(--pc,#1d1640);box-shadow:inset 0 1px 2px rgba(0,0,0,.35)}
+.cube.rolling{transition:none;animation:tumble .45s linear infinite}
+@keyframes tumble{from{transform:rotateX(0) rotateY(0) rotateZ(0)}to{transform:rotateX(360deg) rotateY(720deg) rotateZ(180deg)}}
 .f1{transform:translateZ(20px)}.f6{transform:rotateY(180deg) translateZ(20px)}
 .f2{transform:rotateY(90deg) translateZ(20px)}.f5{transform:rotateY(-90deg) translateZ(20px)}
 .f3{transform:rotateX(90deg) translateZ(20px)}.f4{transform:rotateX(-90deg) translateZ(20px)}
@@ -383,11 +385,12 @@ async function playEvent(e) {
   if (e.k === 'roll') {
     const el = pod(e.p); if (!el) return;
     el.classList.add('active');
-    sfx('dice'); setCube(el.querySelector('.cube'), e.d, true);
+    const cube = el.querySelector('.cube'), wasRolling = cube.classList.contains('rolling');
+    cube.classList.remove('rolling'); if (!wasRolling) sfx('dice'); setCube(cube, e.d, true);
     await sleep(780);
     if (e.d === 6) { sfx('six'); boardPop('৬!', COL[pl.color]); say(pick(LINES.six), true); }
     else say(NUM[e.d], true);
-    $('msg').textContent = nameOf(e.p) + ' ' + bn(e.d) + ' তুলেছে';
+    $('msg').textContent = (e.p === myIdx ? 'আপনার' : nameOf(e.p) + '-এর') + ' ' + (e.d === 6 ? 'ছক্কা (৬)' : bn(e.d)) + ' উঠেছে';
     await sleep(250);
   } else if (e.k === 'move') {
     if (e.from < 0) { D[e.p][e.t] = 0; placeTokens(); sfx('hop'); await sleep(200); }
@@ -453,8 +456,8 @@ async function onDice(i) {
   audio();
   if (local) { doLocal({ type: 'roll', p: i }); return; }
   acting = true; drawPods();
-  const el = pod(i); sfx('dice'); setCube(el.querySelector('.cube'), 1 + Math.floor(Math.random() * 6), true); // অপেক্ষার সময় ঘুরতে থাকুক
-  try { await api({ action: 'roll', matchId }); } catch (e) { flash(e.message); }
+  const cube = pod(i).querySelector('.cube'); sfx('dice'); cube.classList.add('rolling'); // সার্ভারের উত্তর না আসা পর্যন্ত শুধু ঘুরবে, কোনো সংখ্যায় থামবে না
+  try { await api({ action: 'roll', matchId }); } catch (e) { cube.classList.remove('rolling'); flash(e.message); }
   acting = false; drawPods(); placeTokens();
 }
 async function onToken(p, t) {
