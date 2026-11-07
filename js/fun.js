@@ -269,6 +269,10 @@
     if (st === 'maint') { bubble(pick(MAINT), { sound: 'boing' }); return; }
     if (!url) { bubble(pick(SOON), { sound: 'boing' }); return; }
     if (K.banned) { bubble('আপনার একাউন্ট আপাতত বন্ধ। যোগাযোগ পাতায় অ্যাডমিনকে লিখুন।', { sound: 'boing' }); return; }
+    if (!K.authed && K.needsUsername) {
+      $('userT').textContent = 'খেলার আগে একটা ইউজারনেম বেছে নিন!';
+      sfx('boing'); K.openS('userSheet'); return;
+    }
     if (!K.authed) {
       $('loginT').textContent = pick(GATE);
       sfx('boing'); K.openS('loginSheet'); speak($('loginT').textContent); return;

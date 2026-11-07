@@ -58,6 +58,11 @@ $('pfPhForm').onsubmit = async e => {
 $('pfOut').onclick = async () => { await signOut(auth); K.closeS('profSheet'); K.toast('লগআউট হয়েছে'); };
 
 /* ---------- ইউজারনেম ---------- */
+$('unLater').onclick = () => {
+  try { sessionStorage.setItem('kh-un-later', '1'); } catch (e) {}
+  K.closeS('userSheet');
+  K.bubble && K.bubble('ঠিক আছে, ঘুরে দেখেন! খেলতে চাইলে ইউজারনেম লাগবে কিন্তু');
+};
 $('userForm').onsubmit = async e => {
   e.preventDefault();
   const un = $('unInput').value.trim().toLowerCase(), dn = $('dnInput').value.trim(), err = $('unErr');
@@ -100,7 +105,14 @@ onAuthStateChanged(auth, u => {
   }
   K.closeS('loginSheet');
   unsubs.push(onSnapshot(doc(db, 'users', u.uid), snap => {
-    if (!snap.exists()) { $('dnInput').value = (u.displayName || '').slice(0, 20); K.openS('userSheet'); return; }
+    if (!snap.exists()) {
+      K.needsUsername = true;
+      $('dnInput').value = (u.displayName || '').slice(0, 20);
+      let later = false; try { later = sessionStorage.getItem('kh-un-later') === '1'; } catch (e) {}
+      if (!later) K.openS('userSheet');
+      return;
+    }
+    K.needsUsername = false;
     const first = !me; me = snap.data(); K.authed = !me.banned; K.banned = !!me.banned; K.closeS('userSheet'); $('loginT').textContent = 'খেলাঘরে স্বাগতম!';
     K.setProfile({ name: me.name });
     $('bal').textContent = bn(me.points);

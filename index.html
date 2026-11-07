@@ -469,6 +469,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
       <p class="err" id="unErr"></p>
       <button class="gbtn" type="submit" id="unBtn">শুরু করি</button>
     </form>
+    <button class="link" id="unLater" type="button">পরে করবো, আগে ঘুরে দেখি</button>
   </div>
 </div>
 
@@ -549,7 +550,7 @@ function drawGrid(){
 /* sheets */
 const openS=id=>{$(id).hidden=false};const closeS=id=>{$(id).hidden=true};
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>closeS(b.dataset.close));
-document.querySelectorAll('.sheet').forEach(s=>s.addEventListener('click',e=>{if(e.target===s&&!['loginSheet','userSheet'].includes(s.id))s.hidden=true}));
+document.querySelectorAll('.sheet').forEach(s=>s.addEventListener('click',e=>{if(e.target===s&&s.id!=='loginSheet')s.hidden=true}));
 function openModes(name,url){
   curGame=name;$('modeT').textContent=name;$('mCpu').href=url;
   $('mLocalTag').textContent=$('mOnTag').textContent=(PL[name]||'২')+' জন';openS('modeSheet');
