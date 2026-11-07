@@ -297,6 +297,23 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 .soundBar .sMusic{padding:8px;width:40px;height:40px;justify-content:center}
 .soundBar:not(.on) .sMusic{width:auto;padding:8px 12px}
 .soundBar:not(.on) .sMusic>span{max-width:120px}
+.search{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.14);border-radius:14px;padding:4px 12px}
+.search svg{width:20px;height:20px;flex:none;color:#d9d4ff}
+.search input{flex:1;min-width:0;border:0;background:none;color:#fff;font:600 1rem var(--body);padding:8px 0;outline:none}
+.search input::placeholder{color:#c9c3f5}
+.search:focus-within{box-shadow:0 0 0 3px rgba(34,211,238,.6)}
+.recent{display:flex;flex-direction:column;gap:8px}
+.rrow{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.rtile{flex:none;display:flex;align-items:center;gap:8px;border:0;border-radius:16px;padding:8px 14px 8px 8px;color:#fff;font:700 .92rem var(--body);cursor:pointer;background:linear-gradient(160deg,var(--a),var(--b));box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.rtile .logo{width:36px;height:36px;border-radius:10px;background:rgba(0,0,0,.18);display:grid;place-items:center}
+.rtile .logo svg{width:26px;height:26px;overflow:visible}
+.rtile .logo svg *{fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.rtile .logo svg .f{fill:#fff;stroke:none}.rtile .logo svg .y{fill:#ffd23f;stroke:none}.rtile .logo svg .d{fill:#1d1640;stroke:none}.rtile .logo svg .h{fill:rgba(255,255,255,.45);stroke:none}.rtile .logo svg text.t{fill:#1d1640;stroke:none;font:700 15px var(--body);text-anchor:middle}
+.riddle{background:linear-gradient(135deg,#ffecb3,#ffd6e0);color:var(--ink);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 6px 0 rgba(0,0,0,.2)}
+.riddle .rq{margin:0;font-family:var(--display);font-size:1.25rem;line-height:1.4;text-wrap:balance}
+.riddle .rans{margin:0;background:#fff;border-radius:12px;padding:8px 12px;font-weight:700;color:#15803d;animation:bin .4s cubic-bezier(.2,1.6,.4,1) both}
+.riddle .gbtn{padding:8px 14px;font-size:1rem}
+.empty-g{grid-column:1/-1;text-align:center;color:var(--muted);padding:20px}
 @media (max-width:360px){.grid{grid-template-columns:repeat(2,1fr)}.mini{width:84px;height:84px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -351,12 +368,15 @@ label.f input:focus{outline:none;border-color:#6d5cff}
         <button class="gbtn gold" id="tFbClaim" hidden>নিন</button>
       </div>
     </section>
+    <div class="recent" id="recentBox" hidden><div class="sec"><h2>আবার খেলুন</h2></div><div class="rrow" id="recentRow"></div></div>
     <div class="sec"><h2>সব গেম</h2><span id="count"></span></div>
+    <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><input id="gSearch" type="search" placeholder="গেম খুঁজুন… যেমন লুডু, মশা" aria-label="গেম খুঁজুন"></label>
     <div class="chips" id="chips">
       <button class="chip" data-f="all" aria-pressed="true">সব</button>
       <button class="chip" data-f="launch" aria-pressed="false">নতুন লঞ্চ</button>
       <button class="chip" data-f="trad" aria-pressed="false">ঐতিহ্যবাহী</button>
       <button class="chip" data-f="viral" aria-pressed="false">ভাইরাল</button>
+      <button class="chip" data-f="live" aria-pressed="false">এখনই খেলা যায়</button>
     </div>
     <div class="grid" id="grid"></div>
     <div class="adslot" hidden><span class="adlbl">বিজ্ঞাপন</span><div class="adbox"></div><button class="adfree" type="button">বিজ্ঞাপন ছাড়া খেলুন →</button></div>
@@ -371,7 +391,18 @@ label.f input:focus{outline:none;border-color:#6d5cff}
       </div>
       <label class="adult"><input type="checkbox" id="adultChk"> বড়দের মজা (১৮+) চালু করুন</label>
     </section>
-    <div class="sec"><h2>সাপ্তাহিক সেরা</h2><span>এই সপ্তাহ</span></div>
+    <div class="sec"><h2>ধাঁধার আসর</h2><span id="rCount"></span></div>
+    <section class="riddle" id="riddle">
+      <p class="rq" id="rQ"></p>
+      <p class="rans" id="rA" hidden></p>
+      <div class="acts"><button class="gbtn gold" id="rShow">উত্তর দেখুন</button><button class="gbtn" id="rNext">আরেকটা</button></div>
+    </section>
+    <div class="sec"><h2>সেরা খেলোয়াড়</h2><span id="lbSub">মোট পয়েন্ট</span></div>
+    <div class="chips" id="lbTabs">
+      <button class="chip" data-lb="points" aria-pressed="true">পয়েন্ট</button>
+      <button class="chip" data-lb="mosha" aria-pressed="false">মশা মারো</button>
+      <button class="chip" data-lb="jam" aria-pressed="false">জ্যাম রানার</button>
+    </div>
     <div class="board" id="lb"></div>
     <div class="adslot" hidden><span class="adlbl">বিজ্ঞাপন</span><div class="adbox"></div><button class="adfree" type="button">বিজ্ঞাপন ছাড়া খেলুন →</button></div>
 
@@ -537,18 +568,19 @@ function setCoins(v){coins=v;ls.set('kh-coins',v);$('bal').textContent=bn(v)}
 
 const LUDO='/games/ludo/';
 const GAMES=[
- ['লুডু','launch',LUDO],['মশা মারো','launch','/games/mosha/'],['ঢাকা জ্যাম রানার','launch'],['বাজার দর চ্যালেঞ্জ','launch'],['আর্জেন্টিনা বনাম ব্রাজিল','launch'],
+ ['লুডু','launch',LUDO],['মশা মারো','launch','/games/mosha/'],['ঢাকা জ্যাম রানার','launch','/games/jam/'],['বাজার দর চ্যালেঞ্জ','launch'],['আর্জেন্টিনা বনাম ব্রাজিল','launch'],
  ['ক্যারম','trad'],['ষোলোগুটি','trad'],['বাঘবন্দি','trad'],['ঘুড়ি কাটাকাটি','trad'],['হাডুডু','trad'],['কলব্রিজ','trad'],['টুয়েন্টি নাইন','trad'],['দাবা','trad'],['গোল্লাছুট','trad'],['দাড়িয়াবান্ধা','trad'],['কানামাছি','trad'],['ডাংগুলি','trad'],['লাটিম','trad'],['মার্বেল','trad'],['এক্কা-দোক্কা','trad'],['রুমাল চুরি','trad'],['নৌকা বাইচ','trad'],['বউচি','trad'],
  ['লোকাল বাস হেলপার','viral'],['লোডশেডিং সারভাইভাল','viral'],['রিকশা ভাড়া দরদাম','viral'],['ঈদের বাস টিকিট','viral'],['মেট্রোরেল রাশ','viral'],['ফুচকা মাস্টার','viral'],['বিয়েবাড়ির বিরিয়ানি','viral'],['কোরবানির হাট','viral'],['জলাবদ্ধতা রাইড','viral'],['শেষ বলে ছক্কা','viral'],['পরীক্ষার আগের রাত','viral'],['অটোরিকশা উল্টো পথে','viral'],['চিৎকার করো না','viral'],['গ্যাস সিলিন্ডার মিশন','viral'],['ফেসবুক কমেন্ট যোদ্ধা','viral'],['ডেলিভারি রাইডার','viral'],['বাড়িওয়ালা বনাম ভাড়াটিয়া','viral'],['শীতের পিঠা মেলা','viral'],['ইন্টারভিউ সারভাইভাল','viral'],['পটকা পাহারা','viral']
 ];
 const PAL=[['#ff6a5c','#e0335a'],['#ffb03a','#f27a1a'],['#33c27a','#13915a'],['#38bdf8','#2563eb'],['#a78bfa','#7c3aed'],['#f472b6','#db2777'],['#2dd4bf','#0f9488'],['#facc15','#e08a00']];
 const SOON=['শিগগিরই আসছে! ততক্ষণ লুডু খেলেন, মাথা ঠান্ডা থাকবে।','এই গেম এখনো রান্না হইতেছে, একটু ধৈর্য ধরেন!','ডেভেলপার চা খেতে গেছে, ফিরেই বানাবে!'];
 /* how many can play together */
-const PL={'লুডু':'২-৪','আর্জেন্টিনা বনাম ব্রাজিল':'২','ক্যারম':'২-৪','ষোলোগুটি':'২','বাঘবন্দি':'২','ঘুড়ি কাটাকাটি':'২-৪','হাডুডু':'২','কলব্রিজ':'৪','টুয়েন্টি নাইন':'৪','দাবা':'২','মার্বেল':'২-৪','লাটিম':'২-৪','নৌকা বাইচ':'২-৪','কানামাছি':'২-৪','শেষ বলে ছক্কা':'২','রিকশা ভাড়া দরদাম':'২','বাড়িওয়ালা বনাম ভাড়াটিয়া':'২','ফুচকা মাস্টার':'২-৪','মশা মারো':'১','ঢাকা জ্যাম রানার':'১-৪'};
+const PL={'লুডু':'২-৪','আর্জেন্টিনা বনাম ব্রাজিল':'২','ক্যারম':'২-৪','ষোলোগুটি':'২','বাঘবন্দি':'২','ঘুড়ি কাটাকাটি':'২-৪','হাডুডু':'২','কলব্রিজ':'৪','টুয়েন্টি নাইন':'৪','দাবা':'২','মার্বেল':'২-৪','লাটিম':'২-৪','নৌকা বাইচ':'২-৪','কানামাছি':'২-৪','শেষ বলে ছক্কা':'২','রিকশা ভাড়া দরদাম':'২','বাড়িওয়ালা বনাম ভাড়াটিয়া':'২','ফুচকা মাস্টার':'২-৪','মশা মারো':'১','ঢাকা জ্যাম রানার':'১'};
 let filter='all', curGame=null;
 function drawGrid(){
   const g=$('grid');g.innerHTML='';
-  const list=GAMES.map((x,i)=>[x[0],x[1],x[2]||null,i]).filter(x=>filter==='all'||x[1]===filter);
+  const qq=(($('gSearch')||{}).value||'').trim();
+  const list=GAMES.map((x,i)=>[x[0],x[1],x[2]||null,i]).filter(x=>(filter==='all'||x[1]===filter||(filter==='live'&&x[2]))&&(!qq||x[0].includes(qq)||String(x[3]+1)===qq.replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭৮৯'.indexOf(d))));
   const GS=(window.KH&&window.KH.gameStatus)||{};
   let shown=0;
   list.forEach(([name,cat,url,i])=>{
@@ -566,6 +598,7 @@ function drawGrid(){
     el.innerHTML=`<span class="no">#${bn(i+1)}</span><span class="logo" aria-hidden="true"><svg viewBox="0 0 48 48">${inf[1]}</svg></span><b>${name}</b><span class="ds">${inf[0]}</span><span class="meta">${PL[name]?`<span class="pp">${PL[name]} জন</span>`:'<span class="pp">১ জন</span>'}<span class="st">${lbl}</span></span>`;
     g.appendChild(el);
   });
+  if(!shown)g.innerHTML='<p class="empty-g">এই নামে কোনো গেম পাওয়া যায়নি 😅</p>';
   $('count').textContent=bn(shown)+'টি গেম';
 }
 
@@ -636,7 +669,7 @@ function nextDlg(){
   $('dText').textContent=L[k][0];$('dTag').textContent='#'+L[k][1].replace(/\s+/g,'_');$('b18').hidden=!adult;
   $('dCount').textContent=bn(L.length)+'টি ডায়লগ';
 }
-$('dNext').onclick=nextDlg;
+$('dNext').onclick=()=>{nextDlg();window.KH&&window.KH.speak&&window.KH.speak($('dText').textContent)};
 $('dCopy').onclick=()=>copyText('"'+$('dText').textContent+'"\n— খেলাঘর '+$('dTag').textContent);
 $('adultChk').onchange=e=>{
   if(e.target.checked&&!ls.get('kh-18',false)){
@@ -667,6 +700,55 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-x]');if(b)
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const open=[...document.querySelectorAll('.modal:not([hidden]),.sheet:not([hidden]),.invpop:not([hidden])')].pop();if(open)closePop(open.id)});
 
 $('heroPlay').onclick=()=>openModes('লুডু',LUDO);
+/* খোঁজা */
+$('gSearch').addEventListener('input',()=>drawGrid());
+
+/* সম্প্রতি খেলা গেম */
+function drawRecent(){
+  const rec=ls.get('kh-recent',[]).filter(n=>GAMES.some(g=>g[0]===n&&g[2]));
+  $('recentBox').hidden=!rec.length;
+  $('recentRow').innerHTML='';
+  rec.forEach(n=>{const i=GAMES.findIndex(g=>g[0]===n),[a,b]=PAL[i%PAL.length],inf=(window.GAME_INFO||{})[n]||['',''];
+    const el=document.createElement('button');el.className='rtile';el.style.setProperty('--a',a);el.style.setProperty('--b',b);
+    el.innerHTML=`<span class="logo" aria-hidden="true"><svg viewBox="0 0 48 48">${inf[1]}</svg></span>${n}`;
+    el.onclick=()=>window.KH.tapGame&&window.KH.tapGame(n,GAMES[i][2],'live');$('recentRow').appendChild(el);});
+}
+window.KH.played=n=>{const r=ls.get('kh-recent',[]).filter(x=>x!==n);r.unshift(n);ls.set('kh-recent',r.slice(0,5))};
+drawRecent();
+
+/* ধাঁধার আসর */
+const RIDDLES=[
+ ['বন থেকে বেরোল টিয়ে, সোনার টোপর মাথায় দিয়ে।','আনারস'],
+ ['এক থালা সুপারি, গুনতে নারে বেপারি।','আকাশের তারা'],
+ ['জলে জন্ম, জলে বাস, জল দেখলে হয় নাশ।','লবণ'],
+ ['হাত আছে পা নেই, বুক তার ফাঁপা; মানুষকে গিলে খায়, নেই তার মাথা।','জামা'],
+ ['কোন জিনিস কাটলে আরও বড় হয়?','পুকুর (বা গর্ত)'],
+ ['কোন জিনিস শুকাতে গেলে নিজেই ভিজে যায়?','গামছা বা তোয়ালে'],
+ ['কোন জিনিস ভাঙলে কোনো শব্দ হয় না?','ঘুম'],
+ ['কোন জিনিসের মাথা আছে কিন্তু চুল নেই?','দিয়াশলাইয়ের কাঠি'],
+ ['কার চোখ আছে কিন্তু দেখতে পায় না?','সুই'],
+ ['কোন জিনিস শুধু উপরে ওঠে, কখনো নামে না?','বয়স'],
+ ['কে সকালে চার পায়ে, দুপুরে দুই পায়ে, আর সন্ধ্যায় তিন পায়ে হাঁটে?','মানুষ (শিশুকালে হামাগুড়ি, বড় হয়ে দুই পা, বুড়ো বয়সে লাঠি)'],
+ ['যত সামনে যাবেন, তত পেছনে ফেলে যাবেন। কী সেটা?','পায়ের ছাপ'],
+ ['কোন জিনিস না ভেঙে ব্যবহার করা যায় না?','ডিম'],
+ ['কোন জিনিস ভরলে হালকা হয়ে উড়ে যায়?','গ্যাস বেলুন'],
+ ['জিনিসটা আপনার, কিন্তু আপনার চেয়ে অন্যরা বেশি ব্যবহার করে। কী সেটা?','আপনার নাম'],
+ ['কোন মাসে মানুষ সবচেয়ে কম কথা বলে?','ফেব্রুয়ারি, কারণ এই মাসে দিন সবচেয়ে কম!'],
+ ['সারাক্ষণ পিছু পিছু ঘোরে, কিন্তু অন্ধকারে হারিয়ে যায়। কে?','ছায়া'],
+ ['কোন প্রশ্নের উত্তর কখনো "হ্যাঁ" হয় না?','"আপনি কি ঘুমাচ্ছেন?"'],
+ ['দাঁত আছে, কিন্তু কাউকে কামড়ায় না। কী সেটা?','চিরুনি'],
+ ['পা নেই তবু দৌড়ায়, মুখ নেই তবু গর্জন করে। কী সেটা?','নদী'],
+ ['টিক টিক করে চলে, পা নেই তবু সারাদিন হাঁটে। কী সেটা?','ঘড়ি'],
+ ['কোন জিনিস যত শুকায়, তত ভেজা হয়?','গামছা'],
+ ['ঢাকার রাস্তায় কোন জিনিস সবচেয়ে দ্রুত চলে?','গুজব! 😄']
+];
+let rIdx=-1;
+function nextRiddle(){let k;do{k=Math.floor(Math.random()*RIDDLES.length)}while(RIDDLES.length>1&&k===rIdx);rIdx=k;
+  $('rQ').textContent=RIDDLES[k][0];$('rA').textContent='উত্তর: '+RIDDLES[k][1];$('rA').hidden=true;$('rShow').hidden=false;$('rCount').textContent=bn(RIDDLES.length)+'টি ধাঁধা'}
+$('rNext').onclick=()=>{nextRiddle();window.KH.speak&&window.KH.speak($('rQ').textContent)};
+$('rShow').onclick=()=>{$('rA').hidden=false;$('rShow').hidden=true;window.KH.speak&&window.KH.speak($('rA').textContent)};
+nextRiddle();
+
 /* PWA install */
 let deferred=null;
 const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;

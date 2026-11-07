@@ -193,15 +193,26 @@ $('packs').onclick = e => {
 /* ---------- লিডারবোর্ড ---------- */
 const COLORS = ['#e5484d', '#3b78f0', '#2fa36b', '#f2b100', '#7c3aed', '#db2777', '#0f9488', '#f27a1a'];
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let lbTab = 'points', lbUnsub = null;
+const LB_SUB = { points: 'মোট পয়েন্ট', mosha: 'মশা মারোর সেরা স্কোর', jam: 'জ্যাম রানারের সেরা স্কোর' };
 function listenLeaderboard() {
-  unsubs.push(onSnapshot(query(collection(db, 'users'), orderBy('points', 'desc'), limit(10)), snap => {
-    if (snap.empty) return;
+  if (lbUnsub) lbUnsub();
+  $('lbSub').textContent = LB_SUB[lbTab];
+  const q = lbTab === 'points' ? query(collection(db, 'users'), orderBy('points', 'desc'), limit(10))
+    : query(collection(db, 'scores', lbTab, 'players'), orderBy('score', 'desc'), limit(10));
+  lbUnsub = onSnapshot(q, snap => {
+    if (snap.empty) { $('lb').innerHTML = '<p class="sample">এখনো কেউ খেলেনি। আপনিই প্রথম হোন!</p>'; return; }
     $('lb').innerHTML = snap.docs.map((d, i) => {
-      const r = d.data(), mine = user && d.id === user.uid;
-      return `<div class="row"${mine ? ' style="background:#f3efff;border-radius:12px"' : ''}><span class="rk">${bn(i + 1)}</span><span class="ra" style="background:${COLORS[i % COLORS.length]}">${esc(r.name[0])}</span><div><b>${esc(r.name)}${mine ? ' (আপনি)' : ''}</b><small>@${esc(r.username)}</small></div><span class="pts"><span class="coin"></span>${bn(r.points)}</span></div>`;
+      const r = d.data(), mine = user && d.id === user.uid, val = lbTab === 'points' ? r.points : r.score;
+      return `<div class="row"${mine ? ' style="background:#f3efff;border-radius:12px"' : ''}><span class="rk">${bn(i + 1)}</span><span class="ra" style="background:${COLORS[i % COLORS.length]}">${esc((r.name || '?')[0])}</span><div><b>${esc(r.name)}${mine ? ' (আপনি)' : ''}</b><small>@${esc(r.username)}</small></div><span class="pts">${lbTab === 'points' ? '<span class="coin"></span>' : ''}${bn(val)}</span></div>`;
     }).join('');
-  }));
+  }, () => {});
+  unsubs.push(() => { if (lbUnsub) { lbUnsub(); lbUnsub = null; } });
 }
+document.querySelectorAll('#lbTabs [data-lb]').forEach(b => b.onclick = () => {
+  lbTab = b.dataset.lb; document.querySelectorAll('#lbTabs [data-lb]').forEach(x => x.setAttribute('aria-pressed', x === b));
+  if (user) listenLeaderboard(); else $('lb').innerHTML = '<p class="sample">লগইন করলে সেরা খেলোয়াড়দের তালিকা দেখবেন</p>';
+});
 
 /* ---------- ইনভাইট পাওয়া ---------- */
 let shownInvite = null;

@@ -77,6 +77,9 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
 .say{margin:0;font-weight:600;min-height:1.3em}
 .say.ok{color:var(--good)}.say.err{color:var(--bad)}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 16px;border-radius:999px;font-weight:600;z-index:20;max-width:calc(100% - 32px);text-align:center}
+.quicklinks{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.quicklinks a{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;color:var(--ink);text-decoration:none;font-weight:600;font-size:.88rem}
+.quicklinks a:hover{border-color:var(--accent)}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
 </style>
 </head><body>
@@ -90,6 +93,7 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
     <button class="tab" role="tab" data-t="users" aria-selected="false">খেলোয়াড়</button>
     <button class="tab" role="tab" data-t="games" aria-selected="false">গেম</button>
     <button class="tab" role="tab" data-t="msgs" aria-selected="false">বার্তা<span class="cnt" id="msgCnt" hidden>০</span></button>
+    <button class="tab" role="tab" data-t="scores" aria-selected="false">স্কোর</button>
     <button class="tab" role="tab" data-t="settings" aria-selected="false">সেটিংস</button>
   </nav>
 </div></header>
@@ -122,6 +126,13 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
       <button class="stat alert" data-go="msgs"><b id="sOpen">-</b><span>উত্তরের অপেক্ষায় বার্তা</span><small>উত্তর দিন →</small></button>
       <button class="stat" data-go="games"><b id="sLive">-</b><span>চালু গেম</span><small>গেম চালু/বন্ধ →</small></button>
       <button class="stat" data-go="settings"><b id="sBonus">-</b><span>বোনাস মিশন</span><small>চালু/বন্ধ করুন →</small></button>
+      <button class="stat" data-go="scores"><b id="sMatch">-</b><span>আজ লুডু খেলা হয়েছে</span><small>স্কোর দেখুন →</small></button>
+    </div>
+    <div class="quicklinks">
+      <a href="/" target="_blank" rel="noopener">🏠 সাইট দেখুন</a>
+      <a href="/games/ludo/" target="_blank" rel="noopener">🎲 লুডু</a>
+      <a href="/games/mosha/" target="_blank" rel="noopener">🦟 মশা মারো</a>
+      <a href="/games/jam/" target="_blank" rel="noopener">🛵 জ্যাম রানার</a>
     </div>
     <div class="card" style="margin-top:14px">
       <h2>সাম্প্রতিক রেজিস্ট্রেশন</h2>
@@ -184,6 +195,16 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
       <div class="row" style="justify-content:space-between"><h2>খেলোয়াড়দের বার্তা</h2>
         <select id="mFilter" style="width:auto" aria-label="ফিল্টার"><option value="open">উত্তর বাকি</option><option value="all">সব বার্তা</option></select></div>
       <div id="mList" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+  </section>
+
+  <!-- স্কোর -->
+  <section id="p-scores" class="panel" hidden>
+    <div class="card">
+      <div class="row" style="justify-content:space-between"><h2>গেমের সেরা স্কোর</h2>
+        <select id="scGame" style="width:auto" aria-label="গেম"><option value="mosha">মশা মারো</option><option value="jam">ঢাকা জ্যাম রানার</option></select></div>
+      <p class="muted">এই গেমগুলো ফোনে চলে, তাই কেউ অস্বাভাবিক বড় স্কোর দেখালে সেটা কারচুপি হতে পারে। সন্দেহজনক স্কোর মুছে দিন, দরকার হলে খেলোয়াড়কে ব্লক করুন।</p>
+      <div class="tbl"><table><thead><tr><th>#</th><th>নাম</th><th>কখন</th><th style="text-align:right">স্কোর</th><th></th></tr></thead><tbody id="scList"></tbody></table></div>
     </div>
   </section>
 
@@ -257,11 +278,11 @@ const say=(id,t,ok)=>{$(id).textContent=t;$(id).className='say '+(ok?'ok':'err')
 
 // গেমের তালিকা (হাবের সিরিয়াল অনুযায়ী) — কোন গেমের পেজ তৈরি হয়ে গেছে
 const NAMES=Object.keys(window.GAME_INFO||{});
-const BUILT={'লুডু':'/games/ludo/','মশা মারো':'/games/mosha/'};
+const BUILT={'লুডু':'/games/ludo/','মশা মারো':'/games/mosha/','ঢাকা জ্যাম রানার':'/games/jam/'};
 
 /* ট্যাব */
 let tab='dash';
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{tab=b.dataset.t;document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===b));document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!=='p-'+tab);if(tab==='users'&&!uLoaded)loadUsers(true)});
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{tab=b.dataset.t;document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===b));document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!=='p-'+tab);if(tab==='users'&&!uLoaded)loadUsers(true);if(tab==='scores'&&!scUnsub)listenScores()});
 
 document.querySelector('#p-dash .stats').onclick=e=>{const b=e.target.closest('[data-go]');if(!b)return;if(b.dataset.sort){$('uSort').value=b.dataset.sort;uLoaded=false}document.querySelector('.tab[data-t="'+b.dataset.go+'"]').click()};
 $('login').onclick=()=>signInWithPopup(auth,new GoogleAuthProvider()).catch(e=>$('gateTxt').textContent='লগইন হয়নি: '+e.code);
@@ -309,6 +330,7 @@ async function loadStats(){
     count(query(users,where('premiumUntil','>',Timestamp.now()))),
     count(query(collection(db,'messages'),where('status','==','open')))
   ]);
+  count(query(collection(db,'matches'),where('createdAt','>=',Timestamp.fromDate(today)))).then(m=>$('sMatch').textContent=bn(m));
   $('sTotal').textContent=bn(t);$('sToday').textContent=bn(d);$('sWeek').textContent=bn(w);$('sPrem').textContent=bn(p);$('sOpen').textContent=bn(o);
 }
 function listenRecent(){
@@ -422,6 +444,24 @@ $('mList').addEventListener('click',async e=>{
   if(d){if(d.dataset.sure){await deleteDoc(doc(db,'messages',d.dataset.del)).catch(()=>{})}else{d.dataset.sure='1';d.textContent='নিশ্চিত? আবার চাপুন';setTimeout(()=>{d.dataset.sure='';d.textContent='মুছুন'},3000)}}
   if(u){document.querySelector('.tab[data-t="users"]').click();$('q').value=u.dataset.user;$('find').requestSubmit()}
 });
+
+/* ---------- স্কোর ---------- */
+let scUnsub=null;
+function listenScores(){
+  if(scUnsub)scUnsub();
+  const gm=$('scGame').value;
+  scUnsub=onSnapshot(query(collection(db,'scores',gm,'players'),orderBy('score','desc'),limit(30)),s=>{
+    $('scList').innerHTML=s.docs.map((d,i)=>{const r=d.data();return `<tr><td>${bn(i+1)}</td><td><b>${esc(r.name)}</b><div class="sub">@${esc(r.username)}</div></td><td>${date(r.at)}</td><td class="n">${bn(r.score)}</td><td><button class="sm danger" data-sdel="${d.id}">মুছুন</button> <button class="sm ghost" data-open="${esc(r.username)}">খেলোয়াড়</button></td></tr>`}).join('')||'<tr><td colspan="5">এখনো কেউ খেলেনি</td></tr>';
+  },e=>{$('scList').innerHTML='<tr><td colspan="5">দেখা যাচ্ছে না: '+e.code+' (Firebase Rules-এ scores অংশ আছে তো?)</td></tr>'});
+}
+$('scGame').onchange=listenScores;
+$('scList').onclick=async e=>{
+  const d=e.target.closest('[data-sdel]'),o=e.target.closest('[data-open]');
+  if(o){document.querySelector('.tab[data-t="users"]').click();$('q').value=o.dataset.open;$('find').requestSubmit();return}
+  if(!d)return;
+  if(!d.dataset.sure){d.dataset.sure='1';d.textContent='নিশ্চিত?';setTimeout(()=>{d.dataset.sure='';d.textContent='মুছুন'},3000);return}
+  try{await deleteDoc(doc(db,'scores',$('scGame').value,'players',d.dataset.sdel));toast('স্কোর মুছে ফেলা হয়েছে')}catch(err){toast('হয়নি: '+err.code)}
+};
 
 /* ---------- সেটিংস ---------- */
 async function loadSettings(){

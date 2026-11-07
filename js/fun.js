@@ -266,7 +266,7 @@
     return pick(own.length && Math.random() < 0.7 ? own : any);
   }
   const MAINT = ['মিস্ত্রি ভাই কাজ করতেছে, একটু পরে আসেন!', 'এই গেম এখন সার্ভিসিংয়ে, চা খাইয়া আসেন!', 'স্ক্রু টাইট দেওয়া হইতেছে, ধৈর্য ধরেন!'];
-  const SOLO = { 'মশা মারো': 1 };
+  const SOLO = { 'মশা মারো': 1, 'ঢাকা জ্যাম রানার': 1 };
   K.tapGame = (name, url, st) => {
     if (st === 'maint') { bubble(pick(MAINT), { sound: 'boing' }); return; }
     if (!url) { bubble(pick(SOON), { sound: 'boing' }); return; }
@@ -279,6 +279,7 @@
       $('loginT').textContent = pick(GATE);
       sfx('boing'); K.openS('loginSheet'); speak($('loginT').textContent); return;
     }
+    if (K.played) K.played(name);
     if (SOLO[name]) { // একা খেলার গেম: সরাসরি খেলায়
       const line = inviteLine(name); bubble(line, { sound: 'tada', silent: true }); speak(line);
       setTimeout(() => { location.href = url; }, 900); return;
