@@ -77,17 +77,27 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--cyan);outline-offse
 .chip{flex:none;border:0;border-radius:999px;padding:7px 14px;font-weight:600;font-size:.92rem;cursor:pointer;background:rgba(255,255,255,.14);color:#fff}
 .chip[aria-pressed="true"]{background:#fff;color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.2)}
 
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.tile{position:relative;border-radius:20px;aspect-ratio:3/3.6;padding:10px;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;overflow:hidden;color:#fff;text-decoration:none;border:0;text-align:left;cursor:pointer;
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.tile{position:relative;border-radius:20px;padding:12px;display:flex;flex-direction:column;gap:6px;overflow:hidden;color:#fff;border:0;text-align:left;cursor:pointer;font-family:var(--body);min-width:0;
   background:linear-gradient(160deg,var(--a),var(--b));box-shadow:0 5px 0 rgba(0,0,0,.25),inset 0 2px 0 rgba(255,255,255,.35)}
 .tile:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.25)}
-.tile .big{position:absolute;top:6px;right:8px;font-family:var(--display);font-size:3.2rem;line-height:1;opacity:.28}
-.tile .no{position:absolute;top:8px;left:9px;font-size:.7rem;font-weight:700;background:rgba(0,0,0,.25);border-radius:999px;padding:0 7px;font-variant-numeric:tabular-nums}
-.tile b{font-family:var(--display);font-size:1rem;line-height:1.15;text-shadow:0 2px 0 rgba(0,0,0,.2)}
-.tile em{font-style:normal;font-size:.7rem;font-weight:700;align-self:flex-start;border-radius:999px;padding:1px 8px;background:rgba(0,0,0,.28)}
-.tile.live em{background:#fff;color:var(--greenD)}
-.tile.soon{filter:saturate(.75)}
-.tile.soon::before{content:"";position:absolute;inset:0;background:rgba(20,14,70,.18)}
+.tile::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.12);pointer-events:none}
+.tile .logo{width:64px;height:64px;border-radius:18px;background:rgba(0,0,0,.16);display:grid;place-items:center;box-shadow:inset 0 2px 0 rgba(255,255,255,.2);flex:none}
+.tile .logo svg{width:46px;height:46px;overflow:visible}
+.tile .logo svg *{fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.tile .logo svg .f{fill:#fff;stroke:none}.tile .logo svg .y{fill:#ffd23f;stroke:none}.tile .logo svg .d{fill:#1d1640;stroke:none}.tile .logo svg .h{fill:rgba(255,255,255,.45);stroke:none}
+.tile .logo svg text.t{fill:#1d1640;stroke:none;font:700 15px var(--body);text-anchor:middle}
+.tile .no{position:absolute;top:10px;right:10px;font-size:.7rem;font-weight:700;background:rgba(0,0,0,.25);border-radius:999px;padding:0 8px;font-variant-numeric:tabular-nums;z-index:1}
+.tile b{font-family:var(--display);font-size:1.12rem;line-height:1.15;text-shadow:0 2px 0 rgba(0,0,0,.2)}
+.tile .ds{font-size:.8rem;line-height:1.35;opacity:.95;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.7em}
+.tile .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+.tile .meta span{font-size:.7rem;font-weight:700;border-radius:999px;padding:1px 8px;background:rgba(0,0,0,.25)}
+.tile .meta .pp{background:rgba(255,255,255,.92);color:var(--ink)}
+.tile.live .meta .st{background:#fff;color:var(--greenD)}
+.tile.soon{filter:saturate(.8)}
+.grid .tile:last-child:nth-child(odd){grid-column:span 2;flex-direction:row;flex-wrap:wrap;align-items:center;column-gap:12px}
+.grid .tile:last-child:nth-child(odd) b{flex:1;min-width:0}
+.grid .tile:last-child:nth-child(odd) .ds,.grid .tile:last-child:nth-child(odd) .meta{flex-basis:100%}
 
 /* leaderboard */
 .board{background:#fff;color:var(--ink);border-radius:20px;padding:12px;display:flex;flex-direction:column;gap:6px;box-shadow:0 6px 0 rgba(0,0,0,.2)}
@@ -128,8 +138,6 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--cyan);outline-offse
 .mbox .amt{display:flex;align-items:center;gap:8px;font-family:var(--display);font-size:2.4rem}
 .mbox .amt .coin{width:40px;height:40px}
 .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#fff;color:var(--ink);font-weight:700;border-radius:999px;padding:8px 16px;box-shadow:0 6px 16px rgba(0,0,0,.3);z-index:21;max-width:calc(100% - 32px);text-align:center}
-/* players badge */
-.tile .pp{position:absolute;top:30px;left:9px;font-size:.66rem;font-weight:700;background:rgba(255,255,255,.9);color:var(--ink);border-radius:999px;padding:0 7px}
 /* dialogue card */
 .dlg{background:#fff;color:var(--ink);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 6px 0 rgba(0,0,0,.2);position:relative}
 .dlg q{font-family:var(--display);font-size:1.35rem;line-height:1.35;quotes:"“" "”";display:block;text-wrap:balance}
@@ -354,6 +362,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
   </div>
 </div>
 
+<script src="/js/game-info.js"></script>
 <script>
 const bn=n=>String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
 const $=id=>document.getElementById(id);
@@ -380,7 +389,8 @@ function drawGrid(){
     const el=document.createElement('button');
     el.className='tile '+(url?'live':'soon');el.style.setProperty('--a',a);el.style.setProperty('--b',b);
     el.onclick=()=>url?openModes(name,url):toast(SOON[i%SOON.length]);
-    el.innerHTML=`<span class="no">#${bn(i+1)}</span>${PL[name]?`<span class="pp">${PL[name]} জন</span>`:''}<span class="big" aria-hidden="true">${name[0]}</span><b>${name}</b><em>${url?'খেলুন':'শিগগিরই'}</em>`;
+    const inf=(window.GAME_INFO||{})[name]||['',''];
+    el.innerHTML=`<span class="no">#${bn(i+1)}</span><span class="logo" aria-hidden="true"><svg viewBox="0 0 48 48">${inf[1]}</svg></span><b>${name}</b><span class="ds">${inf[0]}</span><span class="meta">${PL[name]?`<span class="pp">${PL[name]} জন</span>`:'<span class="pp">১ জন</span>'}<span class="st">${url?'খেলুন':'শিগগিরই'}</span></span>`;
     g.appendChild(el);
   });
   $('count').textContent=bn(list.length)+'টি গেম';
