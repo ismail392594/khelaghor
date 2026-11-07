@@ -79,7 +79,7 @@
     s.connect(f); f.connect(g); g.connect(dest); s.start(t);
   }
   const SFX = {
-    pop() { const t = ctx.currentTime; tone(520, t, 0.09, 'sine', 0.5, sfxGain, 1250); },
+    pop() { const t = ctx.currentTime; tone(520, t, 0.09, 'sine', 0.5, sfxGain, 1250); tone(1047, t + 0.08, 0.1, 'triangle', 0.18, sfxGain); tone(1319, t + 0.15, 0.14, 'triangle', 0.16, sfxGain); },
     click() { const t = ctx.currentTime; tone(880, t, 0.04, 'square', 0.12, sfxGain); },
     coin() { const t = ctx.currentTime; tone(988, t, 0.08, 'square', 0.18, sfxGain); tone(1319, t + 0.08, 0.25, 'square', 0.18, sfxGain); },
     tada() { const t = ctx.currentTime; [523, 659, 784, 1047].forEach((f, i) => tone(f, t + i * 0.08, 0.22, 'triangle', 0.3, sfxGain)); },
@@ -88,25 +88,48 @@
   };
   function sfx(name) { if (!sfxOn || !audio() || ctx.state !== 'running') return; try { SFX[name](); } catch (e) {} }
 
-  /* নিজস্ব খুশির সুর: বাংলা লোকগানের মতো ৫-সুরের মেলোডি, ঢোলের মতো তাল */
-  const BPM = 116, STEP = 60 / BPM / 2;
-  const SCALE = [261.6, 293.7, 329.6, 392.0, 440.0, 523.3, 587.3, 659.3];
-  const MEL = [5, -1, 4, 3, 4, -1, 2, 3, 4, -1, 3, 2, 1, -1, 2, -1, 3, -1, 4, 5, 6, -1, 5, 4, 3, 4, 3, 2, 0, -1, -1, -1];
-  const BASS = [0, 0, 3, 3, 4, 4, 3, 3];
+  /* ===== নিজস্ব তিনটা গান (সব কোডে বানানো, কপিরাইট-মুক্ত) ===== */
+  const N = n => 440 * Math.pow(2, (n - 69) / 12); // MIDI নোট → ফ্রিকোয়েন্সি
+  const TRACKS = [
+    { name: 'ঢোল ধামাকা', bpm: 124, lead: 'triangle', leadVol: 0.16, swing: 0,
+      mel: [79,-1,76,74,76,-1,72,74,76,-1,74,72,69,-1,72,-1, 74,-1,76,79,81,-1,79,76,74,76,74,72,67,-1,-1,-1],
+      bass: [48,48,55,55,57,57,55,55], drum: 'dhol' },
+    { name: 'চিপটিউন পার্টি', bpm: 140, lead: 'square', leadVol: 0.07, swing: 0,
+      mel: [72,76,79,84,79,76,72,-1,74,77,81,86,81,77,74,-1, 76,79,83,88,83,79,76,-1,79,-1,77,-1,76,-1,74,-1],
+      bass: [48,48,50,50,52,52,43,43], drum: 'chip' },
+    { name: 'চা-আড্ডা লোফাই', bpm: 84, lead: 'sine', leadVol: 0.2, swing: 0.18,
+      mel: [76,-1,-1,74,72,-1,69,-1,72,-1,-1,-1,-1,-1,-1,-1, 74,-1,-1,72,69,-1,67,-1,69,-1,-1,-1,-1,-1,-1,-1],
+      bass: [45,45,41,41,48,48,43,43], drum: 'lofi', pad: [[57,60,64],[53,57,60],[60,64,67],[55,59,62]] }
+  ];
+  let trackIx = Math.min(store.get('kh-track', 0), TRACKS.length - 1);
   let step = 0, nextT = 0, timer = null;
   function schedule() {
+    const T = TRACKS[trackIx], STEP = 60 / T.bpm / 2;
     while (nextT < ctx.currentTime + 0.15) {
-      const m = MEL[step % MEL.length];
-      if (m >= 0) tone(SCALE[m] * 2, nextT, STEP * 1.6, 'triangle', 0.16, musicGain);
-      if (step % 4 === 0) { tone(SCALE[BASS[(step / 4) % BASS.length]] / 2, nextT, STEP * 3, 'sine', 0.35, musicGain); tone(110, nextT, 0.18, 'sine', 0.5, musicGain, 55); }
-      if (step % 4 === 2) tone(220, nextT, 0.08, 'sine', 0.25, musicGain, 140);
-      if (step % 2 === 1) noise(nextT, 0.04, 0.06, musicGain, 7000);
+      const t = nextT + (step % 2 ? T.swing * STEP : 0);
+      const m = T.mel[step % T.mel.length];
+      if (m >= 0) tone(N(m), t, STEP * 1.7, T.lead, T.leadVol, musicGain);
+      if (step % 4 === 0) tone(N(T.bass[(step / 4) % T.bass.length]), t, STEP * 3.2, T.drum === 'chip' ? 'triangle' : 'sine', 0.32, musicGain);
+      if (T.pad && step % 16 === 0) T.pad[(step / 16) % T.pad.length].forEach(n => tone(N(n), t, STEP * 15, 'sine', 0.05, musicGain));
+      if (T.drum === 'dhol') {
+        if (step % 4 === 0) tone(110, t, 0.2, 'sine', 0.5, musicGain, 55);
+        if (step % 4 === 2 || step % 8 === 7) tone(240, t, 0.09, 'sine', 0.28, musicGain, 150);
+        if (step % 2 === 1) noise(t, 0.035, 0.05, musicGain, 7000);
+      } else if (T.drum === 'chip') {
+        if (step % 4 === 0) tone(150, t, 0.12, 'square', 0.12, musicGain, 50);
+        if (step % 4 === 2) noise(t, 0.08, 0.12, musicGain, 2500);
+        noise(t, 0.02, 0.03, musicGain, 9000);
+      } else {
+        if (step % 8 === 0) tone(90, t, 0.25, 'sine', 0.45, musicGain, 45);
+        if (step % 8 === 4) noise(t, 0.12, 0.08, musicGain, 1800);
+        if (step % 2 === 1) noise(t, 0.03, 0.025, musicGain, 8000);
+      }
       nextT += STEP; step++;
     }
   }
   function startMusic() {
     if (!audio() || timer) return;
-    nextT = ctx.currentTime + 0.05; timer = setInterval(schedule, 50);
+    nextT = ctx.currentTime + 0.05; step = 0; timer = setInterval(schedule, 50);
     musicGain.gain.cancelScheduledValues(ctx.currentTime);
     musicGain.gain.setTargetAtTime(0.45, ctx.currentTime, 0.6);
   }
@@ -115,6 +138,33 @@
     musicGain.gain.setTargetAtTime(0, ctx.currentTime, 0.2);
     const t = timer; timer = null; setTimeout(() => clearInterval(t), 600);
   }
+  function duck(on) { if (ctx && musicGain && timer) musicGain.gain.setTargetAtTime(on ? 0.12 : 0.45, ctx.currentTime, 0.15); }
+
+  /* ===== AI ভয়েস: ফোনের বাংলা কণ্ঠে ডায়লগ পড়া ===== */
+  const synth = window.speechSynthesis;
+  let voiceOn = store.get('kh-voice', true), bnVoice = null, warnedVoice = false;
+  function findVoice() {
+    if (!synth) return null;
+    const vs = synth.getVoices();
+    bnVoice = vs.find(v => /^bn[-_]BD/i.test(v.lang)) || vs.find(v => /^bn/i.test(v.lang)) || null;
+    return bnVoice;
+  }
+  if (synth) { findVoice(); synth.onvoiceschanged = findVoice; }
+  function speak(text) {
+    if (!voiceOn || !synth || !unlocked) return;
+    if (!bnVoice && !findVoice()) {
+      if (!warnedVoice) { warnedVoice = true; K.toast('ফোনে বাংলা ভয়েস নেই। Settings → Text-to-speech → Google → বাংলা ভাষা ডাউনলোড করুন'); }
+      return;
+    }
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text.replace(/[!?]+/g, m => m[0]));
+    u.voice = bnVoice; u.lang = bnVoice.lang;
+    u.rate = 1.05 + Math.random() * 0.15; u.pitch = 0.8 + Math.random() * 0.7; u.volume = 1;
+    u.onstart = () => duck(true); u.onend = u.onerror = () => duck(false);
+    synth.speak(u);
+  }
+  K.speak = speak;
+
   // ব্রাউজার নিয়ম: প্রথম ছোঁয়ার পরেই শব্দ চালু করা যায়
   let unlocked = false;
   function unlock() {
@@ -122,18 +172,25 @@
     ctx.resume().then(() => { unlocked = true; if (musicOn) startMusic(); drawSound(); });
   }
   ['pointerdown', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, unlock, { passive: true }));
-  document.addEventListener('visibilitychange', () => { if (!ctx) return; if (document.hidden) ctx.suspend(); else if (unlocked) ctx.resume(); });
+  document.addEventListener('visibilitychange', () => { if (!ctx) return; if (document.hidden) { ctx.suspend(); synth && synth.cancel(); } else if (unlocked) ctx.resume(); });
 
-  /* সাউন্ড বোতাম */
-  const sb = document.createElement('button');
-  sb.className = 'soundBtn'; sb.type = 'button';
-  document.body.appendChild(sb);
+  /* ===== সাউন্ড কন্ট্রোল: গান · পরের গান · ভয়েস ===== */
+  const bar = document.createElement('div'); bar.className = 'soundBar';
+  bar.innerHTML = '<button type="button" class="sMusic"></button><button type="button" class="sNext" aria-label="পরের গান"><svg viewBox="0 0 24 24"><path d="M5 5l9 7-9 7zM16 5h3v14h-3z" fill="currentColor"/></svg></button><button type="button" class="sVoice"></button>';
+  document.body.appendChild(bar);
+  const sb = bar.querySelector('.sMusic'), sn = bar.querySelector('.sNext'), sv = bar.querySelector('.sVoice');
   function drawSound() {
-    sb.innerHTML = musicOn
-      ? '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>' + (unlocked ? 'গান চলছে' : 'গান শুনুন') + '</span>'
-      : '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>গান বন্ধ</span>';
+    const playing = musicOn && unlocked;
+    sb.innerHTML = (musicOn
+      ? '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+      : '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>')
+      + '<span>' + (playing ? TRACKS[trackIx].name : musicOn ? 'গান শুনুন' : 'গান বন্ধ') + '</span>';
     sb.setAttribute('aria-label', musicOn ? 'গান বন্ধ করুন' : 'গান চালু করুন');
-    sb.classList.toggle('on', musicOn && unlocked);
+    bar.classList.toggle('on', playing);
+    sn.hidden = !playing;
+    sv.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4" fill="currentColor"/><path d="M2 20c0-4 3-6 7-6s7 2 7 6z" fill="currentColor"/>' + (voiceOn ? '<path d="M18 7a5 5 0 0 1 0 7M20.5 4.5a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' : '<path d="M17 8l5 6M22 8l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>') + '</svg>';
+    sv.setAttribute('aria-label', voiceOn ? 'ডায়লগের ভয়েস বন্ধ করুন' : 'ডায়লগের ভয়েস চালু করুন');
+    sv.classList.toggle('off', !voiceOn);
   }
   sb.onclick = e => {
     e.stopPropagation();
@@ -141,12 +198,23 @@
     musicOn = !musicOn; store.set('kh-music', musicOn);
     musicOn ? startMusic() : stopMusic(); drawSound(); sfx('click');
   };
+  sn.onclick = e => {
+    e.stopPropagation();
+    trackIx = (trackIx + 1) % TRACKS.length; store.set('kh-track', trackIx);
+    stopMusic(); setTimeout(() => { startMusic(); drawSound(); }, 650);
+    sfx('whoosh'); K.bubble && K.bubble('এখন বাজছে: ' + TRACKS[trackIx].name + '! নাচেন!', { sound: 'tada', silent: true });
+  };
+  sv.onclick = e => {
+    e.stopPropagation(); unlock();
+    voiceOn = !voiceOn; store.set('kh-voice', voiceOn); drawSound();
+    if (voiceOn) setTimeout(() => speak('ঠিক আছে, এখন থেকে সব ডায়লগ আমি পড়ে শোনাবো!'), 150); else synth && synth.cancel();
+  };
   drawSound();
 
   /* সব বোতামে ক্লিক সাউন্ড */
   document.addEventListener('click', e => {
     const b = e.target.closest('button,.tile,a');
-    if (b && b !== sb) sfx(b.classList.contains('tile') ? 'pop' : 'click');
+    if (b && !bar.contains(b)) sfx(b.classList.contains('tile') ? 'pop' : 'click');
   });
 
   /* =============== ডায়লগ বাবল =============== */
@@ -163,8 +231,10 @@
     while (layer.children.length > 1) layer.firstChild.remove();
     layer.appendChild(b);
     sfx(opts.sound || 'pop');
-    setTimeout(() => b.classList.add('out'), opts.ms || 3200);
-    setTimeout(() => b.remove(), (opts.ms || 3200) + 500);
+    if (!opts.silent) speak(text);
+    const ms = opts.ms || (voiceOn && bnVoice ? Math.max(3200, text.length * 95) : 3200);
+    setTimeout(() => b.classList.add('out'), ms);
+    setTimeout(() => b.remove(), ms + 500);
   }
   K.bubble = bubble;
 
@@ -198,11 +268,11 @@
     if (!url) { bubble(pick(SOON), { sound: 'boing' }); return; }
     if (!K.authed) {
       $('loginT').textContent = pick(GATE);
-      sfx('boing'); K.openS('loginSheet'); return;
+      sfx('boing'); K.openS('loginSheet'); speak($('loginT').textContent); return;
     }
     const iv = $('modeInvite');
     if (iv) { iv.querySelector('.txt').textContent = inviteLine(name); iv.querySelector('.face').textContent = pick(FACES); }
-    openModes(name, url); sfx('tada');
+    openModes(name, url); sfx('tada'); if (iv) setTimeout(() => speak(iv.querySelector('.txt').textContent), 300);
   };
   // হাবের "খেলুন" বোতামও একই পথে
   const hp = $('heroPlay'); if (hp) hp.onclick = () => K.tapGame('লুডু', '/games/ludo/');

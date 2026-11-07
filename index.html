@@ -207,15 +207,20 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 .ava.premium{box-shadow:0 0 0 3px #ffd23f,0 3px 0 #b8611a}
 .bgfx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
 .wrap{position:relative;z-index:1}
-.soundBtn{position:fixed;z-index:7;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(96px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:6px;border:0;border-radius:999px;padding:8px 14px 8px 10px;
-  background:linear-gradient(180deg,#ff6fa5,#ff4f8b);color:#fff;font:700 .85rem var(--body);cursor:pointer;box-shadow:0 4px 0 #b8245a,0 8px 18px rgba(0,0,0,.35)}
-.soundBtn svg{width:22px;height:22px}
-.soundBtn:not(.on){animation:nudge 1.6s ease-in-out infinite}
-.soundBtn.on{background:linear-gradient(180deg,#5ee28a,#22c55e);box-shadow:0 4px 0 #15803d,0 8px 18px rgba(0,0,0,.35)}
-.soundBtn.on svg path:last-child{animation:wave 1s ease-in-out infinite}
+.soundBar{position:fixed;z-index:7;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(96px + env(safe-area-inset-bottom,0px));display:flex;gap:6px;align-items:center}
+.soundBar button{display:flex;align-items:center;gap:6px;border:0;border-radius:999px;padding:8px 12px;color:#fff;font:700 .85rem var(--body);cursor:pointer;
+  background:linear-gradient(180deg,#ff6fa5,#ff4f8b);box-shadow:0 4px 0 #b8245a,0 8px 18px rgba(0,0,0,.35)}
+.soundBar button svg{width:22px;height:22px;flex:none}
+.soundBar .sNext,.soundBar .sVoice{padding:8px;width:40px;height:40px;justify-content:center}
+.soundBar:not(.on) .sMusic{animation:nudge 1.6s ease-in-out infinite}
+.soundBar.on .sMusic{background:linear-gradient(180deg,#5ee28a,#22c55e);box-shadow:0 4px 0 #15803d,0 8px 18px rgba(0,0,0,.35)}
+.soundBar.on .sMusic svg path:last-child{animation:wave 1s ease-in-out infinite}
+.soundBar .sNext{background:linear-gradient(180deg,#8b7bff,#5a4ff0);box-shadow:0 4px 0 #3b2fb0,0 8px 18px rgba(0,0,0,.35)}
+.soundBar .sVoice{background:linear-gradient(180deg,#38d6f0,#0ea5c6);box-shadow:0 4px 0 #0b7a93,0 8px 18px rgba(0,0,0,.35)}
+.soundBar .sVoice.off{background:linear-gradient(180deg,#8f8ab0,#6b6496);box-shadow:0 4px 0 #4a4570}
 @keyframes nudge{0%,100%{transform:scale(1)}50%{transform:scale(1.08) rotate(-3deg)}}
 @keyframes wave{50%{opacity:.3}}
-.bubbles{position:fixed;left:0;right:0;bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:8;pointer-events:none;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding-inline:max(14px,env(safe-area-inset-left,0px)) max(14px,env(safe-area-inset-right,0px))}
+.bubbles{position:fixed;left:0;right:0;bottom:calc(152px + env(safe-area-inset-bottom,0px));z-index:8;pointer-events:none;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding-inline:max(14px,env(safe-area-inset-left,0px)) max(14px,env(safe-area-inset-right,0px))}
 .bubble{max-width:min(320px,82%);display:flex;align-items:flex-start;gap:8px;background:#fff;color:var(--ink);border-radius:20px;padding:10px 14px 10px 10px;font-weight:600;font-size:.95rem;line-height:1.35;
   box-shadow:0 6px 0 rgba(0,0,0,.15),0 10px 24px rgba(0,0,0,.35);animation:bin .45s cubic-bezier(.2,1.6,.4,1) both}
 .bubble.l{align-self:flex-start;border-bottom-left-radius:6px}
