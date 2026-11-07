@@ -1,5 +1,12 @@
 <!doctype html>
 <html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2f3cc9">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="খেলাঘর">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>খেলাঘর গেমিং হাব</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atma:wght@500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap">
@@ -160,6 +167,11 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 .link{background:none;border:0;color:#5a1fa8;font-weight:700;cursor:pointer;text-decoration:underline;padding:4px}
 .err{color:#d61f4f;font-weight:600;font-size:.86rem;margin:0;min-height:1.2em}
 .demo{font-size:.78rem;color:#7a70b8;text-align:center}
+.install{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#22d3ee,#3b78f0);border-radius:18px;padding:12px;box-shadow:0 5px 0 rgba(0,0,0,.2)}
+.install img{width:44px;height:44px;border-radius:12px;flex:none}
+.install div{flex:1;min-width:0}.install b{font-family:var(--display);font-size:1.1rem;display:block;line-height:1.2}.install span{font-size:.84rem}
+.install .x{background:none;border:0;color:#fff;font-size:1.3rem;cursor:pointer;padding:4px 8px}
+.install .gbtn{padding:8px 14px;font-size:1rem}
 @media (max-width:360px){.grid{grid-template-columns:repeat(2,1fr)}.mini{width:84px;height:84px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -184,6 +196,13 @@ label.f input:focus{outline:none;border-color:#6d5cff}
       <div class="mini" aria-hidden="true">
         <svg viewBox="0 0 15 15"><rect width="15" height="15" fill="#fbf8f2"/><rect width="6" height="6" fill="#e5484d"/><rect x="9" width="6" height="6" fill="#2fa36b"/><rect x="9" y="9" width="6" height="6" fill="#f2b100"/><rect y="9" width="6" height="6" fill="#3b78f0"/><rect x=".9" y=".9" width="4.2" height="4.2" rx=".5" fill="#fff"/><rect x="9.9" y=".9" width="4.2" height="4.2" rx=".5" fill="#fff"/><rect x="9.9" y="9.9" width="4.2" height="4.2" rx=".5" fill="#fff"/><rect x=".9" y="9.9" width="4.2" height="4.2" rx=".5" fill="#fff"/><circle cx="2.2" cy="2.2" r=".7" fill="#e5484d"/><circle cx="3.8" cy="3.8" r=".7" fill="#e5484d"/><circle cx="11.2" cy="2.2" r=".7" fill="#2fa36b"/><circle cx="12.8" cy="12.8" r=".7" fill="#f2b100"/><circle cx="2.2" cy="12.8" r=".7" fill="#3b78f0"/><rect x="1" y="7" width="5" height="1" fill="#e5484d"/><rect x="7" y="1" width="1" height="5" fill="#2fa36b"/><rect x="9" y="7" width="5" height="1" fill="#f2b100"/><rect x="7" y="9" width="1" height="5" fill="#3b78f0"/><polygon points="6,6 7.5,7.5 6,9" fill="#e5484d"/><polygon points="6,6 9,6 7.5,7.5" fill="#2fa36b"/><polygon points="9,6 9,9 7.5,7.5" fill="#f2b100"/><polygon points="6,9 9,9 7.5,7.5" fill="#3b78f0"/></svg>
       </div>
+    </section>
+
+    <section class="install" id="install" hidden>
+      <img src="/icons/icon-192.png" alt="">
+      <div><b>খেলাঘর ফোনে ইনস্টল করুন</b><span id="instTxt">হোম স্ক্রিন থেকে এক চাপে খেলুন, Play Store লাগবে না</span></div>
+      <button class="gbtn gold" id="instBtn">ইনস্টল</button>
+      <button class="x" id="instX" aria-label="বন্ধ করুন">✕</button>
     </section>
 
     <section class="daily">
@@ -300,7 +319,7 @@ const ls={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.pa
 let coins=ls.get('kh-coins',500);
 function setCoins(v){coins=v;ls.set('kh-coins',v);$('bal').textContent=bn(v)}
 
-const LUDO='games/ludo/';
+const LUDO='/games/ludo/';
 const GAMES=[
  ['লুডু','launch',LUDO],['মশা মারো','launch'],['ঢাকা জ্যাম রানার','launch'],['বাজার দর চ্যালেঞ্জ','launch'],['আর্জেন্টিনা বনাম ব্রাজিল','launch'],
  ['ক্যারম','trad'],['ষোলোগুটি','trad'],['বাঘবন্দি','trad'],['ঘুড়ি কাটাকাটি','trad'],['হাডুডু','trad'],['কলব্রিজ','trad'],['টুয়েন্টি নাইন','trad'],['দাবা','trad'],['গোল্লাছুট','trad'],['দাড়িয়াবান্ধা','trad'],['কানামাছি','trad'],['ডাংগুলি','trad'],['লাটিম','trad'],['মার্বেল','trad'],['এক্কা-দোক্কা','trad'],['রুমাল চুরি','trad'],['নৌকা বাইচ','trad'],['বউচি','trad'],
@@ -447,6 +466,18 @@ $('guest').onclick=()=>finishLogin({name:'অতিথি',via:'গেস্ট'
 function finishLogin(p){setProfile(p,true);closeS('loginSheet');toast('স্বাগতম, '+p.name+'! ('+p.via+' দিয়ে লগইন, ডেমো)')}
 $('ava').onclick=openLogin;
 $('heroPlay').onclick=()=>openModes('লুডু',LUDO);
+/* PWA install */
+let deferred=null;
+const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+if(!standalone&&!ls.get('kh-inst-x',false)){
+  addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;$('install').hidden=false});
+  if(isIOS){$('install').hidden=false;$('instTxt').textContent='Safari-তে নিচের শেয়ার বোতাম চাপুন, তারপর "Add to Home Screen"';$('instBtn').hidden=true}
+}
+$('instBtn').onclick=async()=>{if(!deferred)return;deferred.prompt();const r=await deferred.userChoice;deferred=null;$('install').hidden=true;if(r.outcome==='accepted')toast('খেলাঘর ইনস্টল হচ্ছে, হোম স্ক্রিনে দেখুন!')};
+$('instX').onclick=()=>{$('install').hidden=true;ls.set('kh-inst-x',true)};
+addEventListener('appinstalled',()=>{$('install').hidden=true});
+
 document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{filter=c.dataset.f;document.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===c));drawGrid()});
 
 const LB=[['রাশেদ','লুডু',8420,'#e5484d'],['তানিয়া','লুডু',7310,'#3b78f0'],['সাকিব','লুডু',6980,'#2fa36b'],['মিম','লুডু',5120,'#f2b100'],['আরিফ','লুডু',4300,'#7c3aed']];
@@ -474,4 +505,5 @@ $('n-home').onclick=()=>nav('home');$('n-shop').onclick=()=>nav('shop');$('n-top
 setCoins(coins);drawGrid();drawDaily();nextDlg();setProfile(profile,false);
 if(!ls.get('kh-profile',null))openLogin();
 </script>
+<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
 </body></html>
