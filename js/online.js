@@ -99,7 +99,7 @@ async function savePrivate(phone) {
 onAuthStateChanged(auth, u => {
   unsubs.forEach(f => f()); unsubs = []; user = u; me = null; K.authed = false; K.banned = false; drawMyMsgs([]); checkMaint();
   if (!u) {
-    K.setProfile({ name: 'খেলোয়াড়' });
+    K.setProfile({ name: 'খেলোয়াড়' }); document.querySelector('.lvl').textContent = 'অতিথি'; document.querySelector('.xp i').style.width = '0%';
     if (!isGuest()) K.openS('loginSheet');
     return;
   }
@@ -116,6 +116,9 @@ onAuthStateChanged(auth, u => {
     const first = !me; me = snap.data(); K.authed = !me.banned; K.banned = !!me.banned; K.closeS('userSheet'); $('loginT').textContent = 'খেলাঘরে স্বাগতম!';
     K.setProfile({ name: me.name });
     $('bal').textContent = bn(me.points);
+    const lv = Math.floor(Math.sqrt(me.points / 500)) + 1, lo = 500 * (lv - 1) ** 2, hi = 500 * lv ** 2;
+    document.querySelector('.lvl').textContent = 'লেভেল ' + bn(lv);
+    document.querySelector('.xp i').style.width = Math.round(100 * (me.points - lo) / (hi - lo)) + '%';
     drawDaily(); drawPremium(); drawMission();
     if (first) { savePrivate(); listenInvites(); listenMyMsgs(); drawMission(); if (pendingRoom) joinRoom(pendingRoom); if (me.banned) K.toast('আপনার একাউন্ট আপাতত বন্ধ করা আছে। যোগাযোগ পাতায় অ্যাডমিনকে লিখুন।'); }
   }, e => K.toast('প্রোফাইল লোড হয়নি: ' + e.code)));

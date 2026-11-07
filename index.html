@@ -243,7 +243,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 .tile .logo{transition:transform .2s}
 .tile:hover .logo,.tile:focus-visible .logo{transform:rotate(-6deg) scale(1.08)}
 @keyframes tileIn{from{opacity:.4;transform:translateY(14px) scale(.96)}}
-.notice{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#ffe27a,#ffc727);color:#3a2200;border-radius:16px;padding:10px 12px;font-weight:700;box-shadow:0 4px 0 #c98a00}
+.notice{position:relative;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#ffe27a,#ffc727);color:#3a2200;border-radius:16px;padding:10px 12px;font-weight:700;box-shadow:0 4px 0 #c98a00}
 .notice svg{width:24px;height:24px;flex:none}
 .notice span{flex:1;min-width:0}
 .notice button{background:none;border:0;font-size:1.1rem;color:#3a2200;cursor:pointer;padding:4px 6px}
@@ -283,6 +283,20 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 .mtask span{font-size:.82rem;color:#15803d;font-weight:700}
 .mtask .gbtn{padding:8px 12px;font-size:.95rem;flex:none}
 .mtask.done{opacity:.6}
+.sbox,.mbox{position:relative}
+.xbtn{position:absolute;top:10px;right:10px;width:36px;height:36px;border-radius:50%;border:0;display:grid;place-items:center;font-size:1.05rem;font-weight:700;line-height:1;cursor:pointer;z-index:2;
+  background:#efeaff;color:#5a1fa8;box-shadow:0 2px 0 rgba(0,0,0,.08);transition:transform .15s}
+.xbtn:hover{transform:rotate(90deg)}
+.xbtn.light{background:rgba(255,255,255,.25);color:#fff;top:8px;right:8px;width:30px;height:30px}
+.invpop{position:fixed}
+.invpop>div:first-of-type{padding-right:30px}
+.sbox h3,.mbox h3{padding-right:40px}
+.mbox h3{padding-left:40px}
+.duo{display:grid;grid-template-columns:1fr;gap:12px}
+.soundBar button>span{max-width:0;overflow:hidden;white-space:nowrap;transition:max-width .3s}
+.soundBar .sMusic{padding:8px;width:40px;height:40px;justify-content:center}
+.soundBar:not(.on) .sMusic{width:auto;padding:8px 12px}
+.soundBar:not(.on) .sMusic>span{max-width:120px}
 @media (max-width:360px){.grid{grid-template-columns:repeat(2,1fr)}.mini{width:84px;height:84px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -292,7 +306,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
   <div class="top">
     <button class="ava" id="ava" aria-label="প্রোফাইল ও লগইন" style="border:0;cursor:pointer;padding:0;font-family:var(--display);font-size:1.4rem;color:var(--ink)"><span id="avaL">খ</span><span class="lvl">লেভেল ৭</span></button>
     <div class="who"><b id="pName">খেলোয়াড়</b><div class="xp" aria-label="লেভেল অগ্রগতি"><i></i></div></div>
-    <div class="wallet"><span class="coin"></span><b id="bal">০</b><button class="plus" id="plus" aria-label="কয়েন কিনুন">+</button></div>
+    <div class="wallet"><span class="coin"></span><b id="bal">০</b><button class="plus" id="plus" aria-label="পয়েন্ট কিনুন">+</button></div>
   </div>
 
   <!-- HOME -->
@@ -302,21 +316,26 @@ label.f input:focus{outline:none;border-color:#6d5cff}
       <div>
         <small>এখন জনপ্রিয়</small>
         <h1>লুডু খেলুন</h1>
-        <p>কম্পিউটারের সাথে ক্লাসিক লুডু। জিতলেই ২০০ কয়েন!</p>
+        <p>কম্পিউটার বা বন্ধুদের সাথে ক্লাসিক লুডু, ছক্কা হাতে নিন!</p>
         <button class="gbtn" id="heroPlay">খেলুন ▶</button>
       </div>
       <div class="mini" aria-hidden="true">
         <svg viewBox="0 0 15 15"><rect width="15" height="15" fill="#fbf8f2"/><rect width="6" height="6" fill="#e5484d"/><rect x="9" width="6" height="6" fill="#2fa36b"/><rect x="9" y="9" width="6" height="6" fill="#f2b100"/><rect y="9" width="6" height="6" fill="#3b78f0"/><rect x=".9" y=".9" width="4.2" height="4.2" rx=".5" fill="#fff"/><rect x="9.9" y=".9" width="4.2" height="4.2" rx=".5" fill="#fff"/><rect x="9.9" y="9.9" width="4.2" height="4.2" rx=".5" fill="#fff"/><rect x=".9" y="9.9" width="4.2" height="4.2" rx=".5" fill="#fff"/><circle cx="2.2" cy="2.2" r=".7" fill="#e5484d"/><circle cx="3.8" cy="3.8" r=".7" fill="#e5484d"/><circle cx="11.2" cy="2.2" r=".7" fill="#2fa36b"/><circle cx="12.8" cy="12.8" r=".7" fill="#f2b100"/><circle cx="2.2" cy="12.8" r=".7" fill="#3b78f0"/><rect x="1" y="7" width="5" height="1" fill="#e5484d"/><rect x="7" y="1" width="1" height="5" fill="#2fa36b"/><rect x="9" y="7" width="5" height="1" fill="#f2b100"/><rect x="7" y="9" width="1" height="5" fill="#3b78f0"/><polygon points="6,6 7.5,7.5 6,9" fill="#e5484d"/><polygon points="6,6 9,6 7.5,7.5" fill="#2fa36b"/><polygon points="9,6 9,9 7.5,7.5" fill="#f2b100"/><polygon points="6,9 9,9 7.5,7.5" fill="#3b78f0"/></svg>
       </div>
     </section>
-
     <section class="install" id="install" hidden>
       <img src="/icons/icon-192.png" alt="">
       <div><b>খেলাঘর ফোনে ইনস্টল করুন</b><span id="instTxt">হোম স্ক্রিন থেকে এক চাপে খেলুন, Play Store লাগবে না</span></div>
       <button class="gbtn gold" id="instBtn">ইনস্টল</button>
       <button class="x" id="instX" aria-label="বন্ধ করুন">✕</button>
     </section>
-
+    <div class="duo">
+    <section class="daily">
+      <svg class="gift" viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="18" width="36" height="26" rx="5" fill="#ff4f8b"/><rect x="4" y="12" width="40" height="10" rx="4" fill="#ff7aa8"/><rect x="21" y="12" width="6" height="32" fill="#ffc727"/><path d="M24 12c-4-8-14-8-12-2 1 3 7 3 12 2zm0 0c4-8 14-8 12-2-1 3-7 3-12 2z" fill="#ffc727"/></svg>
+      <div><b>দৈনিক বোনাস</b><span id="dailyTxt">প্রতিদিন ফ্রি পয়েন্ট</span></div>
+      <button class="gbtn gold" id="dailyBtn">নিন</button>
+    </section>
+    </div>
     <section class="mission" id="mission" hidden>
       <div class="mhead"><b>ফ্রি বোনাস মিশন</b><span id="mTotal"></span></div>
       <div class="mtask" id="tTg" hidden>
@@ -332,13 +351,14 @@ label.f input:focus{outline:none;border-color:#6d5cff}
         <button class="gbtn gold" id="tFbClaim" hidden>নিন</button>
       </div>
     </section>
-
-    <section class="daily">
-      <svg class="gift" viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="18" width="36" height="26" rx="5" fill="#ff4f8b"/><rect x="4" y="12" width="40" height="10" rx="4" fill="#ff7aa8"/><rect x="21" y="12" width="6" height="32" fill="#ffc727"/><path d="M24 12c-4-8-14-8-12-2 1 3 7 3 12 2zm0 0c4-8 14-8 12-2-1 3-7 3-12 2z" fill="#ffc727"/></svg>
-      <div><b>দৈনিক বোনাস</b><span id="dailyTxt">প্রতিদিন ফ্রি কয়েন নিন</span></div>
-      <button class="gbtn gold" id="dailyBtn">নিন</button>
-    </section>
-
+    <div class="sec"><h2>সব গেম</h2><span id="count"></span></div>
+    <div class="chips" id="chips">
+      <button class="chip" data-f="all" aria-pressed="true">সব</button>
+      <button class="chip" data-f="launch" aria-pressed="false">নতুন লঞ্চ</button>
+      <button class="chip" data-f="trad" aria-pressed="false">ঐতিহ্যবাহী</button>
+      <button class="chip" data-f="viral" aria-pressed="false">ভাইরাল</button>
+    </div>
+    <div class="grid" id="grid"></div>
     <div class="adslot" hidden><span class="adlbl">বিজ্ঞাপন</span><div class="adbox"></div><button class="adfree" type="button">বিজ্ঞাপন ছাড়া খেলুন →</button></div>
     <div class="sec"><h2>আজকের ভাইরাল ডায়লগ</h2><span id="dCount"></span></div>
     <section class="dlg">
@@ -351,19 +371,15 @@ label.f input:focus{outline:none;border-color:#6d5cff}
       </div>
       <label class="adult"><input type="checkbox" id="adultChk"> বড়দের মজা (১৮+) চালু করুন</label>
     </section>
-
-    <div class="sec"><h2>সব গেম</h2><span id="count"></span></div>
-    <div class="chips" id="chips">
-      <button class="chip" data-f="all" aria-pressed="true">সব</button>
-      <button class="chip" data-f="launch" aria-pressed="false">নতুন লঞ্চ</button>
-      <button class="chip" data-f="trad" aria-pressed="false">ঐতিহ্যবাহী</button>
-      <button class="chip" data-f="viral" aria-pressed="false">ভাইরাল</button>
-    </div>
-    <div class="grid" id="grid"></div>
-
-    <div class="adslot" hidden><span class="adlbl">বিজ্ঞাপন</span><div class="adbox"></div><button class="adfree" type="button">বিজ্ঞাপন ছাড়া খেলুন →</button></div>
     <div class="sec"><h2>সাপ্তাহিক সেরা</h2><span>এই সপ্তাহ</span></div>
     <div class="board" id="lb"></div>
+    <div class="adslot" hidden><span class="adlbl">বিজ্ঞাপন</span><div class="adbox"></div><button class="adfree" type="button">বিজ্ঞাপন ছাড়া খেলুন →</button></div>
+
+
+
+
+
+
   </main>
 
   <!-- CONTACT -->
@@ -384,14 +400,14 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 
   <!-- SHOP -->
   <main id="v-shop" class="wrap" style="gap:16px" hidden>
-    <div class="sec"><h2>কয়েনের দোকান</h2><span>বিকাশ · নগদ · রকেট · কার্ড</span></div>
+    <div class="sec"><h2>পয়েন্টের দোকান</h2><span>বিকাশ · নগদ · রকেট · কার্ড</span></div>
     <section class="prem" id="prem">
       <div class="crown" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M6 36 L10 14 L19 24 L24 8 L29 24 L38 14 L42 36 Z" fill="#ffd23f"/><rect x="6" y="36" width="36" height="6" rx="2" fill="#f2a900"/><circle cx="24" cy="8" r="3" fill="#fff"/></svg></div>
       <div class="pt"><b>খেলাঘর প্রিমিয়াম</b><span id="premTxt">কোনো বিজ্ঞাপন নেই · প্রতি মাসে বোনাস পয়েন্ট · প্রোফাইলে সোনালি মুকুট</span></div>
       <button class="gbtn gold" id="premBtn">৳৪৯/মাস</button>
     </section>
     <div class="packs" id="packs"></div>
-    <p class="note"><b>ডেমো:</b> এখন কোনো আসল টাকা কাটা হবে না, শুধু কয়েন যোগ হবে। আসল সাইটে এখানে পেমেন্ট গেটওয়ে বসবে।<br><b>নিয়ম:</b> কয়েন শুধু খেলার জন্য, টাকায় ফেরত বা উইথড্র করা যায় না।</p>
+    <p class="note"><b>ডেমো:</b> অনলাইন পেমেন্ট শিগগিরই। এখন কিনতে যোগাযোগ পাতা থেকে অ্যাডমিনকে জানান।<br><b>নিয়ম:</b> পয়েন্ট শুধু খেলার জন্য, টাকায় ফেরত বা উইথড্র করা যায় না।</p>
   </main>
 </div>
 
@@ -405,6 +421,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 <!-- game mode sheet -->
 <div class="sheet" id="modeSheet" hidden>
   <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="modeT">
+    <button class="xbtn" type="button" data-x="modeSheet" aria-label="বন্ধ করুন">✕</button>
     <div class="minv" id="modeInvite"><span class="face" aria-hidden="true">😎</span><span class="txt">চলেন এক দান হয়ে যাক!</span></div>
     <h3 id="modeT">লুডু</h3>
     <p id="modeP">কীভাবে খেলবেন বেছে নিন</p>
@@ -417,7 +434,6 @@ label.f input:focus{outline:none;border-color:#6d5cff}
       <button class="gbtn gold" type="submit" style="padding:10px 14px;font-size:1rem">ঢুকুন</button>
     </form>
     <p class="err" id="joinErr"></p>
-    <button class="link" data-close="modeSheet">বন্ধ করুন</button>
   </div>
 </div>
 
@@ -426,6 +442,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 <!-- invite room sheet -->
 <div class="sheet" id="roomSheet" hidden>
   <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="roomT">
+    <button class="xbtn" type="button" data-x="roomSheet" aria-label="বন্ধ করুন">✕</button>
     <h3 id="roomT">প্রাইভেট রুম</h3>
     <form id="invForm" class="invrow" novalidate>
       <label class="f" style="flex:1">বন্ধুর ইউজারনেম<input id="invUser" autocapitalize="off" spellcheck="false" maxlength="16" placeholder="@rashed_99"></label>
@@ -438,13 +455,14 @@ label.f input:focus{outline:none;border-color:#6d5cff}
     <div class="seats" id="seats"></div>
     <button class="gbtn" id="roomStart" disabled>বন্ধুর জন্য অপেক্ষা…</button>
     <p class="demo" id="roomWait" hidden></p>
-    <button class="link" id="roomClose">বন্ধ করুন</button>
+    <button class="link" id="roomClose" hidden>বন্ধ করুন</button>
   </div>
 </div>
 
 <!-- login -->
 <div class="sheet" id="loginSheet" hidden>
   <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="loginT">
+    <button class="xbtn" type="button" data-x="loginSheet" aria-label="বন্ধ করুন">✕</button>
     <h3 id="loginT">খেলাঘরে স্বাগতম!</h3>
     <p>লগইন করলে পয়েন্ট, লিডারবোর্ড আর বন্ধুদের সাথে খেলা সেভ থাকবে।</p>
     <button class="sbtn big" id="gLogin"><i style="background:#ea4335">G</i>Gmail দিয়ে লগইন</button>
@@ -460,6 +478,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 
 <div class="sheet" id="userSheet" hidden>
   <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="userT">
+    <button class="xbtn" type="button" data-x="userSheet" aria-label="বন্ধ করুন">✕</button>
     <h3 id="userT">ইউজারনেম বেছে নিন</h3>
     <p>বন্ধুরা এই নাম দিয়ে খুঁজে আপনাকে খেলায় ডাকবে। ইংরেজি ছোট অক্ষর, সংখ্যা আর _ দিয়ে ৩-১৫ অক্ষর, পরে বদলানো যাবে না।</p>
     <form id="userForm" novalidate style="display:flex;flex-direction:column;gap:10px">
@@ -475,6 +494,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 
 <div class="sheet" id="profSheet" hidden>
   <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="pfName">
+    <button class="xbtn" type="button" data-x="profSheet" aria-label="বন্ধ করুন">✕</button>
     <h3 id="pfName">-</h3>
     <p id="pfUser">@-</p>
     <div class="pstats">
@@ -488,17 +508,18 @@ label.f input:focus{outline:none;border-color:#6d5cff}
     </form>
     <p class="err" id="pfErr"></p>
     <button class="sbtn" id="pfOut">লগআউট</button>
-    <button class="link" data-close="profSheet">বন্ধ করুন</button>
   </div>
 </div>
 
 <div class="invpop" id="invPop" hidden role="alert">
+  <button class="xbtn light" type="button" data-x="invPop" aria-label="বন্ধ করুন">✕</button>
   <div><b id="invFrom"></b> আপনাকে <b id="invGame"></b> খেলতে ডাকছে!</div>
   <div class="acts"><button class="gbtn" id="invYes">যোগ দিন</button><button class="link" id="invNo" style="color:#fff">না</button></div>
 </div>
 
 <div class="modal" id="modal" hidden>
   <div class="mbox" role="dialog" aria-modal="true" aria-labelledby="mt">
+    <button class="xbtn" type="button" data-x="modal" aria-label="বন্ধ করুন">✕</button>
     <h3 id="mt">অভিনন্দন!</h3>
     <div class="amt"><span class="coin"></span><span id="mAmt">১০০</span></div>
     <p id="mTxt">আজকেও আসছেন? এই নেন চা-নাস্তার টাকা!</p>
@@ -633,6 +654,17 @@ function resetModal(){$('modal').hidden=true;$('mt').textContent='অভিন�
 let profile={name:'খেলোয়াড়'};
 function setProfile(p){profile=p;$('pName').textContent=p.name;$('avaL').textContent=p.name[0]}
 window.KH={toast,openS,closeS,setProfile,showModal,onFriend:null};
+/* ✕ বোতাম ও Esc দিয়ে যেকোনো পপআপ বন্ধ */
+function closePop(id){
+  if(id==='roomSheet'){$('roomClose').click();return}
+  if(id==='userSheet'){try{sessionStorage.setItem('kh-un-later','1')}catch(e){}}
+  if(id==='loginSheet'){try{sessionStorage.setItem('kh-guest','1')}catch(e){}}
+  if(id==='modal'&&typeof resetModal==='function'&&$('mNo')){resetModal();return}
+  $(id).hidden=true;
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-x]');if(b)closePop(b.dataset.x)});
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const open=[...document.querySelectorAll('.modal:not([hidden]),.sheet:not([hidden]),.invpop:not([hidden])')].pop();if(open)closePop(open.id)});
+
 $('heroPlay').onclick=()=>openModes('লুডু',LUDO);
 /* PWA install */
 let deferred=null;
@@ -660,7 +692,7 @@ function showModal(amt,txt){$('mAmt').textContent=bn(amt);$('mTxt').textContent=
 $('mOk').onclick=()=>$('modal').hidden=true;
 
 const today=new Date().toDateString();
-function drawDaily(){const got=ls.get('kh-daily','')===today;$('dailyBtn').disabled=got;$('dailyBtn').textContent=got?'নেওয়া হয়েছে':'নিন';$('dailyTxt').textContent=got?'কাল আবার আসবেন!':'প্রতিদিন ফ্রি ১০০ কয়েন'}
+function drawDaily(){const got=ls.get('kh-daily','')===today;$('dailyBtn').disabled=got;$('dailyBtn').textContent=got?'নেওয়া হয়েছে':'নিন';$('dailyTxt').textContent=got?'কাল আবার আসবেন!':'প্রতিদিন ফ্রি ১০০ পয়েন্ট'}
 $('dailyBtn').onclick=()=>{ls.set('kh-daily',today);setCoins(coins+100);drawDaily();showModal(100,'আজকেও আসছেন? এই নেন চা-নাস্তার টাকা!')};
 
 function nav(v){
