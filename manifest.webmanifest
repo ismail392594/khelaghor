@@ -121,5 +121,12 @@
       "form_factor": "narrow",
       "label": "বাজার দর চ্যালেঞ্জ"
     }
-  ]
+  ],
+  "launch_handler": {
+    "client_mode": [
+      "navigate-existing",
+      "auto"
+    ]
+  },
+  "handle_links": "preferred"
 }
