@@ -1,7 +1,7 @@
 // খেলাঘর service worker: পেজগুলো ক্যাশে রাখে, যাতে দুর্বল নেটেও দ্রুত খোলে।
 // নতুন ভার্সন পাবলিশ করলে VERSION বাড়ান।
-const VERSION = 'khelaghor-v40';
-const CORE = ['/', '/app/', '/games/ludo/', '/games/mosha/', '/games/jam/', '/games/bazar/', '/games/argbra/', '/games/carrom/', '/help/', '/offline.html', '/js/game-info.js', '/js/fun.js', '/js/voice.js', '/js/videos.js', '/js/viral.js', '/js/ludo-engine.js', '/js/vendor/three.module.min.js', '/js/online.js', '/js/firebase-config.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
+const VERSION = 'khelaghor-v41';
+const CORE = ['/', '/app/', '/games/ludo/', '/games/mosha/', '/games/jam/', '/games/bazar/', '/games/argbra/', '/games/carrom/', '/help/', '/offline.html', '/js/game-info.js', '/js/fun.js', '/js/voice.js', '/js/videos.js', '/js/viral.js', '/js/howto.js', '/js/ludo-engine.js', '/js/vendor/three.module.min.js', '/js/online.js', '/js/firebase-config.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));

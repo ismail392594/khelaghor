@@ -312,6 +312,17 @@
   }
   const MAINT = ['মিস্ত্রি ভাই কাজ করতেছে, একটু পরে আসেন!', 'এই গেম এখন সার্ভিসিংয়ে, চা খাইয়া আসেন!', 'স্ক্রু টাইট দেওয়া হইতেছে, ধৈর্য ধরেন!'];
   const SOLO = { 'মশা মারো': 1, 'ঢাকা জ্যাম রানার': 1, 'বাজার দর চ্যালেঞ্জ': 1, 'আর্জেন্টিনা বনাম ব্রাজিল': 1, 'ক্যারম': 1 };
+  // গেমে ঢোকার আগে "কিভাবে খেলবেন" নোট, তারপর "খেলা শুরু"
+  function howFirst(name, go) {
+    const H = (window.KH_HOW || {})[name], sh = $('howSheet');
+    let skip = {}; try { skip = JSON.parse(localStorage.getItem('kh-how-skip') || '{}') || {}; } catch (e) {}
+    if (!H || !sh || skip[name]) return go();
+    $('howIcon').textContent = H[0]; $('howT').textContent = name; $('howTag').textContent = H[1];
+    $('howList').innerHTML = H[2].map(x => '<li>' + x + '</li>').join('');
+    $('howMore').href = '/help/#' + H[3]; $('howSkip').checked = false;
+    $('howGo').onclick = () => { if ($('howSkip').checked) { skip[name] = 1; try { localStorage.setItem('kh-how-skip', JSON.stringify(skip)); } catch (e) {} } K.closeS('howSheet'); go(); };
+    K.openS('howSheet'); sfx('tada');
+  }
   K.tapGame = (name, url, st) => {
     if (st === 'maint') { bubble(pick(MAINT), { sound: 'boing' }); return; }
     if (!url) { bubble(pick(SOON), { sound: 'boing' }); return; }
@@ -325,13 +336,15 @@
       sfx('boing'); K.openS('loginSheet'); speak($('loginT').textContent); return;
     }
     if (K.played) K.played(name);
-    if (SOLO[name]) { // একা খেলার গেম: সরাসরি খেলায়
-      const line = inviteLine(name); bubble(line, { sound: 'tada', silent: true }); speak(line);
-      setTimeout(() => { location.href = url; }, 900); return;
-    }
-    const iv = $('modeInvite');
-    if (iv) { iv.querySelector('.txt').textContent = inviteLine(name); iv.querySelector('.face').textContent = pick(FACES); }
-    openModes(name, url); sfx('tada'); if (iv) setTimeout(() => speak(iv.querySelector('.txt').textContent), 300);
+    howFirst(name, () => {
+      if (SOLO[name]) { // একা খেলার গেম: সরাসরি খেলায়
+        const line = inviteLine(name); bubble(line, { sound: 'tada', silent: true }); speak(line);
+        setTimeout(() => { location.href = url; }, 900); return;
+      }
+      const iv = $('modeInvite');
+      if (iv) { iv.querySelector('.txt').textContent = inviteLine(name); iv.querySelector('.face').textContent = pick(FACES); }
+      openModes(name, url); sfx('tada'); if (iv) setTimeout(() => speak(iv.querySelector('.txt').textContent), 300);
+    });
   };
   // হাবের "খেলুন" বোতামও একই পথে
   const hp = $('heroPlay'); if (hp) hp.onclick = () => { const st = (K.gameStatus || {})['লুডু'] || 'live'; K.tapGame('লুডু', st === 'live' ? '/games/ludo/' : null, st); };

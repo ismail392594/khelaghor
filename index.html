@@ -7,7 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="খেলাঘর">
-<style>html{background:#1a1460;color:#fff}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}.howto{display:flex;align-items:center;gap:12px;margin:14px 0 4px;padding:12px 14px;border-radius:18px;background:linear-gradient(135deg,#fff7d6,#ffe39a);color:#1d1640;text-decoration:none;box-shadow:0 5px 0 rgba(0,0,0,.18)}.howto>span{font-size:1.8rem}.howto div{flex:1;min-width:0;line-height:1.25}.howto b{display:block;font-family:var(--display);font-size:1.05rem}.howto small{font-size:.75rem;opacity:.75}.howto em{font-style:normal;font-weight:800;color:#5a1fa8;white-space:nowrap}
+<style>html{background:#1a1460;color:#fff}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}.howh{display:flex;align-items:center;gap:12px}.howh>span{font-size:2.6rem;width:64px;height:64px;display:grid;place-items:center;border-radius:18px;background:linear-gradient(135deg,#fff3c4,#ffd36a);flex:none}.howh small{font-size:.75rem;font-weight:700;color:#5a1fa8}.howh h3{margin:0;font-family:var(--display);font-size:1.5rem;line-height:1.1}.howh em{font-style:normal;font-size:.78rem;color:#6b6590}.howl{margin:0;padding:12px 14px 12px 2.1em;background:#fff;border:1px solid #e6e2f7;border-radius:16px;display:flex;flex-direction:column;gap:7px;font-size:.92rem;line-height:1.5}.howl b{color:#3a24a8}.howm{align-self:center;font-weight:700;font-size:.85rem;color:#5a1fa8}.hows{display:flex;align-items:center;gap:8px;justify-content:center;font-size:.8rem;color:#6b6590}
+.howto{display:flex;align-items:center;gap:12px;margin:14px 0 4px;padding:12px 14px;border-radius:18px;background:linear-gradient(135deg,#fff7d6,#ffe39a);color:#1d1640;text-decoration:none;box-shadow:0 5px 0 rgba(0,0,0,.18)}.howto>span{font-size:1.8rem}.howto div{flex:1;min-width:0;line-height:1.25}.howto b{display:block;font-family:var(--display);font-size:1.05rem}.howto small{font-size:.75rem;opacity:.75}.howto em{font-style:normal;font-weight:800;color:#5a1fa8;white-space:nowrap}
 </style>
 <title>খেলাঘর: বাংলার গেমিং হাব · ফ্রি অনলাইন বাংলা গেম</title>
 <meta name="description" content="লুডু, ক্যারম, ঢাকা জ্যাম রানার, মশা মারো, বাজার দর, আর্জেন্টিনা বনাম ব্রাজিল আর আরো অনেক বাংলা গেম। ফোনের ব্রাউজারেই ফ্রি খেলুন, বন্ধুদের সাথে অনলাইনে।">
@@ -436,7 +437,6 @@ label.f input:focus{outline:none;border-color:#6d5cff}
     <div class="recent" id="recentBox" hidden><div class="sec"><h2>আবার খেলুন</h2></div><div class="rrow" id="recentRow"></div></div>
     <div class="sec" id="vidSec" hidden><h2>ফানি ভিডিও 🎬</h2><span>পাশে সরিয়ে আরো দেখুন →</span></div>
     <div class="vids" id="vids" hidden></div>
-    <a class="howto" href="/help/"><span>📖</span><div><b>কোন গেম কিভাবে খেলবেন?</b><small>অনলাইনে বন্ধুদের সাথে লুডু থেকে ক্যারম, সব নিয়ম বাংলায়</small></div><em>পড়ুন →</em></a>
     <div class="sec"><h2>সব গেম</h2><span id="count"></span></div>
     <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><input id="gSearch" type="search" placeholder="গেম খুঁজুন… যেমন লুডু, মশা" aria-label="গেম খুঁজুন"></label>
     <div class="chips" id="chips">
@@ -545,6 +545,17 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 
 <div class="maintAll" id="maintAll" hidden><div><div style="font-size:3rem">🛠️</div><h2>মেরামত চলছে!</h2><p>মিস্ত্রি ভাই কাজ করতেছে, একটু পরে আসেন। চা খেয়ে আসলেই ঠিক হয়ে যাবে!</p></div></div>
 
+<!-- কিভাবে খেলবেন -->
+<div class="sheet" id="howSheet" hidden>
+  <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="howT">
+    <button class="xbtn" type="button" data-x="howSheet" aria-label="বন্ধ করুন">✕</button>
+    <div class="howh"><span id="howIcon" aria-hidden="true">🎮</span><div><small>কিভাবে খেলবেন</small><h3 id="howT">গেম</h3><em id="howTag"></em></div></div>
+    <ol class="howl" id="howList"></ol>
+    <a class="howm" id="howMore" href="/help/">📖 পুরো নিয়ম পড়ুন</a>
+    <button class="gbtn" id="howGo" type="button">বুঝেছি, খেলা শুরু ▶</button>
+    <label class="hows"><input type="checkbox" id="howSkip"> এই গেমে পরের বার আর দেখাবেন না</label>
+  </div>
+</div>
 <!-- invite room sheet -->
 <div class="sheet" id="roomSheet" hidden>
   <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="roomT">
@@ -902,6 +913,7 @@ setCoins(coins);drawGrid();drawDaily();nextDlg();setProfile(profile);
 </script>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
 <script src="/js/voice.js"></script>
+<script src="/js/howto.js"></script>
 <script src="/js/fun.js"></script>
 <script type="module" src="/js/online.js"></script>
 </body></html>
