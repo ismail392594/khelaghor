@@ -255,7 +255,21 @@ function drawRoom(dark) {
   x.fillStyle = dark ? '#2a2838' : '#1d1640'; x.font = `800 ${cw * .42}px 'Baloo Da 2',sans-serif`; x.textAlign = 'center'; x.fillText('১৩', cx + cw / 2, cy + cw * 1.05);
   // মেঝে ও খাট
   const fy = H * .74;
-  x.fillStyle = dark ? '#1a1410' : '#4a3426'; x.fillRect(0, fy, W, H - fy);
+  // ছাদের কোণার ছায়া আর দেয়ালের ময়লা দাগ
+  const top = x.createLinearGradient(0, 0, 0, H * .12); top.addColorStop(0, 'rgba(0,0,0,.35)'); top.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = top; x.fillRect(0, 0, W, H * .12);
+  for (let i = 0; i < 6; i++) { const sx = rnd(0, W), sw = rnd(10, 30); const gr2 = x.createLinearGradient(0, H * .05, 0, H * .6); gr2.addColorStop(0, 'rgba(0,0,0,.12)'); gr2.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = gr2; x.fillRect(sx, H * .05, sw, H * .55); }
+  // সুইচবোর্ড
+  const sbx = W * .9, sby = H * .42; x.fillStyle = dark ? '#5a5866' : '#ecebe6'; x.fillRect(sbx - 18, sby, 36, 50); x.fillStyle = dark ? '#333' : '#6b6b70'; for (let i = 0; i < 3; i++) x.fillRect(sbx - 13 + i * 10, sby + 8, 6, 14); x.beginPath(); x.arc(sbx, sby + 36, 5, 0, 7); x.fill();
+  x.strokeStyle = dark ? '#2a2a2a' : '#5a5a5a'; x.lineWidth = 2; x.beginPath(); x.moveTo(sbx, sby); x.quadraticCurveTo(sbx + 10, sby * .5, sbx - 30, 0); x.stroke();
+  // তাক আর ঘড়ি
+  const shx = W * .58, shy = H * .3; x.fillStyle = dark ? '#2b2018' : '#7a5236'; x.fillRect(shx, shy, W * .2, 7);
+  x.fillStyle = dark ? '#3d4a5a' : '#2f6fe0'; x.fillRect(shx + 8, shy - 26, 12, 26); x.fillStyle = dark ? '#5a3a3a' : '#e5484d'; x.fillRect(shx + 22, shy - 20, 10, 20); x.fillStyle = dark ? '#4a4a2a' : '#ffd23f'; x.fillRect(shx + 34, shy - 30, 9, 30);
+  x.fillStyle = dark ? '#c8c3b8' : '#fffdf5'; x.beginPath(); x.arc(shx + W * .14, shy - 18, 15, 0, 7); x.fill(); x.strokeStyle = dark ? '#333' : '#1d1640'; x.lineWidth = 2; x.stroke(); x.beginPath(); x.moveTo(shx + W * .14, shy - 18); x.lineTo(shx + W * .14, shy - 28); x.moveTo(shx + W * .14, shy - 18); x.lineTo(shx + W * .14 + 7, shy - 18); x.stroke();
+  // কাঠের মেঝে
+  const fl = x.createLinearGradient(0, fy, 0, H); fl.addColorStop(0, dark ? '#1f1712' : '#5a3d2a'); fl.addColorStop(1, dark ? '#120d0a' : '#3b281b'); x.fillStyle = fl; x.fillRect(0, fy, W, H - fy);
+  x.strokeStyle = dark ? 'rgba(0,0,0,.4)' : 'rgba(30,18,10,.45)'; x.lineWidth = 1.5;
+  for (let i = 0; i < 9; i++) { const yy = fy + (H - fy) * Math.pow(i / 9, 1.6); x.beginPath(); x.moveTo(0, yy); x.lineTo(W, yy); x.stroke(); }
+  for (let i = -6; i <= 6; i++) { x.beginPath(); x.moveTo(W / 2 + i * W * .05, fy); x.lineTo(W / 2 + i * W * .22, H); x.stroke(); }
   x.fillStyle = dark ? '#2b2018' : '#6b4a2a'; x.fillRect(W * .05, fy - H * .06, W * .9, H * .08);
   x.fillStyle = dark ? '#3a3550' : '#d9d2f0'; x.fillRect(W * .07, fy - H * .09, W * .86, H * .04);
   x.fillStyle = dark ? '#4a2a35' : '#e46b8a'; x.beginPath(); x.ellipse(W * .2, fy - H * .095, W * .09, H * .022, 0, 0, 7); x.fill();
@@ -265,7 +279,9 @@ function drawRoom(dark) {
   for (let j = 0; j < 30; j++) { const yy = H * .02 + j * (fy - H * .08) / 30; x.beginPath(); x.moveTo(W * .05, yy); x.lineTo(W * .95, yy); x.stroke(); }
   x.fillStyle = dark ? '#14122a' : '#3b3a6e'; x.beginPath(); x.ellipse(W * .6, H * .45, W * .09, H * .07, .4, 0, 7); x.fill(); // মশারির ফুটো
   x.strokeStyle = dark ? 'rgba(255,255,255,.08)' : 'rgba(255,255,255,.25)'; x.lineWidth = 1.5; x.stroke();
-  if (dark) { const v = x.createRadialGradient(W / 2, H / 2, H * .2, W / 2, H / 2, H * .8); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.6)'); x.fillStyle = v; x.fillRect(0, 0, W, H); }
+  // ঝোলানো বাল্বের উষ্ণ আলো (আলো থাকলে) আর চারপাশে অন্ধকার
+  if (!dark) { const lx = W * .32, ly = H * .1; x.strokeStyle = '#222'; x.lineWidth = 2; x.beginPath(); x.moveTo(lx, 0); x.lineTo(lx, ly - 10); x.stroke(); const lg = x.createRadialGradient(lx, ly, 4, lx, ly, H * .6); lg.addColorStop(0, 'rgba(255,220,150,.38)'); lg.addColorStop(.35, 'rgba(255,200,120,.12)'); lg.addColorStop(1, 'rgba(255,200,120,0)'); x.fillStyle = lg; x.fillRect(0, 0, W, H); x.fillStyle = '#fff6d6'; x.beginPath(); x.ellipse(lx, ly, 8, 11, 0, 0, 7); x.fill(); x.fillStyle = '#9a9a9a'; x.fillRect(lx - 5, ly - 16, 10, 7); }
+  const v = x.createRadialGradient(W / 2, H * .45, H * .25, W / 2, H / 2, H * .85); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, dark ? 'rgba(0,0,0,.65)' : 'rgba(0,0,0,.35)'); x.fillStyle = v; x.fillRect(0, 0, W, H);
   return c;
 }
 
@@ -302,14 +318,22 @@ function drawArm(x, dark, bumps, t) {
 function drawMosq(x, m, t, scale) {
   const r = m.r * (scale || 1);
   x.save(); x.translate(m.x, m.y); x.rotate(m.ang); if (m.face < 0) x.scale(-1, 1);
-  const flap = Math.sin(t * 55 + m.seed) * .5 + .5;
-  x.fillStyle = 'rgba(220,235,255,.45)'; x.strokeStyle = 'rgba(255,255,255,.5)'; x.lineWidth = .8;
-  [[-1, 1], [1, -1]].forEach(([sx]) => { x.save(); x.rotate(sx * (.4 + flap * .5)); x.beginPath(); x.ellipse(-r * .1, -r * .8 * sx, r * .35, r * .95, sx * .3, 0, 7); x.fill(); x.stroke(); x.restore(); });
-  x.strokeStyle = m.type === 1 ? '#e8e8e8' : '#2a2430'; x.lineWidth = Math.max(1, r * .08);
-  for (let i = -1; i <= 1; i++) { x.beginPath(); x.moveTo(i * r * .25, r * .1); x.quadraticCurveTo(i * r * .5 - r * .2, r * .8, i * r * .6 - r * .5, r * 1.3); x.stroke(); x.beginPath(); x.moveTo(i * r * .25, -r * .1); x.quadraticCurveTo(i * r * .5 - r * .2, -r * .8, i * r * .6 - r * .5, -r * 1.3); x.stroke(); }
+  const flap = Math.sin(t * 55 + m.seed) * .5 + .5, sitting = m.st === 'suck' || m.st === 'land';
+  // ডানা: দ্রুত ঝাপটানোর ঝাপসা ভাব (কয়েকটা হালকা ছবি একসাথে)
+  x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = .7;
+  (sitting ? [.35] : [0, .5, 1]).forEach(ph => { const fl = sitting ? .1 : ph; x.fillStyle = `rgba(210,228,255,${sitting ? .55 : .22})`;
+    [1, -1].forEach(sx => { x.save(); x.rotate(sx * (.35 + fl * .6)); x.beginPath(); x.ellipse(-r * .15, -r * .8 * sx, r * .3, r * .95, sx * .3, 0, 7); x.fill(); if (sitting || ph === .5) x.stroke(); x.restore(); }); });
+  // পা: এডিসের পায়ে সাদা-কালো ডোরা
+  const legC = m.type === 1 ? '#151518' : '#2a2430';
+  for (let i = -1; i <= 1; i++) [1, -1].forEach(sy => {
+    const ex = i * r * .6 - r * .5, ey = sy * r * 1.3 * (sitting ? 1.1 : 1); x.lineWidth = Math.max(1, r * .07); x.strokeStyle = legC;
+    x.beginPath(); x.moveTo(i * r * .25, sy * r * .1); x.quadraticCurveTo(i * r * .5 - r * .2, sy * r * .8, ex, ey); x.stroke();
+    if (m.type === 1) { x.strokeStyle = '#f2f2f2'; x.setLineDash([r * .12, r * .14]); x.beginPath(); x.moveTo(i * r * .5 - r * .2, sy * r * .8); x.lineTo(ex, ey); x.stroke(); x.setLineDash([]); } });
   const pr = m.fed ? 1 : (m.prog || 0);
   const belly = pr > .05 ? `rgb(${Math.round(74 + (200 - 74) * pr)},${Math.round(63 - 33 * pr)},${Math.round(82 - 38 * pr)})` : m.type === 1 ? '#1b1b1f' : '#4a3f52';
   x.fillStyle = belly; x.beginPath(); x.ellipse(-r * .55, 0, r * (.55 + .2 * pr), r * (.22 + .18 * pr), 0, 0, 7); x.fill();
+  x.strokeStyle = 'rgba(0,0,0,.35)'; x.lineWidth = Math.max(.6, r * .03); for (let i = 1; i < 5; i++) { x.beginPath(); x.moveTo(-r * .55 - r * .5 + i * r * .22, -r * (.2 + .16 * pr)); x.lineTo(-r * .55 - r * .5 + i * r * .22, r * (.2 + .16 * pr)); x.stroke(); }
+  if (pr > .3) { x.fillStyle = 'rgba(255,255,255,.25)'; x.beginPath(); x.ellipse(-r * .6, -r * .12, r * .25, r * .07, 0, 0, 7); x.fill(); } // রক্তভরা পেটের চকচকে ভাব
   if (m.type === 1) { x.fillStyle = '#fff'; for (let i = 0; i < 3; i++) x.fillRect(-r * .9 + i * r * .28, -r * .2, r * .07, r * .4); }
   x.fillStyle = m.type === 1 ? '#111' : '#3a3044'; x.beginPath(); x.ellipse(r * .1, 0, r * .3, r * .22, 0, 0, 7); x.fill();
   x.beginPath(); x.arc(r * .45, 0, r * .17, 0, 7); x.fill();
@@ -408,7 +432,7 @@ function step(dt) {
   // কামড়ের জায়গা চুলকায়
   if (S.bumps.length >= 3) { S.itchT -= dt; if (S.itchT <= 0) { S.itchT = rnd(9, 15); const b = pick(S.bumps), p = armPt(b.u); floatText(p.x, p.y - 30, 'চুলকাচ্ছে!', '#ffb4b4', 18); say(pick(L.itch)); } }
   S.pows.forEach(p => p.life -= dt); S.pows = S.pows.filter(p => p.life > 0);
-  S.fx.forEach(f => { f.life -= dt * (f.k === 'splat' ? .25 : 1.3); if (f.k === 'txt') f.y -= 40 * dt; }); S.fx = S.fx.filter(f => f.life > 0);
+  S.fx.forEach(f => { f.life -= dt * (f.k === 'splat' ? .12 : 1.3); if (f.k === 'txt') f.y -= 40 * dt; if (f.k === 'bit') { f.x += f.vx * dt; f.y += f.vy * dt; f.vy += 700 * dt; f.rot += f.vr * dt; } }); S.fx = S.fx.filter(f => f.life > 0);
   S.flash = Math.max(0, S.flash - dt); S.shake = Math.max(0, S.shake - dt);
   // লেভেল
   const nl = lvlFor(S.kills);
@@ -433,12 +457,23 @@ function render() {
   S.fx.filter(f => f.k === 'splat').forEach(f => { g.globalAlpha = Math.min(1, f.life); g.fillStyle = f.fed ? '#b3121f' : '#3a2a2a'; g.beginPath(); g.arc(f.x, f.y, f.r, 0, 7); g.fill(); f.dots.forEach(d => { g.beginPath(); g.arc(f.x + d[0], f.y + d[1], d[2], 0, 7); g.fill(); }); g.globalAlpha = 1; });
   S.pows.forEach(p => { g.globalAlpha = Math.min(1, p.life); drawPower(g, p, S.t); g.globalAlpha = 1; });
   drawArm(g, S.dark, S.bumps, S.t);
+  S.mos.forEach(m => { const sh = g.createRadialGradient(m.x + 14, m.y + 22, 1, m.x + 14, m.y + 22, m.r * 1.2); sh.addColorStop(0, 'rgba(0,0,0,.28)'); sh.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = sh; g.fillRect(m.x - m.r, m.y, m.r * 3, m.r * 2.5); });
   S.mos.forEach(m => drawMosq(g, m, S.t));
+  S.fx.filter(f => f.k === 'bit').forEach(f => { g.globalAlpha = Math.min(1, f.life * 2); g.fillStyle = f.c; g.save(); g.translate(f.x, f.y); g.rotate(f.rot); g.fillRect(-f.s, -f.s * .3, f.s * 2, f.s * .6); g.restore(); g.globalAlpha = 1; });
   S.fx.filter(f => f.k === 'ring').forEach(f => { g.strokeStyle = f.col; g.globalAlpha = f.life; g.lineWidth = 4; g.beginPath(); g.arc(f.x, f.y, f.r * (1.6 - f.life), 0, 7); g.stroke(); g.globalAlpha = 1; });
-  S.fx.filter(f => f.k === 'hand').forEach(f => { g.save(); g.globalAlpha = Math.min(1, f.life * 3); g.translate(f.x, f.y); g.scale(1 + (1 - f.life) * .4, 1 + (1 - f.life) * .4); g.fillStyle = f.bat ? '#ffd23f' : '#f2c49b'; g.strokeStyle = '#8a5a3a'; g.lineWidth = 2;
-    g.beginPath(); g.roundRect ? g.roundRect(-16, -8, 32, 30, 10) : g.rect(-16, -8, 32, 30); g.fill(); g.stroke();
-    [-12, -4, 4, 12].forEach((fx, i) => { g.beginPath(); g.roundRect ? g.roundRect(fx - 3.5, -26 + (i === 0 || i === 3 ? 6 : 0), 7, 22, 4) : g.rect(fx - 3.5, -26, 7, 22); g.fill(); g.stroke(); });
-    g.restore(); g.globalAlpha = 1; });
+  S.fx.filter(f => f.k === 'hand').forEach(f => {
+    const k = 1 - f.life / .3, inn = Math.min(1, k * 3); // প্রথমে উপর থেকে জোরে নেমে আসে, তারপর মিলিয়ে যায়
+    g.save(); g.globalAlpha = Math.min(1, f.life * 4); g.translate(f.x + (1 - inn) * 60, f.y + (1 - inn) * 80); g.rotate(-.35 + inn * .35); const sc = 1.6 - inn * .6; g.scale(sc, sc);
+    if (inn < 1) { g.strokeStyle = 'rgba(255,255,255,.5)'; g.lineWidth = 3; for (let i = 0; i < 4; i++) { g.beginPath(); g.moveTo(20 + i * 6, 30 + i * 4); g.lineTo(60 + i * 6, 70 + i * 4); g.stroke(); } }
+    if (f.bat) { g.strokeStyle = '#ffd23f'; g.lineWidth = 4; g.beginPath(); g.ellipse(0, -10, 26, 32, 0, 0, 7); g.stroke(); g.lineWidth = 1.2; for (let i = -20; i <= 20; i += 6) { g.beginPath(); g.moveTo(i, -38); g.lineTo(i, 18); g.stroke(); } g.fillStyle = '#2f6fe0'; g.fillRect(-5, 20, 10, 30); }
+    else { const sk = g.createLinearGradient(-20, -30, 20, 30); sk.addColorStop(0, '#f5c9a3'); sk.addColorStop(1, '#d9946a'); g.fillStyle = sk; g.strokeStyle = 'rgba(120,70,40,.7)'; g.lineWidth = 1.6;
+      g.beginPath(); g.ellipse(0, 4, 22, 25, 0, 0, 7); g.fill(); g.stroke();
+      [[-15, -26, -.25], [-5, -32, -.08], [5, -32, .06], [15, -27, .2]].forEach(([fx, fy2, rr]) => { g.save(); g.translate(fx, fy2 + 12); g.rotate(rr); g.beginPath(); g.ellipse(0, -10, 5.5, 15, 0, 0, 7); g.fill(); g.stroke(); g.restore(); });
+      g.save(); g.translate(24, 6); g.rotate(.9); g.beginPath(); g.ellipse(0, -8, 6, 14, 0, 0, 7); g.fill(); g.stroke(); g.restore();
+      g.strokeStyle = 'rgba(120,70,40,.35)'; g.beginPath(); g.moveTo(-12, 0); g.quadraticCurveTo(0, 8, 12, 2); g.stroke(); }
+    g.restore(); g.globalAlpha = 1;
+    if (k > .3 && f.life > .12) { g.strokeStyle = 'rgba(255,255,255,.8)'; g.lineWidth = 3; for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, r1 = 26 + (k - .3) * 40, r2 = r1 + 12; g.beginPath(); g.moveTo(f.x + Math.cos(a) * r1, f.y + Math.sin(a) * r1); g.lineTo(f.x + Math.cos(a) * r2, f.y + Math.sin(a) * r2); g.stroke(); } }
+  });
   S.fx.filter(f => f.k === 'txt').forEach(f => { g.globalAlpha = Math.min(1, f.life); g.font = `800 ${f.size}px 'Baloo Da 2','Noto Sans Bengali',sans-serif`; g.textAlign = 'center'; g.lineWidth = 5; g.strokeStyle = 'rgba(0,0,0,.6)'; g.strokeText(f.text, f.x, f.y); g.fillStyle = f.col; g.fillText(f.text, f.x, f.y); g.globalAlpha = 1; });
   if (S.slow > 0) { g.fillStyle = 'rgba(120,200,160,.08)'; g.fillRect(0, 0, W, H); }
   g.restore();
@@ -485,6 +520,8 @@ cv.addEventListener('pointerdown', e => {
     if (m.hp > 0) { floatText(m.x, m.y - m.r, 'আরো ' + bn(m.hp) + 'টা!', '#ffd23f', 20); m.tx = rnd(W * .1, W * .9); m.ty = rnd(H * .1, H * .6); return; }
     S.mos = S.mos.filter(q => q !== m);
     S.fx.push({ k: 'splat', x: m.x, y: m.y, r: m.r * .45, fed: m.fed, life: 1, dots: Array.from({ length: 6 }, () => [rnd(-m.r, m.r), rnd(-m.r, m.r), rnd(1.5, 4)]) });
+    for (let i = 0; i < 8; i++) S.fx.push({ k: 'bit', x: m.x, y: m.y, vx: rnd(-160, 160), vy: rnd(-220, -40), rot: rnd(0, 6), vr: rnd(-12, 12), s: rnd(2, 5), c: i < 3 ? 'rgba(220,235,255,.8)' : m.fed ? '#b3121f' : '#2a2430', life: .9 });
+    if (navigator.vibrate) try { navigator.vibrate(25); } catch (_) {}
     S.kills++; S.combo++; S.comboT = 1.3; S.bestCombo = Math.max(S.bestCombo, S.combo);
     const base = (m.type === 2 ? 10 : m.type === 1 ? 3 : 1) + (m.st === 'suck' && m.prog > .5 ? 1 : 0), mult = Math.min(5, 1 + Math.floor((S.combo - 1) / 2));
     const pts = base * mult; gained += pts; S.score += pts;
