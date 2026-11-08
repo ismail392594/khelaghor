@@ -7,7 +7,16 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="খেলাঘর">
-<style>html{background:#1a1460;color:#fff}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}.howh{display:flex;align-items:center;gap:12px}.howh>span{font-size:2.6rem;width:64px;height:64px;display:grid;place-items:center;border-radius:18px;background:linear-gradient(135deg,#fff3c4,#ffd36a);flex:none}.howh small{font-size:.75rem;font-weight:700;color:#5a1fa8}.howh h3{margin:0;font-family:var(--display);font-size:1.5rem;line-height:1.1}.howh em{font-style:normal;font-size:.78rem;color:#6b6590}.howl{margin:0;padding:12px 14px 12px 2.1em;background:#fff;border:1px solid #e6e2f7;border-radius:16px;display:flex;flex-direction:column;gap:7px;font-size:.92rem;line-height:1.5}.howl b{color:#3a24a8}.howm{align-self:center;font-weight:700;font-size:.85rem;color:#5a1fa8}.hows{display:flex;align-items:center;gap:8px;justify-content:center;font-size:.8rem;color:#6b6590}
+<style>html{background:#1a1460;color:#fff}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}.strow{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 10px;scroll-snap-type:x mandatory;scrollbar-width:none}.strow::-webkit-scrollbar{display:none}
+.stc{flex:none;width:210px;scroll-snap-align:start;text-align:left;border:0;border-radius:20px;padding:12px 14px;color:#fff;cursor:pointer;display:flex;flex-direction:column;gap:3px;background:linear-gradient(150deg,var(--a),var(--b));box-shadow:0 6px 0 rgba(0,0,0,.2);font-family:var(--body);position:relative;overflow:hidden;min-height:168px}
+.stc .ic{font-size:1.8rem;line-height:1}.stc em{font-style:normal;font-size:.7rem;font-weight:700;opacity:.85}.stc b{font-family:var(--display);font-size:1.12rem;line-height:1.2}
+.stc small{font-size:.74rem;opacity:.9;line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.stc .mn{margin-top:auto;font-size:.68rem;font-weight:700;background:rgba(0,0,0,.2);align-self:flex-start;border-radius:99px;padding:1px 8px}
+.stchips{margin-bottom:6px}
+.sbox.rd{max-height:94vh}.rdtag{font-weight:700;color:#5a1fa8}.sbox.rd h3{margin:0;font-family:var(--display);font-size:1.5rem;line-height:1.2;padding-right:40px}
+.rdact{display:flex;gap:8px}.rdact .gbtn{flex:1;padding:10px;font-size:1rem}
+.rdbody{background:#fffdf7;border:1px solid #efe6cf;border-radius:16px;padding:14px 16px;font-size:1.02rem;line-height:1.85;color:#2b2238;max-height:52vh;overflow:auto}
+.rdbody p{margin:0 0 .9em}.rdbody p.poem{text-align:center;line-height:2}.rdai{font-size:.72rem;color:#6b6590;text-align:center;margin:0}
+.howh{display:flex;align-items:center;gap:12px}.howh>span{font-size:2.6rem;width:64px;height:64px;display:grid;place-items:center;border-radius:18px;background:linear-gradient(135deg,#fff3c4,#ffd36a);flex:none}.howh small{font-size:.75rem;font-weight:700;color:#5a1fa8}.howh h3{margin:0;font-family:var(--display);font-size:1.5rem;line-height:1.1}.howh em{font-style:normal;font-size:.78rem;color:#6b6590}.howl{margin:0;padding:12px 14px 12px 2.1em;background:#fff;border:1px solid #e6e2f7;border-radius:16px;display:flex;flex-direction:column;gap:7px;font-size:.92rem;line-height:1.5}.howl b{color:#3a24a8}.howm{align-self:center;font-weight:700;font-size:.85rem;color:#5a1fa8}.hows{display:flex;align-items:center;gap:8px;justify-content:center;font-size:.8rem;color:#6b6590}
 .howto{display:flex;align-items:center;gap:12px;margin:14px 0 4px;padding:12px 14px;border-radius:18px;background:linear-gradient(135deg,#fff7d6,#ffe39a);color:#1d1640;text-decoration:none;box-shadow:0 5px 0 rgba(0,0,0,.18)}.howto>span{font-size:1.8rem}.howto div{flex:1;min-width:0;line-height:1.25}.howto b{display:block;font-family:var(--display);font-size:1.05rem}.howto small{font-size:.75rem;opacity:.75}.howto em{font-style:normal;font-weight:800;color:#5a1fa8;white-space:nowrap}
 </style>
 <title>খেলাঘর: বাংলার গেমিং হাব · ফ্রি অনলাইন বাংলা গেম</title>
@@ -437,6 +446,9 @@ label.f input:focus{outline:none;border-color:#6d5cff}
     <div class="recent" id="recentBox" hidden><div class="sec"><h2>আবার খেলুন</h2></div><div class="rrow" id="recentRow"></div></div>
     <div class="sec" id="vidSec" hidden><h2>ফানি ভিডিও 🎬</h2><span>পাশে সরিয়ে আরো দেখুন →</span></div>
     <div class="vids" id="vids" hidden></div>
+    <div class="sec" id="stSec" hidden><h2>গল্পের আসর 📚</h2><span>পড়ুন বা শুনুন →</span></div>
+    <div class="chips stchips" id="stChips" hidden></div>
+    <div class="strow" id="stRow" hidden></div>
     <div class="sec"><h2>সব গেম</h2><span id="count"></span></div>
     <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><input id="gSearch" type="search" placeholder="গেম খুঁজুন… যেমন লুডু, মশা" aria-label="গেম খুঁজুন"></label>
     <div class="chips" id="chips">
@@ -545,6 +557,18 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 
 <div class="maintAll" id="maintAll" hidden><div><div style="font-size:3rem">🛠️</div><h2>মেরামত চলছে!</h2><p>মিস্ত্রি ভাই কাজ করতেছে, একটু পরে আসেন। চা খেয়ে আসলেই ঠিক হয়ে যাবে!</p></div></div>
 
+<!-- গল্প পড়া -->
+<div class="sheet" id="readSheet" hidden>
+  <div class="sbox rd" role="dialog" aria-modal="true" aria-labelledby="rdT">
+    <button class="xbtn" type="button" id="rdClose" aria-label="বন্ধ করুন">✕</button>
+    <small class="rdtag" id="rdTag"></small>
+    <h3 id="rdT">গল্প</h3>
+    <div class="rdact"><button class="gbtn" id="rdPlay" type="button">🔊 শুনুন</button><button class="gbtn gold" id="rdShare" type="button">লিংক কপি</button></div>
+    <div class="rdbody" id="rdBody"></div>
+    <button class="gbtn" id="rdNext" type="button" hidden>পরের পর্ব →</button>
+    <p class="rdai">✍️ লেখাটা AI দিয়ে তৈরি, খেলাঘরের জন্য। কোনো ভুল চোখে পড়লে যোগাযোগ ট্যাবে জানান।</p>
+  </div>
+</div>
 <!-- কিভাবে খেলবেন -->
 <div class="sheet" id="howSheet" hidden>
   <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="howT">
@@ -914,6 +938,7 @@ setCoins(coins);drawGrid();drawDaily();nextDlg();setProfile(profile);
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
 <script src="/js/voice.js"></script>
 <script src="/js/howto.js"></script>
+<script type="module" src="/js/stories.js"></script>
 <script src="/js/fun.js"></script>
 <script type="module" src="/js/online.js"></script>
 </body></html>

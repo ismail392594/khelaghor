@@ -1,7 +1,7 @@
 // খেলাঘর service worker: পেজগুলো ক্যাশে রাখে, যাতে দুর্বল নেটেও দ্রুত খোলে।
 // নতুন ভার্সন পাবলিশ করলে VERSION বাড়ান।
-const VERSION = 'khelaghor-v41';
-const CORE = ['/', '/app/', '/games/ludo/', '/games/mosha/', '/games/jam/', '/games/bazar/', '/games/argbra/', '/games/carrom/', '/help/', '/offline.html', '/js/game-info.js', '/js/fun.js', '/js/voice.js', '/js/videos.js', '/js/viral.js', '/js/howto.js', '/js/ludo-engine.js', '/js/vendor/three.module.min.js', '/js/online.js', '/js/firebase-config.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
+const VERSION = 'khelaghor-v42';
+const CORE = ['/', '/app/', '/games/ludo/', '/games/mosha/', '/games/jam/', '/games/bazar/', '/games/argbra/', '/games/carrom/', '/help/', '/offline.html', '/js/game-info.js', '/js/fun.js', '/js/voice.js', '/js/videos.js', '/js/viral.js', '/js/howto.js', '/js/stories.js', '/js/story-split.js', '/js/ludo-engine.js', '/js/vendor/three.module.min.js', '/js/online.js', '/js/firebase-config.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
@@ -19,6 +19,7 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   const url = new URL(req.url);
   if (req.method !== 'GET' || url.origin !== location.origin) return;
+  if (url.pathname.startsWith('/api/')) return; // সার্ভারের উত্তর (ভয়েস, গল্প) ব্রাউজার নিজেই ক্যাশ করে
   if (!url.pathname.startsWith('/icons/')) {
     e.respondWith(
       fetch(req).then(res => { const copy = res.clone(); caches.open(VERSION).then(c => c.put(req, copy)); return res; })

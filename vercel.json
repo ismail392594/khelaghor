@@ -51,6 +51,15 @@
   "functions": {
     "api/ludo.js": {
       "maxDuration": 10
+    },
+    "api/story.js": {
+      "maxDuration": 60
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/story?cron=1",
+      "schedule": "40 0 * * *"
+    }
+  ]
 }

@@ -2,7 +2,9 @@
 // প্রতিটা লাইন একবার তৈরি হয়, তারপর Vercel-এর ক্যাশ থেকে সবাই পায়, তাই খরচ প্রায় শূন্য।
 // শুধু আমাদের নিজের ডায়লগ (_voice-lines.js) পড়বে, অন্য কোনো লেখা না, যাতে কেউ অপব্যবহার করতে না পারে।
 // দরকার: Google Cloud-এ "Cloud Text-to-Speech API" চালু (প্রজেক্ট khelaghor-160)।
-import { cert } from 'firebase-admin/app';
+import { cert, initializeApp, getApps } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { splitStory } from '../js/story-split.js';
 import LINES from './_voice-lines.js';
 
 const ALLOWED = new Set(LINES);
@@ -45,9 +47,28 @@ async function synth(text, voice) {
   return Buffer.from((await r.json()).audioContent, 'base64');
 }
 
+// গল্পের আসর: ডাটাবেজে সেভ করা লেখা (অ্যাডমিন/AI-এর) অংশ অংশ করে পড়া। বাইরের কোনো লেখা পড়বে না।
+async function storyPart(id, p) {
+  if (!/^[A-Za-z0-9]{10,40}$/.test(id) || !(p >= 0 && p < 60)) return null;
+  if (!getApps().length) { const raw = process.env.FIREBASE_SERVICE_ACCOUNT; if (!raw) throw new Error('no-key'); initializeApp({ credential: cert(JSON.parse(raw)) }); }
+  const d = await getFirestore().collection('stories').doc(id).get();
+  if (!d.exists || d.data().on === false) return null;
+  return splitStory(d.data().title, d.data().body)[p] || null;
+}
+
 export default async function handler(req, res) {
-  const text = String((req.query && req.query.t) || '').trim();
+  let text = String((req.query && req.query.t) || '').trim();
   const v = VOICES[String((req.query && req.query.v) || 'M1')] || VOICES.M1;
+  if (req.query && req.query.s) {
+    try {
+      const part = await storyPart(String(req.query.s), Math.floor(+req.query.p || 0));
+      if (!part) { res.setHeader('Cache-Control', 'no-store'); return res.status(404).json({ error: 'এই অংশ নেই' }); }
+      const mp3 = await synth(part, { ...v, rate: v.rate * .95 });
+      res.setHeader('Content-Type', 'audio/mpeg');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, s-maxage=31536000, immutable');
+      return res.status(200).send(mp3);
+    } catch (e) { console.error(e.message); res.setHeader('Cache-Control', 'no-store'); return res.status(503).json({ error: 'ভয়েস এখন পাওয়া যাচ্ছে না' }); }
+  }
   if (!text || text.length > 160 || !ALLOWED.has(text)) {
     res.setHeader('Cache-Control', 'no-store');
     return res.status(404).json({ error: 'এই লেখার ভয়েস নেই' });
