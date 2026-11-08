@@ -166,6 +166,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
     <p id="endLine"></p>
     <div class="stats"><div><b id="eS">০</b><span>মোট পয়েন্ট</span></div><div><b id="eSaved">০</b><span>মোট বাঁচানো ৳</span></div><div><b id="eItems">০</b><span>জিনিস কেনা</span></div></div>
     <p class="small" id="eBest"></p>
+    <div class="gvid"></div>
     <div class="ract"><button class="gbtn" id="againBtn">আবার বাজারে যাই</button><button class="gbtn ghost" id="shareBtn">কপি করে শেয়ার</button></div>
     <div class="lb" id="lb2"></div>
   </div>
@@ -186,8 +187,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAILS } from "/js/firebase-config.js";
+import { attachGameVideos } from "/js/videos.js";
 
 const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
+attachGameVideos(cb => onSnapshot(doc(db, 'config', 'videos'), d => cb(d.exists() ? d.data() : {}), () => {}));
 const $ = id => document.getElementById(id);
 const bn = n => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
 const en = s => String(s).replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d));

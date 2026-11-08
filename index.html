@@ -312,6 +312,9 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 .rtile .logo svg{width:26px;height:26px;overflow:visible}
 .rtile .logo svg *{fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
 .rtile .logo svg .f{fill:#fff;stroke:none}.rtile .logo svg .y{fill:#ffd23f;stroke:none}.rtile .logo svg .d{fill:#1d1640;stroke:none}.rtile .logo svg .h{fill:rgba(255,255,255,.45);stroke:none}.rtile .logo svg text.t{fill:#1d1640;stroke:none;font:700 15px var(--body);text-anchor:middle}
+.vids{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 10px;margin:0 -2px;scrollbar-width:none}
+.vids .kvid{flex:none;width:min(84vw,420px);scroll-snap-align:center}
+.vids .kvid.tall{width:min(56vw,260px)}
 .bombs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;perspective:600px}
 .bomb{position:relative;border:0;cursor:pointer;background:none;color:#fff;display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 2px;font:700 .82rem var(--body);-webkit-tap-highlight-color:transparent}
 .bomb .ball{position:relative;width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#6b6b80 0,#2a2838 38%,#0d0c16 75%);box-shadow:0 8px 14px rgba(0,0,0,.45),inset -6px -8px 14px rgba(0,0,0,.6);display:grid;place-items:center;font-size:1.6rem;transition:transform .15s;animation:bob 3s ease-in-out infinite}
@@ -414,6 +417,8 @@ label.f input:focus{outline:none;border-color:#6d5cff}
       </div>
       <label class="adult"><input type="checkbox" id="adultChk"> বড়দের মজা (১৮+) চালু করুন</label>
     </section>
+    <div class="sec" id="vidSec" hidden><h2>ফানি ভিডিও 🎬</h2><span>স্ক্রল করুন, নিজেই চলবে</span></div>
+    <div class="vids" id="vids" hidden></div>
     <div class="sec"><h2>শব্দ বোমা 💣</h2><span>চাপলেই ফাটবে!</span></div>
     <section class="bombs" id="bombs" aria-label="শব্দ বোমা: চাপলে মজার কথা বলে"></section>
     <div class="sec"><h2>ধাঁধার আসর</h2><span id="rCount"></span></div>

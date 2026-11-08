@@ -35,6 +35,14 @@ button.appi{background:linear-gradient(180deg,#34d399,#059669);color:#fff;white-
   .tab{border-radius:12px;text-align:center;padding:8px 4px;background:rgba(255,255,255,.08);font-size:.9rem}
   .brand h1{font-size:1.15rem}
 }
+.vlist{display:flex;flex-direction:column;gap:8px}
+.vrow{display:grid;grid-template-columns:96px 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px;min-width:0}
+.vrow .th{width:96px;aspect-ratio:16/9;border-radius:8px;background:#111 center/cover;display:grid;place-items:center;color:#fff;font-size:.7rem;font-weight:700}
+.vrow .th.tt{background:linear-gradient(135deg,#25f4ee,#fe2c55)}.vrow .th.fb{background:#1877f2}
+.vrow b{display:block;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vrow small{display:block;color:var(--muted);font-size:.75rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vrow div{min-width:0}.vrow .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.vrow.off{opacity:.55}
 .tab .cnt{background:var(--bad);color:#fff;border-radius:999px;font-size:.7rem;padding:0 6px;margin-left:4px}
 .wrap{max-width:980px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:14px}
 h2{font-family:var(--display);font-size:1.2rem;margin:0}
@@ -246,6 +254,20 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
         <select id="sMaint"><option value="off">বন্ধ (সাইট স্বাভাবিক)</option><option value="on">চালু (সবাই "মেরামত চলছে" দেখবে, অ্যাডমিন বাদে)</option></select></label>
       <div class="row"><button type="submit">সেভ করুন</button><span class="say" id="sSay"></span></div>
     </form>
+    <section class="card" id="vidCard">
+      <h2>ফানি ভিডিও (YouTube / TikTok / Facebook)</h2>
+      <p class="muted">লিংক কপি করে এখানে পেস্ট করুন। হাবে স্ক্রল করলে ভিডিওগুলো নিজে থেকে (শব্দ ছাড়া) চলবে, আর গেম থামালে বা শেষ হলে একটা ভিডিও দেখাবে। TikTok-এর ছোট লিংক (vt.tiktok.com) কাজ করে না, ভিডিও খুলে ঠিকানার পুরো লিংক দিন।</p>
+      <form class="grid2" id="vidForm" novalidate>
+        <input id="vUrl" inputmode="url" placeholder="https://youtube.com/shorts/... বা https://www.tiktok.com/@.../video/..." aria-label="ভিডিও লিংক">
+        <input id="vTitle" maxlength="80" placeholder="ছোট নাম (ইচ্ছা হলে), যেমন: ঢাকার জ্যাম কমেডি" aria-label="ভিডিওর নাম">
+        <div class="row"><button type="submit">যোগ করুন</button><span class="say" id="vSay"></span></div>
+      </form>
+      <div class="grid2">
+        <label class="f">হাবে স্ক্রল করলে নিজে চলবে<select id="vAuto"><option value="on">চালু</option><option value="off">বন্ধ (চাপলে চলবে)</option></select></label>
+        <label class="f">গেমের বিরতি/শেষে ভিডিও<select id="vGames"><option value="on">চালু</option><option value="off">বন্ধ</option></select></label>
+      </div>
+      <div class="vlist" id="vList"></div>
+    </section>
     <form class="card" id="chgForm" novalidate>
       <h2>অ্যাডমিন পাসওয়ার্ড বদলান</h2>
       <div class="grid2">
@@ -263,6 +285,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, GoogleAuthProvider, signInWithPopup, reauthenticateWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot, runTransaction, collection, query, where, orderBy, limit, startAfter, Timestamp, serverTimestamp, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAILS } from "/js/firebase-config.js";
+import { parseVideo } from "/js/videos.js";
 
 const app=initializeApp(firebaseConfig), auth=getAuth(app), db=getFirestore(app);
 // অ্যাডমিন পাসওয়ার্ডের হ্যাশ (আসল পাসওয়ার্ড কোডে নেই)। বদলাতে চাইলে Claude-কে নতুন পাসওয়ার্ড দিন।
@@ -476,7 +499,32 @@ $('scList').onclick=async e=>{
 };
 
 /* ---------- সেটিংস ---------- */
+/* ফানি ভিডিও */
+let vids={list:[],auto:true,games:true};
+const vRef=()=>doc(db,'config','videos');
+async function saveVids(msg){try{await setDoc(vRef(),{list:vids.list,auto:vids.auto,games:vids.games,updatedAt:serverTimestamp()});if(msg)say('vSay',msg,true)}catch(err){say('vSay','হয়নি: '+err.code)}}
+function drawVids(){
+  $('vAuto').value=vids.auto?'on':'off';$('vGames').value=vids.games?'on':'off';
+  $('vList').innerHTML=vids.list.length?vids.list.map((v,i)=>{const p=parseVideo(v.url)||{type:'?'};const lb={yt:'YouTube',tt:'TikTok',fb:'Facebook'}[p.type]||'?';
+    return `<div class="vrow ${v.on===false?'off':''}"><span class="th ${p.type}" style="${p.thumb?`background-image:url('${p.thumb}')`:''}">${p.thumb?'':lb}</span><div><b>${esc(v.title||lb+' ভিডিও')}</b><small>${esc(v.url)}</small></div><div class="acts">
+    <button class="sm ghost" data-vup="${i}" ${i?'':'disabled'} aria-label="উপরে নিন">▲</button><button class="sm ${v.on===false?'okb':'ghost'}" data-vtog="${i}">${v.on===false?'চালু করুন':'বন্ধ করুন'}</button><button class="sm danger" data-vdel="${i}">মুছুন</button></div></div>`}).join(''):'<p class="muted">এখনো কোনো ভিডিও নেই। উপরে লিংক দিয়ে যোগ করুন।</p>';
+}
+async function loadVids(){const d=await getDoc(vRef()).catch(()=>null);const x=(d&&d.exists())?d.data():{};vids={list:Array.isArray(x.list)?x.list:[],auto:x.auto!==false,games:x.games!==false};drawVids()}
+$('vidForm').onsubmit=async e=>{e.preventDefault();const url=$('vUrl').value.trim();
+  if(/vt\.tiktok\.com|vm\.tiktok\.com/i.test(url)){say('vSay','এটা TikTok-এর ছোট লিংক। ভিডিওটা ব্রাউজারে খুলে উপরের পুরো লিংক দিন (…/video/১২৩৪…)');return}
+  if(!parseVideo(url)){say('vSay','লিংক চিনতে পারিনি। YouTube, TikTok বা Facebook ভিডিওর লিংক দিন');return}
+  if(vids.list.some(v=>v.url===url)){say('vSay','এই ভিডিও আগেই আছে');return}
+  if(vids.list.length>=60){say('vSay','সর্বোচ্চ ৬০টা ভিডিও রাখা যায়, পুরনো কিছু মুছুন');return}
+  vids.list.unshift({url,title:$('vTitle').value.trim(),on:true});$('vUrl').value='';$('vTitle').value='';drawVids();await saveVids('যোগ হয়েছে ✓')};
+$('vList').onclick=async e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.vdel!==undefined){vids.list.splice(+b.dataset.vdel,1)}
+  else if(b.dataset.vtog!==undefined){const v=vids.list[+b.dataset.vtog];v.on=v.on===false}
+  else if(b.dataset.vup!==undefined){const i=+b.dataset.vup;[vids.list[i-1],vids.list[i]]=[vids.list[i],vids.list[i-1]]}
+  drawVids();await saveVids('সেভ হয়েছে ✓')};
+$('vAuto').onchange=()=>{vids.auto=$('vAuto').value==='on';saveVids('সেভ হয়েছে ✓')};
+$('vGames').onchange=()=>{vids.games=$('vGames').value==='on';saveVids('সেভ হয়েছে ✓')};
 async function loadSettings(){
+  loadVids();
   const d=await getDoc(doc(db,'config','site')).catch(()=>null),s=(d&&d.exists())?d.data():{};
   const bd=await getDoc(doc(db,'config','bonus')).catch(()=>null),b=(bd&&bd.exists())?bd.data():{};
   $('bTgLink').value=b.tgLink||'';$('bTgOn').value=b.tgOn?'on':'off';$('bTgAmt').value=b.tgAmount??25000;

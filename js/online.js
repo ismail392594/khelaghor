@@ -2,6 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, writeBatch, onSnapshot, collection, query, where, orderBy, limit, addDoc, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { parseVideo, videoCard, VIDEO_CSS } from "./videos.js";
 import { firebaseConfig, START_POINTS, DAILY_BONUS, ADSENSE_CLIENT, ADSENSE_SLOT, PREMIUM_PRICE, ADMIN_EMAILS } from "./firebase-config.js";
 
 const app = initializeApp(firebaseConfig);
@@ -407,6 +408,27 @@ let bonusCfg = {};
 const opened = { tg: false, fb: false };
 try { Object.assign(opened, JSON.parse(sessionStorage.getItem('kh-mission') || '{}')); } catch (e) {}
 const saveOpened = () => { try { sessionStorage.setItem('kh-mission', JSON.stringify(opened)); } catch (e) {} };
+/* ফানি ভিডিও: অ্যাডমিনের দেওয়া লিংক, স্ক্রল করে দেখা গেলে নিজে চলে (শব্দ ছাড়া) */
+let vidObs = null;
+{ const st = document.createElement('style'); st.textContent = VIDEO_CSS; document.head.appendChild(st); }
+function drawVideos(cfg) {
+  const box = document.getElementById('vids'), sec = document.getElementById('vidSec'); if (!box) return;
+  const list = (cfg.list || []).filter(v => v && v.on !== false && parseVideo(v.url));
+  sec.hidden = box.hidden = !list.length; box.innerHTML = ''; if (vidObs) vidObs.disconnect();
+  if (!list.length) return;
+  const cards = list.map(v => videoCard(v, { onPlay: el => cards.forEach(c => c !== el && c.stop()) })).filter(Boolean);
+  cards.forEach(c => box.appendChild(c));
+  if (cfg.auto === false || !('IntersectionObserver' in window)) return;
+  const save = navigator.connection && navigator.connection.saveData;
+  if (save) return; // ডাটা সেভার চালু থাকলে নিজে চলবে না
+  vidObs = new IntersectionObserver(es => es.forEach(e => {
+    const c = e.target;
+    if (e.isIntersecting && e.intersectionRatio > .7) { cards.forEach(o => o !== c && o.stop()); c.play(true); }
+    else if (!e.isIntersecting) c.stop();
+  }), { threshold: [0, .7] });
+  cards.forEach(c => vidObs.observe(c));
+}
+onSnapshot(doc(db, 'config', 'videos'), d => drawVideos((d.exists() && d.data()) || {}), () => {});
 onSnapshot(doc(db, 'config', 'bonus'), d => { bonusCfg = (d.exists() && d.data()) || {}; drawMission(); }, () => {});
 function drawMission() {
   const b = bonusCfg, tgOn = !!(b.tgOn && b.tgLink), fbOn = !!b.fbOn;
