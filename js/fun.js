@@ -206,6 +206,9 @@
   }
   if (window.KHVoice) window.KHVoice.onstart = a => { duck(true); a.addEventListener('ended', () => duck(false)); a.addEventListener('pause', () => duck(false)); };
   K.speak = speak; K.sfx = sfx;
+  // ভিডিও শব্দসহ চললে গান থামে, ভিডিও থামলে আবার বাজে
+  let held = false;
+  K.holdMusic = on => { if (on) { if (musicOn && unlocked && !held) { held = true; stopMusic(); drawSound(); } } else if (held) { held = false; if (musicOn) { startMusic(); drawSound(); } } };
 
   // ব্রাউজার নিয়ম: প্রথম ছোঁয়ার পরেই শব্দ চালু করা যায়
   let unlocked = false;

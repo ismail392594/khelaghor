@@ -416,17 +416,22 @@ function drawVideos(cfg) {
   const list = (cfg.list || []).filter(v => v && v.on !== false && parseVideo(v.url));
   sec.hidden = box.hidden = !list.length; box.innerHTML = ''; if (vidObs) vidObs.disconnect();
   if (!list.length) return;
-  const cards = list.map(v => videoCard(v, { onPlay: el => cards.forEach(c => c !== el && c.stop()) })).filter(Boolean);
+  const hold = on => window.KH && window.KH.holdMusic && window.KH.holdMusic(on);
+  const cards = list.map(v => videoCard(v, { onPlay: el => { cards.forEach(c => c !== el && c.stop()); hold(true); } })).filter(Boolean);
+  const active = () => !!(navigator.userActivation && navigator.userActivation.hasBeenActive);
   cards.forEach(c => box.appendChild(c));
   if (cfg.auto === false || !('IntersectionObserver' in window)) return;
   const save = navigator.connection && navigator.connection.saveData;
   if (save) return; // ডাটা সেভার চালু থাকলে নিজে চলবে না
   vidObs = new IntersectionObserver(es => es.forEach(e => {
     const c = e.target;
-    if (e.isIntersecting && e.intersectionRatio > .7) { cards.forEach(o => o !== c && o.stop()); c.play(true); }
-    else if (!e.isIntersecting) c.stop();
-  }), { threshold: [0, .7] });
+    if (e.isIntersecting && e.intersectionRatio > .6) { cards.forEach(o => o !== c && o.stop()); const snd = active(); c.play(!snd); if (snd) hold(true); }
+    else if (!e.isIntersecting) { c.stop(); if (!cards.some(o => o.querySelector('iframe'))) hold(false); }
+  }), { threshold: [0, .6] });
   cards.forEach(c => vidObs.observe(c));
+  // প্রথম ছোঁয়ার পর চলতে থাকা ভিডিও শব্দসহ আবার চালু
+  const unmute = () => { const c = cards.find(x => { const f = x.querySelector('iframe'); return f && /mute=1/.test(f.src); }); if (c) { c.stop(); c.play(false); hold(true); } };
+  ['pointerdown', 'keydown'].forEach(ev => addEventListener(ev, unmute, { once: true }));
 }
 onSnapshot(doc(db, 'config', 'music'), d => { const c = (d.exists() && d.data()) || {}; window.__khSongs = c; window.KH && window.KH.setSongs && window.KH.setSongs(c); }, () => {});
 onSnapshot(doc(db, 'config', 'videos'), d => drawVideos((d.exists() && d.data()) || {}), () => {});
