@@ -129,35 +129,47 @@ async function saToken() {
   saTok = { t: j.access_token, exp: Date.now() + (j.expires_in || 3600) * 1000 };
   return saTok.t;
 }
-async function gemini(prompt) {
+// Vertex AI-তে কোন মডেল চালু আছে তা আগে থেকে জানা যায় না (নাম বদলায়), তাই তালিকা ধরে চেষ্টা; যেটা চলে সেটা মনে রাখা হয়
+const CANDIDATES = [process.env.GEMINI_MODEL, 'gemini-3-flash', 'gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-3.7-flash', 'gemini-3.8-flash', 'gemini-3-flash-preview', 'gemini-2.5-flash', 'gemini-flash-latest', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-2.5-flash-lite'].filter(Boolean);
+let goodModel = null;
+async function gemini(prompt, db) {
   const key = process.env.GEMINI_API_KEY;
-  const body = {
+  const mk = (model, think) => JSON.stringify({
     systemInstruction: { parts: [{ text: SYS }] },
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: {
       temperature: 1, maxOutputTokens: 8192, responseMimeType: 'application/json',
-      thinkingConfig: { thinkingBudget: 0 },
+      ...(think === 'budget' ? { thinkingConfig: { thinkingBudget: 0 } } : think === 'level' ? { thinkingConfig: { thinkingLevel: 'low' } } : {}),
       responseSchema: { type: 'OBJECT', properties: { title: { type: 'STRING' }, summary: { type: 'STRING' }, body: { type: 'STRING' } }, required: ['title', 'summary', 'body'] }
     }
-  };
-  // তিনটা পথে চেষ্টা: (১) চাবি থাকলে চাবি দিয়ে, (২) সার্ভারের service account দিয়ে Gemini API, (৩) একই দিয়ে Vertex AI
-  const payload = JSON.stringify(body), errs = [];
-  const pid = (() => { try { return JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}').project_id; } catch (e) { return null; } })();
-  const ways = [];
-  if (key) ways.push(['চাবি', `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, { 'x-goog-api-key': key }]);
-  ways.push(['gemini-sa', `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, null]);
-  if (pid) ways.push(['vertex', `https://aiplatform.googleapis.com/v1/projects/${pid}/locations/global/publishers/google/models/${MODEL}:generateContent`, null]);
-  let r = null;
-  for (const [name, url, hd] of ways) {
-    let h = hd; if (!h) { try { h = { Authorization: 'Bearer ' + await saToken() }; } catch (e) { errs.push(name + ': ' + e.message); continue; } }
-    const x = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...h }, body: payload });
-    if (x.ok) { r = x; break; }
-    const t = (await x.text()).replace(/\s+/g, ' ').slice(0, 220); console.error('gemini', name, x.status, t);
-    errs.push(name + ' ' + x.status + ': ' + t);
-    if (x.status === 429) break;
+  });
+  const errs = []; let r = null;
+  // (১) চাবি বসানো থাকলে Gemini API
+  if (key) {
+    const x = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body: mk(MODEL, 'budget') });
+    if (x.ok) r = x; else errs.push('চাবি ' + x.status + ': ' + (await x.text()).replace(/\s+/g, ' ').slice(0, 160));
   }
-  if (!r) throw new HttpErr(502, 'AI থেকে লেখা আনা যায়নি। ' + errs.join(' || '));
-  const j = await r.json(), txt = (((j.candidates || [])[0] || {}).content || {}).parts?.map(p => p.text || '').join('') || '';
+  // (২) সার্ভারের service account দিয়ে Vertex AI
+  const pid = (() => { try { return JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}').project_id; } catch (e) { return null; } })();
+  if (!r && pid) {
+    let tok; try { tok = await saToken(); } catch (e) { errs.push('টোকেন: ' + e.message); }
+    if (!goodModel && db) { try { const c = await cfgRef(db).get(); goodModel = (c.exists && c.data().model) || null; } catch (e) {} }
+    const list = goodModel ? [goodModel, ...CANDIDATES.filter(m => m !== goodModel)] : CANDIDATES;
+    for (const model of tok ? list : []) {
+      const url = `https://aiplatform.googleapis.com/v1/projects/${pid}/locations/global/publishers/google/models/${model}:generateContent`;
+      for (const think of model.startsWith('gemini-2') ? ['budget', null] : ['level', null]) {
+        const x = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok }, body: mk(model, think) });
+        if (x.ok) { r = x; break; }
+        const t = (await x.text()).replace(/\s+/g, ' ').slice(0, 160);
+        if (x.status === 400 && /think/i.test(t)) continue; // এই মডেলে চিন্তার সেটিং চলে না, সেটিং ছাড়া আবার
+        errs.push(model + ' ' + x.status + ': ' + t); break;
+      }
+      if (r) { if (goodModel !== model) { goodModel = model; if (db) cfgRef(db).set({ model }, { merge: true }).catch(() => {}); } break; }
+      if (errs.length && !/ 404: /.test(errs[errs.length - 1])) break; // মডেল না থাকা ছাড়া অন্য সমস্যা হলে থামি
+    }
+  }
+  if (!r) { console.error('gemini', errs.join(' || ')); throw new HttpErr(502, 'AI থেকে লেখা আনা যায়নি। ' + errs.slice(-3).join(' || ')); }
+  const j = await r.json(), txt = (((j.candidates || [])[0] || {}).content || {}).parts?.filter(p => !p.thought).map(p => p.text || '').join('') || '';
   let out; try { out = JSON.parse(txt); } catch (e) { throw new HttpErr(502, 'AI-এর উত্তর বোঝা যায়নি, আবার চেষ্টা করুন'); }
   return out;
 }
@@ -176,7 +188,7 @@ export async function generate(db, type, topic) {
     prompt = first
       ? `একটা নতুন ধারাবাহিক বাংলা উপন্যাস শুরু করো, মোট ${sr.total} পর্ব হবে। এটা প্রথম পর্ব (৮০০ থেকে ১১০০ শব্দ)। বাংলাদেশের পটভূমিতে পারিবারিক, রহস্য বা অ্যাডভেঞ্চার ধাঁচের গল্প, সব বয়সের পাঠকের জন্য। title-এ উপন্যাসের নাম দাও (পর্ব নম্বর ছাড়া)। summary-তে এই পর্বের মূল ঘটনা আর চরিত্রদের নাম ৩-৪ বাক্যে লেখো, যাতে পরের পর্ব লিখতে কাজে লাগে।${titles.length ? ' আগের উপন্যাসগুলোর নাম (এগুলো থেকে আলাদা হবে): ' + [...new Set(recent.docs.map(d => d.data().seriesTitle))].join(', ') : ''}`
       : `ধারাবাহিক উপন্যাস "${sr.title}"-এর ${sr.chapter + 1} নম্বর পর্ব লেখো (মোট ${sr.total} পর্ব, ৮০০ থেকে ১১০০ শব্দ)। আগের পর্বগুলোর সারাংশ:\n${sr.sums.map((s, i) => 'পর্ব ' + (i + 1) + ': ' + s).join('\n')}\n${sr.chapter + 1 === sr.total ? 'এটা শেষ পর্ব, সব রহস্যের সমাধান করে সুন্দরভাবে শেষ করো।' : 'চরিত্রদের নাম আর ঘটনা আগের সাথে মিলিয়ে গল্প এগিয়ে নাও, শেষে পাঠককে পরের পর্বের জন্য আগ্রহী রাখো।'} title-এ এই পর্বের ছোট শিরোনাম দাও। summary-তে এই পর্বের মূল ঘটনা ৩-৪ বাক্যে।`;
-    const o = await gemini(prompt);
+    const o = await gemini(prompt, db);
     const ch = sr.chapter + 1, seriesTitle = first ? clean(o.title).slice(0, 80) : sr.title;
     extra = { series: sr.sid, seriesTitle, chapter: ch, total: sr.total };
     const doc = await save(db, type, first ? 'পর্ব ১: শুরু' : clean(o.title), o, extra, topic);
@@ -184,7 +196,7 @@ export async function generate(db, type, topic) {
     return doc;
   }
   prompt = T.ask + (topic ? `\nবিষয়: ${topic}` : '') + (titles.length ? `\nআগে এই শিরোনামগুলোতে লেখা হয়েছে, এগুলো থেকে একদম আলাদা বিষয় বেছে নাও: ${titles.join(' | ')}` : '') + '\ntitle-এ সুন্দর ছোট শিরোনাম, summary-তে এক-দুই বাক্যে লেখাটা কী নিয়ে, body-তে পুরো লেখা।';
-  const o = await gemini(prompt);
+  const o = await gemini(prompt, db);
   return save(db, type, clean(o.title), o, extra, topic);
 }
 async function save(db, type, title, o, extra, topic) {
