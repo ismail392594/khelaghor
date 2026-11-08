@@ -62,22 +62,22 @@ export function makeHuman(THREE, o = {}) {
   const at = (x, y, z, rx = 0, ry = 0, rz = 0, sx = 1, sy = 1, sz = 1) => new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, ry, rz)), new THREE.Vector3(sx, sy, sz));
   const tp = [[0, -.14], [.175, -.14], [.188, -.05], [.188, -.026], [.186, -.014], [.182, .02], [.18, .08], [.19, .22], [.215, .36], [.222, .44], [.19, .5], [.1, .545], [0, .55]].map(([a, b]) => new THREE.Vector2(a, b));
   const waist = 1.0; // spine-এর উচ্চতা
-  add(new THREE.LatheGeometry(tp, 28), at(0, waist, 0, 0, 0, 0, 1, 1, .7), shirtHex, ['hips', 'spine'], p => p.y < waist - .02 ? shortsHex : shirtHex);
-  add(new THREE.CylinderGeometry(.05, .06, .14, 12), at(0, waist + .58, 0), skinHex, ['spine', 'neck']);
+  add(new THREE.LatheGeometry(tp, 18), at(0, waist, 0, 0, 0, 0, 1, 1, .7), shirtHex, ['hips', 'spine'], p => p.y < waist - .02 ? shortsHex : shirtHex);
+  add(new THREE.CylinderGeometry(.05, .06, .14, 8), at(0, waist + .58, 0), skinHex, ['spine', 'neck']);
   for (const k of ['L', 'R']) {
     const sh = wp(bones['sh' + k]), el = wp(bones['el' + k]), wr = wp(bones['wr' + k]), hp = wp(bones['hp' + k]), kn = wp(bones['kn' + k]), an = wp(bones['an' + k]);
-    add(new THREE.SphereGeometry(.072, 16, 12), at(sh.x * .96, sh.y - .005, sh.z, 0, 0, 0, 1, .9, .95), shirtHex, ['spine', 'sh' + k]);
-    add(new THREE.CapsuleGeometry(.063, .26, 6, 14), at(sh.x, (sh.y + el.y) / 2, 0, 0, 0, 0, 1, 1, .92), skinHex, ['spine', 'sh' + k, 'el' + k]);
-    const sleeve = new THREE.LatheGeometry([[0, -.104], [.072, -.104], [.078, -.1], [.08, -.04], [.074, .03], [0, .06]].map(([a, b]) => new THREE.Vector2(a, b)), 16);
+    add(new THREE.SphereGeometry(.072, 10, 8), at(sh.x * .96, sh.y - .005, sh.z, 0, 0, 0, 1, .9, .95), shirtHex, ['spine', 'sh' + k]);
+    add(new THREE.CapsuleGeometry(.063, .26, 3, 10), at(sh.x, (sh.y + el.y) / 2, 0, 0, 0, 0, 1, 1, .92), skinHex, ['spine', 'sh' + k, 'el' + k]);
+    const sleeve = new THREE.LatheGeometry([[0, -.104], [.072, -.104], [.078, -.1], [.08, -.04], [.074, .03], [0, .06]].map(([a, b]) => new THREE.Vector2(a, b)), 10);
     add(sleeve, at(sh.x, sh.y, 0), shirtHex, ['spine', 'sh' + k]);
-    add(new THREE.CapsuleGeometry(.053, .22, 6, 14), at(el.x, (el.y + wr.y) / 2, 0), skinHex, ['sh' + k, 'el' + k]);
-    add(new THREE.SphereGeometry(.052, 12, 10), at(wr.x, wr.y - .05, .005, 0, 0, 0, .85, 1.3, .62), skinHex, ['wr' + k]);
-    add(new THREE.CapsuleGeometry(.1, .32, 6, 16), at(hp.x, (hp.y + kn.y) / 2, 0), skinHex, ['hips', 'hp' + k, 'kn' + k]);
-    const leg = new THREE.LatheGeometry([[0, -.215], [.118, -.215], [.128, -.2], [.13, -.06], [.125, .06], [0, .07]].map(([a, b]) => new THREE.Vector2(a, b)), 18);
+    add(new THREE.CapsuleGeometry(.053, .22, 3, 10), at(el.x, (el.y + wr.y) / 2, 0), skinHex, ['sh' + k, 'el' + k]);
+    add(new THREE.SphereGeometry(.052, 8, 6), at(wr.x, wr.y - .05, .005, 0, 0, 0, .85, 1.3, .62), skinHex, ['wr' + k]);
+    add(new THREE.CapsuleGeometry(.1, .32, 3, 12), at(hp.x, (hp.y + kn.y) / 2, 0), skinHex, ['hips', 'hp' + k, 'kn' + k]);
+    const leg = new THREE.LatheGeometry([[0, -.215], [.118, -.215], [.128, -.2], [.13, -.06], [.125, .06], [0, .07]].map(([a, b]) => new THREE.Vector2(a, b)), 12);
     add(leg, at(hp.x, hp.y, 0), shortsHex, ['hips', 'hp' + k]);
-    add(new THREE.CapsuleGeometry(.072, .33, 6, 14), at(kn.x, (kn.y + an.y) / 2, 0), skinHex, ['hp' + k, 'kn' + k, 'an' + k]);
-    add(new THREE.SphereGeometry(.074, 12, 10), at(kn.x, kn.y - .14, -.02, 0, 0, 0, .95, 1.7, .9), skinHex, ['kn' + k]); // পায়ের ডিম
-    add(new THREE.CapsuleGeometry(.05, .14, 4, 12), at(an.x, an.y - .045, .06, Math.PI / 2, 0, 0, 1.15, 1, .72), skinHex, ['kn' + k, 'an' + k]);
+    add(new THREE.CapsuleGeometry(.072, .33, 3, 10), at(kn.x, (kn.y + an.y) / 2, 0), skinHex, ['hp' + k, 'kn' + k, 'an' + k]);
+    add(new THREE.SphereGeometry(.074, 8, 6), at(kn.x, kn.y - .14, -.02, 0, 0, 0, .95, 1.7, .9), skinHex, ['kn' + k]); // পায়ের ডিম
+    add(new THREE.CapsuleGeometry(.05, .14, 3, 8), at(an.x, an.y - .045, .06, Math.PI / 2, 0, 0, 1.15, 1, .72), skinHex, ['kn' + k, 'an' + k]);
   }
   // ---------- জোড়া লাগানো + হাড়ের ওজন ----------
   let nV = 0; parts.forEach(p => { if (p.geo.index) p.geo = p.geo.toNonIndexed(); nV += p.geo.attributes.position.count; });
@@ -105,13 +105,13 @@ export function makeHuman(THREE, o = {}) {
   const cast = m => { m.castShadow = true; return m; };
   const hg = new THREE.Group(); hg.scale.setScalar(1.25); head.add(hg);
   const skinM = new THREE.MeshStandardMaterial({ color: skinHex, roughness: .7 }), hairM = new THREE.MeshStandardMaterial({ color: o.hair || '#120c08', roughness: .75 });
-  const skull = cast(new THREE.Mesh(new THREE.SphereGeometry(.112, 30, 22), new THREE.MeshStandardMaterial({ map: faceTex(THREE, skinHex, o.look || 'calm'), roughness: .66 }))); skull.scale.set(1, 1.16, 1.05); skull.position.y = .06; hg.add(skull);
-  const jaw = cast(new THREE.Mesh(new THREE.SphereGeometry(.088, 20, 14), skinM)); jaw.scale.set(1, .78, 1); jaw.position.set(0, -.005, .024); hg.add(jaw);
+  const skull = cast(new THREE.Mesh(new THREE.SphereGeometry(.112, 24, 16), new THREE.MeshStandardMaterial({ map: faceTex(THREE, skinHex, o.look || 'calm'), roughness: .66 }))); skull.scale.set(1, 1.16, 1.05); skull.position.y = .06; hg.add(skull);
+  const jaw = cast(new THREE.Mesh(new THREE.SphereGeometry(.088, 14, 10), skinM)); jaw.scale.set(1, .78, 1); jaw.position.set(0, -.005, .024); hg.add(jaw);
   const nose = cast(new THREE.Mesh(new THREE.SphereGeometry(.02, 12, 10), skinM)); nose.scale.set(1.1, 1.25, 1.2); nose.position.set(0, .045, .118); hg.add(nose);
   for (const s of [-1, 1]) { const ear = cast(new THREE.Mesh(new THREE.SphereGeometry(.028, 12, 10), skinM)); ear.scale.set(.45, 1, .75); ear.position.set(s * .11, .055, -.005); hg.add(ear); }
   const mouth = new THREE.Mesh(new THREE.CircleGeometry(.028, 18), new THREE.MeshBasicMaterial({ map: mouthTex(THREE), transparent: true, depthWrite: false })); mouth.position.set(0, .004, .123); mouth.rotation.x = -.12; mouth.scale.set(1, .1, 1); hg.add(mouth);
   const hs = o.hairStyle ?? 0;
-  const capM = cast(new THREE.Mesh(new THREE.SphereGeometry(.12, 26, 16, 0, Math.PI * 2, 0, Math.PI * (hs === 2 ? .36 : .5)), hairM)); capM.scale.set(1.02, 1.15, 1.08); capM.position.set(0, .07, -.014); capM.rotation.x = -.45; hg.add(capM);
+  const capM = cast(new THREE.Mesh(new THREE.SphereGeometry(.12, 18, 10, 0, Math.PI * 2, 0, Math.PI * (hs === 2 ? .36 : .5)), hairM)); capM.scale.set(1.02, 1.15, 1.08); capM.position.set(0, .07, -.014); capM.rotation.x = -.45; hg.add(capM);
   if (hs === 1) { const tuft = cast(new THREE.Mesh(new THREE.SphereGeometry(.07, 14, 10), hairM)); tuft.scale.set(1.5, .55, 1.05); tuft.position.set(.025, .18, .045); tuft.rotation.z = -.2; hg.add(tuft); }
   if (hs === 2) { const band = new THREE.Mesh(new THREE.TorusGeometry(.116, .016, 8, 28), new THREE.MeshStandardMaterial({ color: trimHex, roughness: .6 })); band.rotation.x = Math.PI / 2 - .3; band.position.set(0, .11, -.01); hg.add(band); }
   if (o.mustache) { const mu = new THREE.Mesh(new THREE.CapsuleGeometry(.008, .045, 3, 6), hairM); mu.rotation.z = Math.PI / 2; mu.position.set(0, .024, .12); hg.add(mu); }
