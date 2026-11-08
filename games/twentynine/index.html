@@ -194,6 +194,7 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAILS } from "/js/firebase-config.js";
 import { attachGameVideos } from "/js/videos.js";
+import { makeHuman } from "/js/kh-human.js";
 
 const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
 attachGameVideos(cb => onSnapshot(doc(db, 'config', 'videos'), d => cb(d.exists() ? d.data() : {}), () => {}));
@@ -284,14 +285,13 @@ const steams = Array.from({ length: 12 }, (_, i) => { const s = new THREE.Sprite
 // প্রতিপক্ষের মানুষ (বসে আছে)
 const SEATPOS = [[0, 5.4], [5.4, 0], [0, -5.4], [-5.4, 0]];
 const PEOPLE = [null, { n: 'রহিম চাচা', shirt: '#e8e4d8', skin: '#a86b3c', cap: true }, { n: 'কামাল ভাই', shirt: '#2563eb', skin: '#8d5524' }, { n: 'শিলা আপা', shirt: '#be185d', skin: '#c68642', hair: true }];
-function person(i) {
-  const P = PEOPLE[i], [x, z] = SEATPOS[i], g = new THREE.Group(); g.position.set(x, -1.5, z); g.lookAt(0, -1.5, 0);
-  const torso = new THREE.Mesh(new THREE.CylinderGeometry(.75, .9, 2.1, 16), M(P.shirt)); torso.position.y = 1.3; torso.castShadow = true; g.add(torso);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(.5, 20, 16), M(P.skin, { roughness: .6 })); head.position.y = 2.85; head.castShadow = true; g.add(head);
-  const hair = new THREE.Mesh(new THREE.SphereGeometry(.52, 20, 16, 0, Math.PI * 2, 0, P.hair ? Math.PI * .62 : Math.PI / 2), M(P.cap ? '#f5f5f5' : '#151515')); hair.position.y = 2.9; g.add(hair);
-  if (P.hair) { const bun = new THREE.Mesh(new THREE.SphereGeometry(.26, 12, 10), M('#151515')); bun.position.set(0, 2.9, -.5); g.add(bun); }
-  [-1, 1].forEach(s => { const e = new THREE.Mesh(new THREE.SphereGeometry(.06, 8, 6), M('#111')); e.position.set(s * .18, 2.92, .45); g.add(e); const arm = new THREE.Mesh(new THREE.CylinderGeometry(.18, .2, 1.6, 10), M(P.shirt)); arm.position.set(s * .85, 1.6, .55); arm.rotation.x = -1.1; arm.castShadow = true; g.add(arm); });
-  scene.add(g); return { g, head };
+function person(i) { // হাড়সহ মানুষ, টেবিলে বসে তাস ধরে আছে
+  const P = PEOPLE[i], [x, z] = SEATPOS[i];
+  const h = makeHuman(THREE, { skin: P.skin, shirt: P.shirt, shorts: '#3b3b3b', trim: P.shirt, number: '', hairStyle: P.hair ? 0 : (i % 2), mustache: !!P.cap, scale: 2.5 });
+  h.root.position.set(x, -1.55, z); h.root.lookAt(0, -1.55, 0); h.snap({ sit: 1, reach: .5, hold: 0, lean: -.12 }); h.look = { x: 0, z: 0 };
+  if (P.cap) { const c = new THREE.Mesh(new THREE.SphereGeometry(.125, 18, 10, 0, Math.PI * 2, 0, Math.PI * .45), M('#f5f5f5')); c.position.y = .1; h.head.add(c); }
+  if (P.hair) { const bun = new THREE.Mesh(new THREE.SphereGeometry(.07, 12, 10), M('#151515')); bun.position.set(0, .1, -.13); h.head.add(bun); const long = new THREE.Mesh(new THREE.CapsuleGeometry(.1, .18, 4, 10), M('#151515')); long.position.set(0, -.04, -.08); h.head.add(long); }
+  scene.add(h.root); return { g: h.root, head: h.head, h };
 }
 const people = [null, person(1), person(2), person(3)];
 // প্রতিপক্ষের হাতে উল্টানো তাস
@@ -525,6 +525,7 @@ function loop(ts) {
   anims = anims.filter(a => { a.t += dt / a.dur; const k = Math.min(1, a.t), e = ease(k); a.m.position.lerpVectors(a.from, a.to, e); a.m.position.y += Math.sin(k * Math.PI) * (a.hop || 0); a.m.rotation.set(a.r0.x + (a.r1.x - a.r0.x) * e, a.r0.y + (a.r1.y - a.r0.y) * e, a.r0.z + (a.r1.z - a.r0.z) * e); if (k >= 1) { a.res(); return false; } return true; });
   steams.forEach(s => { const u = s.userData, k = ((T * .35 + u.p) % 1); s.position.set(u.x + Math.sin(T + u.p) * .1, .35 + k * 1.3, u.z); s.scale.setScalar(.3 + k * .7); s.material.opacity = Math.sin(k * Math.PI) * .35; });
   people.forEach((p, i) => { if (!p) return; p.head.rotation.y = Math.sin(T * .6 + i) * .25 + (G && G.turn === i && G.phase === 'play' ? Math.sin(T * 4) * .08 : 0); p.head.position.y = 2.85 + (G && G.turn === i ? Math.sin(T * 5) * .03 : 0); });
+  people.forEach((p, k) => { if (p) { p.h.set({ shout: p.talkT > 0 ? 1 : 0 }); p.talkT = (p.talkT || 0) - dt; p.h.update(dt, 0); } });
   if (renderer) renderer.render(scene, cam); requestAnimationFrame(loop);
 }
 lv = store.get('kh-29-lv', 1); resize(); seatUI();
