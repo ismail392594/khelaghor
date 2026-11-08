@@ -6,7 +6,15 @@ import { cert } from 'firebase-admin/app';
 import LINES from './_voice-lines.js';
 
 const ALLOWED = new Set(LINES);
-const VOICES = { A: 'bn-IN-Wavenet-A', B: 'bn-IN-Wavenet-B', C: 'bn-IN-Wavenet-C', D: 'bn-IN-Wavenet-D' };
+// চরিত্র: ছেলে (M) আর মেয়ে (F) কণ্ঠ, গলার উঁচু-নিচু (pitch) আর গতি বদলে মজার করা
+const VOICES = {
+  M1: { name: 'bn-IN-Wavenet-B', pitch: -2, rate: 1.02 },   // মামা: ভারী গলা
+  M2: { name: 'bn-IN-Wavenet-D', pitch: 3.5, rate: 1.16 },  // ছোট ভাই: চটপটে
+  M3: { name: 'bn-IN-Wavenet-B', pitch: -7, rate: .9 },     // চাচা/বস: মোটা গলা, ধীরে
+  F1: { name: 'bn-IN-Wavenet-A', pitch: 2.5, rate: 1.12 },  // আপা: চটপটে
+  F2: { name: 'bn-IN-Wavenet-C', pitch: -1, rate: 1.0 }     // খালা/আম্মা
+};
+VOICES.A = VOICES.F1; VOICES.B = VOICES.M1; VOICES.C = VOICES.F2; VOICES.D = VOICES.M2; // পুরনো লিংক
 let cred = null;
 
 async function token() {
@@ -23,18 +31,18 @@ async function synth(text, voice) {
   const body = (name) => JSON.stringify({
     input: { text },
     voice: { languageCode: 'bn-IN', name },
-    audioConfig: { audioEncoding: 'MP3', speakingRate: 1.08, pitch: 1.5, effectsProfileId: ['handset-class-device'] }
+    audioConfig: { audioEncoding: 'MP3', speakingRate: voice.rate, pitch: voice.pitch, effectsProfileId: ['handset-class-device'] }
   });
   const call = name => fetch('https://texttospeech.googleapis.com/v1/text:synthesize', { method: 'POST', headers: { Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: body(name) });
-  let r = await call(voice);
-  if (r.status === 400) r = await call(voice.replace('Wavenet', 'Standard')); // WaveNet না থাকলে সাধারণ কণ্ঠ
+  let r = await call(voice.name);
+  if (r.status === 400) r = await call(voice.name.replace('Wavenet', 'Standard')); // WaveNet না থাকলে সাধারণ কণ্ঠ
   if (!r.ok) throw new Error('tts ' + r.status + ' ' + (await r.text()).slice(0, 200));
   return Buffer.from((await r.json()).audioContent, 'base64');
 }
 
 export default async function handler(req, res) {
   const text = String((req.query && req.query.t) || '').trim();
-  const v = VOICES[String((req.query && req.query.v) || 'B')] || VOICES.B;
+  const v = VOICES[String((req.query && req.query.v) || 'M1')] || VOICES.M1;
   if (!text || text.length > 160 || !ALLOWED.has(text)) {
     res.setHeader('Cache-Control', 'no-store');
     return res.status(404).json({ error: 'এই লেখার ভয়েস নেই' });
