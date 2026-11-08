@@ -1261,10 +1261,10 @@ let best = store.get('kh-jam-best', 0);
 function endGame(why) {
   if (S.over) return; S.over = true; running = false; engine(0); ['ctrl', 'spd', 'map', 'nav', 'talk', 'sub', 'street', 'tL', 'tR'].forEach(id => $(id).hidden = true); ambience(false); tuiKey = ''; talkT = 0; S.p.brake = false;
   const reached = why === 'office', left = Math.max(0, Math.round(CLOCK_SEC - S.clock));
-  if (reached) S.score += 300 + left * 4; // অফিসে পৌঁছানোর বোনাস
+  if (reached) { S.score += 300 + left * 4; if (window.KHViral) setTimeout(() => KHViral.confetti(90), 200); } // অফিসে পৌঁছানোর বোনাস
   news(reached ? 'office' : why === 'time' ? 'late' : 'crash');
   const sc = S.score, title = TITLES.filter(t => sc >= t[0]).pop()[1], newBest = sc > best;
-  if (newBest) { best = sc; store.set('kh-jam-best', best); }
+  if (newBest) { best = sc; store.set('kh-jam-best', best); if (sc > 0 && window.KHViral) setTimeout(() => KHViral.confetti(), 300); }
   sfx(reached ? 'win' : 'over');
   $('endT').textContent = newBest && sc > 0 ? 'নতুন রেকর্ড! 🎉' : reached ? 'অফিস পৌঁছাইছেন! 🏢' : why === 'time' ? '৯টা বেজে গেছে, লেট!' : why === 'quit' ? 'বাসায় ফিরলেন' : 'অ্যাক্সিডেন্ট!';
   $('endTitle').textContent = title;

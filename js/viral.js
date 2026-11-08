@@ -84,5 +84,21 @@ function chat(opts) {
   };
   return { btn, close };
 }
-window.KHViral = { pop, tip, TIPS, chat };
+// কনফেটি (জয়, রেকর্ড)
+function confetti(n) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const c = document.createElement('canvas'); c.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60';
+  document.body.appendChild(c); const dpr = Math.min(2, devicePixelRatio || 1), W = innerWidth, H = innerHeight; c.width = W * dpr; c.height = H * dpr; const g = c.getContext('2d'); g.scale(dpr, dpr);
+  const cols = ['#ffd23f', '#ef4f5f', '#22c55e', '#3b78f0', '#ff7aa8', '#36d1c4', '#fff'];
+  const P = Array.from({ length: n || 140 }, () => ({ x: Math.random() * W, y: -20 - Math.random() * H * .4, vx: (Math.random() - .5) * 3, vy: 2 + Math.random() * 4, r: Math.random() * 6.3, vr: (Math.random() - .5) * .3, w: 6 + Math.random() * 6, h: 4 + Math.random() * 6, c: cols[Math.floor(Math.random() * cols.length)] }));
+  const t0 = performance.now();
+  (function f(t) { const k = (t - t0) / 1000; g.clearRect(0, 0, W, H); P.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += .05; p.r += p.vr; g.save(); g.translate(p.x, p.y); g.rotate(p.r); g.globalAlpha = Math.max(0, 1 - Math.max(0, k - 2.2)); g.fillStyle = p.c; g.fillRect(-p.w / 2, -p.h / 2, p.w, p.h * Math.abs(Math.cos(p.r * 2))); g.restore(); }); if (k < 3.3) requestAnimationFrame(f); else c.remove(); })(t0);
+}
+// কোনো জায়গায় ছোট বিস্ফোরণ (কণা)
+function burst(x, y, color, n) {
+  for (let i = 0; i < (n || 14); i++) { const d = document.createElement('i'), a = Math.PI * 2 * i / (n || 14), r = 40 + Math.random() * 40;
+    d.style.cssText = `position:fixed;left:${x}px;top:${y}px;width:8px;height:8px;margin:-4px;border-radius:50%;background:${color || '#ffd23f'};pointer-events:none;z-index:60;transition:transform .6s cubic-bezier(.1,.7,.3,1),opacity .6s`;
+    document.body.appendChild(d); requestAnimationFrame(() => { d.style.transform = `translate(${Math.cos(a) * r}px,${Math.sin(a) * r}px) scale(.3)`; d.style.opacity = '0'; }); setTimeout(() => d.remove(), 650); }
+}
+window.KHViral = { pop, tip, TIPS, chat, confetti, burst };
 })();

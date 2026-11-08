@@ -515,7 +515,7 @@ let best = store.get('kh-mosha-best', 0);
 function endGame() {
   S.over = true; running = false; setBuzz(0); sfx('over'); render();
   const sc = S.score, title = TITLES.filter(t => sc >= t[0]).pop()[1], newBest = sc > best;
-  if (newBest) { best = sc; store.set('kh-mosha-best', best); }
+  if (newBest) { best = sc; store.set('kh-mosha-best', best); if (sc > 0 && window.KHViral) setTimeout(() => KHViral.confetti(), 300); }
   $('endT').textContent = newBest && sc > 0 ? 'নতুন রেকর্ড! 🎉' : 'রক্ত শেষ!';
   $('endTitle').textContent = title;
   $('endLine').textContent = sc < 20 ? 'মশারা আজ পার্টি করবে। আবার চেষ্টা করেন!' : sc < 80 ? 'ভালো লড়াই! কিন্তু মশারা এখনো আছে।' : 'মহল্লায় মশার আকাল পড়ে গেছে!';

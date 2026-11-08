@@ -127,8 +127,13 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--teal);outline-offse
 .tok{position:absolute;width:calc(100%/15);height:calc(100%/15);display:grid;place-items:center;padding:0;border:0;background:none;transition:left .09s linear,top .09s linear,transform .2s;z-index:2;cursor:default}
 .tok i{display:block;width:80%;height:80%;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.9) 0 12%,transparent 30%),var(--tc);
   border:2.5px solid #fff;box-shadow:0 2px 0 rgba(0,0,0,.25),0 4px 8px rgba(0,0,0,.3),inset 0 -3px 0 rgba(0,0,0,.18)}
-.tok.hop i{animation:hop .1s ease-out}
-@keyframes hop{50%{transform:translateY(-35%) scale(1.1)}}
+.tok::after{content:"";position:absolute;left:22%;right:22%;bottom:6%;height:16%;border-radius:50%;background:rgba(0,0,0,.28);z-index:-1;transition:transform .1s}
+.tok.hop i{animation:hop .13s ease-out}
+.tok.hop::after{transform:scale(.6);opacity:.6}
+@keyframes hop{0%{transform:scale(1.12,.86)}45%{transform:translateY(-48%) scale(.9,1.12)}80%{transform:translateY(0) scale(1.14,.86)}100%{transform:scale(1)}}
+.boardWrap.quake{animation:quake .35s}
+@keyframes quake{20%{translate:-5px 2px}40%{translate:5px -2px}60%{translate:-3px 1px}80%{translate:2px 0}}
+.pbub.emo{font-size:2rem;padding:2px 8px;background:transparent;box-shadow:none}
 .tok.can{cursor:pointer;z-index:4}
 .tok.can i{animation:bob .55s ease-in-out infinite alternate}
 @keyframes bob{to{transform:translateY(-20%) scale(1.1);box-shadow:0 0 0 3px #fff,0 0 0 6px var(--tc),0 8px 10px rgba(0,0,0,.35)}}
@@ -432,7 +437,7 @@ async function playEvent(e) {
     el.querySelector('.dice').classList.remove('shake');
     sfx('dice'); setCube(el.querySelector('.cube'), e.d, true);
     await sleep(ROLL_MS + 40);
-    if (e.d === 6) { sfx('six'); boardPop('৬!', COL[pl.color]); say(pick(LINES.six), true); }
+    if (e.d === 6) { sfx('six'); boardPop('৬!', COL[pl.color]); if (window.KHViral) { const r1 = el.querySelector('.dice').getBoundingClientRect(); KHViral.burst(r1.left + r1.width / 2, r1.top + r1.height / 2, '#ffd23f', 12); } say(pick(LINES.six), true); }
     else say(NUM[e.d], true);
     $('msg').textContent = poss(e.p) + ' ' + (e.d === 6 ? 'ছক্কা (৬)' : bn(e.d)) + ' উঠেছে';
     await sleep(120);
@@ -440,7 +445,9 @@ async function playEvent(e) {
     if (predicted && predicted.p === e.p && predicted.t === e.t && predicted.to === e.to) { predicted = null; D[e.p][e.t] = e.to; placeTokens(); return; } // আগেই চালানো হয়েছে
     await hopTo(e.p, e.t, e.from, e.to);
   } else if (e.k === 'cap') {
-    D[e.q][e.t] = -1; placeTokens(); sfx('cap'); boardPop('কাটা!', '#fff');
+    { const el0 = toks[e.q] && toks[e.q][e.t]; if (el0 && window.KHViral) { const r0 = el0.getBoundingClientRect(); KHViral.burst(r0.left + r0.width / 2, r0.top + r0.height / 2, COL[G.players[e.q].color], 18); } }
+    document.querySelector('.boardWrap').classList.remove('quake'); void document.querySelector('.boardWrap').offsetWidth; document.querySelector('.boardWrap').classList.add('quake');
+    D[e.q][e.t] = -1; placeTokens(); sfx('cap'); boardPop('কাটা!', '#fff'); if (navigator.vibrate) try { navigator.vibrate(80); } catch (_) {}
     const mineHit = myIdx >= 0 && e.q === myIdx, mineDid = myIdx >= 0 && e.p === myIdx;
     say(pick(mineHit ? LINES.capped : LINES.capMe), true);
     $('msg').textContent = nameOf(e.p) + ' ' + poss(e.q) + ' গুটি কেটে দিয়েছে!' + (mineDid ? ' 🔥' : '');
@@ -480,7 +487,9 @@ let lastChatN = 0, chatAt = 0, chatInit = undefined;
 function showChat(p, i) {
   const el = pod(p); if (!el || !L.QUICK[i]) return;
   el.querySelectorAll('.pbub').forEach(x => x.remove());
-  const b = document.createElement('span'); b.className = 'pbub'; b.textContent = L.QUICK[i]; el.appendChild(b); setTimeout(() => b.remove(), 3000);
+  const emo = !/[ঀ-৿]/.test(L.QUICK[i]);
+  const b = document.createElement('span'); b.className = 'pbub' + (emo ? ' emo' : ''); b.textContent = L.QUICK[i]; el.appendChild(b); setTimeout(() => b.remove(), 3000);
+  if (emo) { sfx('hop'); return; }
   if (window.KHVoice) window.KHVoice.say(L.QUICK[i], true, SEAT_VOICE[(G.players[p] || {}).color || 0], true);
 }
 $('qList').innerHTML = L.QUICK.map((q, i) => `<button data-q="${i}">${q}</button>`).join('');
@@ -574,7 +583,7 @@ function showResult() {
   const po = r.payouts || {};
   $('rList').innerHTML = r.ranks.map((pi, k) => { const pl = G.players[pi], a = pl.uid != null ? po[pl.uid] : undefined;
     return `<div class="rrow"><em>${bn(k + 1)}</em><i style="background:${COL[pl.color]}"></i><span>${esc(pl.name)}${pi === myIdx ? ' (আপনি)' : ''}</span>${a === undefined ? '<span></span>' : `<span class="amt ${a >= 0 ? 'plus' : 'minus'}">${a >= 0 ? '+' : '−'}${bn(Math.abs(a))}</span>`}</div>`; }).join('');
-  sfx(won ? 'win' : 'lose'); say($('rLine').textContent, true);
+  sfx(won ? 'win' : 'lose'); say($('rLine').textContent, true); if (won && window.KHViral) KHViral.confetti();
   $('result').hidden = false;
 }
 $('rAgain').onclick = () => { $('result').hidden = true; go(lastMode || (G && G.mode === 'cpu' ? 'cpu' : 'q2')); };

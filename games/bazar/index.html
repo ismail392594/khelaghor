@@ -515,7 +515,7 @@ $('nextDayBtn').onclick = () => {
 let best = store.get('kh-bazar-best', 0);
 function endGame() {
   const sc = S.total, title = TITLES.filter(t => sc >= t[0]).pop()[1], newBest = sc > best;
-  if (newBest) { best = sc; store.set('kh-bazar-best', best); }
+  if (newBest) { best = sc; store.set('kh-bazar-best', best); if (sc > 0 && window.KHViral) setTimeout(() => KHViral.confetti(), 300); }
   $('endT').textContent = newBest && sc > 0 ? 'নতুন রেকর্ড! 🎉' : 'তিন দিনের বাজার শেষ!';
   $('endTitle').textContent = title;
   $('endLine').textContent = sc >= 1600 ? 'দোকানদাররা আপনাকে দেখলেই দাম কমিয়ে দেয়!' : sc >= 900 ? 'ভালো বাজার করেছেন, আম্মা মোটামুটি খুশি।' : 'দোকানদাররা আজ খুব খুশি, আপনার টাকায় তাদের ঈদ!';
