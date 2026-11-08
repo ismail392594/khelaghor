@@ -15,6 +15,7 @@
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { createSign } from 'node:crypto';
 
 const ADMINS = ['ismail392594@gmail.com'];
 const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
@@ -114,10 +115,19 @@ async function cron(req, db) {
 }
 
 /* ---------- AI দিয়ে লেখা ---------- */
-let saCred = null;
+// সার্ভারের service account দিয়ে নিজেই টোকেন বানানো, AI (Generative Language) এর স্কোপসহ
+let saTok = null;
 async function saToken() {
-  if (!saCred) { const raw = process.env.FIREBASE_SERVICE_ACCOUNT; if (!raw) throw new HttpErr(503, 'AI চালু হয়নি'); saCred = cert(JSON.parse(raw)); }
-  return (await saCred.getAccessToken()).access_token;
+  if (saTok && saTok.exp > Date.now() + 60e3) return saTok.t;
+  let sa; try { sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || ''); } catch (e) { throw new HttpErr(503, 'AI চালু হয়নি'); }
+  const now = Math.floor(Date.now() / 1000), b64 = o => Buffer.from(JSON.stringify(o)).toString('base64url');
+  const unsigned = b64({ alg: 'RS256', typ: 'JWT' }) + '.' + b64({ iss: sa.client_email, scope: 'https://www.googleapis.com/auth/generative-language https://www.googleapis.com/auth/cloud-platform', aud: 'https://oauth2.googleapis.com/token', iat: now, exp: now + 3600 });
+  const sig = createSign('RSA-SHA256').update(unsigned).sign(sa.private_key).toString('base64url');
+  const r = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=' + unsigned + '.' + sig });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || !j.access_token) throw new Error('টোকেন পাওয়া যায়নি ' + r.status + ' ' + JSON.stringify(j).slice(0, 120));
+  saTok = { t: j.access_token, exp: Date.now() + (j.expires_in || 3600) * 1000 };
+  return saTok.t;
 }
 async function gemini(prompt) {
   const key = process.env.GEMINI_API_KEY;
