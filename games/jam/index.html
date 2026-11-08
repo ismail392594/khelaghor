@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <style>
-/* Layout: full-screen runner — HUD (back, distance, clock to 9:00, helmets, pause), canvas road seen from above, overlay cards for start / pause / result. Morning-traffic palette. */
+/* Layout: full-screen 3D runner — HUD (back, distance, clock to 9:00, helmets, pause), WebGL road seen from behind the bike, speedometer, overlay cards for start / pause / result. Morning-traffic palette. */
 :root{--bg:#1a1830;--panel:#25213f;--line:#3d3766;--fg:#f6f3ff;--muted:#aaa3cf;--accent:#ffb627;--red:#ef4f5f;--green:#22c55e;--teal:#36d1c4;
   --display:'Baloo Da 2','Noto Sans Bengali',system-ui,sans-serif;--body:'Noto Sans Bengali','Hind Siliguri',system-ui,sans-serif;color-scheme:dark}
 *{box-sizing:border-box}
@@ -36,10 +36,12 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:
 canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .pw{position:absolute;left:50%;transform:translateX(-50%);top:8px;display:flex;gap:6px;z-index:2;pointer-events:none;white-space:nowrap}
 .pw span{background:rgba(0,0,0,.5);border-radius:999px;padding:2px 10px;font-size:.78rem;font-weight:700}
-.ctrl{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:space-between;padding:0 14px;z-index:2;pointer-events:none}
+.ctrl{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:space-between;gap:8px;padding:0 14px;z-index:2;pointer-events:none}
 .ctrl button{pointer-events:auto;width:64px;height:64px;border-radius:50%;border:0;background:rgba(0,0,0,.35);color:#fff;font-size:1.6rem;display:grid;place-items:center;cursor:pointer;box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
 .ctrl button:active{background:rgba(255,182,39,.5)}
 .ctrl .brake{width:84px;border-radius:20px;font:800 1rem var(--display);background:rgba(239,79,95,.55)}
+.ctrl .gas{width:84px;border-radius:20px;font:800 1rem var(--display);background:rgba(34,197,94,.6)}
+.ctrl .gas.on{background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.4)}
 .ctrl .brake.on{background:#ef4f5f;box-shadow:0 0 0 4px rgba(239,79,95,.4)}
 
 .over{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:16px;background:rgba(14,12,30,.74);backdrop-filter:blur(2px)}
@@ -72,6 +74,16 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .lb em{font-style:normal;color:var(--muted);font-weight:700}
 .lb b{font-variant-numeric:tabular-nums}
 .small{font-size:.75rem!important}
+.fx{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+.fl{position:absolute;transform:translate(-50%,-50%);font-family:var(--display);font-weight:800;white-space:nowrap;text-shadow:0 2px 0 rgba(0,0,0,.6),0 0 10px rgba(0,0,0,.5);animation:rise 1.2s ease-out forwards}
+@keyframes rise{0%{transform:translate(-50%,-30%) scale(.6);opacity:0}15%{transform:translate(-50%,-50%) scale(1.1);opacity:1}100%{transform:translate(-50%,-160%) scale(1);opacity:0}}
+#flash{position:absolute;inset:0;pointer-events:none;z-index:1;opacity:0;background:#ef4f5f}
+.spd{position:absolute;right:max(10px,env(safe-area-inset-right,0px));top:8px;z-index:2;background:rgba(0,0,0,.45);border-radius:14px;padding:3px 12px;text-align:center;line-height:1;pointer-events:none}
+.spd b{font-family:var(--display);font-size:1.5rem;font-variant-numeric:tabular-nums}
+.spd small{display:block;font-size:.6rem;color:var(--muted)}
+.badge3d{display:inline-block;background:linear-gradient(135deg,#36d1c4,#3b78f0);color:#fff;border-radius:8px;padding:0 8px;font-size:1rem;vertical-align:middle;margin-left:4px}
+.how div i{font-style:normal;font-size:1.7rem;line-height:1.1}
+.no3d{background:rgba(239,79,95,.15);border:1px solid rgba(239,79,95,.5);border-radius:12px;padding:8px;color:#ffd0d6!important}
 </style>
 </head><body>
 <div class="app">
@@ -85,20 +97,24 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   </div>
   <div class="stage" id="stage">
     <canvas id="cv"></canvas>
+    <div id="flash"></div>
+    <div class="fx" id="fx"></div>
     <div class="pw" id="pw"></div>
-    <div class="ctrl" id="ctrl" hidden><button id="lBtn" aria-label="বামে">◀</button><button id="bBtn" class="brake" aria-label="ব্রেক (চেপে ধরুন)">ব্রেক</button><button id="rBtn" aria-label="ডানে">▶</button></div>
+    <div class="spd" id="spd" hidden></div>
+    <div class="ctrl" id="ctrl" hidden><button id="lBtn" aria-label="বামে">◀</button><button id="bBtn" class="brake" aria-label="ব্রেক (চেপে ধরুন)">ব্রেক</button><button id="gBtn" class="gas" aria-label="স্পিড বাড়ান (চেপে ধরুন)">গ্যাস</button><button id="rBtn" aria-label="ডানে">▶</button></div>
 
     <div class="over" id="startO">
       <div class="card">
-        <h1>ঢাকা জ্যাম <span>রানার</span></h1>
+        <h1>ঢাকা জ্যাম <span>রানার</span> <span class="badge3d">৩ডি</span></h1>
         <p class="story">সকাল ৮টা। অফিস ৯টায়। বস আজ মিটিং ডেকেছে। রাস্তায় বাস, সিএনজি, রিকশা আর গর্ত। চালান!</p>
         <div class="how">
-          <div><canvas id="i1" width="76" height="76"></canvas><b>বাস</b>এড়ান</div>
-          <div><canvas id="i2" width="76" height="76"></canvas><b>পানি</b>ধীর করে</div>
-          <div><canvas id="i3" width="76" height="76"></canvas><b>চা</b>জোরে ছুট</div>
-          <div><canvas id="i4" width="76" height="76"></canvas><b>হেলমেট</b>+১ জীবন</div>
+          <div><i>🚌</i><b>বাস-ট্রাক</b>এড়ান</div>
+          <div><i>🚦</i><b>লাল বাতি</b>ব্রেক করুন</div>
+          <div><i>☕</i><b>চা</b>জোরে ছুট</div>
+          <div><i>⛑️</i><b>হেলমেট</b>+১ জীবন</div>
         </div>
-        <p>বামে-ডানে সোয়াইপ করুন বা স্ক্রিনের দুই পাশে চাপুন। লাল বাতিতে <b>ব্রেক</b> চেপে ধরুন, নইলে পুলিশ মামলা দেবে! স্পিড ব্রেকারেও আস্তে চালান, রাস্তা পার হওয়া মানুষ দেখে চালান। ৩টা হেলমেট শেষ বা ৯টা বাজলে খেলা শেষ।</p>
+        <p>বামে-ডানে সোয়াইপ করুন বা স্ক্রিনের দুই পাশে চাপুন। <b>গ্যাস</b> চেপে ধরলে স্পিড বাড়ে। লাল বাতিতে <b>ব্রেক</b> চেপে ধরুন, নইলে পুলিশ মামলা দেবে! স্পিড ব্রেকারেও আস্তে চালান, রাস্তা পার হওয়া মানুষ দেখে চালান। ৩টা হেলমেট শেষ বা ৯টা বাজলে খেলা শেষ।</p>
+        <p class="small no3d" id="no3d" hidden>আপনার ফোন বা ব্রাউজারে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।</p>
         <p class="small" id="bestTxt"></p>
         <button class="gbtn" id="startBtn">চলেন অফিসে!</button>
         <div class="lb" id="lb1"></div>
@@ -139,6 +155,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 
 <script src="/js/voice.js"></script>
 <script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -175,13 +192,15 @@ const SFX = {
   whistle() { const t = ac.currentTime; const o = ac.createOscillator(), gg = ac.createGain(), l = ac.createOscillator(), lg = ac.createGain(); o.type = 'sine'; o.frequency.value = 2600; l.frequency.value = 28; lg.gain.value = 180; l.connect(lg); lg.connect(o.frequency); gg.gain.setValueAtTime(.0001, t); gg.gain.exponentialRampToValueAtTime(.18, t + .02); gg.gain.setValueAtTime(.18, t + .45); gg.gain.exponentialRampToValueAtTime(.0001, t + .55); o.connect(gg); gg.connect(ac.destination); o.start(t); l.start(t); o.stop(t + .6); l.stop(t + .6); },
   bump() { const t = ac.currentTime; tone(90, t, .2, 'sine', .5, 40); noise(t, .15, .4, 500); },
   brake() { noise(ac.currentTime, .3, .2, 4000); },
+  rev() { const t = ac.currentTime; tone(90, t, .35, 'sawtooth', .12, 180); },
+  thunder() { const t = ac.currentTime; noise(t, 1.4, .9, 220); tone(55, t, 1.2, 'sine', .4, 30); },
   over() { const t = ac.currentTime; [392, 349, 311, 233].forEach((f, i) => tone(f, t + i * .2, .35, 'triangle', .25)); },
   win() { const t = ac.currentTime; [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, t + i * .12, .3, 'triangle', .3)); }
 };
 function sfx(n) { if (!sndOn || !audio()) return; try { SFX[n](); } catch (e) {} }
 function engine(speed) { if (!ac || !engG) return; engG.gain.setTargetAtTime(sndOn && speed > 0 ? .05 : 0, ac.currentTime, .2); eng.frequency.setTargetAtTime(60 + speed * .25, ac.currentTime, .2); }
 let voiceOn = store.get('kh-voice', true), lastSay = 0;
-function say(t, force) { if (!voiceOn || !window.KHVoice) return; if (!force && performance.now() - lastSay < 2800) return; lastSay = performance.now(); window.KHVoice.say(t, force); }
+function say(t, force, who) { if (!voiceOn || !window.KHVoice || demo) return; if (!force && performance.now() - lastSay < 2800) return; lastSay = performance.now(); window.KHVoice.say(t, force, who); }
 $('snd').onclick = () => { sndOn = !sndOn; store.set('kh-sfx', sndOn); $('snd').classList.toggle('off', !sndOn); if (!sndOn) engine(0); };
 $('snd').classList.toggle('off', !sndOn);
 
@@ -205,7 +224,11 @@ const L = {
   ped: ['ভাই দেইখা চালান!', 'আরে আরে, মানুষ পার হইতেছে!', 'ফুটওভারব্রিজ থাকতে রাস্তা দিয়া পার?'],
   bump: ['ধপাস! স্পিড ব্রেকার!', 'কোমর গেল! আস্তে চালান!'],
   rain: ['বৃষ্টি নামলো! রাস্তা পিচ্ছিল, সাবধান!', 'ঝুম বৃষ্টি! রেইনকোট কই?'],
-  rainEnd: ['বৃষ্টি থামলো, এবার টান দেন!']
+  rainEnd: ['বৃষ্টি থামলো, এবার টান দেন!'],
+  crashTruck: ['ট্রাকের পেছনে লেখা মায়ের দোয়া, তাও ধাক্কা খাইলাম!', 'ট্রাক মামা, একটু সাইড দেন!'],
+  crashCar: ['প্রাইভেট কার! মালিক নামতেছে, পালান!', 'গাড়িতে দাগ পড়ছে, এখন বিল দেন!'],
+  cut: ['আরে সিএনজি মামা, সিগন্যাল দিয়া ঢুকেন!', 'হঠাৎ লেন বদলায় কেন?'],
+  stuck: ['জ্যাম আর জ্যাম! এর চেয়ে হাঁইটা গেলে আগে যাইতাম!', 'ঢাকার জ্যাম, জীবন শেষ!', 'এই জ্যামে বিয়া কইরা বাচ্চার স্কুল শেষ!']
 };
 const TITLES = [[0, 'জ্যামের শিকার'], [300, 'নতুন বাইকার'], [800, 'গলির রাজা'], [1500, 'জ্যাম বিশেষজ্ঞ'], [2500, 'ঢাকার রাস্তার বস'], [4000, 'রাইড শেয়ার কিং']];
 const BOSS = {
@@ -214,141 +237,401 @@ const BOSS = {
   crash: ['বস: হাসপাতাল থেকে ফোন দিও, ছুটি দিলাম।', 'বস: হেলমেট ছাড়া বাইক চালাও কেন?']
 };
 
-/* ================= ক্যানভাস ও আঁকা ================= */
-const cv = $('cv'); let g = cv.getContext('2d');
-let W = 0, H = 0, DPR = 1, laneW = 0, roadX = 0, roadW = 0;
-function resize() {
-  const r = $('stage').getBoundingClientRect(); DPR = Math.min(2, devicePixelRatio || 1);
-  W = r.width; H = r.height; cv.width = W * DPR; cv.height = H * DPR; g.setTransform(DPR, 0, 0, DPR, 0, 0);
-  roadW = Math.min(W * .78, 380); roadX = (W - roadW) / 2; laneW = roadW / 3;
+/* ================= ৩ডি দুনিয়া ================= */
+// একক: মিটার। খেলোয়াড় z=0-তে, সামনের রাস্তা −z দিকে। দুনিয়া খেলোয়াড়ের দিকে (+z) সরে আসে।
+const LANE = 2.6, LX = l => (l - 1) * LANE, ROAD_HALF = 4.2, WALK = 2.5;
+const FAR = -150, BEHIND = 16;
+let renderer = null;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: true, powerPreference: 'high-performance' });
+} catch (e) { renderer = null; }
+const LOWEND = (navigator.hardwareConcurrency || 4) <= 4 || /Android [4-8]\./.test(navigator.userAgent);
+const scene = new THREE.Scene();
+const cam = new THREE.PerspectiveCamera(62, 1, .1, 420);
+const SKY_TOP = new THREE.Color('#79a8d8'), SKY_BOT = new THREE.Color('#f2d2a6'), RAIN_TOP = new THREE.Color('#4e5a66'), RAIN_BOT = new THREE.Color('#8c97a0');
+const FOG = new THREE.Color('#e8cfa8');
+scene.fog = new THREE.Fog(FOG.clone(), 30, 150);
+if (renderer) {
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, LOWEND ? 1.25 : 1.75));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+  renderer.shadowMap.enabled = !LOWEND; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 }
-addEventListener('resize', resize);
-const laneX = l => roadX + laneW * (l + .5);
+const hemi = new THREE.HemisphereLight('#fff3dc', '#5b5040', 1.25); scene.add(hemi);
+const sun = new THREE.DirectionalLight('#ffe0b0', 2.4);
+sun.position.set(-10, 20, 6); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
+Object.assign(sun.shadow.camera, { left: -12, right: 12, top: 30, bottom: -10, near: 1, far: 70 }); sun.shadow.bias = -.0006;
+scene.add(sun); scene.add(sun.target); sun.target.position.set(0, 0, -10);
 
-const BUS_COLORS = [['#2e7d32', '#ffd23f'], ['#c62828', '#fff'], ['#1565c0', '#ffd23f'], ['#6a1b9a', '#fff']];
-const ROUTES = ['গুলিস্তান-মিরপুর', 'মতিঝিল-উত্তরা', 'সদরঘাট-গাজীপুর', 'যাত্রাবাড়ী-ফার্মগেট', 'লোকাল সিটিং'];
-function rr(x, y, w, h, r) { g.beginPath(); g.roundRect ? g.roundRect(x, y, w, h, r) : g.rect(x, y, w, h); }
-function drawBus(o) {
-  const w = laneW * .82, h = laneW * 2.1, x = o.x - w / 2, y = o.y - h / 2, [c1, c2] = o.col;
-  g.fillStyle = 'rgba(0,0,0,.3)'; rr(x + 4, y + 6, w, h, 8); g.fill();
-  g.fillStyle = c1; rr(x, y, w, h, 8); g.fill();
-  g.fillStyle = c2; g.fillRect(x, y + h * .45, w, h * .06);
-  g.fillStyle = '#bfe3ff'; rr(x + w * .1, y + h * .04, w * .8, h * .12, 4); g.fill();
-  g.fillStyle = 'rgba(255,255,255,.18)'; for (let i = 0; i < 5; i++) g.fillRect(x + w * .12, y + h * (.22 + i * .14), w * .76, h * .05);
-  g.fillStyle = '#fff'; g.font = `700 ${Math.max(9, w * .14)}px 'Noto Sans Bengali',sans-serif`; g.textAlign = 'center'; g.fillText(o.route, o.x, y + h * .56, w * .92);
-  // পেছন থেকে ঝুলে থাকা যাত্রী
-  g.fillStyle = '#f2c49b'; g.beginPath(); g.arc(x + w + 3, y + h * .8, 5, 0, 7); g.fill();
-  g.fillStyle = '#ffe9a8'; g.fillRect(x + w * .1, y + h - 6, w * .2, 4); g.fillRect(x + w * .7, y + h - 6, w * .2, 4);
+// আকাশ: উপরে নীল, দিগন্তে ধোঁয়াশা (ঢাকার সকাল)
+const skyMat = new THREE.ShaderMaterial({
+  side: THREE.BackSide, depthWrite: false, fog: false,
+  uniforms: { top: { value: SKY_TOP.clone() }, bot: { value: SKY_BOT.clone() } },
+  vertexShader: 'varying vec3 vp; void main(){ vp = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }',
+  fragmentShader: 'uniform vec3 top; uniform vec3 bot; varying vec3 vp; void main(){ float h = clamp(vp.y * 2.4, 0., 1.); gl_FragColor = vec4(mix(bot, top, h), 1.);\n#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}'
+});
+const sky = new THREE.Mesh(new THREE.SphereGeometry(300, 24, 12), skyMat); scene.add(sky);
+
+// ক্যানভাস থেকে টেক্সচার
+function ctex(w, h, draw, rep) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'); draw(x, w, h);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1;
+  if (rep) t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
 }
-function drawCng(o) {
-  const w = laneW * .55, h = laneW * .95, x = o.x - w / 2, y = o.y - h / 2;
-  g.fillStyle = 'rgba(0,0,0,.3)'; rr(x + 3, y + 5, w, h, 12); g.fill();
-  g.fillStyle = '#1b8a3a'; rr(x, y, w, h, 12); g.fill();
-  g.fillStyle = '#145c28'; rr(x + w * .1, y + h * .3, w * .8, h * .6, 8); g.fill();
-  g.strokeStyle = '#d7f5df'; g.lineWidth = 2; for (let i = 1; i < 4; i++) { g.beginPath(); g.moveTo(x + w * i / 4, y + h * .35); g.lineTo(x + w * i / 4, y + h * .85); g.stroke(); }
-  g.fillStyle = '#ffe9a8'; g.beginPath(); g.arc(o.x, y + 5, 4, 0, 7); g.fill();
-}
-function drawRick(o) {
-  const w = laneW * .5, h = laneW * .95, x = o.x - w / 2, y = o.y - h / 2;
-  g.fillStyle = 'rgba(0,0,0,.25)'; g.beginPath(); g.ellipse(o.x + 3, o.y + 6, w * .55, h * .5, 0, 0, 7); g.fill();
-  g.strokeStyle = '#333'; g.lineWidth = 3; g.beginPath(); g.moveTo(o.x, y); g.lineTo(o.x, y + h * .4); g.stroke();
-  g.fillStyle = '#222'; g.fillRect(o.x - 3, y - 4, 6, 10); g.fillRect(x - 2, y + h * .6, 5, h * .3); g.fillRect(x + w - 3, y + h * .6, 5, h * .3);
-  g.fillStyle = o.hood; rr(x, y + h * .35, w, h * .6, 10); g.fill();
-  g.fillStyle = '#ffd23f'; g.beginPath(); g.arc(o.x, y + h * .62, w * .16, 0, 7); g.fill();
-  g.fillStyle = '#e5484d'; for (let i = 0; i < 6; i++) g.fillRect(x + i * w / 6 + 1, y + h * .35, w / 12, 4);
-  g.fillStyle = '#f2c49b'; g.beginPath(); g.arc(o.x, y + h * .18, 6, 0, 7); g.fill();
-}
-function drawHole(o) { g.fillStyle = '#2a2622'; g.beginPath(); g.ellipse(o.x, o.y, laneW * .32, laneW * .2, 0, 0, 7); g.fill(); g.fillStyle = '#1a1714'; g.beginPath(); g.ellipse(o.x, o.y + 3, laneW * .25, laneW * .13, 0, 0, 7); g.fill(); g.strokeStyle = '#ffb627'; g.setLineDash([5, 4]); g.lineWidth = 2; g.beginPath(); g.ellipse(o.x, o.y, laneW * .4, laneW * .27, 0, 0, 7); g.stroke(); g.setLineDash([]); }
-function drawWater(o, t) { g.fillStyle = 'rgba(80,140,200,.75)'; g.beginPath(); g.ellipse(o.x, o.y, laneW * .45, laneW * .55, 0, 0, 7); g.fill(); g.strokeStyle = 'rgba(255,255,255,.5)'; g.lineWidth = 2; for (let i = 0; i < 3; i++) { g.beginPath(); g.ellipse(o.x, o.y, laneW * (.15 + i * .1 + (t * .3 % .1)), laneW * (.18 + i * .12), 0, 0, 7); g.stroke(); } }
-function drawCoin(o, t) { const s = Math.abs(Math.cos(t * 5 + o.x)); g.fillStyle = '#e39400'; g.beginPath(); g.ellipse(o.x, o.y, 11 * s + 2, 11, 0, 0, 7); g.fill(); g.fillStyle = '#ffd23f'; g.beginPath(); g.ellipse(o.x, o.y, 9 * s + 1, 9, 0, 0, 7); g.fill(); if (s > .5) { g.fillStyle = '#b77400'; g.font = "800 11px 'Baloo Da 2',sans-serif"; g.textAlign = 'center'; g.fillText('৳', o.x, o.y + 4); } }
-function drawTea(o, t) { const y = o.y + Math.sin(t * 4) * 3; g.fillStyle = 'rgba(255,255,255,.2)'; g.beginPath(); g.arc(o.x, y, 20, 0, 7); g.fill(); g.fillStyle = '#fff'; rr(o.x - 9, y - 8, 18, 18, 4); g.fill(); g.fillStyle = '#a0522d'; g.fillRect(o.x - 7, y - 6, 14, 6); g.strokeStyle = '#fff'; g.lineWidth = 3; g.beginPath(); g.arc(o.x + 10, y, 5, -1.2, 1.2); g.stroke(); g.strokeStyle = 'rgba(255,255,255,.6)'; g.lineWidth = 2; g.beginPath(); g.moveTo(o.x - 3, y - 12); g.quadraticCurveTo(o.x - 7, y - 18, o.x - 2, y - 22); g.stroke(); }
-function drawHelmet(o, t) { const y = o.y + Math.sin(t * 4) * 3; g.fillStyle = 'rgba(255,255,255,.2)'; g.beginPath(); g.arc(o.x, y, 20, 0, 7); g.fill(); g.fillStyle = '#ef4f5f'; g.beginPath(); g.arc(o.x, y + 3, 13, Math.PI, 0); g.fill(); g.fillRect(o.x - 13, y + 2, 26, 5); g.fillStyle = '#bfe3ff'; g.fillRect(o.x - 2, y - 6, 12, 7); }
-function drawBike(p, t) {
-  const x = p.x, y = p.y, wob = Math.sin(t * 20) * (p.slow > 0 ? 2 : .6);
-  g.save(); g.translate(x + wob, y); g.rotate(p.tilt);
-  if (p.boost > 0) { g.fillStyle = 'rgba(255,182,39,.35)'; g.beginPath(); g.moveTo(-10, 30); g.lineTo(0, 60 + Math.random() * 15); g.lineTo(10, 30); g.fill(); }
-  g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.ellipse(4, 6, 16, 32, 0, 0, 7); g.fill();
-  g.fillStyle = '#1d1640'; rr(-5, -34, 10, 16, 4); g.fill(); rr(-5, 18, 10, 16, 4); g.fill();
-  g.fillStyle = '#ffb627'; rr(-11, -20, 22, 40, 10); g.fill();
-  g.strokeStyle = '#333'; g.lineWidth = 4; g.beginPath(); g.moveTo(-15, -18); g.lineTo(15, -18); g.stroke();
-  g.fillStyle = '#2f6fe0'; g.beginPath(); g.ellipse(0, 0, 11, 13, 0, 0, 7); g.fill();
-  g.fillStyle = p.shield > 0 ? '#36d1c4' : '#ef4f5f'; g.beginPath(); g.arc(0, -4, 8, 0, 7); g.fill();
-  g.fillStyle = '#bfe3ff'; g.fillRect(-5, -11, 10, 4);
-  g.fillStyle = '#e5484d'; g.fillRect(-10, 14, 20, 12); // পেছনের ডেলিভারি বক্স
-  g.restore();
-  if (p.hit > 0 && Math.floor(t * 20) % 2) { g.strokeStyle = '#fff'; g.lineWidth = 3; g.beginPath(); g.arc(x, y, 36, 0, 7); g.stroke(); }
-}
-const SHOPS = [['চা-বিস্কুট', '#c0392b'], ['মুদি দোকান', '#2e86de'], ['ফার্মেসি', '#16a085'], ['ফটোকপি', '#8e44ad'], ['বিরিয়ানি হাউস', '#d35400'], ['সেলুন', '#27ae60'], ['মোবাইল রিচার্জ', '#e67e22'], ['টেইলার্স', '#2c3e50']];
-function drawRoad(t, scroll) {
-  const side = g.createLinearGradient(0, 0, W, 0); side.addColorStop(0, '#3a3530'); side.addColorStop(1, '#3a3530');
-  g.fillStyle = '#4a4440'; g.fillRect(0, 0, W, H);
-  // ফুটপাত ও দোকান
-  g.fillStyle = '#8a7d70'; g.fillRect(roadX - 18, 0, 18, H); g.fillRect(roadX + roadW, 0, 18, H);
-  const gap = 140, off = scroll % gap;
-  for (let i = -1; i < H / gap + 2; i++) {
-    const y = i * gap + off - gap, idx = Math.abs(Math.floor((scroll - off) / gap) - i);
-    [[0, roadX - 18], [roadX + roadW + 18, W - roadX - roadW - 18]].forEach(([sx, sw], k) => {
-      if (sw < 12) return;
-      const sh = SHOPS[(idx * 3 + k * 5) % SHOPS.length];
-      g.fillStyle = sh[1]; g.fillRect(sx + 2, y + 10, sw - 4, gap - 24);
-      g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(sx + 2, y + gap - 34, sw - 4, 10);
-      g.save(); g.translate(sx + sw / 2, y + gap / 2); g.rotate(k ? Math.PI / 2 : -Math.PI / 2);
-      g.fillStyle = '#fff'; g.font = `700 ${Math.min(13, sw * .45)}px 'Noto Sans Bengali',sans-serif`; g.textAlign = 'center'; g.fillText(sh[0], 0, 4, gap - 30); g.restore();
-    });
-  }
-  // রাস্তা
-  g.fillStyle = '#3b3f45'; g.fillRect(roadX, 0, roadW, H);
-  g.fillStyle = 'rgba(255,255,255,.04)'; for (let i = 0; i < 40; i++) g.fillRect(roadX + ((i * 97) % roadW), ((i * 53 + scroll * .99) % H), 3, 3);
-  g.fillStyle = '#e8e2d0'; g.fillRect(roadX, 0, 3, H); g.fillRect(roadX + roadW - 3, 0, 3, H);
-  g.fillStyle = 'rgba(255,255,255,.75)';
-  const dash = 46, dOff = scroll % (dash * 2);
-  for (let l = 1; l < 3; l++) for (let y = -dash * 2 + dOff; y < H; y += dash * 2) g.fillRect(roadX + laneW * l - 2, y, 4, dash);
-}
-function drawSignal(sg, t) {
-  const y = sg.y;
-  // জেব্রা ক্রসিং ও থামার দাগ
-  g.fillStyle = 'rgba(255,255,255,.85)';
-  for (let i = 0; i < 9; i++) g.fillRect(roadX + 6 + i * (roadW - 12) / 9, y - 46, (roadW - 12) / 18, 34);
-  g.fillStyle = '#fff'; g.fillRect(roadX, y, roadW, 6);
-  // বাতির খুঁটি (বাম ফুটপাতে)
-  const px = Math.max(10, roadX - 12);
-  g.fillStyle = '#333'; g.fillRect(px - 2, y - 70, 4, 70);
-  g.fillStyle = '#111'; rr(px - 11, y - 110, 22, 52, 6); g.fill();
-  [['#ef4444', 'red'], ['#f59e0b', 'amber'], ['#22c55e', 'green']].forEach(([c, k], i) => {
-    const on = (k === 'red' && sg.state === 'red') || (k === 'green' && sg.state === 'green') || (k === 'amber' && sg.state === 'red' && sg.green < 1);
-    g.fillStyle = on ? c : '#333'; g.beginPath(); g.arc(px, y - 100 + i * 16, 6, 0, 7); g.fill();
-    if (on) { g.fillStyle = c + '55'; g.beginPath(); g.arc(px, y - 100 + i * 16, 12, 0, 7); g.fill(); }
+const FONT = "'Baloo Da 2','Noto Sans Bengali',sans-serif";
+function speck(x, w, h, n, a, b, alpha) { for (let i = 0; i < n; i++) { const v = a + Math.random() * (b - a) | 0; x.fillStyle = `rgba(${v},${v},${v},${alpha})`; x.fillRect(Math.random() * w, Math.random() * h, 1 + Math.random() * 2, 1 + Math.random() * 2); } }
+const matC = {};
+function M(c, o) { const k = c + (o ? JSON.stringify(o) : ''); return matC[k] || (matC[k] = new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: .75, metalness: .05 }, o || {}))); }
+const BOX = new THREE.BoxGeometry(1, 1, 1), CYL = new THREE.CylinderGeometry(1, 1, 1, 18), SPH = new THREE.SphereGeometry(1, 16, 12), PLANE = new THREE.PlaneGeometry(1, 1);
+const CAPS = new THREE.CapsuleGeometry(1, 1, 4, 10);
+function box(g, w, h, l, x, y, z, m, sh) { const me = new THREE.Mesh(BOX, m); me.scale.set(w, h, l); me.position.set(x, y, z); if (sh !== false) me.castShadow = true; g.add(me); return me; }
+function cyl(g, r, h, x, y, z, m, rx, rz) { const me = new THREE.Mesh(CYL, m); me.scale.set(r, h, r); me.position.set(x, y, z); if (rx) me.rotation.x = rx; if (rz) me.rotation.z = rz; g.add(me); return me; }
+function sph(g, r, x, y, z, m, sy) { const me = new THREE.Mesh(SPH, m); me.scale.set(r, r * (sy || 1), r); me.position.set(x, y, z); g.add(me); return me; }
+function plane(g, w, h, x, y, z, m, ry) { const me = new THREE.Mesh(PLANE, m); me.scale.set(w, h, 1); me.position.set(x, y, z); if (ry) me.rotation.y = ry; g.add(me); return me; }
+const wheelM = M('#1c1c1e', { roughness: .95 }), rimM = M('#b8bcc4', { metalness: .6, roughness: .35 });
+function wheel(g, r, w, x, y, z) { cyl(g, r, w, x, y, z, wheelM, 0, Math.PI / 2); cyl(g, r * .5, w + .02, x, y, z, rimM, 0, Math.PI / 2); }
+
+/* ---- রাস্তা ---- */
+const ROAD_LEN = 420, TILE = 12;
+const roadTex = ctex(256, 512, (x, w, h) => {
+  x.fillStyle = '#4a4b50'; x.fillRect(0, 0, w, h); speck(x, w, h, 5000, 50, 105, .55);
+  for (let i = 0; i < 6; i++) { x.fillStyle = `rgba(40,40,42,${.06 + Math.random() * .1})`; x.beginPath(); x.ellipse(Math.random() * w, Math.random() * h, 12 + Math.random() * 34, 8 + Math.random() * 26, Math.random() * 3, 0, 7); x.fill(); }
+  x.fillStyle = 'rgba(70,72,78,.6)'; x.fillRect(Math.random() * w * .6, Math.random() * h * .6, 60, 90); // জোড়াতালি
+  x.strokeStyle = 'rgba(18,18,18,.55)'; x.lineWidth = 1.3;
+  for (let i = 0; i < 7; i++) { let px = Math.random() * w, py = Math.random() * h; x.beginPath(); x.moveTo(px, py); for (let k = 0; k < 7; k++) { px += (Math.random() - .5) * 22; py += Math.random() * 16; x.lineTo(px, py); } x.stroke(); }
+  x.fillStyle = 'rgba(236,236,226,.82)'; [2.9, 5.5].forEach(m => x.fillRect(m / 8.4 * w - 3, 0, 6, h * .3)); // লেনের দাগ (একটু মুছে যাওয়া)
+  x.fillStyle = 'rgba(70,72,78,.5)'; [2.9, 5.5].forEach(m => x.fillRect(m / 8.4 * w - 3, h * .12, 6, 14));
+  x.fillStyle = 'rgba(245,205,60,.8)'; x.fillRect(.2 / 8.4 * w, 0, 4, h); x.fillRect(w - .2 / 8.4 * w - 4, 0, 4, h);
+}, true);
+roadTex.repeat.set(1, ROAD_LEN / TILE);
+const roadMat = new THREE.MeshStandardMaterial({ map: roadTex, roughness: .92, metalness: 0 });
+const road = new THREE.Mesh(new THREE.PlaneGeometry(ROAD_HALF * 2, ROAD_LEN), roadMat);
+road.rotation.x = -Math.PI / 2; road.position.set(0, 0, BEHIND - ROAD_LEN / 2); road.receiveShadow = true; scene.add(road);
+const walkTex = ctex(256, 256, (x, w, h) => {
+  x.fillStyle = '#a49c90'; x.fillRect(0, 0, w, h); speck(x, w, h, 2500, 120, 175, .5);
+  x.strokeStyle = 'rgba(70,64,56,.6)'; x.lineWidth = 3; for (let i = 0; i <= 4; i++) { x.beginPath(); x.moveTo(0, i * 64); x.lineTo(w, i * 64); x.stroke(); x.beginPath(); x.moveTo(i * 64, 0); x.lineTo(i * 64, h); x.stroke(); }
+  x.fillStyle = 'rgba(60,52,44,.5)'; x.fillRect(64, 128, 64, 64); // ভাঙা টাইল
+  x.fillStyle = 'rgba(40,60,30,.35)'; for (let i = 0; i < 30; i++) x.fillRect(Math.random() * w, Math.random() * h, 3, 3);
+}, true);
+walkTex.repeat.set(1, ROAD_LEN / WALK);
+const curbTex = ctex(128, 16, (x, w, h) => { x.fillStyle = '#f2c230'; x.fillRect(0, 0, w / 2, h); x.fillStyle = '#1d1d1d'; x.fillRect(w / 2, 0, w / 2, h); }, true);
+curbTex.repeat.set(ROAD_LEN / 2, 1);
+const walks = [], curbs = [];
+[-1, 1].forEach(s => {
+  const wm = new THREE.MeshStandardMaterial({ map: walkTex, roughness: .95 });
+  const w = new THREE.Mesh(new THREE.PlaneGeometry(WALK, ROAD_LEN), wm); w.rotation.x = -Math.PI / 2; w.position.set(s * (ROAD_HALF + WALK / 2), .22, BEHIND - ROAD_LEN / 2); w.receiveShadow = true; scene.add(w); walks.push(w);
+  const cm = new THREE.MeshStandardMaterial({ map: curbTex.clone(), roughness: .8 }); cm.map.needsUpdate = true;
+  const c = new THREE.Mesh(new THREE.PlaneGeometry(ROAD_LEN, .22), cm); c.rotation.y = s < 0 ? Math.PI / 2 : -Math.PI / 2; c.position.set(s * ROAD_HALF, .11, BEHIND - ROAD_LEN / 2); scene.add(c); curbs.push([c, s]);
+});
+// দুই পাশের নিচু জমি (দালানের ফাঁকে)
+[-1, 1].forEach(s => { const g = new THREE.Mesh(new THREE.PlaneGeometry(40, ROAD_LEN), M('#6b6255')); g.rotation.x = -Math.PI / 2; g.position.set(s * (ROAD_HALF + WALK + 20), .2, BEHIND - ROAD_LEN / 2); scene.add(g); });
+
+/* ---- দালান ও দোকান ---- */
+const SHOPS = [['মায়ের দোয়া স্টোর', '#c0392b'], ['বিসমিল্লাহ হোটেল', '#16a085'], ['নিউ মডেল টেইলার্স', '#2c3e50'], ['চা-বিস্কুট', '#d35400'], ['লাইফ কেয়ার ফার্মেসি', '#27ae60'], ['ফটোকপি ও কম্পোজ', '#8e44ad'], ['ঢাকা বিরিয়ানি হাউস', '#e67e22'], ['মোবাইল রিচার্জ', '#2980b9'], ['কাচ্চি ঘর', '#a93226'], ['জেনারেল স্টোর', '#1e8449'], ['স্টাইল সেলুন', '#6c3483'], ['ইলেকট্রিক হাউস', '#b7950b'], ['আলিফ কোচিং সেন্টার', '#1f618d'], ['খেলাঘর গেমিং জোন', '#3b3fd8']];
+const WALLS = ['#d9c7a8', '#c9b79a', '#e3d3b8', '#b9a58a', '#d6b8a0', '#c8c2b6', '#e8dcc6', '#b7c4c9', '#d8c3c3', '#c2b280'];
+function facade(len, floors, wall) {
+  const W = 256, H = Math.min(1024, Math.round(256 * floors * 3 / len));
+  return ctex(W, H, (x, w, h) => {
+    x.fillStyle = wall; x.fillRect(0, 0, w, h); speck(x, w, h, 1500, 60, 120, .18);
+    for (let i = 0; i < 9; i++) { const gx = Math.random() * w; const gr = x.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, 'rgba(40,35,30,.25)'); gr.addColorStop(1, 'rgba(40,35,30,0)'); x.fillStyle = gr; x.fillRect(gx, 0, 6 + Math.random() * 14, h * Math.random()); } // শ্যাওলা-দাগ
+    const fh = h / floors, cols = Math.max(2, Math.floor(len / 2.6)), cw = w / cols;
+    for (let f = 0; f < floors - 1; f++) {
+      const y = f * fh;
+      x.fillStyle = 'rgba(0,0,0,.12)'; x.fillRect(0, y + fh - 4, w, 4);
+      for (let c = 0; c < cols; c++) {
+        const wx = c * cw + cw * .18, ww = cw * .64, wy = y + fh * .22, wh = fh * .52;
+        const balcony = Math.random() < .3;
+        x.fillStyle = Math.random() < .25 ? '#f5d58a' : pick(['#2b3f4f', '#35505f', '#24343f', '#3b4d55']); x.fillRect(wx, wy, ww, wh);
+        x.strokeStyle = 'rgba(30,30,30,.7)'; x.lineWidth = 1.5; for (let k = 1; k < 5; k++) { x.beginPath(); x.moveTo(wx + ww * k / 5, wy); x.lineTo(wx + ww * k / 5, wy + wh); x.stroke(); } // গ্রিল
+        x.strokeRect(wx, wy, ww, wh);
+        if (Math.random() < .25) { x.fillStyle = '#eef0f0'; x.fillRect(wx + ww * .55, wy + wh * .7, ww * .4, wh * .28); } // এসি
+        if (balcony) { x.fillStyle = 'rgba(60,50,40,.85)'; x.fillRect(wx - 4, wy + wh * .78, ww + 8, 4); for (let k = 0; k < 3; k++) { x.fillStyle = pick(['#e74c3c', '#3498db', '#f1c40f', '#9b59b6', '#ecf0f1', '#1abc9c']); x.fillRect(wx + 4 + k * ww / 3.2, wy + wh * .35, ww / 4, wh * .4); } } // কাপড় শুকাচ্ছে
+      }
+    }
+    const gy = h - fh; // নিচতলায় দোকান
+    x.fillStyle = '#3a3a3a'; x.fillRect(0, gy, w, fh);
+    for (let c = 0; c < cols; c++) {
+      const sx = c * cw + 4, sw = cw - 8;
+      if (Math.random() < .55) { const gr = x.createLinearGradient(0, gy, 0, h); gr.addColorStop(0, '#ffe7a6'); gr.addColorStop(1, '#c98f3a'); x.fillStyle = gr; x.fillRect(sx, gy + fh * .3, sw, fh * .7); for (let k = 0; k < 6; k++) { x.fillStyle = pick(['#e74c3c', '#2ecc71', '#3498db', '#f39c12', '#9b59b6']); x.fillRect(sx + 4 + Math.random() * (sw - 14), gy + fh * .45 + Math.random() * fh * .3, 8, 10); } }
+      else { x.fillStyle = '#8d9196'; x.fillRect(sx, gy + fh * .3, sw, fh * .7); x.strokeStyle = 'rgba(50,50,50,.6)'; x.lineWidth = 1; for (let k = 0; k < 12; k++) { x.beginPath(); x.moveTo(sx, gy + fh * .3 + k * fh * .06); x.lineTo(sx + sw, gy + fh * .3 + k * fh * .06); x.stroke(); } }
+    }
   });
-  // ট্রাফিক পুলিশ (ডান পাশে)
-  const qx = Math.min(W - 12, roadX + roadW + 10), qy = y - 20;
-  g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.ellipse(qx + 3, qy + 4, 12, 9, 0, 0, 7); g.fill();
-  g.fillStyle = '#1e3a8a'; g.beginPath(); g.ellipse(qx, qy, 12, 9, 0, 0, 7); g.fill();
-  g.fillStyle = '#fff'; g.beginPath(); g.arc(qx, qy - 2, 6, 0, 7); g.fill();
-  g.strokeStyle = '#fff'; g.lineWidth = 3; g.beginPath(); g.moveTo(qx - 10, qy); g.lineTo(qx - 10 - (sg.state === 'red' ? 12 : 4), qy - (sg.state === 'red' ? 2 : 10)); g.stroke();
-  if (sg.state === 'red' && Math.floor(t * 3) % 2) { g.fillStyle = '#fff'; g.font = "800 11px 'Noto Sans Bengali',sans-serif"; g.textAlign = 'center'; g.fillText('থামুন!', qx - 4, qy - 16); }
 }
-function drawBump(b) {
-  for (let i = 0; i < 12; i++) { g.fillStyle = i % 2 ? '#111' : '#facc15'; g.fillRect(roadX + i * roadW / 12, b.y - 7, roadW / 12 + 1, 14); }
-  g.fillStyle = 'rgba(255,255,255,.18)'; g.fillRect(roadX, b.y - 7, roadW, 3);
+const signC = {};
+function signMat(name, col) {
+  const k = name; if (signC[k]) return signC[k];
+  const t = ctex(512, 112, (x, w, h) => {
+    x.fillStyle = col; x.fillRect(0, 0, w, h); x.fillStyle = 'rgba(255,255,255,.15)'; x.fillRect(0, 0, w, 10); x.strokeStyle = '#fff'; x.lineWidth = 6; x.strokeRect(6, 6, w - 12, h - 12);
+    x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'middle'; let fs = 60; x.font = `800 ${fs}px ${FONT}`; while (x.measureText(name).width > w - 40 && fs > 30) { fs -= 4; x.font = `800 ${fs}px ${FONT}`; }
+    x.lineWidth = 6; x.strokeStyle = 'rgba(0,0,0,.35)'; x.strokeText(name, w / 2, h / 2 + 4); x.fillText(name, w / 2, h / 2 + 4);
+  });
+  return (signC[k] = new THREE.MeshStandardMaterial({ map: t, roughness: .6, emissive: '#ffffff', emissiveMap: t, emissiveIntensity: .12 }));
 }
-function drawPed(pd, t) {
-  const sw = Math.sin(t * 10 + pd.seed) * 4;
-  g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.ellipse(pd.x + 3, pd.y + 4, 11, 8, 0, 0, 7); g.fill();
-  g.strokeStyle = '#3b2a1a'; g.lineWidth = 4; g.beginPath(); g.moveTo(pd.x - 3, pd.y + 4); g.lineTo(pd.x - 3 + sw * pd.dir, pd.y + 12); g.moveTo(pd.x + 3, pd.y + 4); g.lineTo(pd.x + 3 - sw * pd.dir, pd.y + 12); g.stroke();
-  g.fillStyle = pd.col; g.beginPath(); g.ellipse(pd.x, pd.y, 11, 7, 0, 0, 7); g.fill();
-  g.fillStyle = '#2a1a10'; g.beginPath(); g.arc(pd.x, pd.y - 1, 5.5, 0, 7); g.fill();
-  if (S && S.rain > 0) { g.fillStyle = pd.umb; g.beginPath(); g.arc(pd.x, pd.y - 2, 15, 0, 7); g.fill(); g.strokeStyle = 'rgba(0,0,0,.25)'; g.lineWidth = 1; for (let a = 0; a < 6.28; a += 1.05) { g.beginPath(); g.moveTo(pd.x, pd.y - 2); g.lineTo(pd.x + Math.cos(a) * 15, pd.y - 2 + Math.sin(a) * 15); g.stroke(); } }
-  else { g.strokeStyle = '#f2c49b'; g.lineWidth = 3; g.beginPath(); g.moveTo(pd.x + 8 * pd.dir, pd.y - 2); g.lineTo(pd.x + 14 * pd.dir, pd.y - 10); g.stroke(); } // হাত তুলে পার হচ্ছে
+const builds = [];
+function mkBuilding(side) {
+  const len = rnd(7, 12), floors = 3 + Math.floor(Math.random() * 6), h = floors * 3, d = 9, wall = pick(WALLS);
+  const g = new THREE.Group();
+  const front = new THREE.MeshStandardMaterial({ map: facade(len, floors, wall), roughness: .9 });
+  const plain = M(wall, { roughness: .95 });
+  const mats = [plain, plain, M('#7a7268'), plain, plain, plain]; mats[side < 0 ? 0 : 1] = front;
+  const b = new THREE.Mesh(BOX, mats); b.scale.set(d, h, len); b.position.y = h / 2; b.receiveShadow = true; g.add(b);
+  box(g, d + .3, .35, len + .1, 0, h + .17, 0, M('#8a8178'), false); // ছাদের কিনারা
+  if (Math.random() < .5) { box(g, 1.4, 1.2, 1.4, side * 2, h + .9, rnd(-len / 4, len / 4), M('#3b6ea5'), false); } // পানির ট্যাংক
+  const fx = -side * (d / 2 + .02); // রাস্তার দিকের দেয়াল
+  const [nm, col] = pick(SHOPS);
+  const sg = plane(g, len * .82, len * .82 * 112 / 512, fx - side * .12, 3.35, 0, signMat(nm, col), side < 0 ? Math.PI / 2 : -Math.PI / 2);
+  box(g, .35, .12, len * .9, fx - side * .4, 2.75, 0, M(pick(['#2f6fe0', '#c0392b', '#16a085', '#f39c12'])), false); // সানশেড
+  if (Math.random() < .55) { // রাস্তার দিকে বের হওয়া সাইনবোর্ড
+    const [n2, c2] = pick(SHOPS); const pb = plane(g, 2.6, .57, fx - side * 1.6, 4.6 + Math.random() * 2, rnd(-len / 3, len / 3), signMat(n2, c2)); pb.material = pb.material.clone(); pb.material.side = THREE.DoubleSide;
+    box(g, 1.4, .05, .05, fx - side * .8, pb.position.y + .3, pb.position.z, M('#333'), false);
+  }
+  g.userData = { len, side };
+  g.position.x = side * (ROAD_HALF + WALK + d / 2 + .1);
+  scene.add(g); builds.push(g); return g;
 }
-// নির্দেশনার ছোট ছবি
-function icon(id, fn) { const c = $(id), x = c.getContext('2d'); const save = g; g = x; laneW = 52; fn(); g = save; }
+function layoutBuildings() {
+  [-1, 1].forEach(side => { let z = BEHIND + 4; for (let i = 0; i < (LOWEND ? 16 : 20); i++) { const b = mkBuilding(side); const gap = Math.random() < .12 ? rnd(3, 6) : rnd(.1, .6); b.position.z = z - b.userData.len / 2; z -= b.userData.len + gap; } });
+}
+// বিদ্যুতের খুঁটি আর জট পাকানো তার (ঢাকার চেনা দৃশ্য)
+const POLE_GAP = 24, poles = [];
+function mkPole() {
+  const g = new THREE.Group(); const cm = M('#9a9a96');
+  box(g, .28, 9, .28, 0, 4.5, 0, cm); box(g, 1.8, .18, .18, 0, 8.3, 0, cm);
+  if (Math.random() < .35) box(g, .8, 1, .7, .45, 6.5, 0, M('#5f6b63'));
+  const wm = new THREE.LineBasicMaterial({ color: '#141414' });
+  for (let k = 0; k < 6; k++) {
+    const y0 = 7.2 + k * .22 + Math.random() * .2, x0 = -.8 + k * .3, sag = .5 + Math.random() * .9;
+    const pts = []; for (let i = 0; i <= 12; i++) { const t = i / 12; pts.push(new THREE.Vector3(x0 + Math.sin(t * 9 + k) * .08, y0 - Math.sin(t * Math.PI) * sag, -t * POLE_GAP)); }
+    g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), wm));
+  }
+  for (let k = 0; k < 2; k++) { const pts = []; for (let i = 0; i <= 8; i++) { const t = i / 8; pts.push(new THREE.Vector3(Math.cos(t * 6.3 + k) * .25, 6.6 + Math.sin(t * 6.3) * .25 + k * .1, Math.sin(t * 6.3) * .25)); } g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), wm)); } // তারের জট
+  g.position.x = -(ROAD_HALF + .6); scene.add(g); poles.push(g); return g;
+}
+// ফুটওভারব্রিজ
+let bridge = null;
+function mkBridge() {
+  const g = new THREE.Group(), cm = M('#8f8a80'), rail = M('#2f6fe0');
+  [-1, 1].forEach(s => { box(g, .5, 7.5, .5, s * (ROAD_HALF + 1.2), 3.75, -1, cm); box(g, .5, 7.5, .5, s * (ROAD_HALF + 1.2), 3.75, 1, cm); box(g, 1.6, .25, 9, s * (ROAD_HALF + 1.6), 3.8, 4.2, cm).rotation.x = -.75; });
+  box(g, ROAD_HALF * 2 + 3.4, .45, 2.6, 0, 7.6, 0, cm); box(g, ROAD_HALF * 2 + 3.4, .9, .08, 0, 8.3, 1.25, rail); box(g, ROAD_HALF * 2 + 3.4, .9, .08, 0, 8.3, -1.25, rail);
+  const ad = ctex(1024, 128, (x, w, h) => { x.fillStyle = '#ffc727'; x.fillRect(0, 0, w, h); x.fillStyle = '#1d1640'; x.font = `800 70px ${FONT}`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('খেলাঘর · বাংলার গেম, ফ্রিতে খেলুন!', w / 2, h / 2 + 6); });
+  plane(g, ROAD_HALF * 2 + 2, 1.1, 0, 6.8, 1.32, new THREE.MeshStandardMaterial({ map: ad, roughness: .6, emissive: '#fff', emissiveMap: ad, emissiveIntensity: .15 }));
+  g.position.z = -400; scene.add(g); return g;
+}
+
+/* ---- গাড়ি ---- */
+const BUS_COLS = [['#2e7d32', '#ffd23f'], ['#c62828', '#ffffff'], ['#1565c0', '#ffd23f'], ['#6a1b9a', '#ffffff'], ['#ef6c00', '#1b1b1b'], ['#00838f', '#ffffff']];
+const ROUTES = ['গুলিস্তান-মিরপুর ১০', 'মতিঝিল-উত্তরা', 'সদরঘাট-গাজীপুর', 'যাত্রাবাড়ী-ফার্মগেট', 'লোকাল সিটিং সার্ভিস', 'আজিমপুর-আব্দুল্লাহপুর'];
+const routeC = {};
+function routeMat(r) { return routeC[r] || (routeC[r] = new THREE.MeshBasicMaterial({ map: ctex(512, 96, (x, w, h) => { x.fillStyle = '#111'; x.fillRect(0, 0, w, h); x.fillStyle = '#ffd23f'; x.font = `800 50px ${FONT}`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(r, w / 2, h / 2 + 4); }) })); }
+const glassM = M('#1f2d36', { roughness: .15, metalness: .4 });
+function tailMat() { return new THREE.MeshStandardMaterial({ color: '#ff2a2a', emissive: '#ff0000', emissiveIntensity: .35 }); }
+function person(g, x, y, z, shirt, opts) {
+  opts = opts || {}; const p = new THREE.Group(); p.position.set(x, y, z);
+  const skin = M(pick(['#c68642', '#a86b3c', '#8d5524', '#d19a6a']));
+  const legM = M(opts.lungi ? pick(['#2e5aa8', '#1e7a4c', '#7a2e2e']) : '#2f3542');
+  const lL = new THREE.Mesh(BOX, legM), lR = new THREE.Mesh(BOX, legM);
+  [lL, lR].forEach((l, i) => { l.scale.set(.16, .8, .18); l.position.set(i ? .11 : -.11, .4, 0); p.add(l); });
+  const torso = new THREE.Mesh(CAPS, M(shirt)); torso.scale.set(.25, .28, .17); torso.position.y = 1.15; torso.castShadow = true; p.add(torso);
+  sph(p, .15, 0, 1.62, 0, skin); sph(p, .155, 0, 1.68, .02, M('#1b1b1b'), .7);
+  if (opts.cap) { cyl(p, .17, .1, 0, 1.78, 0, M(opts.cap)); box(p, .3, .03, .18, 0, 1.74, -.15, M(opts.cap), false); }
+  g.add(p); p.userData = { lL, lR }; return p;
+}
+function mkBus() {
+  const g = new THREE.Group(), [c1, c2] = pick(BUS_COLS), body = M(c1), band = M(c2);
+  box(g, 2.5, 1.45, 10, 0, 1.08, 0, body); box(g, 2.53, .2, 10.03, 0, 1.35, 0, band);
+  box(g, 2.44, .85, 9.9, 0, 2.2, 0, glassM, false);
+  for (let i = -4.5; i <= 4.6; i += 1.5) box(g, 2.5, .85, .16, 0, 2.2, i, body, false);
+  box(g, 2.5, .38, 10, 0, 2.8, 0, c2 === '#ffffff' || c2 === '#1b1b1b' ? body : band);
+  box(g, 2.3, .55, .05, 0, 2.28, 5.01, glassM, false);
+  plane(g, 2.1, .4, 0, 1.72, 5.03, routeMat(pick(ROUTES)));
+  const tl = tailMat(); box(g, .32, .26, .06, -1.02, .95, 5.03, tl, false); box(g, .32, .26, .06, 1.02, .95, 5.03, tl, false);
+  box(g, 2.52, .2, .1, 0, .45, 5.02, M('#222'), false);
+  // টোল-খাওয়া দাগ
+  for (let i = 0; i < 3; i++) box(g, .03, rnd(.1, .4), rnd(.4, 1.2), 1.26, rnd(.6, 1.5), rnd(-4, 4), M('#7d7d7d'), false);
+  [-3.4, 3.4].forEach(z => { wheel(g, .5, .32, -1.1, .5, z); wheel(g, .5, .32, 1.1, .5, z); });
+  // দরজায় ঝুলে থাকা হেল্পার
+  const hp = person(g, 1.42, .35, 3.2, pick(['#e74c3c', '#f1c40f', '#ecf0f1']), { lungi: true }); hp.rotation.z = -.25;
+  g.rotation.z = rnd(-.025, .025); // একপাশে হেলে আছে (যাত্রী বেশি!)
+  return { g, tl, len: 10, w: 2.5, kind: 'bus' };
+}
+const truckArt = [], artMats = new Map();
+function artMat(t) { if (!artMats.has(t)) artMats.set(t, new THREE.MeshStandardMaterial({ map: t, roughness: .7 })); return artMats.get(t); }
+function mkTruck() {
+  const g = new THREE.Group(), cab = M(pick(['#d35400', '#1e8449', '#2471a3'])), cargo = M(pick(['#7b241c', '#1a5276', '#145a32']));
+  box(g, 2.4, 2.1, 2.1, 0, 1.6, -2.9, cab); box(g, 2.3, .7, .05, 0, 2.2, -3.96, glassM, false);
+  box(g, 2.5, 2.7, 5.6, 0, 2.05, .9, cargo);
+  const art = truckArt.length < 3 ? truckArt[truckArt.push(ctex(256, 256, (x, w, h) => { x.fillStyle = '#ffd23f'; x.fillRect(0, 0, w, h); for (let i = 0; i < 14; i++) { x.fillStyle = pick(['#e74c3c', '#27ae60', '#2980b9', '#8e44ad', '#ff7aa8']); x.beginPath(); x.arc(Math.random() * w, Math.random() * h * .5, 8 + Math.random() * 16, 0, 7); x.fill(); } x.fillStyle = '#c0392b'; x.fillRect(0, h * .55, w, h * .45); x.fillStyle = '#fff'; x.textAlign = 'center'; x.font = `800 46px ${FONT}`; x.fillText('মায়ের দোয়া', w / 2, h * .72); x.font = `700 26px ${FONT}`; x.fillText('সাবধানে চালাও', w / 2, h * .9); })) - 1] : pick(truckArt);
+  plane(g, 2.4, 2.5, 0, 2.05, 3.71, artMat(art));
+  const tl = tailMat(); box(g, .3, .2, .06, -1.05, .7, 3.73, tl, false); box(g, .3, .2, .06, 1.05, .7, 3.73, tl, false);
+  [-2.9, 1.6, 2.9].forEach(z => { wheel(g, .5, .32, -1.05, .5, z); wheel(g, .5, .32, 1.05, .5, z); });
+  return { g, tl, len: 8, w: 2.5, kind: 'truck' };
+}
+const plateC = {};
+function plateMat(t) { return plateC[t] || (plateC[t] = new THREE.MeshBasicMaterial({ map: ctex(128, 40, (x, w, h) => { x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.fillStyle = '#111'; x.font = `700 19px ${FONT}`; x.textAlign = 'center'; x.fillText(t, w / 2, 27); }) })); }
+function mkCar() {
+  const g = new THREE.Group(), c = M(pick(['#ecf0f1', '#bdc3c7', '#1b1b1b', '#c0392b', '#2c3e50']), { roughness: .35, metalness: .3 });
+  box(g, 1.8, .7, 4.4, 0, .62, 0, c); box(g, 1.6, .6, 2.2, 0, 1.25, .1, glassM, false); box(g, 1.62, .08, 2.0, 0, 1.58, .15, c, false);
+  const tl = tailMat(); box(g, .4, .16, .06, -.65, .78, 2.21, tl, false); box(g, .4, .16, .06, .65, .78, 2.21, tl, false);
+  plane(g, .6, .18, 0, .55, 2.22, plateMat('ঢাকা মেট্রো গ'));
+  [-1.4, 1.4].forEach(z => { wheel(g, .34, .24, -.85, .34, z); wheel(g, .34, .24, .85, .34, z); });
+  return { g, tl, len: 4.4, w: 1.8, kind: 'car' };
+}
+function mkCng() {
+  const g = new THREE.Group(), gr = M('#1f8f3e', { roughness: .5 }), dk = M('#14582a');
+  box(g, 1.4, .65, 2.6, 0, .55, 0, gr);
+  box(g, 1.38, .95, 1.4, 0, 1.35, .5, M('#1a6b33', { roughness: .6 }));
+  box(g, 1.3, .9, .9, 0, 1.35, -.75, gr); box(g, 1.2, .5, .05, 0, 1.45, -1.2, glassM, false);
+  const roof = cyl(g, .72, 2.6, 0, 1.82, 0, dk, Math.PI / 2); roof.scale.set(.72, 2.6, .25);
+  // পেছনের জাল
+  for (let i = -.55; i <= .56; i += .22) box(g, .03, .8, .03, i, 1.35, 1.21, M('#0f3d1d'), false);
+  plane(g, .5, .16, 0, .7, 1.31, plateMat('ঢাকা মেট্রো থ'));
+  const tl = tailMat(); box(g, .18, .12, .05, -.55, .75, 1.31, tl, false); box(g, .18, .12, .05, .55, .75, 1.31, tl, false);
+  sph(g, .16, -.25, 1.55, .5, M('#1b1b1b')); sph(g, .16, .25, 1.55, .6, M('#1b1b1b')); // যাত্রীর মাথা
+  wheel(g, .3, .2, -.62, .3, .85); wheel(g, .3, .2, .62, .3, .85); wheel(g, .3, .2, 0, .3, -1.1);
+  return { g, tl, len: 2.7, w: 1.45, kind: 'cng' };
+}
+const hoodC = [];
+function hoodMat() {
+  if (hoodC.length < 4) hoodC.push(new THREE.MeshStandardMaterial({ side: THREE.DoubleSide, roughness: .7, map: ctex(256, 128, (x, w, h) => {
+    x.fillStyle = pick(['#c0392b', '#2471a3', '#1e8449', '#8e44ad']); x.fillRect(0, 0, w, h);
+    for (let i = 0; i < 26; i++) { x.fillStyle = pick(['#f1c40f', '#ecf0f1', '#ff7aa8', '#2ecc71', '#e67e22']); x.beginPath(); x.arc(Math.random() * w, Math.random() * h, 3 + Math.random() * 8, 0, 7); x.fill(); }
+    x.strokeStyle = '#f1c40f'; x.lineWidth = 5; x.strokeRect(4, 4, w - 8, h - 8);
+  }) }));
+  return pick(hoodC);
+}
+const artC = [];
+function backArt() {
+  if (artC.length < 3) artC.push(new THREE.MeshStandardMaterial({ roughness: .6, map: ctex(256, 128, (x, w, h) => {
+    const g2 = x.createLinearGradient(0, 0, 0, h); g2.addColorStop(0, '#ff9ff3'); g2.addColorStop(1, '#feca57'); x.fillStyle = g2; x.fillRect(0, 0, w, h);
+    x.fillStyle = '#10ac84'; x.beginPath(); x.moveTo(0, h); x.quadraticCurveTo(w / 2, h * .3, w, h); x.fill();
+    x.fillStyle = '#ee5253'; x.beginPath(); x.arc(w / 2, h * .38, 18, 0, 7); x.fill(); // সূর্য
+    x.fillStyle = '#222'; x.font = `800 24px ${FONT}`; x.textAlign = 'center'; x.fillText(pick(['সোনার বাংলা', 'মায়ের দোয়া', 'আল্লাহ ভরসা']), w / 2, h - 12);
+  }) }));
+  return pick(artC);
+}
+const G_RW = new THREE.TorusGeometry(.45, .035, 6, 22), G_FW = new THREE.TorusGeometry(.33, .03, 6, 20), G_HOOD = new THREE.CylinderGeometry(.62, .62, .95, 16, 1, true, Math.PI / 2, Math.PI);
+function mkRick() {
+  const g = new THREE.Group(), fr = M('#2c2c2c', { metalness: .4, roughness: .5 });
+  [-.55, .55].forEach(x => { const t = new THREE.Mesh(G_RW, fr); t.rotation.y = Math.PI / 2; t.position.set(x, .45, .45); g.add(t); for (let k = 0; k < 4; k++) box(g, .02, .88, .02, x, .45, .45, M('#999'), false).rotation.x = k * Math.PI / 4; });
+  const ft = new THREE.Mesh(G_FW, fr); ft.rotation.y = Math.PI / 2; ft.position.set(0, .33, -1.35); g.add(ft);
+  box(g, 1.1, .06, .06, 0, .45, .45, fr, false); box(g, .06, .06, 1.8, 0, .55, -.45, fr, false);
+  box(g, 1.0, .25, .6, 0, 1.0, .35, M('#b03a2e')); box(g, 1.0, .5, .08, 0, 1.25, .66, M('#b03a2e'));
+  plane(g, .95, .42, 0, .72, .72, backArt());
+  const hood = new THREE.Mesh(G_HOOD, hoodMat());
+  hood.rotation.x = Math.PI / 2; hood.position.set(0, 1.25, .35); hood.castShadow = true; g.add(hood);
+  sph(g, .15, 0, 1.5, .3, M('#1b1b1b')); // যাত্রী
+  const pu = person(g, 0, .45, -.95, pick(['#ecf0f1', '#f39c12', '#7f8c8d']), { lungi: true }); pu.rotation.x = .25; pu.scale.setScalar(.85);
+  const tl = tailMat(); box(g, .1, .1, .05, -.48, .62, .72, tl, false); box(g, .1, .1, .05, .48, .62, .72, tl, false);
+  return { g, tl, len: 2.6, w: 1.25, kind: 'rick', pu };
+}
+const holeM = new THREE.MeshStandardMaterial({ color: '#141210', roughness: 1 });
+const holeGeo = (() => { const g = new THREE.CircleGeometry(1, 18); const p = g.attributes.position; for (let i = 1; i < p.count; i++) { const k = .75 + Math.random() * .35; p.setX(i, p.getX(i) * k); p.setY(i, p.getY(i) * k); } return g; })();
+const coneM = M('#ff6a00'), whiteM = M('#f5f5f5'), G_RING = new THREE.RingGeometry(.85, 1.05, 18), G_CONE = new THREE.ConeGeometry(.18, .55, 12), G_DISC = new THREE.CircleGeometry(1, 24);
+function mkHole() {
+  const g = new THREE.Group(); const h = new THREE.Mesh(holeGeo, holeM); h.rotation.x = -Math.PI / 2; h.scale.set(.85, .6, 1); h.position.y = .015; g.add(h);
+  const rim = new THREE.Mesh(G_RING, M('#2a2622')); rim.rotation.x = -Math.PI / 2; rim.scale.set(.85, .6, 1); rim.position.y = .012; g.add(rim);
+  [[-.9, .5], [.9, -.4]].forEach(([x, z]) => { const c = new THREE.Mesh(G_CONE, coneM); c.position.set(x, .28, z); c.castShadow = true; g.add(c); cyl(g, .12, .08, x, .3, z, whiteM); });
+  return { g, len: 1.3, w: .9, kind: 'hole' };
+}
+const waterM = new THREE.MeshStandardMaterial({ color: '#5d7f99', roughness: .05, metalness: .55, transparent: true, opacity: .85 });
+function mkWater() { const g = new THREE.Group(); const w = new THREE.Mesh(G_DISC, waterM); w.rotation.x = -Math.PI / 2; w.scale.set(1.15, 2.1, 1); w.position.y = .02; g.add(w); return { g, len: 4, w: 1.1, kind: 'water', ripple: w }; }
+
+/* ---- জিনিস ---- */
+const glowTex = ctex(64, 64, (x, w, h) => { const r = x.createRadialGradient(32, 32, 0, 32, 32, 32); r.addColorStop(0, 'rgba(255,255,255,.9)'); r.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = r; x.fillRect(0, 0, w, h); });
+const coinFace = ctex(128, 128, (x, w, h) => { x.fillStyle = '#ffcf33'; x.fillRect(0, 0, w, h); x.fillStyle = '#c98a00'; x.font = `800 84px ${FONT}`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('৳', w / 2, h / 2 + 8); });
+const coinM = [new THREE.MeshStandardMaterial({ color: '#e0a800', metalness: .8, roughness: .3, emissive: '#7a5200', emissiveIntensity: .4 }), new THREE.MeshStandardMaterial({ map: coinFace, metalness: .6, roughness: .35, emissive: '#7a5200', emissiveIntensity: .3 })];
+const G_HANDLE = new THREE.TorusGeometry(.09, .025, 6, 12), G_HELM = new THREE.SphereGeometry(.3, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2), glowM = {};
+function glow(g, col, s) { const sp = new THREE.Sprite(glowM[col] || (glowM[col] = new THREE.SpriteMaterial({ map: glowTex, color: col, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }))); sp.scale.setScalar(s); g.add(sp); return sp; }
+function mkItem(kind) {
+  const g = new THREE.Group();
+  if (kind === 'coin') { const c = new THREE.Mesh(CYL, [coinM[0], coinM[1], coinM[1]]); c.scale.set(.34, .08, .34); c.rotation.x = Math.PI / 2; const h = new THREE.Group(); h.add(c); h.position.y = .9; g.add(h); g.userData.spin = h; glow(h, '#ffd23f', 1.2); }
+  else if (kind === 'tea') { const h = new THREE.Group(); h.position.y = 1; cyl(h, .17, .32, 0, 0, 0, M('#ffffff', { roughness: .3 })); cyl(h, .15, .02, 0, .16, 0, M('#8b4513')); const hd = new THREE.Mesh(G_HANDLE, M('#ffffff')); hd.position.set(.2, 0, 0); h.add(hd); glow(h, '#ffb627', 1.8); g.add(h); g.userData.spin = h; }
+  else { const h = new THREE.Group(); h.position.y = 1; const hm = new THREE.Mesh(G_HELM, M('#ef4f5f', { roughness: .3 })); h.add(hm); box(h, .3, .12, .05, 0, .08, -.27, glassM, false); glow(h, '#36d1c4', 1.8); g.add(h); g.userData.spin = h; }
+  return g;
+}
+
+/* ---- সিগন্যাল, স্পিড ব্রেকার, পথচারী ---- */
+const zebraTex = ctex(256, 64, (x, w, h) => { x.fillStyle = 'rgba(0,0,0,0)'; x.clearRect(0, 0, w, h); x.fillStyle = 'rgba(240,240,232,.9)'; for (let i = 0; i < 8; i++) x.fillRect(i * 32 + 4, 0, 18, h); }, true);
+function mkSignal() {
+  const g = new THREE.Group();
+  const zb = new THREE.Mesh(new THREE.PlaneGeometry(ROAD_HALF * 2 - .4, 3), new THREE.MeshStandardMaterial({ map: zebraTex, transparent: true, roughness: .8 })); zb.rotation.x = -Math.PI / 2; zb.position.set(0, .02, -2.6); g.add(zb);
+  const sl = new THREE.Mesh(new THREE.PlaneGeometry(ROAD_HALF * 2 - .4, .35), M('#f0f0e8')); sl.rotation.x = -Math.PI / 2; sl.position.set(0, .021, 0); g.add(sl);
+  const pm = M('#4a4f55', { metalness: .5, roughness: .4 });
+  cyl(g, .13, 6, -(ROAD_HALF + .5), 3, -1, pm); box(g, 4.4, .16, .16, -(ROAD_HALF + .5) + 2.2, 5.9, -1, pm);
+  const lamps = {};
+  const hb = new THREE.Group(); hb.position.set(-1.6, 5.2, -1); g.add(hb);
+  box(hb, .55, 1.5, .45, 0, 0, 0, M('#1b1b1b'));
+  [['r', '#ff2b2b', .45], ['y', '#ffc400', 0], ['g', '#22e05a', -.45]].forEach(([k, c, y]) => { const m = new THREE.MeshStandardMaterial({ color: '#222', emissive: c, emissiveIntensity: 0 }); const s = new THREE.Mesh(SPH, m); s.scale.setScalar(.17); s.position.set(0, y, .24); hb.add(s); lamps[k] = m; box(hb, .4, .06, .2, 0, y + .2, .3, M('#1b1b1b'), false); });
+  const halo = glow(hb, '#ff3030', 2.4); halo.position.set(0, .45, .3);
+  // ট্রাফিক পুলিশ
+  const st = new THREE.Group(); st.position.set(-(ROAD_HALF - .7), 0, -.6); g.add(st);
+  cyl(st, .55, .3, 0, .15, 0, M('#f2f2f2'));
+  const cop = person(st, 0, .3, 0, '#f5f5f0', { cap: '#1f2b46' }); cop.rotation.y = .4;
+  box(cop, .52, .4, .2, 0, 1.15, .02, M('#c6ff1a', { emissive: '#7fbf00', emissiveIntensity: .25 }), false); // রিফ্লেক্টিভ জ্যাকেট
+  const arm = new THREE.Group(); arm.position.set(.28, 1.4, 0); cop.add(arm); box(arm, .12, .6, .12, 0, .3, 0, M('#f5f5f0'), false); sph(arm, .07, 0, .62, 0, M('#ffffff'));
+  scene.add(g); return { g, lamps, halo, arm };
+}
+const bumpTex = ctex(128, 16, (x, w, h) => { for (let i = 0; i < 8; i++) { x.fillStyle = i % 2 ? '#1b1b1b' : '#f2c230'; x.fillRect(i * 16, 0, 16, h); } });
+const bumpM = new THREE.MeshStandardMaterial({ map: bumpTex, roughness: .8 }); bumpTex.wrapS = THREE.RepeatWrapping; bumpTex.repeat.set(5, 1);
+function mkBump() { const g = new THREE.Group(); const b = new THREE.Mesh(CYL, bumpM); b.scale.set(.12, ROAD_HALF * 2 - .2, .35); b.rotation.z = Math.PI / 2; b.position.y = 0; g.add(b); scene.add(g); return g; }
+const G_UMB = new THREE.ConeGeometry(.75, .35, 10, 1, true);
+function mkPed(dir) {
+  const g = new THREE.Group(); const p = person(g, 0, 0, 0, pick(['#e74c3c', '#2f6fe0', '#16a085', '#f39c12', '#9b59b6', '#ecf0f1']), { lungi: Math.random() < .5 });
+  p.rotation.y = dir > 0 ? -Math.PI / 2 : Math.PI / 2;
+  const umb = new THREE.Group(); umb.position.y = 2.1; const u = new THREE.Mesh(G_UMB, M(pick(['#1f2937', '#be185d', '#0369a1']), { side: THREE.DoubleSide })); umb.add(u); cyl(umb, .02, .6, 0, -.3, 0, M('#333')); g.add(umb); umb.visible = false;
+  scene.add(g); return { g, p, umb };
+}
+// ধোঁয়া
+const smokeTex = ctex(64, 64, (x) => { const r = x.createRadialGradient(32, 32, 2, 32, 32, 32); r.addColorStop(0, 'rgba(90,90,90,.7)'); r.addColorStop(1, 'rgba(90,90,90,0)'); x.fillStyle = r; x.fillRect(0, 0, 64, 64); });
+const smokes = [];
+for (let i = 0; i < 40; i++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: smokeTex, transparent: true, depthWrite: false, opacity: 0 })); s.visible = false; scene.add(s); smokes.push({ s, life: 0 }); }
+function puff(x, y, z) { const p = smokes.find(q => q.life <= 0); if (!p) return; p.life = 1; p.s.visible = true; p.s.position.set(x, y, z); p.s.scale.setScalar(.5); }
+// বৃষ্টি
+const RAIN_N = LOWEND ? 500 : 1100;
+const rainGeo = new THREE.BufferGeometry(); const rainPos = new Float32Array(RAIN_N * 6);
+for (let i = 0; i < RAIN_N; i++) { const x = rnd(-14, 14), y = rnd(0, 16), z = rnd(-50, 10); rainPos.set([x, y, z, x - .05, y - .7, z + .12], i * 6); }
+rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
+const rain = new THREE.LineSegments(rainGeo, new THREE.LineBasicMaterial({ color: '#cfe0f5', transparent: true, opacity: .55 })); rain.visible = false; rain.frustumCulled = false; scene.add(rain);
+
+/* ---- খেলোয়াড়ের বাইক ---- */
+const bike = new THREE.Group(); scene.add(bike);
+const bikeLean = new THREE.Group(); bike.add(bikeLean);
+const bodyM = M('#d62839', { roughness: .35, metalness: .3 });
+box(bikeLean, .28, .32, 1.15, 0, .62, 0, bodyM); box(bikeLean, .36, .26, .5, 0, .86, -.22, bodyM); box(bikeLean, .3, .1, .55, 0, .93, .28, M('#151515'));
+box(bikeLean, .12, .5, .1, 0, .78, -.62, M('#333'), false); box(bikeLean, .72, .05, .05, 0, 1.05, -.62, M('#222'), false);
+const bwR = new THREE.Group(), bwF = new THREE.Group(); bwR.position.set(0, .33, .62); bwF.position.set(0, .33, -.72); bikeLean.add(bwR, bwF);
+[bwR, bwF].forEach(w => { cyl(w, .33, .13, 0, 0, 0, wheelM, 0, Math.PI / 2); box(w, .14, .5, .05, 0, 0, 0, rimM, false); box(w, .14, .05, .5, 0, 0, 0, rimM, false); });
+const bikeTail = tailMat(); box(bikeLean, .2, .1, .05, 0, .78, .6, bikeTail, false);
+box(bikeLean, .12, .1, .05, 0, .9, -.74, new THREE.MeshStandardMaterial({ color: '#fff', emissive: '#fff8d0', emissiveIntensity: .8 }), false);
+// চালক: অফিসের শার্ট, হেলমেট, পিঠে ব্যাগ
+const rider = new THREE.Group(); rider.position.set(0, .95, .15); bikeLean.add(rider);
+const tor = new THREE.Mesh(CAPS, M('#4f86c6')); tor.scale.set(.24, .25, .17); tor.position.y = .42; tor.rotation.x = -.35; tor.castShadow = true; rider.add(tor);
+const helm = sph(rider, .2, 0, .9, -.08, M('#ef4f5f', { roughness: .25, metalness: .2 })); helm.castShadow = true;
+box(rider, .3, .12, .1, 0, .87, -.27, glassM, false);
+box(rider, .36, .42, .16, 0, .5, .22, M('#5b3a29'), false); // ব্যাগ
+[-1, 1].forEach(s => { const a = box(rider, .1, .1, .6, s * .26, .55, -.4, M('#4f86c6'), false); a.rotation.x = .5; box(rider, .12, .5, .14, s * .17, .02, -.05, M('#2f3542'), false).rotation.x = -1.1; });
+const shieldBubble = new THREE.Mesh(new THREE.SphereGeometry(1.25, 20, 14), new THREE.MeshBasicMaterial({ color: '#36d1c4', transparent: true, opacity: .16, depthWrite: false })); shieldBubble.position.y = .9; bike.add(shieldBubble); shieldBubble.visible = false;
+bike.traverse(o => { if (o.isMesh && o !== shieldBubble) o.castShadow = true; });
 
 /* ================= খেলা ================= */
-let S = null, raf = 0, last = 0, running = false;
+let S = null, raf = 0, last = 0, running = false, demo = true;
+let W = 0, H = 0;
+function resize() {
+  const r = $('stage').getBoundingClientRect(); W = Math.max(1, r.width); H = Math.max(1, r.height);
+  if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+function clearDyn() {
+  if (!S) return;
+  [...S.obs, ...S.items.map(i => ({ g: i.g })), ...S.peds, ...S.bumps].forEach(o => o.g && scene.remove(o.g));
+  if (S.signal) scene.remove(S.signal.m.g);
+}
 function newGame() {
-  return { t: 0, scroll: 0, dist: 0, speed: 260, base: 260, coins: 0, score: 0, lives: 3, clock: 0, over: false, reached: false,
-    p: { lane: 1, x: laneX(1), y: H * .8, tilt: 0, hit: 0, slow: 0, boost: 0, shield: 0, brake: false }, obs: [], items: [], fx: [], spawnT: .8, itemT: 3, coinRun: 0, lastHorn: 0, warned: false, nextKm: 1,
-    signal: null, nextSignal: 650, bumps: [], nextBump: 380, peds: [], pedT: 7, smoke: [], rain: 0, nextRain: rnd(35, 55), fines: 0, shake: 0 };
+  clearDyn();
+  return { t: 0, dist: 0, speed: 0, base: 13, coins: 0, score: 0, lives: 3, clock: 0, over: false,
+    p: { lane: 1, x: 0, tilt: 0, hit: 0, slow: 0, boost: 0, shield: 0, brake: false },
+    obs: [], items: [], peds: [], bumps: [], spawnT: .2, itemT: 2.5, coinRun: 0, lastHorn: 0, warned: false, nextKm: 1,
+    signal: null, nextSignal: 420, nextBump: 260, pedT: 6, rain: 0, nextRain: rnd(35, 55), fines: 0, shake: 0, flash: 0, stuckT: 0, lastStuck: -20, nextBridge: 650 };
 }
 const CLOCK_SEC = 150; // ৮টা থেকে ৯টা = আড়াই মিনিট খেলা
 function fmtClock() { const m = Math.min(60, Math.floor(S.clock / CLOCK_SEC * 60)); return bn(m === 60 ? '৯:০০' : '৮:' + String(m).padStart(2, '0')); }
@@ -356,153 +639,225 @@ function hud() {
   $('dist').textContent = bn((S.dist / 1000).toFixed(1)); $('clock').textContent = fmtClock();
   $('clockBox').classList.toggle('late', S.clock > CLOCK_SEC * .8);
   $('lives').innerHTML = [0, 1, 2, 3, 4].slice(0, Math.max(3, S.lives)).map(i => `<svg viewBox="0 0 24 24" class="${i < S.lives ? '' : 'lost'}"><path d="M3 15a9 9 0 0 1 18 0v2H3z" fill="#ef4f5f"/><rect x="11" y="9" width="8" height="4" fill="#bfe3ff"/></svg>`).join('');
-  const p = []; if (S.p.boost > 0) p.push('☕ চা ' + bn(Math.ceil(S.p.boost))); if (S.p.shield > 0) p.push('🛡️ ' + bn(Math.ceil(S.p.shield))); if (S.p.slow > 0) p.push('💧 ভেজা'); if (S.rain > 0) p.push('🌧️ বৃষ্টি'); if (S.signal && S.signal.state === 'red' && S.signal.y > 0) p.push('🔴 লাল বাতি');
+  $('spd').innerHTML = '<b>' + bn(Math.round(S.speed * 3.6)) + '</b><small>কিমি/ঘ</small>';
+  const p = []; if (S.p.boost > 0) p.push('☕ চা ' + bn(Math.ceil(S.p.boost))); if (S.p.shield > 0) p.push('🛡️ ' + bn(Math.ceil(S.p.shield))); if (S.p.slow > 0) p.push('💧 ভেজা'); if (S.rain > 0) p.push('🌧️ বৃষ্টি'); if (S.signal && S.signal.state === 'red' && S.signal.z > -90) p.push('🔴 লাল বাতি');
   $('pw').innerHTML = p.map(x => `<span>${x}</span>`).join('');
 }
-function float(x, y, text, col, size) { S.fx.push({ x, y, text, col: col || '#fff', size: size || 20, life: 1 }); }
-function laneFree(l, y0, y1) { return !S.obs.some(o => o.lane === l && o.y + o.h / 2 > y0 && o.y - o.h / 2 < y1); }
-function spawnObs() {
-  const diff = Math.min(1, S.dist / 6000);
-  const kinds = [['bus', .3], ['cng', .3], ['rick', .25], ['hole', .1], ['water', .05 + diff * .1 + (S.rain > 0 ? .3 : 0)]];
+const _v = new THREE.Vector3();
+function float(x, y, z, text, col, size) {
+  if (demo) return;
+  _v.set(x, y, z).project(cam); const sx = (_v.x * .5 + .5) * W, sy = (-_v.y * .5 + .5) * H;
+  const d = document.createElement('div'); d.className = 'fl'; d.textContent = text; d.style.left = sx + 'px'; d.style.top = sy + 'px'; d.style.color = col || '#fff'; d.style.fontSize = (size || 20) + 'px';
+  $('fx').appendChild(d); setTimeout(() => d.remove(), 1200);
+}
+const fc = (text, col, size) => float(S.p.x, 2.6, -6, text, col, size);
+function laneBusy(l, z0, z1) { return S.obs.some(o => o.lane === l && o.z + o.len / 2 > z0 && o.z - o.len / 2 < z1); }
+const VMAX = { bus: [5, 8.5], truck: [4.5, 7], car: [7, 10], cng: [6, 9.5], rick: [2.2, 3.6] };
+function spawnObs(z0) {
+  const diff = Math.min(1, S.dist / 2500);
+  const kinds = [['bus', .22], ['cng', .26], ['rick', .2], ['car', .12], ['truck', .06], ['hole', .08], ['water', .03 + diff * .07 + (S.rain > 0 ? .3 : 0)]];
   let r = Math.random() * kinds.reduce((s, k) => s + k[1], 0), kind = 'cng';
   for (const [k, w] of kinds) { if ((r -= w) < 0) { kind = k; break; } }
-  const h = kind === 'bus' ? laneW * 2.1 : kind === 'hole' ? laneW * .5 : kind === 'water' ? laneW * 1.1 : laneW * .95;
-  const lanes = [0, 1, 2].filter(l => laneFree(l, -h * 2 - 220, 60));
-  // কমপক্ষে একটা লেন সবসময় খোলা থাকবে
-  const blocked = [0, 1, 2].filter(l => !laneFree(l, -400, 120)).length;
+  const o = ({ bus: mkBus, truck: mkTruck, car: mkCar, cng: mkCng, rick: mkRick, hole: mkHole, water: mkWater })[kind]();
+  const Z = z0 !== undefined ? z0 : FAR;
+  const lanes = [0, 1, 2].filter(l => !laneBusy(l, Z - o.len / 2 - 8, Z + o.len / 2 + 8));
+  const blocked = [0, 1, 2].filter(l => laneBusy(l, Z - 28, Z + 28)).length;
   if (!lanes.length || blocked >= 2) return;
-  const lane = pick(lanes);
-  const own = kind === 'bus' ? rnd(.3, .5) : kind === 'cng' ? rnd(.4, .58) : kind === 'rick' ? rnd(.1, .25) : 0;
-  S.obs.push({ kind, lane, x: laneX(lane), y: -h, h, own, col: pick(BUS_COLORS), route: pick(ROUTES), hood: pick(['#e5484d', '#2f6fe0', '#8e44ad', '#16a085']), drift: kind === 'cng' && Math.random() < .3 ? pick([-1, 1]) : 0 });
+  o.lane = pick(lanes); o.x = LX(o.lane); o.z = Z - o.len / 2;
+  o.static = kind === 'hole' || kind === 'water';
+  o.vmax = o.static ? 0 : rnd(...VMAX[kind]); o.cur = o.vmax;
+  o.drift = kind === 'cng' && Math.random() < .35 ? pick([-1, 1]) : 0;
+  o.g.position.set(o.x, 0, o.z); scene.add(o.g); S.obs.push(o);
 }
 function spawnItem() {
-  const lane = Math.floor(Math.random() * 3);
-  if (!laneFree(lane, -120, 40)) return;
+  const lane = Math.floor(Math.random() * 3), Z = FAR + 30;
+  if (laneBusy(lane, Z - 20, Z + 8)) return;
   const r = Math.random();
-  if (r < .72) { const n = 4 + Math.floor(Math.random() * 4); for (let i = 0; i < n; i++) S.items.push({ kind: 'coin', lane, x: laneX(lane), y: -30 - i * 42 }); }
-  else if (r < .9) S.items.push({ kind: 'tea', lane, x: laneX(lane), y: -30 });
-  else S.items.push({ kind: 'helmet', lane, x: laneX(lane), y: -30 });
+  const add = (kind, z) => { const g = mkItem(kind); g.position.set(LX(lane), 0, z); scene.add(g); S.items.push({ kind, lane, x: LX(lane), z, g }); };
+  if (r < .72) { const n = 4 + Math.floor(Math.random() * 4); for (let i = 0; i < n; i++) add('coin', Z - i * 3); }
+  else if (r < .9) add('tea', Z); else add('helmet', Z);
 }
 function move(dir) {
-  if (!running || !S) return; audio();
+  if (!running || !S || demo) return; audio();
   const nl = Math.max(0, Math.min(2, S.p.lane + dir));
-  if (nl !== S.p.lane) { S.p.lane = nl; S.p.tilt = dir * .35; sfx('swoosh'); }
+  if (nl !== S.p.lane) { S.p.lane = nl; sfx('swoosh'); }
+}
+function crash(o) {
+  const p = S.p;
+  if (p.shield > 0) { p.shield = 0; fc('ঢাল বাঁচালো!', '#36d1c4', 22); sfx('helmet'); p.hit = 1.2; return; }
+  S.lives--; p.hit = 1.6; S.shake = .5; S.flash = 1; sfx('crash'); if (navigator.vibrate) try { navigator.vibrate(140); } catch (e) {}
+  fc(o.kind === 'hole' ? 'গর্ত!' : 'ধাক্কা!', '#ff6b7a', 28);
+  say(pick(o.kind === 'bus' ? L.crashBus : o.kind === 'cng' ? L.crashCng : o.kind === 'rick' ? L.crashRick : o.kind === 'truck' ? L.crashTruck : o.kind === 'car' ? L.crashCar : L.crashHole), true, 'M2');
+  if (S.lives <= 0) endGame('crash');
 }
 function step(dt) {
-  const p = S.p; S.t += dt; S.clock += dt;
+  const p = S.p; S.t += dt; if (!demo) S.clock += dt;
   p.hit = Math.max(0, p.hit - dt); p.slow = Math.max(0, p.slow - dt); p.boost = Math.max(0, p.boost - dt); p.shield = Math.max(0, p.shield - dt);
-  S.base = 260 + Math.min(260, S.dist / 25);
-  const target = S.base * (p.boost > 0 ? 1.6 : 1) * (p.slow > 0 ? .55 : 1) * (p.hit > 1.2 ? .4 : 1) * (p.brake ? .3 : 1) * (S.rain > 0 ? .9 : 1);
-  S.shake = Math.max(0, S.shake - dt);
-  S.speed += (target - S.speed) * Math.min(1, dt * (p.brake ? 5 : 3));
-  S.scroll += S.speed * dt; S.dist += S.speed * dt * .55; engine(S.speed);
-  p.x += (laneX(p.lane) - p.x) * Math.min(1, dt * 14); p.tilt *= Math.pow(.02, dt); p.y = H * .8;
+  S.shake = Math.max(0, S.shake - dt); S.flash = Math.max(0, S.flash - dt * 2);
+  if (demo) { // শুরুর পর্দার পেছনে নিজে নিজে চলে
+    const blockedAhead = S.obs.some(o => o.lane === p.lane && o.z < 0 && o.z > -22);
+    if (blockedAhead) { const c = [0, 1, 2].filter(l => !S.obs.some(o => o.lane === l && o.z < 6 && o.z > -24)); if (c.length) p.lane = c.sort((a, b) => Math.abs(a - p.lane) - Math.abs(b - p.lane))[0]; }
+    p.brake = S.obs.some(o => o.lane === p.lane && !o.static && o.z < 0 && o.z > -9) || (S.signal && S.signal.state === 'red' && S.signal.z < -1 && S.signal.z > -14);
+  }
+  S.base = 13 + Math.min(9, S.dist / 220);
+  const target = p.brake ? 0 : S.base * (p.gas ? 1.4 : .8) * (p.boost > 0 ? 1.4 : 1) * (p.slow > 0 ? .55 : 1) * (p.hit > 1.1 ? .35 : 1) * (S.rain > 0 ? .88 : 1);
+  const acc = p.brake ? 16 : target < S.speed ? 7 : p.gas ? 6.5 : 4;
+  S.speed += Math.max(-acc * dt, Math.min(acc * dt, target - S.speed));
+  const d = S.speed * dt; S.dist += d; engine(S.speed * 18);
+  // রাস্তা ও দুই পাশ সরানো
+  roadTex.offset.y += d / TILE; walkTex.offset.y += d / WALK;
+  curbs.forEach(([c, s]) => { c.material.map.offset.x += (s < 0 ? d : -d) / 2; });
+  let minZ = { '-1': Infinity, '1': Infinity };
+  builds.forEach(b => { b.position.z += d; const s = b.userData.side; minZ[s] = Math.min(minZ[s], b.position.z - b.userData.len / 2); });
+  builds.forEach(b => { if (b.position.z - b.userData.len / 2 > BEHIND + 6) { const s = b.userData.side; const gap = Math.random() < .12 ? rnd(3, 6) : rnd(.1, .6); b.position.z = minZ[s] - gap - b.userData.len / 2; minZ[s] = b.position.z - b.userData.len / 2; } });
+  poles.forEach(pl => { pl.position.z += d; if (pl.position.z > BEHIND + 30) pl.position.z -= poles.length * POLE_GAP; });
+  if (bridge) { bridge.position.z += d; if (bridge.position.z > BEHIND + 10 && S.dist > S.nextBridge) { bridge.position.z = FAR - 40; S.nextBridge = S.dist + rnd(700, 1100); } }
+  p.x += (LX(p.lane) - p.x) * Math.min(1, dt * 9);
   // নতুন গাড়ি ও জিনিস
-  S.spawnT -= dt; if (S.spawnT <= 0) { spawnObs(); S.spawnT = rnd(.55, 1.05) * (360 / S.speed) * (1 - Math.min(.35, S.dist / 20000)); }
-  S.itemT -= dt; if (S.itemT <= 0) { spawnItem(); S.itemT = rnd(1.4, 2.6); }
-  // চলা
-  const sg0 = S.signal;
-  S.obs.forEach(o => {
-    // লাল বাতিতে থামার দাগের আগে গাড়িগুলোও দাঁড়িয়ে যায়
-    const stopped = sg0 && sg0.state === 'red' && o.y < sg0.y && sg0.y - o.y < 70 + o.h / 2;
-    o.y += S.speed * (stopped ? 1 : 1 - o.own) * dt;
-    if (stopped) o.y = Math.min(o.y, sg0.y - o.h / 2 - 8);
-    if (o.kind === 'bus' && Math.random() < dt * 4) S.smoke.push({ x: o.x + rnd(-10, 10), y: o.y + o.h / 2, r: 6, life: 1 });
-    if (o.drift && o.y > H * .25 && o.y < H * .45 && !o.drifted) { const nl = o.lane + o.drift; if (nl >= 0 && nl <= 2 && laneFree(nl, o.y - o.h, o.y + o.h)) { o.lane = nl; o.drifted = true; } }
-    o.x += (laneX(o.lane) - o.x) * Math.min(1, dt * 4);
-  });
-  S.obs = S.obs.filter(o => o.y - o.h / 2 < H + 40);
-  S.items.forEach(it => it.y += S.speed * dt); S.items = S.items.filter(it => it.y < H + 30 && !it.got);
-  // ধোঁয়া
-  S.smoke.forEach(sm => { sm.y += S.speed * .6 * dt; sm.r += 18 * dt; sm.life -= dt * .7; }); S.smoke = S.smoke.filter(sm => sm.life > 0);
-  // ট্রাফিক সিগন্যাল
-  if (!S.signal && S.dist >= S.nextSignal) { S.signal = { y: -60, state: 'red', green: rnd(2.6, 4.6), seen: false, passed: false }; S.nextSignal += rnd(900, 1400); }
+  S.spawnT -= dt; if (S.spawnT <= 0) { spawnObs(); S.spawnT = rnd(.6, 1.15) * (1 - Math.min(.3, S.dist / 8000)) * (14 / Math.max(8, S.speed + 4)); }
+  S.itemT -= dt; if (S.itemT <= 0 && !demo) { spawnItem(); S.itemT = rnd(1.5, 2.8); }
+  // গাড়ি চলা: সামনের গাড়ির পেছনে লাইন ধরে দাঁড়ায় (জ্যাম!), লাল বাতিতে থামে
+  const sg = S.signal;
+  const list = S.obs.slice().sort((a, b) => a.z - b.z);
+  for (const o of list) {
+    if (o.static) { o.z += d; continue; }
+    let v = o.vmax;
+    if (sg && sg.state !== 'green' && o.z < sg.z) { const stopZ = sg.z - 1.8 - o.len / 2; const gap = stopZ - o.z; if (gap < 14) v = Math.min(v, Math.max(0, gap * .7)); }
+    const lead = list.find(q => q !== o && !q.static && q.lane === o.lane && q.z < o.z && o.z - q.z < (q.len + o.len) / 2 + 9);
+    if (lead) { const gap = o.z - lead.z - (lead.len + o.len) / 2; v = Math.min(v, lead.cur + (gap - 1.8) * .8); }
+    o.cur += (Math.max(0, v) - o.cur) * Math.min(1, dt * 3);
+    o.z += d - o.cur * dt;
+    if (lead) { const mz = lead.z + (lead.len + o.len) / 2 + 1.2; if (o.z < mz) o.z = mz; }
+    if (o.drift && !o.drifted && o.z > -55 && o.z < -22) { const nl = o.lane + o.drift; if (nl >= 0 && nl <= 2 && !laneBusy(nl, o.z - o.len - 4, o.z + o.len + 4)) { o.lane = nl; o.drifted = true; if (!demo && nl === p.lane) say(pick(L.cut), false, 'M2'); } }
+    o.x += (LX(o.lane) - o.x) * Math.min(1, dt * 2.2);
+    if (o.tl) o.tl.emissiveIntensity = o.cur < 1.5 ? 2.6 : .35; // ব্রেক লাইট
+    if (o.kind === 'bus' && Math.random() < dt * 4) puff(o.x + .8, .5, o.z + o.len / 2 + .2);
+    if (o.kind === 'rick' && o.pu) o.pu.rotation.z = Math.sin(S.t * 6) * .06;
+  }
+  S.obs = S.obs.filter(o => { const keep = o.z - o.len / 2 < BEHIND && o.z > FAR - 60; if (!keep) { scene.remove(o.g); o.g.traverse(m => { if (m.material && m.material === o.tl) m.material.dispose(); }); } return keep; });
+  S.obs.forEach(o => { o.g.position.set(o.x, 0, o.z); o.g.rotation.y = (LX(o.lane) - o.x) * .08; if (o.ripple) o.ripple.material.opacity = .75 + Math.sin(S.t * 3) * .1; });
+  S.items.forEach(it => { it.z += d; it.g.position.z = it.z; if (it.g.userData.spin) { it.g.userData.spin.rotation.y += dt * 3; it.g.userData.spin.position.y = 1 + Math.sin(S.t * 3 + it.z) * .12; } });
+  S.items = S.items.filter(it => { const k = it.z < BEHIND && !it.got; if (!k) scene.remove(it.g); return k; });
+  smokes.forEach(sm => { if (sm.life <= 0) return; sm.life -= dt * .6; sm.s.position.z += d * .5; sm.s.position.y += dt * .8; sm.s.scale.setScalar(.5 + (1 - sm.life) * 2.5); sm.s.material.opacity = sm.life * .45; if (sm.life <= 0) sm.s.visible = false; });
+  // সিগন্যাল
+  if (!S.signal && S.dist >= S.nextSignal) { const m = mkSignal(); S.signal = { z: FAR + 10, state: 'red', green: rnd(3, 5), seen: false, passed: false, m }; S.nextSignal += rnd(650, 1000); }
   if (S.signal) {
-    const sg = S.signal; sg.y += S.speed * dt;
-    if (sg.y > 0 && sg.state === 'red') { sg.green -= dt; if (sg.green <= 0) { sg.state = 'green'; if (!sg.passed) { float(W / 2, H * .3, 'সবুজ বাতি!', '#22c55e', 26); say(pick(L.green), true); } } }
-    if (!sg.seen && sg.y > H * .12) { sg.seen = true; if (sg.state === 'red') { sfx('whistle'); say(pick(L.red), true); float(W / 2, H * .3, 'লাল বাতি! ব্রেক!', '#ef4444', 26); } }
-    if (!sg.passed && sg.y >= p.y - 34) {
-      sg.passed = true;
-      if (sg.state === 'red') { const fine = Math.min(S.coins, 10); S.coins -= fine; S.fines++; sfx('whistle'); float(p.x, p.y - 60, 'মামলা! −' + bn(fine) + ' কয়েন', '#ef4444', 24); say(pick(L.fine), true); }
-      else { S.coins += 3; float(p.x, p.y - 60, 'নিয়ম মেনে পার! +৩', '#22c55e', 20); }
+    const s2 = S.signal; s2.z += d; s2.m.g.position.z = s2.z;
+    if (s2.z > -95 && s2.state === 'red') { s2.green -= dt; if (s2.green <= 0) { s2.state = 'yellow'; s2.yt = .9; } }
+    if (s2.state === 'yellow') { s2.yt -= dt; if (s2.yt <= 0) { s2.state = 'green'; if (!s2.passed && !demo) { fc('সবুজ বাতি!', '#22c55e', 26); say(pick(L.green), true, 'M2'); } } }
+    const lm = s2.m.lamps; lm.r.emissiveIntensity = s2.state === 'red' ? 3 : 0; lm.y.emissiveIntensity = s2.state === 'yellow' ? 3 : 0; lm.g.emissiveIntensity = s2.state === 'green' ? 3 : 0;
+    s2.m.halo.material.color.set(s2.state === 'red' ? '#ff3030' : s2.state === 'yellow' ? '#ffc400' : '#22e05a'); s2.m.halo.position.y = s2.state === 'red' ? .45 : s2.state === 'yellow' ? 0 : -.45;
+    s2.m.arm.rotation.z = s2.state === 'red' ? Math.PI * .95 + Math.sin(S.t * 4) * .1 : .3 + Math.sin(S.t * 5) * .5; // পুলিশের হাত
+    if (!s2.seen && s2.z > -70) { s2.seen = true; if (s2.state === 'red' && !demo) { sfx('whistle'); say(pick(L.red), true, 'M3'); fc('লাল বাতি! ব্রেক!', '#ef4444', 26); for (let i = 0; i < 3; i++) setTimeout(() => S && S.signal === s2 && addPed(0, true), i * 700); } }
+    if (!s2.passed && s2.z >= -.9) {
+      s2.passed = true;
+      if (!demo) {
+        if (s2.state !== 'green') { const fine = Math.min(S.coins, 10); S.coins -= fine; S.fines++; sfx('whistle'); fc('মামলা! −' + bn(fine) + ' কয়েন', '#ef4444', 24); say(pick(L.fine), true, 'M3'); }
+        else { S.coins += 3; fc('নিয়ম মেনে পার! +৩', '#22c55e', 20); }
+      }
     }
-    if (sg.y > H + 120) S.signal = null;
+    if (s2.z > BEHIND + 4) { scene.remove(s2.m.g); S.signal = null; }
   }
   // স্পিড ব্রেকার
-  if (S.dist >= S.nextBump) { if (!S.signal || S.signal.y > 300) S.bumps.push({ y: -20, done: false }); S.nextBump += rnd(520, 900); }
+  if (S.dist >= S.nextBump) { if (!S.signal || S.signal.z > -40) { const g = mkBump(); S.bumps.push({ z: FAR + 20, g, done: false }); } S.nextBump += rnd(380, 650); }
   S.bumps.forEach(b => {
-    b.y += S.speed * dt;
-    if (!b.done && b.y >= p.y) { b.done = true;
-      if (S.speed > 330 && !p.brake) { p.hit = Math.max(p.hit, 1.3); S.shake = .35; sfx('bump'); float(p.x, p.y - 50, 'ধপাস!', '#facc15', 26); say(pick(L.bump)); }
-      else { sfx('bump'); float(p.x, p.y - 50, 'আস্তে পার হলেন 👍', '#7be0a8', 18); S.coins += 1; } }
+    b.z += d; b.g.position.z = b.z;
+    if (!b.done && b.z >= 0) { b.done = true; if (demo) return;
+      if (S.speed > 12.5 && !p.brake) { p.hit = Math.max(p.hit, 1.25); S.shake = .45; sfx('bump'); fc('ধপাস!', '#facc15', 26); say(pick(L.bump), false, 'M2'); }
+      else { sfx('bump'); fc('আস্তে পার হলেন 👍', '#7be0a8', 18); S.coins += 1; } }
   });
-  S.bumps = S.bumps.filter(b => b.y < H + 30);
-  // রাস্তা পার হওয়া মানুষ
-  S.pedT -= dt;
-  if (S.pedT <= 0) { const dir = Math.random() < .5 ? 1 : -1; S.peds.push({ x: dir > 0 ? roadX - 10 : roadX + roadW + 10, y: -20, dir, vx: rnd(45, 70), col: pick(['#e5484d', '#2f6fe0', '#16a085', '#f59e0b', '#9333ea']), umb: pick(['#1f2937', '#be185d', '#0369a1']), seed: Math.random() * 9, hit: false }); S.pedT = rnd(6, 11); }
+  S.bumps = S.bumps.filter(b => { const k = b.z < BEHIND; if (!k) scene.remove(b.g); return k; });
+  // পথচারী
+  S.pedT -= dt; if (S.pedT <= 0) { addPed(-80 - Math.random() * 20); S.pedT = rnd(6, 11); }
   S.peds.forEach(pd => {
-    pd.y += S.speed * dt; pd.x += pd.dir * pd.vx * dt * (S.signal && S.signal.state === 'red' ? 1.4 : 1);
-    if (!pd.hit && Math.abs(pd.x - p.x) < 20 && Math.abs(pd.y - p.y) < 30) { pd.hit = true; pd.vx *= 2.2;
-      if (p.hit <= 0) { p.hit = 1.3; S.coins = Math.max(0, S.coins - 5); sfx('brake'); float(p.x, p.y - 56, 'সাবধানে! −৫ কয়েন', '#ff9f9f', 20); say(pick(L.ped), true); } }
+    pd.z += d; pd.x += pd.dir * pd.vx * dt * (S.signal && S.signal.state !== 'green' ? 1.3 : 1);
+    pd.g.position.set(pd.x, .22 * (Math.abs(pd.x) > ROAD_HALF ? 1 : 0), pd.z); pd.umb.visible = S.rain > 0;
+    const sw = Math.sin(S.t * 8 + pd.seed) * .5; pd.p.userData.lL.rotation.x = sw; pd.p.userData.lR.rotation.x = -sw;
+    if (!demo && !pd.hit && Math.abs(pd.x - p.x) < .6 && Math.abs(pd.z) < 1) { pd.hit = true; pd.vx *= 2.4;
+      if (p.hit <= 0) { p.hit = 1.3; S.speed *= .3; S.coins = Math.max(0, S.coins - 5); sfx('brake'); fc('সাবধানে! −৫ কয়েন', '#ff9f9f', 20); say(pick(L.ped), true, pick(['F1', 'M1'])); } }
   });
-  S.peds = S.peds.filter(pd => pd.y < H + 30 && pd.x > roadX - 40 && pd.x < roadX + roadW + 40);
+  S.peds = S.peds.filter(pd => { const k = pd.z < BEHIND && Math.abs(pd.x) < ROAD_HALF + 3; if (!k) scene.remove(pd.g); return k; });
   // বৃষ্টি
-  if (S.rain <= 0 && S.t >= S.nextRain) { S.rain = rnd(12, 18); S.nextRain = S.t + S.rain + rnd(35, 55); say(pick(L.rain), true); float(W / 2, H * .3, 'বৃষ্টি নামলো!', '#9fd3ff', 26); }
-  else if (S.rain > 0) { S.rain -= dt; if (S.rain <= 0) { say(L.rainEnd[0]); } }
-  // হর্ন: সামনে গাড়ি কাছে থাকলে
-  const ahead = S.obs.find(o => o.lane === p.lane && o.y < p.y && p.y - o.y < 180 && (o.kind === 'bus' || o.kind === 'cng' || o.kind === 'rick'));
-  if (ahead && S.t - S.lastHorn > 3) { S.lastHorn = S.t; ahead.kind === 'rick' ? sfx('bell') : sfx('horn'); if (Math.random() < .4) say(pick(L.horn)); }
-  // ধাক্কা
-  const pw = 18, ph = 32;
-  S.obs.forEach(o => {
-    if (o.done) return;
-    const ow = o.kind === 'bus' ? laneW * .4 : o.kind === 'water' ? laneW * .38 : o.kind === 'hole' ? laneW * .28 : laneW * .25;
-    if (Math.abs(o.x - p.x) < ow + pw * .6 && Math.abs(o.y - p.y) < o.h / 2 + ph * .6) {
-      o.done = true;
-      if (o.kind === 'water') { p.slow = 2.2; sfx('splash'); float(p.x, p.y - 40, 'ছপাৎ!', '#9fd3ff', 24); say(pick(L.splash)); return; }
-      if (p.hit > 0) return;
-      if (p.shield > 0) { p.shield = 0; float(p.x, p.y - 40, 'ঢাল বাঁচালো!', '#36d1c4', 22); sfx('helmet'); return; }
-      S.lives--; p.hit = 1.6; sfx('crash'); if (navigator.vibrate) try { navigator.vibrate(120); } catch (e) {}
-      float(p.x, p.y - 44, o.kind === 'hole' ? 'গর্ত!' : 'ধাক্কা!', '#ff6b7a', 26);
-      say(pick(o.kind === 'bus' ? L.crashBus : o.kind === 'cng' ? L.crashCng : o.kind === 'rick' ? L.crashRick : L.crashHole), true);
-      if (S.lives <= 0) endGame('crash');
+  if (S.rain <= 0 && S.t >= S.nextRain) { S.rain = rnd(12, 18); S.nextRain = S.t + S.rain + rnd(35, 55); if (!demo) { say(pick(L.rain), true, 'M1'); fc('বৃষ্টি নামলো!', '#9fd3ff', 26); } }
+  else if (S.rain > 0) { S.rain -= dt; if (S.rain <= 0 && !demo) say(L.rainEnd[0], false, 'M2'); if (Math.random() < dt * .08) { S.flash = .6; if (!demo) sfx('thunder'); } }
+  // হর্ন
+  if (!demo) {
+    const ahead = S.obs.find(o => o.lane === p.lane && !o.static && o.z < 0 && o.z > -18);
+    if (ahead && S.t - S.lastHorn > 3) { S.lastHorn = S.t; ahead.kind === 'rick' ? sfx('bell') : sfx('horn'); if (Math.random() < .4) say(pick(L.horn), false, 'M2'); }
+    // জ্যামে আটকা
+    const redNear = S.signal && S.signal.state !== 'green' && S.signal.z < 0 && S.signal.z > -40;
+    if (S.speed < 2 && !redNear) { S.stuckT += dt; if (S.stuckT > 2.5 && S.t - S.lastStuck > 12) { S.lastStuck = S.t; say(pick(L.stuck), false, pick(['M1', 'M3'])); fc('জ্যামে আটকা!', '#ffb627', 22); } } else S.stuckT = 0;
+    // ধাক্কা
+    for (const o of S.obs) {
+      if (o.done) continue;
+      if (Math.abs(o.x - p.x) < o.w / 2 + .3 && Math.abs(o.z) < o.len / 2 + .85) {
+        if (o.kind === 'water') { o.done = true; p.slow = 2.2; sfx('splash'); fc('ছপাৎ!', '#9fd3ff', 24); say(pick(L.splash), false, 'M2'); continue; }
+        if (o.kind === 'hole') { o.done = true; if (p.hit <= 0) crash(o); continue; }
+        if (p.hit > 0) continue;
+        S.speed = Math.min(S.speed, o.cur * .5); o.z = Math.min(o.z, -(o.len / 2 + 1.1)); crash(o); if (S.over) return;
+      }
     }
-  });
-  S.items.forEach(it => {
-    if (it.got || Math.abs(it.x - p.x) > laneW * .45 || Math.abs(it.y - p.y) > 34) return;
-    it.got = true;
-    if (it.kind === 'coin') { S.coins++; S.coinRun++; sfx('coin'); if (S.coinRun % 6 === 0) { float(p.x, p.y - 60, pick(L.combo), '#ffd23f', 22); say(pick(L.combo)); } }
-    else if (it.kind === 'tea') { p.boost = 4; sfx('tea'); float(p.x, p.y - 50, 'চা! জোরে ছুট', '#ffb627', 22); say(pick(L.tea), true); }
-    else { if (S.lives < 5) S.lives++; p.shield = 5; sfx('helmet'); float(p.x, p.y - 50, '+১ হেলমেট', '#36d1c4', 22); say(L.helmet[0], true); }
-  });
-  S.fx.forEach(f => { f.life -= dt * 1.2; f.y -= 50 * dt; }); S.fx = S.fx.filter(f => f.life > 0);
-  // মাইলফলক ও সময়
-  if (S.dist / 1000 >= S.nextKm) { float(W / 2, H * .3, bn(S.nextKm) + ' কিমি পার!', '#7be0a8', 26); S.nextKm++; }
-  if (!S.warned && S.clock > CLOCK_SEC * .83) { S.warned = true; say(pick(L.late), true); float(W / 2, H * .25, 'আর ১০ মিনিট!', '#ff6b7a', 28); }
-  S.score = Math.floor(S.dist / 10) + S.coins * 10;
-  if (S.clock >= CLOCK_SEC) endGame('time');
-  hud();
+    for (const it of S.items) {
+      if (it.got || Math.abs(it.x - p.x) > 1 || Math.abs(it.z) > 1.2) continue;
+      it.got = true; scene.remove(it.g);
+      if (it.kind === 'coin') { S.coins++; S.coinRun++; sfx('coin'); if (S.coinRun % 6 === 0) { fc(pick(L.combo), '#ffd23f', 22); say(pick(L.combo), false, 'M2'); } }
+      else if (it.kind === 'tea') { p.boost = 4; sfx('tea'); fc('চা! জোরে ছুট', '#ffb627', 22); say(pick(L.tea), true, 'M2'); }
+      else { if (S.lives < 5) S.lives++; p.shield = 5; sfx('helmet'); fc('+১ হেলমেট', '#36d1c4', 22); say(L.helmet[0], true, 'M2'); }
+    }
+    if (S.dist / 1000 >= S.nextKm) { fc(bn(S.nextKm) + ' কিমি পার!', '#7be0a8', 26); S.nextKm++; }
+    if (!S.warned && S.clock > CLOCK_SEC * .83) { S.warned = true; say(pick(L.late), true, 'M3'); fc('আর ১০ মিনিট!', '#ff6b7a', 28); }
+    S.score = Math.floor(S.dist / 5) + S.coins * 10;
+    if (S.clock >= CLOCK_SEC) endGame('time');
+    hud();
+  }
 }
-function render() {
-  g.save(); if (S.shake > 0) g.translate(rnd(-5, 5) * S.shake * 3, rnd(-5, 5) * S.shake * 3);
-  drawRoad(S.t, S.scroll);
-  if (S.rain > 0) { g.fillStyle = 'rgba(40,70,110,.25)'; g.fillRect(roadX, 0, roadW, H); }
-  S.bumps.forEach(drawBump);
-  if (S.signal) drawSignal(S.signal, S.t);
-  S.obs.filter(o => o.kind === 'hole' || o.kind === 'water').forEach(o => o.kind === 'hole' ? drawHole(o) : drawWater(o, S.t));
-  S.items.forEach(it => it.kind === 'coin' ? drawCoin(it, S.t) : it.kind === 'tea' ? drawTea(it, S.t) : drawHelmet(it, S.t));
-  S.obs.filter(o => o.kind !== 'hole' && o.kind !== 'water').forEach(o => o.kind === 'bus' ? drawBus(o) : o.kind === 'cng' ? drawCng(o) : drawRick(o));
-  S.smoke.forEach(sm => { g.fillStyle = `rgba(60,60,60,${sm.life * .35})`; g.beginPath(); g.arc(sm.x, sm.y, sm.r, 0, 7); g.fill(); });
-  S.peds.forEach(pd => drawPed(pd, S.t));
-  drawBike(S.p, S.t);
-  if (S.p.brake) { g.fillStyle = '#ff3b3b'; g.fillRect(S.p.x - 8, S.p.y + 26, 16, 4); }
-  if (S.p.boost > 0) { g.fillStyle = 'rgba(255,255,255,.12)'; for (let i = 0; i < 8; i++) g.fillRect(rnd(roadX, roadX + roadW), rnd(0, H), 2, rnd(30, 70)); }
-  S.fx.forEach(f => { g.globalAlpha = Math.min(1, f.life); g.font = `800 ${f.size}px 'Baloo Da 2','Noto Sans Bengali',sans-serif`; g.textAlign = 'center'; g.lineWidth = 5; g.strokeStyle = 'rgba(0,0,0,.6)'; g.strokeText(f.text, f.x, f.y); g.fillStyle = f.col; g.fillText(f.text, f.x, f.y); g.globalAlpha = 1; });
-  if (S.rain > 0) { g.strokeStyle = 'rgba(200,220,255,.45)'; g.lineWidth = 1.5; g.beginPath(); for (let i = 0; i < 70; i++) { const rx = (i * 61 + S.t * 90) % W, ry = (i * 37 + S.t * 900) % H; g.moveTo(rx, ry); g.lineTo(rx - 4, ry + 14); } g.stroke(); }
-  g.restore();
-  if (S.p.hit > 1.2) { g.fillStyle = `rgba(239,79,95,${(S.p.hit - 1.2)})`; g.fillRect(0, 0, W, H); }
+function addPed(z, zebra) {
+  const dir = Math.random() < .5 ? 1 : -1; const pd = mkPed(dir);
+  Object.assign(pd, { x: -dir * (ROAD_HALF + 1.2), z: zebra && S.signal ? S.signal.z - 2.6 + rnd(-1, 1) : z, dir, vx: rnd(1.2, 1.8), seed: Math.random() * 9, hit: false });
+  S.peds.push(pd);
 }
-function loop(ts) { if (!running) return; const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; step(dt); if (running || S.over) render(); raf = requestAnimationFrame(loop); }
+// আবহাওয়া, ক্যামেরা, বাইক আঁকা
+const _top = new THREE.Color(), _bot = new THREE.Color();
+function view(dt) {
+  const p = S.p, wet = Math.min(1, Math.max(0, S.rain > 0 ? 1 : 0));
+  S.wet = (S.wet || 0) + (wet - (S.wet || 0)) * Math.min(1, dt * .8);
+  const k = S.wet;
+  skyMat.uniforms.top.value.copy(_top.copy(SKY_TOP).lerp(RAIN_TOP, k)); skyMat.uniforms.bot.value.copy(_bot.copy(SKY_BOT).lerp(RAIN_BOT, k));
+  scene.fog.color.copy(FOG).lerp(RAIN_BOT, k); scene.fog.far = 150 - k * 60; scene.fog.near = 30 - k * 14;
+  roadMat.roughness = .92 - k * .6; roadMat.color.setScalar(1 - k * .35);
+  hemi.intensity = 1.25 - k * .45 + S.flash * 2.5; sun.intensity = 2.4 - k * 1.9;
+  rain.visible = k > .05; rain.material.opacity = .55 * k;
+  if (rain.visible) { const a = rainPos; for (let i = 0; i < RAIN_N; i++) { const o = i * 6; a[o + 1] -= dt * 26; a[o + 4] -= dt * 26; a[o + 2] += S.speed * dt; a[o + 5] += S.speed * dt; if (a[o + 1] < 0 || a[o + 2] > 10) { const x = cam.position.x + rnd(-14, 14), y = rnd(10, 16), z = rnd(-50, 6); a.set([x, y, z, x - .05, y - .7, z + .12], o); } } rainGeo.attributes.position.needsUpdate = true; }
+  // বাইক
+  const lean = (LX(p.lane) - p.x) * -.12;
+  bike.position.set(p.x, 0, 0); bikeLean.rotation.z += (lean - bikeLean.rotation.z) * Math.min(1, dt * 10);
+  bikeLean.rotation.x = p.brake && S.speed > 1 ? .04 : 0;
+  bikeLean.position.y = S.speed > .5 ? Math.sin(S.t * 30) * .006 * Math.min(1, S.speed / 10) : 0;
+  bwR.rotation.x -= S.speed * dt / .33; bwF.rotation.x -= S.speed * dt / .33;
+  bikeTail.emissiveIntensity = p.brake ? 3 : .4;
+  bikeLean.rotation.x = p.gas && !p.brake ? -.03 : bikeLean.rotation.x;
+  bike.visible = p.hit > 0 && !demo ? Math.floor(S.t * 12) % 2 === 0 : true;
+  shieldBubble.visible = p.shield > 0; shieldBubble.material.opacity = .12 + Math.sin(S.t * 6) * .05;
+  // ক্যামেরা: পেছন থেকে, একটু উপরে
+  const portrait = W / H < .8;
+  const cy = portrait ? 4.6 : 3.4, cz = portrait ? 8.2 : 6.6;
+  const fov = (portrait ? 70 : 58) + (p.boost > 0 ? 8 : 0) + Math.min(6, S.speed * .18);
+  cam.fov += (fov - cam.fov) * Math.min(1, dt * 3); cam.updateProjectionMatrix();
+  const sh = S.shake * .35;
+  cam.position.x += (p.x * .72 - cam.position.x) * Math.min(1, dt * 6); cam.position.y = cy + rnd(-sh, sh); cam.position.z = cz + rnd(-sh, sh);
+  cam.lookAt(p.x * .55, .9, -14);
+  sky.position.copy(cam.position);
+  sun.position.set(cam.position.x - 10, 20, 6); sun.target.position.set(cam.position.x, 0, -10);
+  $('flash').style.opacity = Math.max(S.flash * .5, p.hit > 1.1 && !demo ? (p.hit - 1.1) * .9 : 0);
+  $('flash').style.background = S.flash > 0 && S.rain > 0 ? '#e8f0ff' : '#ef4f5f';
+}
+window.KHJam = { get S() { return S; }, frame: dt => frame(dt), cam, rain, renderer, scene };
+function frame(dt) { step(dt); if (S) { view(dt); renderer.render(scene, cam); } }
+function loop(ts) {
+  if (!running && !demo) return;
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts;
+  frame(dt); raf = requestAnimationFrame(loop);
+}
 
 /* ================= নিয়ন্ত্রণ ================= */
 let tx0 = null, ty0 = null;
@@ -510,34 +865,41 @@ $('stage').addEventListener('pointerdown', e => { if (e.target.closest('.over,.c
 $('stage').addEventListener('pointerup', e => {
   if (tx0 === null) return; const dx = e.clientX - tx0, dy = e.clientY - ty0; tx0 = null;
   if (dy > 40 && Math.abs(dy) > Math.abs(dx)) { brake(true); setTimeout(() => brake(false), 900); }
+  else if (dy < -40 && Math.abs(dy) > Math.abs(dx)) { gas(true); setTimeout(() => gas(false), 1500); }
   else if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) move(dx > 0 ? 1 : -1);
   else { const r = $('stage').getBoundingClientRect(); move(e.clientX - r.left < r.width / 2 ? -1 : 1); }
 });
 $('lBtn').onclick = () => move(-1); $('rBtn').onclick = () => move(1);
-function brake(on) { if (!S || !running) return; if (on && !S.p.brake) sfx('brake'); S.p.brake = on; $('bBtn').classList.toggle('on', on); }
+function gas(on) { if (!S || !running || demo) return; S.p.gas = on; $('gBtn').classList.toggle('on', on); if (on) sfx('rev'); }
+$('gBtn').addEventListener('pointerdown', e => { e.preventDefault(); gas(true); });
+['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => $('gBtn').addEventListener(ev, () => gas(false)));
+function brake(on) { if (!S || !running || demo) return; if (on && !S.p.brake) sfx('brake'); S.p.brake = on; $('bBtn').classList.toggle('on', on); }
 $('bBtn').addEventListener('pointerdown', e => { e.preventDefault(); brake(true); });
 ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => $('bBtn').addEventListener(ev, () => brake(false)));
-addEventListener('keyup', e => { if (e.key === 'ArrowDown' || e.key === ' ') brake(false); });
-addEventListener('keydown', e => { if (e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); brake(true); return; } if (e.key === 'ArrowLeft' || e.key === 'a') move(-1); else if (e.key === 'ArrowRight' || e.key === 'd') move(1); else if (e.key === 'Escape' || e.key === 'p') running ? pause() : resume(); });
+addEventListener('keyup', e => { if (e.key === 'ArrowDown' || e.key === ' ') brake(false); if (e.key === 'ArrowUp' || e.key === 'w') gas(false); });
+addEventListener('keydown', e => { if (e.repeat) return; if (e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); brake(true); return; } if (e.key === 'ArrowUp' || e.key === 'w') { e.preventDefault(); gas(true); return; } if (e.key === 'ArrowLeft' || e.key === 'a') move(-1); else if (e.key === 'ArrowRight' || e.key === 'd') move(1); else if (e.key === 'Escape' || e.key === 'p') running ? pause() : resume(); });
 
 /* ================= শুরু, থামা, শেষ ================= */
 function start() {
-  audio(); resize(); S = newGame(); hud();
-  ['startO', 'endO', 'pauseO'].forEach(id => $(id).hidden = true); $('ctrl').hidden = false;
+  if (!renderer) return;
+  audio(); resize(); S = newGame(); demo = false; hud(); $('fx').innerHTML = '';
+  ['startO', 'endO', 'pauseO'].forEach(id => $(id).hidden = true); $('ctrl').hidden = false; $('spd').hidden = false;
+  // শুরুতেই সামনে কিছু গাড়ি, তবে কাছে না
+  for (let z = -60; z > FAR; z -= 22) spawnObs(z);
   running = true; last = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
-  say(pick(L.start), true);
+  say(pick(L.start), true, 'M2');
 }
-function pause() { if (!running || !S || S.over) return; running = false; engine(0); $('pauseO').hidden = false; }
+function pause() { if (!running || !S || S.over || demo) return; running = false; engine(0); $('pauseO').hidden = false; }
 function resume() { if (!S || S.over || $('pauseO').hidden) return; $('pauseO').hidden = true; running = true; last = performance.now(); raf = requestAnimationFrame(loop); }
 $('startBtn').onclick = start; $('againBtn').onclick = start;
 $('pauseBtn').onclick = () => running ? pause() : resume();
 $('resumeBtn').onclick = resume;
 $('quitBtn').onclick = () => { $('pauseO').hidden = true; endGame('quit'); };
-document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) { pause(); if (demo) cancelAnimationFrame(raf); } else if (demo && renderer) { last = performance.now(); raf = requestAnimationFrame(loop); } });
 
 let best = store.get('kh-jam-best', 0);
 function endGame(why) {
-  if (S.over) return; S.over = true; running = false; engine(0); $('ctrl').hidden = true;
+  if (S.over) return; S.over = true; running = false; engine(0); $('ctrl').hidden = true; $('spd').hidden = true; S.p.brake = false;
   const reached = why === 'time' && S.lives > 0;
   if (reached) S.score += 200; // সময়মতো টিকে থাকার বোনাস
   const sc = S.score, title = TITLES.filter(t => sc >= t[0]).pop()[1], newBest = sc > best;
@@ -546,15 +908,19 @@ function endGame(why) {
   $('endT').textContent = newBest && sc > 0 ? 'নতুন রেকর্ড! 🎉' : reached ? 'অফিস পৌঁছাইছেন!' : 'অ্যাক্সিডেন্ট!';
   $('endTitle').textContent = title;
   const km = (S.dist / 1000).toFixed(1);
-  $('bossLine').innerHTML = '<b>' + (reached ? (km >= 4 ? pick(BOSS.early) : pick(BOSS.late)) : pick(BOSS.crash)).replace(':', ':</b>');
+  const bl = reached ? (km >= 2.5 ? pick(BOSS.early) : pick(BOSS.late)) : pick(BOSS.crash);
+  $('bossLine').innerHTML = '<b>' + bl.replace(':', ':</b>');
   $('eS').textContent = bn(sc); $('eD').textContent = bn(km); $('eC').textContent = bn(S.coins);
   $('eBest').textContent = 'আপনার সেরা: ' + bn(best) + (reached ? ' · সময়মতো পৌঁছানোর বোনাস +২০০' : '') + (S.fines ? ' · মামলা খেয়েছেন ' + bn(S.fines) + ' বার 🚨' : ' · একটাও মামলা নেই! 👮');
-  $('endO').hidden = false; render();
-  say(reached ? pick(L.office) : pick(L.over), true);
+  $('endO').hidden = false;
+  say(reached ? pick(L.office) : pick(L.over), true, 'M2');
+  setTimeout(() => say(bl, false, 'M3'), 2600);
   saveScore(sc);
+  // পেছনে আবার নিজে নিজে চলুক
+  setTimeout(() => { if (!running && S && S.over) { demo = true; S.p.hit = 0; S.lives = 3; last = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); } }, 600);
 }
 $('shareBtn').onclick = () => {
-  const t = `ঢাকা জ্যাম রানারে ${bn((S.dist / 1000).toFixed(1))} কিমি বাইক চালিয়ে ${bn(S.score)} পয়েন্ট! আমি এখন "${$('endTitle').textContent}" 🛵\nতুমি পারবা? ${location.origin}/games/jam/`;
+  const t = `ঢাকা জ্যাম রানার ৩ডি-তে ${bn((S.dist / 1000).toFixed(1))} কিমি বাইক চালিয়ে ${bn(S.score)} পয়েন্ট! আমি এখন "${$('endTitle').textContent}" 🛵\nতুমি পারবা? ${location.origin}/games/jam/`;
   try { navigator.clipboard.writeText(t).then(() => { $('shareBtn').textContent = 'কপি হয়েছে ✓'; setTimeout(() => $('shareBtn').textContent = 'কপি করে শেয়ার', 2000); }, () => {}); } catch (e) {}
 };
 
@@ -587,13 +953,26 @@ async function saveScore(sc) {
 
 /* ================= শুরুর পর্দা ================= */
 resize();
-icon('i1', () => drawBus({ x: 38, y: 38, col: BUS_COLORS[0], route: '' }));
-icon('i2', () => drawWater({ x: 38, y: 38 }, 0));
-icon('i3', () => drawTea({ x: 38, y: 40 }, 0));
-icon('i4', () => drawHelmet({ x: 38, y: 40 }, 0));
-resize();
-S = newGame(); for (let i = 0; i < 4; i++) { S.obs.push({ kind: pick(['bus', 'cng', 'rick']), lane: i % 3, x: laneX(i % 3), y: H * (.15 + i * .18), h: laneW, own: .5, col: pick(BUS_COLORS), route: pick(ROUTES), hood: '#e5484d' }); }
-render();
+if (!renderer) { $('no3d').hidden = false; $('startBtn').disabled = true; }
+else {
+  layoutBuildings(); for (let i = 0; i < 9; i++) mkPole().position.z = BEHIND + 20 - i * POLE_GAP; bridge = mkBridge(); bridge.position.z = -90;
+  // সব রকম জিনিস একবার আগেই আঁকিয়ে রাখি, যাতে খেলার মাঝে প্রথমবার দেখা দিলে ফোন আটকে না যায়
+  (() => {
+    const warm = new THREE.Group(); scene.add(warm);
+    [mkBus, mkTruck, mkCar, mkCng, mkRick, mkHole, mkWater].forEach((f, i) => { const o = f(); o.g.position.set((i % 3 - 1) * 3, 0, -12 - i * 3); warm.add(o.g); });
+    ['coin', 'tea', 'helmet'].forEach((k, i) => { const g = mkItem(k); g.position.set(i - 1, 0, -8); warm.add(g); });
+    const sg = mkSignal(); sg.g.position.z = -20; const bp = mkBump(); bp.position.z = -10; const pd = mkPed(1); pd.umb.visible = true; pd.g.position.z = -9;
+    rain.visible = true; smokes[0].s.visible = true; smokes[0].s.position.set(0, 1, -6); shieldBubble.visible = true;
+    cam.position.set(0, 4.6, 8.2); cam.lookAt(0, .9, -14); resize();
+    try { renderer.compile(scene, cam); renderer.render(scene, cam); } catch (e) {}
+    scene.remove(warm, sg.g, bp, pd.g); rain.visible = false; smokes[0].s.visible = false; shieldBubble.visible = false;
+  })();
+  S = newGame(); S.speed = 10; for (let z = -20; z > FAR; z -= 16) spawnObs(z);
+  cam.position.set(0, 4.6, 8.2);
+  demo = true; last = performance.now(); raf = requestAnimationFrame(loop);
+  // ফন্ট লোড হলে সাইনবোর্ডের বাংলা ঠিকমতো আঁকা হবে
+  if (document.fonts && document.fonts.load) document.fonts.load("800 40px 'Baloo Da 2'").then(() => { Object.values(signC).forEach(m => { m.map.dispose(); }); });
+}
 </script>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
 </body></html>
