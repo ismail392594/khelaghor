@@ -229,7 +229,7 @@
     b.className = 'bubble ' + (side++ % 2 ? 'r' : 'l');
     b.innerHTML = '<span class="face" aria-hidden="true">' + pick(FACES) + '</span><span class="txt"></span>';
     b.querySelector('.txt').textContent = text;
-    while (layer.children.length > 1) layer.firstChild.remove();
+    while (layer.firstChild) layer.firstChild.remove();
     layer.appendChild(b);
     sfx(opts.sound || 'pop');
     if (!opts.silent) speak(text);

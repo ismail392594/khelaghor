@@ -3,7 +3,12 @@
 <title>খেলাঘর অ্যাডমিন</title>
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#1d1640">
-<link rel="icon" href="/icons/icon-192.png">
+<link rel="icon" href="/icons/admin-192.png">
+<link rel="manifest" href="/admin/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/admin-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="খেলাঘর এডমিন">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <style>
@@ -24,6 +29,12 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font
 .tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
 .tab{background:none;border:0;color:#c9c3f5;font:600 .95rem var(--body);padding:10px 14px;border-radius:10px 10px 0 0;cursor:pointer;white-space:nowrap;position:relative}
 .tab[aria-selected="true"]{background:var(--bg);color:var(--ink)}
+button.appi{background:linear-gradient(180deg,#34d399,#059669);color:#fff;white-space:nowrap}
+@media (max-width:600px){
+  .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding-bottom:10px;overflow:visible}
+  .tab{border-radius:12px;text-align:center;padding:8px 4px;background:rgba(255,255,255,.08);font-size:.9rem}
+  .brand h1{font-size:1.15rem}
+}
 .tab .cnt{background:var(--bad);color:#fff;border-radius:999px;font-size:.7rem;padding:0 6px;margin-left:4px}
 .wrap{max-width:980px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:14px}
 h2{font-family:var(--display);font-size:1.2rem;margin:0}
@@ -85,8 +96,8 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
 </head><body>
 <header class="top"><div class="topIn">
   <div class="brand">
-    <h1><img src="/icons/icon-192.png" alt="">খেলাঘর অ্যাডমিন</h1>
-    <div class="who"><span id="whoEmail"></span><button class="sm ghost" id="out" hidden>লগআউট</button></div>
+    <h1><img src="/icons/admin-192.png" alt="">খেলাঘর অ্যাডমিন</h1>
+    <div class="who"><button class="sm appi" id="appI" hidden>📲 অ্যাপ</button><span id="whoEmail"></span><button class="sm ghost" id="out" hidden>লগআউট</button></div>
   </div>
   <nav class="tabs" role="tablist" id="tabs" hidden>
     <button class="tab" role="tab" data-t="dash" aria-selected="true">ড্যাশবোর্ড</button>
@@ -484,5 +495,15 @@ $('setForm').onsubmit=async e=>{
   try{await setDoc(doc(db,'config','site'),{notice:$('sNotice').value.trim(),whatsapp:$('sWa').value.trim(),facebook:fb,email:$('sEmail').value.trim(),payNumber:$('sPay').value.trim(),maintenance:$('sMaint').value==='on',updatedAt:serverTimestamp()},{merge:true});say('sSay','সেভ হয়েছে, সবার ফোনে সাথে সাথে দেখাবে',true)}
   catch(err){say('sSay','হয়নি: '+err.code)}
 };
+
+/* অ্যাডমিন অ্যাপ (PWA) ইনস্টল */
+{
+  let dp = null;
+  const sa = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); dp = e; if (!sa) document.getElementById('appI').hidden = false; });
+  addEventListener('appinstalled', () => { document.getElementById('appI').hidden = true; });
+  document.getElementById('appI').onclick = async () => { if (!dp) return; dp.prompt(); await dp.userChoice; dp = null; document.getElementById('appI').hidden = true; };
+  if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+}
 </script>
 </body></html>

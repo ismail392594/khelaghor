@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2c36bf">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="খেলাঘর অ্যাপ ফোনে ইনস্টল করুন: লুডু, মশা মারো, ঢাকা জ্যাম রানার, বাজার দর চ্যালেঞ্জ। Play Store লাগবে না, ফ্রি।">
+<meta property="og:title" content="খেলাঘর অ্যাপ: বাংলার গেমিং হাব">
+<meta property="og:description" content="লুডু, মশা মারো, ঢাকা জ্যাম রানার আর আরো অনেক বাংলা গেম। এক চাপে ফোনে ইনস্টল, ফ্রি!">
+<meta property="og:image" content="https://khelaghorbd.online/icons/icon-512.png">
+<title>খেলাঘর অ্যাপ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<style>
+/* Layout: app download landing — hero with icon + one big install button, browser-specific steps, phone screenshots strip, feature grid, share link. Same arcade-blue brand as the hub. */
+:root{--bg1:#2c36bf;--bg2:#1a1460;--card:#ffffff;--ink:#1d1640;--muted:#5d5a7a;--gold:#ffc727;--green:#22c55e;--line:#e6e3f5;
+  --display:'Baloo Da 2','Noto Sans Bengali',system-ui,sans-serif;--body:'Noto Sans Bengali','Hind Siliguri',system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{background:var(--bg2)}
+body{margin:0;min-height:100vh;color:#fff;font-family:var(--body);font-size:16px;line-height:1.55;
+  background:radial-gradient(800px 500px at 50% -10%,#4a5cff 0,transparent 60%),linear-gradient(180deg,var(--bg1),var(--bg2) 70%);
+  padding:env(safe-area-inset-top,0px) 0 calc(28px + env(safe-area-inset-bottom,0px))}
+.wrap{max-width:560px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
+.top{display:flex;align-items:center;gap:10px;padding-top:14px}
+.top a{color:#fff;text-decoration:none;display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:800;font-size:1.3rem}
+.top img{width:34px;height:34px;border-radius:10px}
+.top .sp{flex:1}
+.top .home{font:600 .85rem var(--body);background:rgba(255,255,255,.12);padding:6px 12px;border-radius:999px}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding-top:8px}
+.icon{width:116px;height:116px;border-radius:30px;box-shadow:0 14px 30px rgba(0,0,0,.35),0 0 0 6px rgba(255,255,255,.12);animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-6px) rotate(-2deg)}}
+h1{font-family:var(--display);font-size:2.3rem;line-height:1.1;margin:4px 0 0;text-wrap:balance}
+h1 span{color:var(--gold)}
+.sub{margin:0;color:#d8dbff;font-weight:600}
+.facts{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.facts span{background:rgba(255,255,255,.12);border-radius:999px;padding:3px 12px;font-size:.82rem;font-weight:700}
+.big{border:0;border-radius:20px;padding:16px 28px;font-family:var(--display);font-size:1.45rem;font-weight:800;color:#fff;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:360px;
+  background:linear-gradient(180deg,#5ee28a,#22c55e 55%,#16a34a);box-shadow:0 6px 0 #15803d,inset 0 2px 0 rgba(255,255,255,.4);animation:glow 2s ease-in-out infinite}
+.big:active{transform:translateY(4px);box-shadow:0 2px 0 #15803d}
+.big svg{width:26px;height:26px}
+@keyframes glow{50%{filter:brightness(1.12)}}
+.big:focus-visible,a:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.status{margin:0;font-size:.9rem;color:#d8dbff;min-height:1.4em}
+.card{background:var(--card);color:var(--ink);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 0 rgba(0,0,0,.15)}
+.card h2{font-family:var(--display);font-size:1.35rem;margin:0;line-height:1.2}
+.card p{margin:0;color:var(--muted);font-size:.92rem}
+ol.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;counter-reset:s}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;font-weight:600}
+ol.steps li::before{content:counter(s);width:34px;height:34px;border-radius:50%;background:#eef0ff;color:#3730a3;display:grid;place-items:center;font-family:var(--display);font-weight:800}
+ol.steps li span{padding-top:5px;min-width:0}
+kbd{display:inline-flex;align-items:center;gap:4px;font:700 .85rem var(--body);background:#f3f2fb;border:1px solid var(--line);border-bottom-width:3px;border-radius:8px;padding:0 7px;color:var(--ink);white-space:nowrap}
+kbd svg{width:15px;height:15px}
+.alt{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:14px;padding:11px 16px;font:800 1rem var(--display);cursor:pointer;text-decoration:none;color:var(--ink);background:var(--gold);box-shadow:0 4px 0 #c99400}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:#f7f6fd;color:var(--muted);border-radius:999px;padding:4px 12px;font:700 .8rem var(--body);cursor:pointer}
+.tabs button[aria-pressed="true"]{background:#3730a3;color:#fff;border-color:#3730a3}
+.shots{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 14px;margin:0 -2px}
+.shots figure{margin:0;flex:none;width:min(46vw,200px);scroll-snap-align:center;display:flex;flex-direction:column;gap:6px;text-align:center}
+.shots img{width:100%;aspect-ratio:412/915;object-fit:cover;border-radius:22px;border:5px solid #11103a;box-shadow:0 10px 24px rgba(0,0,0,.35);background:#11103a}
+.shots figcaption{font-size:.82rem;font-weight:700;color:#d8dbff}
+.sec{font-family:var(--display);font-size:1.4rem;margin:0}
+.feat{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.feat div{background:rgba(255,255,255,.1);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:2px}
+.feat b{font-family:var(--display);font-size:1.05rem;line-height:1.2}
+.feat span{font-size:.8rem;color:#d8dbff}
+.feat i{font-style:normal;font-size:1.5rem;line-height:1}
+.share{display:flex;gap:8px;align-items:center;background:rgba(0,0,0,.25);border-radius:16px;padding:8px 8px 8px 14px}
+.share code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 .95rem var(--body);user-select:all}
+.share button{border:0;border-radius:12px;padding:9px 14px;font:800 .9rem var(--display);background:#fff;color:var(--ink);cursor:pointer}
+.ok{background:#dcfce7;color:#166534;border-radius:14px;padding:10px 12px;font-weight:700}
+.foot{text-align:center;font-size:.8rem;color:#b9bce8}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head><body>
+<div class="wrap">
+  <div class="top"><a href="/"><img src="/icons/icon-192.png" alt="">খেলাঘর</a><span class="sp"></span><a class="home" href="/">গেম খেলুন →</a></div>
+
+  <section class="hero">
+    <img class="icon" src="/icons/icon-512.png" alt="খেলাঘর অ্যাপের আইকন">
+    <h1>খেলাঘর <span>অ্যাপ</span> নামান</h1>
+    <p class="sub">লুডু, মশা মারো, ঢাকা জ্যাম রানার, বাজার দর আর আরো অনেক বাংলা গেম, এক চাপে ফোনের হোম স্ক্রিনে।</p>
+    <div class="facts"><span>✓ ফ্রি</span><span>✓ Play Store লাগবে না</span><span>✓ ১ এমবি-রও কম</span><span>✓ ফোন স্লো হয় না</span></div>
+    <button class="big" id="inst"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 20h14"/></svg><span id="instL">এখনই ইনস্টল করুন</span></button>
+    <p class="status" id="status" role="status"></p>
+  </section>
+
+  <section class="card" id="stepsCard">
+    <h2 id="stH">কীভাবে ইনস্টল করবেন</h2>
+    <div class="tabs" id="tabs" role="group" aria-label="আপনার ফোন বা ব্রাউজার">
+      <button data-k="chrome">অ্যান্ড্রয়েড Chrome</button><button data-k="samsung">Samsung</button><button data-k="fb">ফেসবুক থেকে খুলেছেন</button><button data-k="ios">আইফোন</button><button data-k="pc">কম্পিউটার</button>
+    </div>
+    <div id="steps"></div>
+  </section>
+
+  <h2 class="sec">ভেতরে কী আছে</h2>
+  <div class="shots" id="shots" tabindex="0" aria-label="অ্যাপের ছবি">
+    <figure><img src="/icons/shots/hub.png" alt="খেলাঘর হাব" loading="lazy"><figcaption>সব গেম এক জায়গায়</figcaption></figure>
+    <figure><img src="/icons/shots/ludo.png" alt="লুডু" loading="lazy"><figcaption>বন্ধুদের সাথে অনলাইন লুডু</figcaption></figure>
+    <figure><img src="/icons/shots/jam.png" alt="ঢাকা জ্যাম রানার" loading="lazy"><figcaption>ঢাকা জ্যাম রানার</figcaption></figure>
+    <figure><img src="/icons/shots/mosha.png" alt="মশা মারো" loading="lazy"><figcaption>মশা মারো</figcaption></figure>
+    <figure><img src="/icons/shots/bazar.png" alt="বাজার দর চ্যালেঞ্জ" loading="lazy"><figcaption>বাজার দর চ্যালেঞ্জ</figcaption></figure>
+  </div>
+
+  <div class="feat">
+    <div><i>🎲</i><b>অনলাইন লুডু</b><span>২ বা ৪ জন, বন্ধুকে দাওয়াত</span></div>
+    <div><i>🗣️</i><b>বাংলা ভয়েস</b><span>মজার ডায়লগ, বাংলায় কথা</span></div>
+    <div><i>🏆</i><b>লিডারবোর্ড</b><span>পয়েন্ট জিতে টপে উঠুন</span></div>
+    <div><i>📶</i><b>দুর্বল নেটেও চলে</b><span>একবার খুললে দ্রুত লোড</span></div>
+  </div>
+
+  <section class="card">
+    <h2>বন্ধুদের দাওয়াত দিন</h2>
+    <p>এই লিংক কপি করে ফেসবুক, মেসেঞ্জার বা হোয়াটসঅ্যাপে পাঠান।</p>
+    <div class="share" style="background:#f3f2fb;color:var(--ink)"><code id="link">khelaghorbd.online/app</code><button id="copy" style="background:var(--ink);color:#fff">কপি</button></div>
+  </section>
+
+  <p class="foot">খেলাঘর একটি ওয়েব অ্যাপ (PWA)। ইনস্টল করলে আলাদা অ্যাপের মতো খুলবে, আপডেট নিজে থেকেই হবে।</p>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const ua = navigator.userAgent;
+const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+const isIOS = /iphone|ipad|ipod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const inApp = /FBAN|FBAV|FB_IAB|Instagram|Messenger|Line\/|MicroMessenger|; wv\)/i.test(ua);
+const isSamsung = /SamsungBrowser/i.test(ua);
+const isAndroid = /android/i.test(ua);
+const ICON = {
+  dots: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>',
+  share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 11v9h14v-9"/></svg>',
+  menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8" stroke-linecap="round"/></svg>'
+};
+const here = 'khelaghorbd.online/app/';
+const STEPS = {
+  chrome: ['উপরে ডান কোণায় তিন ফোঁটা মেনু ' + `<kbd>${ICON.dots}</kbd>` + ' চাপুন', '<kbd>অ্যাপ ইনস্টল করুন</kbd> বা <kbd>Add to Home screen</kbd> চাপুন', '<kbd>ইনস্টল</kbd> চাপুন। কয়েক সেকেন্ডে হোম স্ক্রিনে খেলাঘর আইকন চলে আসবে'],
+  samsung: ['নিচে ডান কোণায় মেনু ' + `<kbd>${ICON.menu}</kbd>` + ' চাপুন', '<kbd>Add page to</kbd> চাপুন', '<kbd>Home screen</kbd> বেছে নিয়ে <kbd>Add</kbd> চাপুন'],
+  fb: ['ফেসবুক বা মেসেঞ্জারের ভেতরের ব্রাউজারে অ্যাপ ইনস্টল হয় না, আগে Chrome-এ খুলতে হবে', 'উপরে ডান কোণায় ' + `<kbd>${ICON.dots}</kbd>` + ' চাপুন, তারপর <kbd>ব্রাউজারে খুলুন</kbd> বা <kbd>Open in Chrome</kbd>', 'Chrome-এ খুললে এই পাতার সবুজ <kbd>এখনই ইনস্টল করুন</kbd> বোতাম চাপুন'],
+  ios: ['লিংকটা <b>Safari</b>-তে খুলুন (Chrome-এ হবে না)', 'নিচের মাঝখানে শেয়ার বোতাম ' + `<kbd>${ICON.share}</kbd>` + ' চাপুন', 'নিচে স্ক্রল করে ' + `<kbd>${ICON.plus} Add to Home Screen</kbd>` + ' চাপুন, তারপর উপরে <kbd>Add</kbd>'],
+  pc: ['Chrome বা Edge-এ khelaghorbd.online খুলুন', 'ঠিকানার ঘরের ডান পাশে ইনস্টল আইকন ' + `<kbd>${ICON.plus}</kbd>` + ' চাপুন', '<kbd>Install</kbd> চাপুন, ডেস্কটপে খেলাঘর চলে আসবে']
+};
+let kind = inApp ? 'fb' : isIOS ? 'ios' : isSamsung ? 'samsung' : isAndroid ? 'chrome' : 'pc';
+function showSteps(k) {
+  kind = k;
+  document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === k));
+  let extra = '';
+  if (k === 'fb' && isAndroid) extra = `<a class="alt" href="intent://${here}#Intent;scheme=https;package=com.android.chrome;end">Chrome-এ খুলুন</a>`;
+  if (k === 'ios' && !/safari/i.test(ua.replace(/CriOS|FxiOS|EdgiOS/g, 'X')) ) extra = '<p>লিংক কপি করে Safari-তে পেস্ট করুন: <b>' + here + '</b></p>';
+  $('steps').innerHTML = '<ol class="steps">' + STEPS[k].map(s => `<li><span>${s}</span></li>`).join('') + '</ol>' + extra;
+}
+$('tabs').onclick = e => { const b = e.target.closest('[data-k]'); if (b) showSteps(b.dataset.k); };
+showSteps(kind);
+
+let deferred = null;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; $('status').textContent = 'আপনার ফোন রেডি, সবুজ বোতাম চাপলেই ইনস্টল হবে।'; });
+addEventListener('appinstalled', () => done());
+function done() { $('status').innerHTML = '<span class="ok">ইনস্টল হয়েছে! হোম স্ক্রিনে খেলাঘর আইকন চাপুন।</span>'; $('instL').textContent = 'খেলাঘর খুলুন'; $('inst').onclick = () => location.href = '/'; }
+$('inst').onclick = async () => {
+  if (deferred) {
+    deferred.prompt(); const r = await deferred.userChoice; deferred = null;
+    if (r.outcome === 'accepted') done(); else $('status').textContent = 'বাতিল করেছেন। আবার চাইলে বোতাম চাপুন বা নিচের ধাপগুলো দেখুন।';
+    return;
+  }
+  // ব্রাউজার নিজে থেকে ইনস্টল দেখাচ্ছে না: ধাপগুলো দেখাই
+  $('status').textContent = inApp ? 'আগে Chrome-এ খুলুন, তারপর ইনস্টল হবে।' : 'নিচের ৩টা ধাপ মেনে ইনস্টল করুন।';
+  $('stepsCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  $('stepsCard').animate([{ transform: 'scale(1)' }, { transform: 'scale(1.03)' }, { transform: 'scale(1)' }], { duration: 500 });
+};
+if (standalone) { $('status').innerHTML = '<span class="ok">আপনি খেলাঘর অ্যাপের ভেতরেই আছেন!</span>'; $('instL').textContent = 'গেম খেলুন'; $('inst').onclick = () => location.href = '/'; }
+$('copy').onclick = () => {
+  const t = 'খেলাঘর অ্যাপ নামাও, বাংলা গেম খেলো ফ্রিতে! https://' + here;
+  try { navigator.clipboard.writeText(t).then(() => { $('copy').textContent = 'কপি হয়েছে ✓'; setTimeout(() => $('copy').textContent = 'কপি', 2000); }, sel); } catch (e) { sel(); }
+  function sel() { const r = document.createRange(); r.selectNodeContents($('link')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+};
+if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+</script>
+</body></html>

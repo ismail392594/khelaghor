@@ -206,6 +206,9 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 .prem b{font-family:var(--display);font-size:1.35rem;display:block;line-height:1.1}
 .prem span{font-size:.85rem}
 .prem .gbtn{grid-column:1/-1;background:linear-gradient(180deg,#5a67ff,#3b3fd8);box-shadow:0 5px 0 #2a2aa0;color:#fff;text-shadow:none}
+.appb{display:flex;flex-direction:column;align-items:center;gap:1px;color:#fff;text-decoration:none;background:linear-gradient(180deg,#34d399,#059669);border-radius:12px;padding:5px 8px 3px;box-shadow:0 3px 0 #065f46;font:700 .62rem var(--body);flex:none;animation:appPulse 2.4s ease-in-out infinite}
+.appb svg{width:20px;height:20px}
+@keyframes appPulse{50%{transform:translateY(-2px)}}
 .ava.premium{box-shadow:0 0 0 3px #ffd23f,0 3px 0 #b8611a}
 .bgfx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
 .wrap{position:relative;z-index:1}
@@ -323,6 +326,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
   <div class="top">
     <button class="ava" id="ava" aria-label="প্রোফাইল ও লগইন" style="border:0;cursor:pointer;padding:0;font-family:var(--display);font-size:1.4rem;color:var(--ink)"><span id="avaL">খ</span><span class="lvl">লেভেল ৭</span></button>
     <div class="who"><b id="pName">খেলোয়াড়</b><div class="xp" aria-label="লেভেল অগ্রগতি"><i></i></div></div>
+    <a class="appb" id="appB" href="/app/" hidden aria-label="খেলাঘর অ্যাপ নামান"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M12 7v7M9 11l3 3 3-3"/></svg><span>অ্যাপ</span></a>
     <div class="wallet"><span class="coin"></span><b id="bal">০</b><button class="plus" id="plus" aria-label="পয়েন্ট কিনুন">+</button></div>
   </div>
 
@@ -754,11 +758,19 @@ nextRiddle();
 let deferred=null;
 const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
 const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
-if(!standalone&&!ls.get('kh-inst-x',false)){
-  addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;$('install').hidden=false});
-  if(isIOS){$('install').hidden=false;$('instTxt').textContent='Safari-তে নিচের শেয়ার বোতাম চাপুন, তারপর "Add to Home Screen"';$('instBtn').hidden=true}
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e});
+if(!standalone){
+  $('appB').hidden=false;
+  if(!ls.get('kh-inst-x',false))$('install').hidden=false;
 }
-$('instBtn').onclick=async()=>{if(!deferred)return;deferred.prompt();const r=await deferred.userChoice;deferred=null;$('install').hidden=true;if(r.outcome==='accepted')toast('খেলাঘর ইনস্টল হচ্ছে, হোম স্ক্রিনে দেখুন!')};
+// ইনস্টল: ব্রাউজার অনুমতি দিলে সরাসরি, না হলে অ্যাপ পাতায় ধাপে ধাপে নির্দেশনা
+async function installApp(e){
+  if(!deferred)return; e&&e.preventDefault();
+  deferred.prompt();const r=await deferred.userChoice;deferred=null;
+  if(r.outcome==='accepted'){$('install').hidden=true;toast('খেলাঘর ইনস্টল হচ্ছে, হোম স্ক্রিনে আইকন দেখুন!')}
+}
+$('appB').addEventListener('click',installApp);
+$('instBtn').onclick=e=>{if(deferred)installApp(e);else location.href='/app/'};
 $('instX').onclick=()=>{$('install').hidden=true;ls.set('kh-inst-x',true)};
 addEventListener('appinstalled',()=>{$('install').hidden=true});
 
