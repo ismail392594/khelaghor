@@ -151,6 +151,13 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--cyan);outline-offse
 .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#fff;color:var(--ink);font-weight:700;border-radius:999px;padding:8px 16px;box-shadow:0 6px 16px rgba(0,0,0,.3);z-index:21;max-width:calc(100% - 32px);text-align:center}
 /* dialogue card */
 .dlg{background:#fff;color:var(--ink);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 6px 0 rgba(0,0,0,.2);position:relative}
+.dchar{display:flex;align-items:center;gap:8px;font-weight:800;color:#5a1fa8}
+.dface{font-size:2rem;line-height:1;display:inline-block}
+.dlg.act .dface{animation:dBounce .5s ease-in-out infinite alternate}
+.dlg.act q{animation:dShake .25s ease-in-out 3}
+.dlg.v1.act{background:linear-gradient(135deg,#2a0f0f,#5c1414);color:#ffe2e2}.dlg.v1.act .dchar{color:#ffb4b4}
+@keyframes dBounce{to{transform:translateY(-6px) rotate(-8deg) scale(1.12)}}
+@keyframes dShake{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
 .dlg q{font-family:var(--display);font-size:1.35rem;line-height:1.35;quotes:"“" "”";display:block;text-wrap:balance}
 .dlg small{color:#7a70b8;font-weight:600}
 .dlg .acts{display:flex;gap:8px;flex-wrap:wrap}
@@ -420,6 +427,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
     <div class="sec"><h2>আজকের ভাইরাল ডায়লগ</h2><span id="dCount"></span></div>
     <section class="dlg">
       <span class="badge18" id="b18" hidden>১৮+</span>
+      <div class="dchar" id="dChar" aria-live="polite"><span class="dface" id="dFace">😈</span><b id="dWho">ভিলেন মামা</b></div>
       <q id="dText"></q>
       <small id="dTag"></small>
       <div class="acts">
@@ -669,10 +677,24 @@ function curList(){return adult?DLG18:DLG}
 function nextDlg(){
   const L=curList();let k;do{k=Math.floor(Math.random()*L.length)}while(L.length>1&&k===dIdx);dIdx=k;
   $('dText').textContent=L[k][0];$('dTag').textContent='#'+L[k][1].replace(/\s+/g,'_');$('b18').hidden=!adult;
-  $('dCount').textContent=bn(L.length)+'টি ডায়লগ';
+  $('dCount').textContent=bn(L.length)+'টি ডায়লগ';try{pickChar(L[k][0])}catch(e){}
 }
 $('dNext').onclick=()=>{nextDlg();window.KH&&window.KH.speak&&window.KH.speak($('dText').textContent,null,true)};
-$('dHear').onclick=()=>window.KH&&window.KH.speak&&window.KH.speak($('dText').textContent,null,true);
+/* মজার উপস্থাপন: প্রতিটা ডায়লগ একটা নিজস্ব চরিত্রের গলায়, আগে-পরে মজার শব্দ */
+const CHARS=[['😈','ভিলেন মামা','V1','sting'],['👴','বুড়া চাচা','C1','rim'],['👶','পিচ্চি','K1','rim'],['💃','নাটকের নায়িকা','N1','sting'],['🧔','পাড়ার বড় ভাই','M1','rim'],['👩','পাশের বাসার খালা','F2','rim']];
+let curChar=CHARS[0];setTimeout(()=>{try{pickChar($('dText').textContent)}catch(e){}},0);
+function pickChar(t){let h=0;for(const c of t)h=(h*31+c.charCodeAt(0))>>>0;curChar=CHARS[h%CHARS.length];$('dFace').textContent=curChar[0];$('dWho').textContent=curChar[1]+' বলে:'}
+function comedy(kind){try{const A=window.AudioContext||window.webkitAudioContext;const ac=comedy.ac||(comedy.ac=new A());ac.resume();const t=ac.currentTime;
+  const tn=(f,s,d,v,type,to)=>{const o=ac.createOscillator(),g=ac.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t+s);if(to)o.frequency.exponentialRampToValueAtTime(to,t+s+d);g.gain.setValueAtTime(.0001,t+s);g.gain.exponentialRampToValueAtTime(v,t+s+.01);g.gain.exponentialRampToValueAtTime(.0001,t+s+d);o.connect(g);g.connect(ac.destination);o.start(t+s);o.stop(t+s+d+.05)};
+  const nz=(s,d,v,hp)=>{const n=Math.floor(ac.sampleRate*d),b=ac.createBuffer(1,n,ac.sampleRate),x=b.getChannelData(0);for(let i=0;i<n;i++)x[i]=(Math.random()*2-1)*Math.pow(1-i/n,2);const src=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();f.type='highpass';f.frequency.value=hp;g.gain.value=v;src.buffer=b;src.connect(f);f.connect(g);g.connect(ac.destination);src.start(t+s)};
+  if(kind==='sting'){tn(220,0,.9,.35,'sawtooth',110);tn(233,0,.9,.25,'sawtooth',116);tn(55,0,1,.5,'sine',40)}
+  else{tn(180,0,.12,.5,'sine',120);tn(140,.15,.14,.5,'sine',90);nz(.32,.5,.35,6000)}}catch(e){}}
+$('dHear').onclick=()=>{
+  const t=$('dText').textContent;pickChar(t);const card=$('dHear').closest('.dlg');card.classList.add('act');card.classList.toggle('v1',curChar[2]==='V1');
+  if(curChar[3]==='sting')comedy('sting');
+  const done=()=>{card.classList.remove('act');if(curChar[3]!=='sting')comedy('rim')};
+  if(window.KHVoice){const prev=KHVoice.onstart;KHVoice.onstart=a=>{prev&&prev(a);a.addEventListener('ended',done,{once:true});a.addEventListener('error',done,{once:true});KHVoice.onstart=prev};setTimeout(()=>KHVoice.say(t,true,curChar[2],true),curChar[3]==='sting'?700:0);setTimeout(()=>card.classList.contains('act')&&done(),9000)}
+};
 $('dCopy').onclick=()=>copyText('"'+$('dText').textContent+'"\n— খেলাঘর '+$('dTag').textContent);
 $('adultChk').onchange=e=>{
   if(e.target.checked&&!ls.get('kh-18',false)){

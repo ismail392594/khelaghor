@@ -12,7 +12,12 @@ const VOICES = {
   M2: { name: 'bn-IN-Wavenet-D', pitch: 3.5, rate: 1.16 },  // ছোট ভাই: চটপটে
   M3: { name: 'bn-IN-Wavenet-B', pitch: -7, rate: .9 },     // চাচা/বস: মোটা গলা, ধীরে
   F1: { name: 'bn-IN-Wavenet-A', pitch: 2.5, rate: 1.12 },  // আপা: চটপটে
-  F2: { name: 'bn-IN-Wavenet-C', pitch: -1, rate: 1.0 }     // খালা/আম্মা
+  F2: { name: 'bn-IN-Wavenet-C', pitch: -1, rate: 1.0 },    // খালা/আম্মা
+  // মজার নিজস্ব চরিত্র (কোনো আসল মানুষের নকল না)
+  V1: { name: 'bn-IN-Wavenet-B', pitch: -12, rate: .8 },    // ভিলেন মামা: মোটা গলা, টেনে টেনে
+  C1: { name: 'bn-IN-Wavenet-B', pitch: -5, rate: .78 },    // বুড়া চাচা
+  K1: { name: 'bn-IN-Wavenet-D', pitch: 12, rate: 1.22 },   // পিচ্চি
+  N1: { name: 'bn-IN-Wavenet-A', pitch: 6, rate: .92 }      // নাটকের নায়িকা
 };
 VOICES.A = VOICES.F1; VOICES.B = VOICES.M1; VOICES.C = VOICES.F2; VOICES.D = VOICES.M2; // পুরনো লিংক
 let cred = null;

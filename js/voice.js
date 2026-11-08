@@ -4,7 +4,7 @@
 (function () {
   // ছেলে কণ্ঠ একটু বেশি, মেয়ে কণ্ঠও আছে। কে বলবে সেটা গেম বলে দিতে পারে: say(লেখা, true, 'F1')
   const VOICES = ['M1', 'M2', 'M3', 'F1', 'F2', 'M2', 'M1', 'F1'];
-  const OK = { M1: 1, M2: 1, M3: 1, F1: 1, F2: 1 };
+  const OK = { M1: 1, M2: 1, M3: 1, F1: 1, F2: 1, V1: 1, C1: 1, K1: 1, N1: 1 };
   let cur = null, fails = 0, aiDown = false, lastAt = 0;
   try { aiDown = sessionStorage.getItem('kh-ai-voice-down') === '1'; } catch (e) {}
 
