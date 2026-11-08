@@ -670,7 +670,7 @@ function nextDlg(){
   $('dText').textContent=L[k][0];$('dTag').textContent='#'+L[k][1].replace(/\s+/g,'_');$('b18').hidden=!adult;
   $('dCount').textContent=bn(L.length)+'টি ডায়লগ';
 }
-$('dNext').onclick=()=>{nextDlg();window.KH&&window.KH.speak&&window.KH.speak($('dText').textContent)};
+$('dNext').onclick=()=>{nextDlg();window.KH&&window.KH.speak&&window.KH.speak($('dText').textContent,null,true)};
 $('dCopy').onclick=()=>copyText('"'+$('dText').textContent+'"\n— খেলাঘর '+$('dTag').textContent);
 $('adultChk').onchange=e=>{
   if(e.target.checked&&!ls.get('kh-18',false)){
@@ -720,7 +720,7 @@ $('bombs').onclick=e=>{
   el.querySelectorAll('.say').forEach(x=>x.remove());const sy=document.createElement('span');sy.className='say';sy.textContent=b[2];el.appendChild(sy);setTimeout(()=>sy.remove(),2400);
   if(navigator.vibrate)try{navigator.vibrate(60)}catch(_){}
   window.KH&&KH.sfx&&KH.sfx('boom');
-  if(window.KHVoice)setTimeout(()=>KHVoice.say(b[2],true,b[3]),120);
+  if(window.KHVoice)setTimeout(()=>KHVoice.say(b[2],true,b[3],true),120);
 };
 
 /* profile shim (real login lives in /js/online.js) */
@@ -784,8 +784,8 @@ const RIDDLES=[
 let rIdx=-1;
 function nextRiddle(){let k;do{k=Math.floor(Math.random()*RIDDLES.length)}while(RIDDLES.length>1&&k===rIdx);rIdx=k;
   $('rQ').textContent=RIDDLES[k][0];$('rA').textContent='উত্তর: '+RIDDLES[k][1];$('rA').hidden=true;$('rShow').hidden=false;$('rCount').textContent=bn(RIDDLES.length)+'টি ধাঁধা'}
-$('rNext').onclick=()=>{nextRiddle();window.KH.speak&&window.KH.speak($('rQ').textContent)};
-$('rShow').onclick=()=>{$('rA').hidden=false;$('rShow').hidden=true;window.KH.speak&&window.KH.speak($('rA').textContent)};
+$('rNext').onclick=()=>{nextRiddle();window.KH.speak&&window.KH.speak($('rQ').textContent,null,true)};
+$('rShow').onclick=()=>{$('rA').hidden=false;$('rShow').hidden=true;window.KH.speak&&window.KH.speak($('rA').textContent,null,true)};
 nextRiddle();
 
 /* ৩ডি অনুভূতি: আঙুল/মাউসের দিকে কার্ড একটু হেলে, স্ক্রল করলে টাইল ভেসে ওঠে */

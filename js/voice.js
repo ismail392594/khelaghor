@@ -1,5 +1,6 @@
 // খেলাঘর ভয়েস: আগে AI কণ্ঠ (সার্ভার থেকে mp3), না পেলে ফোনের নিজের বাংলা কণ্ঠ।
-// ব্যবহার: KHVoice.say('লেখা', true)  // true = আগের কথা থামিয়ে এখনই বলো
+// ব্যবহার: KHVoice.say('লেখা', true, 'M1', true)  // true = এখনই বলো; শেষ true = খেলোয়াড় নিজে বলতে চেয়েছে
+// খেলোয়াড় না চাইলে কেউ নিজে থেকে কথা বলে না (লেখা দেখায়, শব্দ না)। হাবের সেটিং থেকে অটো ভয়েস চালু করা যায়।
 (function () {
   // ছেলে কণ্ঠ একটু বেশি, মেয়ে কণ্ঠও আছে। কে বলবে সেটা গেম বলে দিতে পারে: say(লেখা, true, 'F1')
   const VOICES = ['M1', 'M2', 'M3', 'F1', 'F2', 'M2', 'M1', 'F1'];
@@ -20,8 +21,10 @@
   function voiceFor(text) { let h = 0; for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) >>> 0; return VOICES[h % VOICES.length]; }
   const busy = () => (cur && !cur.paused && !cur.ended) || (synth && synth.speaking);
 
-  function say(text, force, who) {
+  const autoOn = () => { try { return localStorage.getItem('kh-autovoice') === '1'; } catch (e) { return false; } };
+  function say(text, force, who, byUser) {
     text = String(text || '').trim(); if (!text) return;
+    if (!byUser && !autoOn()) return;
     if (!force && (busy() || Date.now() - lastAt < 1200)) return;
     lastAt = Date.now();
     if (cur) { try { cur.pause(); } catch (e) {} cur = null; }
@@ -41,5 +44,5 @@
     if (window.KHVoice.onstart) window.KHVoice.onstart(a);
   }
   function stop() { if (cur) { try { cur.pause(); } catch (e) {} } if (synth) synth.cancel(); }
-  window.KHVoice = { say, stop, onstart: null };
+  window.KHVoice = { say, stop, onstart: null, autoOn, setAuto: v => { try { localStorage.setItem('kh-autovoice', v ? '1' : '0'); } catch (e) {} } };
 })();

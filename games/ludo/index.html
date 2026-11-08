@@ -473,7 +473,7 @@ function showChat(p, i) {
   const el = pod(p); if (!el || !L.QUICK[i]) return;
   el.querySelectorAll('.pbub').forEach(x => x.remove());
   const b = document.createElement('span'); b.className = 'pbub'; b.textContent = L.QUICK[i]; el.appendChild(b); setTimeout(() => b.remove(), 3000);
-  if (window.KHVoice) window.KHVoice.say(L.QUICK[i], true, SEAT_VOICE[(G.players[p] || {}).color || 0]);
+  if (window.KHVoice) window.KHVoice.say(L.QUICK[i], true, SEAT_VOICE[(G.players[p] || {}).color || 0], true);
 }
 $('qList').innerHTML = L.QUICK.map((q, i) => `<button data-q="${i}">${q}</button>`).join('');
 $('qBtn').onclick = () => { const o = $('qList').hidden; $('qList').hidden = !o; $('qBtn').setAttribute('aria-expanded', o); };

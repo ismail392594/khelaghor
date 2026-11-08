@@ -182,7 +182,7 @@
 
   /* ===== AI ভয়েস: ফোনের বাংলা কণ্ঠে ডায়লগ পড়া ===== */
   const synth = window.speechSynthesis;
-  let voiceOn = store.get('kh-voice', true), bnVoice = null, warnedVoice = false;
+  let voiceOn = (() => { try { return localStorage.getItem('kh-autovoice') === '1'; } catch (e) { return false; } })(), bnVoice = null, warnedVoice = false;
   function findVoice() {
     if (!synth) return null;
     const vs = synth.getVoices();
@@ -190,9 +190,10 @@
     return bnVoice;
   }
   if (synth) { findVoice(); synth.onvoiceschanged = findVoice; }
-  function speak(text, who) {
+  function speak(text, who, byUser) {
     if (!voiceOn || !unlocked) return;
-    if (window.KHVoice) { window.KHVoice.say(text, true, who); return; }
+    if (window.KHVoice) { window.KHVoice.say(text, true, who, byUser); return; }
+    if (!byUser) return;
     if (!synth || (!bnVoice && !findVoice())) {
       if (!warnedVoice) { warnedVoice = true; K.toast('ফোনে বাংলা ভয়েস নেই। Settings → Text-to-speech → Google → বাংলা ভাষা ডাউনলোড করুন'); }
       return;
@@ -248,7 +249,8 @@
   sv.onclick = e => {
     e.stopPropagation(); unlock();
     voiceOn = !voiceOn; store.set('kh-voice', voiceOn); drawSound();
-    if (voiceOn) setTimeout(() => speak('ঠিক আছে, এখন থেকে সব ডায়লগ আমি পড়ে শোনাবো!'), 150); else { synth && synth.cancel(); window.KHVoice && window.KHVoice.stop(); }
+    if (window.KHVoice) window.KHVoice.setAuto(voiceOn);
+    if (voiceOn) setTimeout(() => speak('ঠিক আছে, এখন থেকে সব ডায়লগ আমি পড়ে শোনাবো!', null, true), 150); else { synth && synth.cancel(); window.KHVoice && window.KHVoice.stop(); }
   };
   drawSound();
 
