@@ -108,6 +108,20 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
 .lb em{font-style:normal;color:var(--muted);font-weight:700}
 .lb b{font-variant-numeric:tabular-nums}
 .small{font-size:.75rem!important}
+.scene{position:relative;height:74px;border-radius:16px;overflow:hidden;background:linear-gradient(180deg,#0b2e37,#134c58);box-shadow:inset 0 -14px 0 #6b4a2a}
+.lights{position:absolute;left:0;right:0;top:6px;display:flex;justify-content:space-around;border-top:2px solid rgba(0,0,0,.4);padding-top:2px}
+.lights i{width:9px;height:12px;border-radius:50% 50% 45% 45%;background:#ffd23f;box-shadow:0 0 10px 3px rgba(255,210,63,.55);animation:twinkle 1.6s ease-in-out infinite;animation-delay:var(--d)}
+.lights i:nth-child(3n){background:#ff8a1f;box-shadow:0 0 10px 3px rgba(255,138,31,.5)}.lights i:nth-child(4n){background:#7be0a8;box-shadow:0 0 10px 3px rgba(123,224,168,.45)}
+@keyframes twinkle{50%{opacity:.45;transform:scale(.85)}}
+.crates{position:absolute;left:8px;right:8px;bottom:6px;display:flex;justify-content:space-between;gap:4px}
+.crates span{background:#8a5a36;border:2px solid #5e3b22;border-radius:6px;padding:0 3px;font-size:1.05rem;line-height:1.5;box-shadow:0 3px 0 rgba(0,0,0,.3);white-space:nowrap}
+.scale{display:flex;justify-content:center;padding:4px 0}
+.scale svg{width:220px;height:124px;overflow:visible}
+.scale .beam{transform-origin:75px 22px;animation:weigh 1.6s cubic-bezier(.3,1.6,.5,1) forwards}
+@keyframes weigh{0%{transform:rotate(-14deg)}35%{transform:rotate(10deg)}60%{transform:rotate(calc(var(--tilt) - 4deg))}100%{transform:rotate(var(--tilt))}}
+.fly{position:fixed;z-index:50;pointer-events:none;font-size:1.6rem;transition:transform .7s cubic-bezier(.3,.7,.3,1),opacity .7s}
+.price .tk.bump{animation:bump .35s}
+@keyframes bump{40%{transform:scale(1.25);color:#16a34a}}
 .tip{color:var(--ink)!important;background:rgba(54,209,196,.14);border:1px solid rgba(54,209,196,.4);border-radius:12px;padding:8px 10px;text-align:left;font-size:.82rem!important;line-height:1.45}
 .shout{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.25);border-radius:12px;padding:6px 10px;font-size:.88rem;font-weight:600;color:#ffe9a8;min-height:36px;overflow:hidden}
 .shout span{animation:slide .45s ease-out}
@@ -132,6 +146,10 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
 </div></header>
 
 <main class="wrap" id="game" hidden>
+  <div class="scene" aria-hidden="true">
+    <div class="lights"><i style="--d:0.00s"></i><i style="--d:0.17s"></i><i style="--d:0.34s"></i><i style="--d:0.51s"></i><i style="--d:0.68s"></i><i style="--d:0.85s"></i><i style="--d:1.02s"></i><i style="--d:1.19s"></i><i style="--d:1.36s"></i><i style="--d:1.53s"></i><i style="--d:1.70s"></i><i style="--d:1.87s"></i><i style="--d:2.04s"></i><i style="--d:2.21s"></i></div>
+    <div class="crates"><span>🍅🍅🍅</span><span>🥔🥔🥔</span><span>🧅🧅🧅</span><span>🌶️🌶️🌶️</span><span>🥒🥒</span><span>🐟🐟</span></div>
+  </div>
   <div class="day"><h2 id="dayT">দিন ১: বৃহস্পতিবার</h2><span id="dayS">বাজার বন্ধ ১০টায়</span></div>
   <div id="eventBox"></div>
   <div class="shout" aria-live="off"><span id="shout">📣 আসেন আসেন, দেইখা যান!</span></div>
@@ -367,6 +385,7 @@ function render() {
   $('vBubble').className = 'bubble ' + (v.mood === 'mad' ? 'mad' : v.mood === 'happy' ? 'happy' : '');
   $('pName').innerHTML = `${it.ic} ${it.nm} <small>${it.q}</small>`;
   $('pTk').innerHTML = (v.ask < v.start ? `<s>৳${bn(v.start)}</s>` : '') + '৳' + bn(v.ask);
+  { const pk = $('pTk'); if (pk.dataset.v && +pk.dataset.v > v.ask && pk.dataset.it === it.id) { pk.classList.remove('bump'); void pk.offsetWidth; pk.classList.add('bump'); } pk.dataset.v = v.ask; pk.dataset.it = it.id; }
   $('pat').innerHTML = v.mad ? '😠 রেগে আছে, দাম আর কমবে না' : 'ধৈর্য: ' + Array.from({ length: v.patMax || v.pat }, (_, k) => `<i class="${k < v.pat ? '' : 'gone'}"></i>`).join('');
   if (!v.patMax) v.patMax = v.pat;
   const done = it.state !== 'todo', closed = S.time >= CLOSE;
@@ -376,7 +395,8 @@ function render() {
   $('myOfferBtn').disabled = $('myOffer').disabled = done || closed || v.mad;
   $('otherBtn').disabled = done || closed;
   $('chkBtn').disabled = done || closed || v.checked;
-  $('qc').innerHTML = !v.checked || done ? '' : `<div class="${v.qual === 'fresh' ? 'good' : v.qual === 'ok' ? 'mid' : 'badq'}">🔍 ${qDesc(it.id, v.qual)}</div>` +
+  const scaleSvg = tilt => `<div class="scale"><svg viewBox="0 0 150 84"><rect x="71" y="22" width="8" height="52" rx="3" fill="#8a5a36"/><rect x="50" y="72" width="50" height="8" rx="3" fill="#5e3b22"/><g class="beam" style="--tilt:${tilt}deg"><rect x="10" y="19" width="130" height="6" rx="3" fill="#c9a227"/><circle cx="75" cy="22" r="6" fill="#7a5a10"/><g><line x1="16" y1="22" x2="6" y2="52" stroke="#555"/><line x1="16" y1="22" x2="30" y2="52" stroke="#555"/><path d="M2 52h32a16 8 0 0 1-32 0z" fill="#b8bcc4"/><text x="18" y="50" font-size="14" text-anchor="middle">${it.ic}</text></g><g><line x1="134" y1="22" x2="120" y2="52" stroke="#555"/><line x1="134" y1="22" x2="148" y2="52" stroke="#555"/><path d="M118 52h32a16 8 0 0 1-32 0z" fill="#b8bcc4"/><rect x="126" y="40" width="16" height="12" rx="2" fill="#333"/><text x="134" y="50" font-size="7" fill="#fff" text-anchor="middle">১কেজি</text></g></g></svg></div>`;
+  $('qc').innerHTML = !v.checked || done ? '' : (LOOSE.has(it.id) ? scaleSvg(v.fixed || !v.cheat ? 0 : 9) : '') + `<div class="${v.qual === 'fresh' ? 'good' : v.qual === 'ok' ? 'mid' : 'badq'}">🔍 ${qDesc(it.id, v.qual)}</div>` +
     (LOOSE.has(it.id) ? (v.fixed ? '<div class="good">⚖️ ধরা খেয়ে এখন ঠিক ওজনে দিচ্ছে</div>' : v.cheat ? `<div class="badq">⚖️ পাল্লায় ${bn(v.short)}% কম! বাটখারায় চালাকি 😠</div>` : '<div class="good">⚖️ ওজন ঠিক আছে</div>') : '');
   $('skipBtn').disabled = done || closed;
   $('buyBtn').onclick = buy;
@@ -420,6 +440,9 @@ function buy() {
   if (it.state !== 'todo' || S.money < v.ask || S.time >= CLOSE) return;
   let pay = v.ask;
   if (v.ask % 10 === 5 && S.money >= v.ask + 5 && Math.random() < .35) { pay = v.ask + 5; S.toffee = (S.toffee || 0) + 1; setTimeout(() => say('ভাংতি নাই মামা, পাঁচ টাকার চকলেট নেন!', true, vv(v)), 300); } // ভাংতির বদলে চকলেট
+  { const a = $('walletP').getBoundingClientRect(), b0 = $('pTk').getBoundingClientRect();
+    for (let i = 0; i < 4; i++) { const f = document.createElement('span'); f.className = 'fly'; f.textContent = '💵'; f.style.left = a.left + a.width / 2 + 'px'; f.style.top = a.top + 'px'; document.body.appendChild(f); setTimeout(() => { f.style.transform = `translate(${b0.left - a.left + rnd(-20, 20)}px,${b0.top - a.top}px) rotate(${rnd(-40, 40)}deg)`; f.style.opacity = '.2'; }, 30 + i * 90); setTimeout(() => f.remove(), 900 + i * 90); }
+    const chip = document.querySelector(`[data-i="${S.items.indexOf(it)}"]`); if (chip) { const c0 = chip.getBoundingClientRect(), f = document.createElement('span'); f.className = 'fly'; f.textContent = it.ic; f.style.left = b0.left + 'px'; f.style.top = b0.top + 'px'; document.body.appendChild(f); setTimeout(() => { f.style.transform = `translate(${c0.left - b0.left}px,${c0.top - b0.top}px) scale(.6)`; }, 450); setTimeout(() => f.remove(), 1250); } }
   S.money -= pay; it.paid = pay; it.state = 'done'; v.mood = 'happy'; it.qual = v.qual; it.short = v.cheat ? v.short : 0; it.checked = v.checked;
   sfx('cash'); spend(5);
   const next = S.items.findIndex(x => x.state === 'todo');
