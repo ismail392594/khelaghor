@@ -42,6 +42,23 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .bar{height:12px;border-radius:99px;background:rgba(255,255,255,.15);overflow:hidden;margin-top:3px}.bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ef4444,#facc15 40%,#22c55e);border-radius:99px;transition:width .1s linear}
 .joy{position:absolute;width:110px;height:110px;margin:-55px 0 0 -55px;border-radius:50%;border:3px solid rgba(255,255,255,.45);background:rgba(255,255,255,.08);z-index:3;pointer-events:none}.joy i{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(255,226,122,.85);box-shadow:0 3px 8px rgba(0,0,0,.4)}
 .grab{font-size:1.25rem!important;padding:12px 22px!important;background:linear-gradient(180deg,#ff8a6a,#e0473a)!important;color:#fff!important;box-shadow:0 5px 0 #8a1c1c!important;animation:pulse .7s infinite alternate}@keyframes pulse{to{transform:scale(1.08)}}
+.acts2{position:absolute;right:max(12px,env(safe-area-inset-right,0px));bottom:14px;z-index:4;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.rb{border:0;border-radius:50%;width:92px;height:92px;display:grid;place-items:center;align-content:center;gap:0;font-size:1.5rem;cursor:pointer;color:#fff;position:relative;touch-action:none;box-shadow:0 6px 0 rgba(0,0,0,.35),inset 0 -6px 12px rgba(0,0,0,.25),inset 0 4px 10px rgba(255,255,255,.35)}
+.rb b{font:800 .82rem var(--display);line-height:1;text-shadow:0 2px 2px rgba(0,0,0,.4)}
+.rb:active{transform:translateY(3px) scale(.96)}
+.chant{width:104px;height:104px;background:radial-gradient(circle at 40% 30%,#ffe9a6,#f5a623 55%,#c26d05)}
+.chant b{font-size:1.05rem;color:#3a1f00;text-shadow:none}
+.kick{width:72px;height:72px;font-size:1.3rem;background:radial-gradient(circle at 40% 30%,#bfe3ff,#3b82f6 60%,#1e40af)}.kick.cd{filter:grayscale(.8) brightness(.7)}
+.grab2{width:110px;height:110px;font-size:1.8rem;background:radial-gradient(circle at 40% 30%,#ffc1b0,#ef4444 55%,#991b1b);animation:pulse .7s infinite alternate}
+.beat{position:absolute;inset:0;pointer-events:none}.beat i{position:absolute;inset:-4px;border-radius:50%;border:4px solid rgba(255,255,255,.9);box-shadow:0 0 12px rgba(255,230,150,.9)}
+.beat.hit i{border-color:#4ade80;box-shadow:0 0 22px #4ade80}
+.qte{position:relative;width:200px;height:26px;border-radius:13px;background:rgba(0,0,0,.55);border:2px solid rgba(255,255,255,.7);overflow:visible}
+.qte i{position:absolute;top:2px;bottom:2px;border-radius:9px;background:linear-gradient(90deg,#16a34a,#4ade80,#16a34a)}
+.qte b{position:absolute;top:-6px;width:6px;height:34px;margin-left:-3px;border-radius:3px;background:#fff;box-shadow:0 0 8px #fff}
+.qte small{position:absolute;top:-20px;left:0;right:0;text-align:center;font-weight:800;font-size:.72rem;color:#fff;text-shadow:0 1px 3px #000}
+.pop{position:absolute;left:50%;top:30%;transform:translateX(-50%);z-index:4;font:800 1.15rem var(--display);color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.7);pointer-events:none;animation:popUp .9s ease-out forwards}
+.pop.good{color:#86efac;font-size:1.35rem}.pop.bad{color:#fca5a5}
+@keyframes popUp{from{opacity:0;transform:translate(-50%,10px) scale(.7)}20%{opacity:1;transform:translate(-50%,0) scale(1.1)}to{opacity:0;transform:translate(-50%,-40px) scale(1)}}
 .chost{position:absolute;left:max(10px,env(safe-area-inset-left,0px));bottom:10px;z-index:3}
 .ctl{padding:8px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:linear-gradient(0deg,#24361a,#13200f);display:flex;align-items:center;gap:10px;z-index:2;min-height:62px}
 .hint{flex:1;text-align:center;font-weight:700;font-size:.88rem;color:var(--muted)}
@@ -89,19 +106,25 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
     <canvas id="cv"></canvas>
     <div class="com" id="com"></div>
     <div class="say" id="say" hidden></div>
-    <div class="dom" id="dom" hidden><span id="chant">হা-ডু-ডু</span><div class="bar"><i id="domB"></i></div><small id="domT">দম</small></div>
+    <div class="dom" id="dom"><div class="bar"><i id="domB"></i></div><small id="domT">দম</small></div>
+    <div class="acts2">
+      <div class="qte" id="qte" hidden><i id="qteG"></i><b id="qteN"></b><small>সবুজে থাকতে ধরো!</small></div>
+      <button class="rb kick" id="kickB" hidden>🦶<b>পা বাড়াও</b></button>
+      <button class="rb chant" id="chantB" hidden><span class="beat" id="beatHud"><i id="beatRing"></i></span><b>হা-ডু-ডু</b></button>
+      <button class="rb grab2" id="grabB" hidden>🤼<b>ধরো!</b></button>
+    </div>
     <div class="joy" id="joy" hidden><i id="knob"></i></div>
     <div class="chost" id="chatHost"></div>
 
     <div class="over" id="startO">
       <div class="card">
         <h1>হাডুডু</h1>
-        <p class="story">শীতের বিকেল, গ্রামের মাঠে চুন দিয়ে দাগ কাটা। আমাদের গ্রাম বনাম পাশের গ্রাম, চারপাশে লোকে লোকারণ্য। মাইকে ঘোষণা: "খেলা শুরু হইতেছে!"</p>
+        <p class="story">শীতের সন্ধ্যা, গ্রামের মাঠে চুন দিয়ে দাগ কাটা, বাঁশের খুঁটিতে বাতি জ্বলছে। আমাদের গ্রাম বনাম পাশের গ্রাম, চারপাশে লোকে লোকারণ্য। মাইকে ঘোষণা: "খেলা শুরু হইতেছে!"</p>
         <div class="rules">
-          <div>🏃 <b>রেইড</b>: মাঠে আঙুল রেখে টেনে আপনার রেইডারকে (মাথায় হলুদ তারা) চালান। দম ফুরানোর আগে ওদের ছুঁয়ে <b>মাঝের দাগ পার হয়ে ফিরে আসুন</b></div>
-          <div>✋ যতজনকে ছুঁয়ে ফিরবেন, তত পয়েন্ট, আর তারা আউট। ধরা পড়লে দ্রুত <b>বারবার চাপুন</b>, মাঝের দাগে পৌঁছাতে পারলে বেঁচে যাবেন</div>
-          <div>🛡️ <b>ডিফেন্স</b>: ওদের রেইডার আপনার দিকে এলে সময়মতো <b>"ধরো!"</b> চাপুন। কাছাকাছি ২ জন থাকলে ধরা পড়বে, একবারই সুযোগ!</div>
-          <div>🏆 দুই দল ৮টা করে রেইড দেবে, বেশি পয়েন্ট যার সে জিতবে। সবাই আউট হলে প্রতিপক্ষ ২ পয়েন্ট বোনাস পায়</div>
+          <div>🏃 <b>রেইড</b>: বাম আঙুল মাঠে রেখে টেনে আপনার রেইডারকে (পায়ের নিচে সোনালি আলো) চালান। ওদের ছুঁয়ে <b>মাঝের দাগ পার হয়ে ফিরে আসুন</b></div>
+          <div>🥁 <b>দম</b>: ডান দিকের <b>"হা-ডু-ডু"</b> বোতাম সাদা বৃত্ত ছোট হয়ে বোতামে মিশলেই চাপুন। তালে চাপলে দম বাড়ে, তাল কাটলে কমে</div>
+          <div>🦶 <b>পা বাড়াও</b>: এক হাত দূরের ডিফেন্ডারকেও পা বাড়িয়ে ছুঁয়ে দেওয়া যায়। ধরা পড়লে <b>"ছোটো!"</b> বারবার চাপুন</div>
+          <div>🛡️ <b>ডিফেন্স</b>: রেইডার কাছে এলে একটা কাঁটা দোলে। কাঁটা <b>সবুজ ঘরে</b> থাকতেই <b>"ধরো!"</b>, একবারই সুযোগ। ৭টা করে রেইড, বেশি পয়েন্ট যার সে জিতবে</div>
         </div>
         <p>পাশের গ্রামের দল:</p>
         <div class="lvl">
@@ -138,13 +161,18 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
       </div>
     </div>
   </div>
-  <div class="ctl"><div class="hint" id="hint">মাঠে আঙুল রেখে টেনে রেইডারকে চালান</div><button class="stopB grab" id="grabB" hidden>ধরো! 🤼</button></div>
+  <div class="ctl"><div class="hint" id="hint">বাম আঙুলে চালান · ডানে তালে তালে হা-ডু-ডু</div></div>
 </div>
 
 <script src="/js/voice.js"></script>
 <script src="/js/viral.js"></script>
 <script type="module">
 import * as THREE from "/js/vendor/three.module.min.js";
+import { EffectComposer } from "/js/vendor/addons/EffectComposer.js";
+import { RenderPass } from "/js/vendor/addons/RenderPass.js";
+import { UnrealBloomPass } from "/js/vendor/addons/UnrealBloomPass.js";
+import { OutputPass } from "/js/vendor/addons/OutputPass.js";
+import { makeHuman } from "/js/kh-human.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -168,12 +196,14 @@ function audio() { if (!ac) { const A = window.AudioContext || window.webkitAudi
 function tone(fr, t, d, type, v, to) { const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(fr, t); if (to) o.frequency.exponentialRampToValueAtTime(to, t + d); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + d + .02); }
 function noise(t, d, v, fr, type) { const n = Math.max(1, Math.floor(ac.sampleRate * d)), b = ac.createBuffer(1, n, ac.sampleRate), x = b.getChannelData(0); for (let i = 0; i < n; i++) x[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 1.4); const s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain(); fl.type = type || 'lowpass'; fl.frequency.value = fr; s.buffer = b; g.gain.value = v; s.connect(fl); fl.connect(g); g.connect(ac.destination); s.start(t); }
 // "ডু" শব্দ: গলার মতো নিচু স্বর
-function du(t, f) { const o = ac.createOscillator(), g = ac.createGain(), fl = ac.createBiquadFilter(); o.type = 'sawtooth'; o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * .9, t + .14); fl.type = 'bandpass'; fl.frequency.value = 700; fl.Q.value = 3; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.16, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + .15); o.connect(fl); fl.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + .17); }
+function du(t, f, v) { const o = ac.createOscillator(), g = ac.createGain(), fl = ac.createBiquadFilter(); o.type = 'sawtooth'; o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * .88, t + .15); fl.type = 'bandpass'; fl.frequency.value = 760; fl.Q.value = 3; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v || .16, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + .16); o.connect(fl); fl.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + .18); }
 const SFX = {
   whistle() { const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain(), l = ac.createOscillator(), lg = ac.createGain(); o.frequency.value = 2800; l.frequency.value = 32; lg.gain.value = 220; l.connect(lg); lg.connect(o.frequency); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.14, t + .02); g.gain.setValueAtTime(.14, t + .35); g.gain.exponentialRampToValueAtTime(.0001, t + .45); o.connect(g); g.connect(ac.destination); o.start(t); l.start(t); o.stop(t + .5); l.stop(t + .5); },
   tag() { const t = ac.currentTime; tone(900, t, .08, 'square', .12, 1400); noise(t, .05, .3, 3000, 'highpass'); },
-  thud() { const t = ac.currentTime; tone(110, t, .25, 'sine', .55, 50); noise(t, .2, .5, 500); },
-  point() { const t = ac.currentTime; [659, 880].forEach((f, i) => tone(f, t + i * .1, .18, 'triangle', .2)); },
+  thud() { const t = ac.currentTime; tone(100, t, .3, 'sine', .6, 45); noise(t, .25, .55, 450); },
+  whoosh() { noise(ac.currentTime, .3, .35, 1800, 'bandpass'); },
+  point() { const t = ac.currentTime; [659, 880, 1175].forEach((f, i) => tone(f, t + i * .09, .18, 'triangle', .2)); },
+  perfect() { tone(1320, ac.currentTime, .08, 'triangle', .1); },
   bad() { const t = ac.currentTime; tone(240, t, .3, 'sawtooth', .1, 140); },
   win() { const t = ac.currentTime; [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, t + i * .12, .3, 'triangle', .3)); },
   lose() { const t = ac.currentTime; [392, 349, 311, 233].forEach((f, i) => tone(f, t + i * .2, .35, 'triangle', .25)); }
@@ -187,266 +217,371 @@ function crowd(level, dur) {
 $('snd').onclick = () => { sndOn = !sndOn; store.set('kh-sfx', sndOn); $('snd').classList.toggle('off', !sndOn); if (crowdG) crowdG.gain.value = sndOn ? .02 : 0; };
 $('snd').classList.toggle('off', !sndOn);
 
-/* ================= ৩ডি মাঠ ================= */
+/* ================= ৩ডি: গোধূলির গ্রামের মাঠ ================= */
 let renderer = null;
-try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: true }); } catch (e) {}
-const LOW = (navigator.hardwareConcurrency || 4) <= 2;
-const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(48, 1, .1, 300);
-scene.background = new THREE.Color('#bcd8ef'); scene.fog = new THREE.Fog('#d9e4d0', 40, 110);
-if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, LOW ? 1.25 : 2)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; renderer.shadowMap.enabled = !LOW; renderer.shadowMap.type = THREE.PCFSoftShadowMap; }
-scene.add(new THREE.HemisphereLight('#fff1d6', '#5b6b3a', 1.2));
-const sun = new THREE.DirectionalLight('#ffe0a8', 2.6); sun.position.set(-12, 18, 8); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -14, right: 14, top: 14, bottom: -14 }); sun.shadow.bias = -.0005; scene.add(sun);
-function ctex(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
+try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: true, powerPreference: 'high-performance' }); } catch (e) {}
+const LOW = (navigator.hardwareConcurrency || 4) <= 4 && /Android|iPhone/i.test(navigator.userAgent) && (navigator.deviceMemory || 4) <= 3;
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(46, 1, .1, 400);
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, LOW ? 1.25 : 2)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.08; renderer.shadowMap.enabled = true; renderer.shadowMap.type = LOW ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap; }
+let composer = null, bloom = null;
+if (renderer && !LOW) { composer = new EffectComposer(renderer); composer.addPass(new RenderPass(scene, cam)); bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), .42, .55, .86); composer.addPass(bloom); composer.addPass(new OutputPass()); }
+const SUNDIR = new THREE.Vector3(-.55, .2, -.8).normalize();
+const sky = new THREE.Mesh(new THREE.SphereGeometry(300, 32, 16), new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, uniforms: { sd: { value: SUNDIR } },
+  vertexShader: 'varying vec3 vp; void main(){ vp = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+  fragmentShader: 'uniform vec3 sd; varying vec3 vp; void main(){ float h = vp.y; vec3 zen = vec3(.16,.27,.52), mid = vec3(.98,.62,.36), hor = vec3(1.0,.84,.58); vec3 c = mix(hor, mid, smoothstep(-.02,.12,h)); c = mix(c, zen, smoothstep(.1,.6,h)); float s = max(dot(vp, sd), 0.0); c += vec3(1.0,.62,.3) * pow(s, 8.0) * .55 + vec3(1.0,.9,.7) * pow(s, 900.0) * 4.0; float cl = smoothstep(.6,.95, sin(vp.x*7.0+vp.z*3.0)*sin(vp.z*9.0-vp.x*2.0)*.5+.5) * smoothstep(.04,.2,h) * (1.0-smoothstep(.3,.55,h)); c = mix(c, vec3(1.0,.72,.55), cl*.5); gl_FragColor = vec4(c,1.0);\n#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}' }));
+scene.add(sky); scene.fog = new THREE.Fog('#e9b384', 38, 130);
+const hemi = new THREE.HemisphereLight('#ffe2c4', '#5b6634', 1.25); scene.add(hemi);
+const sun = new THREE.DirectionalLight('#ffc98a', 3.2); sun.position.copy(SUNDIR).multiplyScalar(-1).multiplyScalar(-30); sun.position.set(-16, 10, -22); sun.castShadow = true; sun.shadow.mapSize.set(LOW ? 1024 : 2048, LOW ? 1024 : 2048); Object.assign(sun.shadow.camera, { left: -14, right: 14, top: 14, bottom: -14, near: 1, far: 70 }); sun.shadow.bias = -.0004; sun.shadow.normalBias = .02; scene.add(sun);
+const fill = new THREE.DirectionalLight('#ffe7d1', 1.1); fill.position.set(14, 8, 16); scene.add(fill);
+function ctex(w, h, draw, rep) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; if (rep) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rep, rep); } return t; }
 const M = (c, o) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: .9 }, o || {}));
 const FW = 10, FL = 13, BAULK = 3.75;
-// ঘাস আর মাঠ
-const grassT = ctex(512, 512, (x, w, h) => { x.fillStyle = '#6f8f3a'; x.fillRect(0, 0, w, h); for (let i = 0; i < 14000; i++) { const v = Math.random(); x.fillStyle = `rgba(${80 + v * 70},${110 + v * 60},${40 + v * 30},.5)`; x.fillRect(Math.random() * w, Math.random() * h, 1.5, 3 + Math.random() * 3); } });
-grassT.wrapS = grassT.wrapT = THREE.RepeatWrapping; grassT.repeat.set(14, 14);
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), M('#6f8f3a', { map: grassT })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
-const courtT = ctex(512, 666, (x, w, h) => {
+const grassT = ctex(512, 512, (x, w, h) => { x.fillStyle = '#5f7f30'; x.fillRect(0, 0, w, h); for (let i = 0; i < 16000; i++) { const v = Math.random(); x.fillStyle = `rgba(${70 + v * 70},${100 + v * 60},${30 + v * 30},.5)`; x.fillRect(Math.random() * w, Math.random() * h, 1.5, 3 + Math.random() * 3); } }, 22);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), M('#ffffff', { map: grassT })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+const courtT = ctex(1024, 1332, (x, w, h) => {
   x.fillStyle = '#a77b4f'; x.fillRect(0, 0, w, h);
-  for (let i = 0; i < 9000; i++) { const v = Math.random(); x.fillStyle = `rgba(${140 + v * 50},${100 + v * 40},${60 + v * 30},.4)`; x.fillRect(Math.random() * w, Math.random() * h, 2, 2); }
-  for (let i = 0; i < 40; i++) { x.fillStyle = 'rgba(90,60,30,.15)'; x.beginPath(); x.ellipse(Math.random() * w, Math.random() * h, 10 + Math.random() * 30, 5 + Math.random() * 15, Math.random() * 3, 0, 7); x.fill(); }
-  const Z = z => (z / FL + .5) * h, X = v => (v / FW + .5) * w;
-  x.strokeStyle = 'rgba(255,255,250,.92)'; x.lineWidth = 7; x.strokeRect(X(-FW / 2) + 4, 4, w - 8, h - 8);
-  x.lineWidth = 9; x.beginPath(); x.moveTo(0, Z(0)); x.lineTo(w, Z(0)); x.stroke();
-  x.lineWidth = 5; [BAULK, -BAULK].forEach(z => { x.beginPath(); x.moveTo(8, Z(z)); x.lineTo(w - 8, Z(z)); x.stroke(); });
-  x.setLineDash([14, 12]); x.lineWidth = 4; [4.75, -4.75].forEach(z => { x.beginPath(); x.moveTo(8, Z(z)); x.lineTo(w - 8, Z(z)); x.stroke(); });
+  for (let i = 0; i < 30000; i++) { const v = Math.random(); x.fillStyle = `rgba(${130 + v * 60},${95 + v * 45},${55 + v * 35},.35)`; x.fillRect(Math.random() * w, Math.random() * h, 2, 2); }
+  for (let i = 0; i < 70; i++) { x.fillStyle = 'rgba(90,60,30,.12)'; x.beginPath(); x.ellipse(Math.random() * w, Math.random() * h, 20 + Math.random() * 60, 10 + Math.random() * 30, Math.random() * 3, 0, 7); x.fill(); }
+  for (let i = 0; i < 300; i++) { x.strokeStyle = 'rgba(70,45,20,.25)'; x.lineWidth = 1 + Math.random() * 2; x.beginPath(); const a = Math.random() * w, b = Math.random() * h; x.moveTo(a, b); x.lineTo(a + rnd(-20, 20), b + rnd(-8, 8)); x.stroke(); } // পায়ের দাগ
+  const Z = z => (z / FL + .5) * h;
+  x.strokeStyle = 'rgba(255,255,248,.95)'; x.lineWidth = 12; x.strokeRect(8, 8, w - 16, h - 16);
+  x.lineWidth = 16; x.beginPath(); x.moveTo(0, Z(0)); x.lineTo(w, Z(0)); x.stroke();
+  x.lineWidth = 9; [BAULK, -BAULK].forEach(z => { x.beginPath(); x.moveTo(14, Z(z)); x.lineTo(w - 14, Z(z)); x.stroke(); });
+  x.setLineDash([26, 22]); x.lineWidth = 7; [4.75, -4.75].forEach(z => { x.beginPath(); x.moveTo(14, Z(z)); x.lineTo(w - 14, Z(z)); x.stroke(); });
 });
-const court = new THREE.Mesh(new THREE.PlaneGeometry(FW + .6, FL + .6), M('#a77b4f', { map: courtT })); court.rotation.x = -Math.PI / 2; court.position.y = .02; court.receiveShadow = true; scene.add(court);
-// দর্শক (চারপাশে) আর গাছপালা
-const crowdTex = (n, seed) => ctex(512, 128, (x, w, h) => { x.clearRect(0, 0, w, h); for (let r = 0; r < 2; r++) for (let i = 0; i < n; i++) { const cx = 12 + i * (w - 24) / (n - 1) + (r ? 14 : 0), cy = r ? 70 : 52, col = ['#e74c3c', '#2563eb', '#16a34a', '#f59e0b', '#9333ea', '#ffffff', '#0ea5e9'][(i * 3 + r + seed) % 7]; x.fillStyle = col; x.beginPath(); x.roundRect ? x.roundRect(cx - 11, cy, 22, 60, 7) : x.fillRect(cx - 11, cy, 22, 60); x.fill(); x.fillStyle = ['#c68642', '#8d5524', '#a86b3c', '#6b4423'][(i + seed) % 4]; x.beginPath(); x.arc(cx, cy - 10, 10, 0, 7); x.fill(); x.fillStyle = '#141414'; x.beginPath(); x.arc(cx, cy - 14, 10, Math.PI, 0); x.fill(); if ((i + r + seed) % 5 === 0) { x.fillStyle = '#f5f5f5'; x.beginPath(); x.arc(cx, cy - 15, 10, Math.PI, 0); x.fill(); } } });
-const crowds = [];
-[[0, -9.5, 0, 16], [0, 9.8, Math.PI, 16], [-7.6, 0, Math.PI / 2, 15], [7.6, 0, -Math.PI / 2, 15]].forEach(([x, z, r, w], i) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, 3), new THREE.MeshBasicMaterial({ map: crowdTex(18, i), transparent: true, side: THREE.DoubleSide })); m.position.set(x, 1.45, z); m.rotation.y = r; scene.add(m); crowds.push(m); });
-const leafM = M('#3f6b2a'), leafM2 = M('#4f7f30'), barkM = M('#5a3e28');
-function tree(x, z, s) { const g = new THREE.Group(); const tr = new THREE.Mesh(new THREE.CylinderGeometry(.25 * s, .4 * s, 4 * s, 7), barkM); tr.position.y = 2 * s; tr.castShadow = true; g.add(tr); for (let k = 0; k < 3; k++) { const c = new THREE.Mesh(new THREE.IcosahedronGeometry((2 - k * .3) * s, 0), k % 2 ? leafM : leafM2); c.position.set(rnd(-.7, .7) * s, (4 + k * 1.1) * s, rnd(-.7, .7) * s); c.castShadow = true; g.add(c); } g.position.set(x, 0, z); scene.add(g); }
-[[-12, -14, 1.4], [12, -15, 1.6], [-16, -4, 1.2], [16, -6, 1.3], [-14, 8, 1.2], [15, 10, 1.4], [-6, -20, 1.8], [6, -22, 1.7], [0, -26, 1.5]].forEach(a => tree(...a));
-// মাইক আর বাঁশের খুঁটিতে রঙিন কাগজ
-const bambooM = M('#c9a35a');
-[[-5.6, -7], [5.6, -7]].forEach(([x, z]) => { const p = new THREE.Mesh(new THREE.CylinderGeometry(.08, .1, 5, 6), bambooM); p.position.set(x, 2.5, z); p.castShadow = true; scene.add(p); });
-const flagM = ['#e74c3c', '#facc15', '#16a34a', '#2563eb'].map(c => new THREE.MeshStandardMaterial({ color: c, side: THREE.DoubleSide }));
+const court = new THREE.Mesh(new THREE.PlaneGeometry(FW + .6, FL + .6), M('#ffffff', { map: courtT, roughness: 1 })); court.rotation.x = -Math.PI / 2; court.position.y = .02; court.receiveShadow = true; scene.add(court);
+// ঘাসের গোছা (instanced)
+{ const n = LOW ? 700 : 1800, g = new THREE.ConeGeometry(.06, .28, 4); g.translate(0, .14, 0); const im = new THREE.InstancedMesh(g, M('#ffffff', { roughness: 1 }), n); const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), c = new THREE.Color(); let k = 0;
+  while (k < n) { const x = rnd(-22, 22), z = rnd(-22, 22); if (Math.abs(x) < FW / 2 + .6 && Math.abs(z) < FL / 2 + .6) continue; q.setFromEuler(new THREE.Euler(rnd(-.3, .3), rnd(0, 6), rnd(-.3, .3))); const s = rnd(.6, 1.5); m4.compose(new THREE.Vector3(x, 0, z), q, new THREE.Vector3(s, s * rnd(.7, 1.4), s)); im.setMatrixAt(k, m4); im.setColorAt(k, c.setHSL(rnd(.2, .28), .5, rnd(.22, .36))); k++; }
+  im.receiveShadow = true; scene.add(im); }
+// গাছ, ঘর, বাঁশ, পতাকা, বাতি
+const leafM = [M('#3f6b2a'), M('#4f7f30'), M('#5c8c36')], barkM = M('#5a3e28', { roughness: 1 });
+function tree(x, z, s) { const g = new THREE.Group(); const tr = new THREE.Mesh(new THREE.CylinderGeometry(.25 * s, .42 * s, 4 * s, 8), barkM); tr.position.y = 2 * s; tr.castShadow = true; g.add(tr); for (let k = 0; k < 5; k++) { const c = new THREE.Mesh(new THREE.IcosahedronGeometry((1.8 - k * .15) * s, 1), leafM[k % 3]); c.position.set(rnd(-1, 1) * s, (4 + k * .7) * s, rnd(-1, 1) * s); c.castShadow = true; g.add(c); } g.position.set(x, 0, z); scene.add(g); }
+[[-13, -15, 1.4], [12, -16, 1.6], [-17, -4, 1.2], [17, -7, 1.3], [-15, 9, 1.2], [16, 11, 1.4], [-7, -22, 1.8], [7, -24, 1.7], [0, -28, 1.5], [-22, 14, 1.6], [22, -18, 1.5]].forEach(a => tree(...a));
+function palm(x, z, h) { const g = new THREE.Group(); for (let i = 0; i < 7; i++) { const s = new THREE.Mesh(new THREE.CylinderGeometry(.15, .19, h / 7 + .05, 7), barkM); s.position.set(Math.sin(i * .22) * .5 * i / 7, h / 14 + i * h / 7, 0); g.add(s); } for (let k = 0; k < 8; k++) { const f = new THREE.Mesh(new THREE.ConeGeometry(.32, 3.2, 4), leafM[1]); f.position.set(.35, h, 0); f.rotation.set(0, k / 8 * 6.28, 1.95); f.translateY(1.4); f.castShadow = true; g.add(f); } g.position.set(x, 0, z); scene.add(g); }
+[[-11, -20, 8], [11, -21, 9], [-20, -10, 7.5], [20, 2, 7], [-19, 18, 8], [21, 16, 8.5]].forEach(a => palm(...a));
+const tinT = ctex(128, 128, (x, w, h) => { x.fillStyle = '#7d878e'; x.fillRect(0, 0, w, h); for (let i = 0; i < w; i += 8) { x.fillStyle = 'rgba(255,255,255,.2)'; x.fillRect(i, 0, 3, h); } for (let i = 0; i < 10; i++) { x.fillStyle = 'rgba(140,70,30,.3)'; x.fillRect(Math.random() * w, Math.random() * h, 22, 10); } });
+const tinM = new THREE.MeshStandardMaterial({ map: tinT, metalness: .55, roughness: .45, side: THREE.DoubleSide });
+function hut(x, z, ry) { const g = new THREE.Group(); const w = new THREE.Mesh(new THREE.BoxGeometry(4.2, 2.1, 3.1), M(pick(['#c8b48a', '#a9825a', '#d1b98f']))); w.position.y = 1.05; w.castShadow = w.receiveShadow = true; g.add(w); [-1, 1].forEach(s => { const r = new THREE.Mesh(new THREE.PlaneGeometry(4.8, 2.1), tinM); r.position.set(0, 2.65, s * .88); r.rotation.x = s * -1.0; r.castShadow = true; g.add(r); }); const d = new THREE.Mesh(new THREE.PlaneGeometry(.85, 1.5), M('#5a3a1e')); d.position.set(0, .75, 1.56); g.add(d); const win = new THREE.Mesh(new THREE.PlaneGeometry(.6, .5), new THREE.MeshStandardMaterial({ color: '#ffcf7a', emissive: '#ffb347', emissiveIntensity: 1.6 })); win.position.set(1.3, 1.25, 1.56); g.add(win); g.position.set(x, 0, z); g.rotation.y = ry; scene.add(g); }
+[[-18, -16, .6], [19, -14, -.5], [-23, 4, 1.5], [24, 6, -1.4], [-8, 22, 3.1], [9, 23, 3.2]].forEach(a => hut(...a));
+const bambooM = M('#c9a35a', { roughness: .6 });
+const poles = [[-6, -8], [6, -8], [-6, 8], [6, 8]];
+poles.forEach(([x, z]) => { const p = new THREE.Mesh(new THREE.CylinderGeometry(.08, .1, 5.4, 7), bambooM); p.position.set(x, 2.7, z); p.castShadow = true; scene.add(p); });
+// মাইকের চোঙা
+[[-6, -8], [6, 8]].forEach(([x, z]) => { const h = new THREE.Mesh(new THREE.CylinderGeometry(.32, .06, .6, 12, 1, true), M('#d6d9dc', { metalness: .6, roughness: .35, side: THREE.DoubleSide })); h.position.set(x, 5.1, z); h.rotation.z = Math.PI / 2 * Math.sign(-x); scene.add(h); });
+const flagM = ['#e74c3c', '#facc15', '#16a34a', '#2563eb', '#ec4899'].map(c => new THREE.MeshStandardMaterial({ color: c, side: THREE.DoubleSide, roughness: .8 }));
 const tri = new THREE.BufferGeometry(); tri.setAttribute('position', new THREE.Float32BufferAttribute([-.18, 0, 0, .18, 0, 0, 0, -.38, 0], 3)); tri.computeVertexNormals();
-const bunting = [];
-[[-5.6, 5.6, -7]].forEach(([a, b, z]) => { for (let i = 0; i <= 22; i++) { const t = i / 22, m = new THREE.Mesh(tri, flagM[i % 4]); m.position.set(a + (b - a) * t, 4.8 - Math.sin(t * Math.PI) * .9, z); scene.add(m); bunting.push(m); } });
-[[-5.6, -7, 5.6, 7], [5.6, -7, -5.6, 7]].forEach(() => {});
-
-// খেলোয়াড়ের মডেল (গেঞ্জি আর লুঙ্গি/হাফপ্যান্ট)
-const SKIN = ['#c68642', '#8d5524', '#a86b3c', '#b07a4a'];
-function shirtTex(c, n) { return ctex(64, 64, (x, w, h) => { x.fillStyle = c; x.fillRect(0, 0, w, h); x.fillStyle = 'rgba(255,255,255,.9)'; x.font = '800 30px sans-serif'; x.textAlign = 'center'; x.fillText(String(n), w / 2, 44); }); }
-const shortsM = [M('#1f2937'), M('#1e3a8a')];
-function mkMan(team, n) {
-  const g = new THREE.Group(), body = new THREE.Group(); g.add(body);
-  const skin = M(pick(SKIN), { roughness: .7 }), shirt = new THREE.MeshStandardMaterial({ map: shirtTex(team ? '#dc2626' : '#16a34a', n), roughness: .8 });
-  const box = (w, h, d, x, y, z, m) => { const me = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); me.position.set(x, y, z); me.castShadow = true; body.add(me); return me; };
-  box(.46, .55, .26, 0, 1.2, 0, shirt); box(.46, .26, .28, 0, .82, 0, shortsM[team]);
-  const mk = (x, y, w, h) => { const p = new THREE.Group(); p.position.set(x, y, 0); const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, w), skin); m.position.y = -h / 2; m.castShadow = true; p.add(m); body.add(p); return p; };
-  const legL = mk(-.12, .72, .15, .7), legR = mk(.12, .72, .15, .7), armL = mk(-.31, 1.45, .12, .58), armR = mk(.31, 1.45, .12, .58);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(.16, 14, 10), skin); head.position.y = 1.67; head.castShadow = true; body.add(head);
-  const hair = new THREE.Mesh(new THREE.SphereGeometry(.17, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), M('#111')); hair.position.y = 1.7; body.add(hair);
-  g.scale.setScalar(1.25); scene.add(g); return { g, body, legL, legR, armL, armR };
+const bunting = [], bulbs = [];
+const bulbM = new THREE.MeshStandardMaterial({ color: '#fff3c4', emissive: '#ffcf6a', emissiveIntensity: 3.2 });
+const bulbG = new THREE.SphereGeometry(.07, 8, 6);
+[[-6, 6, -8, -8], [-6, 6, 8, 8], [-6, -6, -8, 8], [6, 6, -8, 8]].forEach(([a, b, z1, z2], li) => { const n = 26; for (let i = 0; i <= n; i++) { const t = i / n, x = a + (b - a) * t, z = z1 + (z2 - z1) * t, y = 5 - Math.sin(t * Math.PI) * 1.1; if (li < 2) { const m = new THREE.Mesh(tri, flagM[i % 5]); m.position.set(x, y, z); m.rotation.y = 0; scene.add(m); bunting.push(m); } if (i % 2 === 0) { const bl = new THREE.Mesh(bulbG, bulbM); bl.position.set(x, y - (li < 2 ? .42 : .05), z); scene.add(bl); bulbs.push(bl); } } });
+// দর্শক: instanced ৩ডি মানুষ (চারদিকে, দাঁড়ানো আর বসা)
+const CROWD = [];
+{ const spots = []; const ring = (dist, n, sit) => { for (const side of [0, 1, 2, 3]) for (let i = 0; i < n; i++) { const t = (i + .5) / n - .5; let x, z, ry; const L2 = side < 2 ? FW + 2 : FL + 2; if (side === 0) { x = t * L2; z = -FL / 2 - dist; ry = 0; } else if (side === 1) { x = t * L2; z = FL / 2 + dist; ry = Math.PI; } else if (side === 2) { x = -FW / 2 - dist; z = t * L2; ry = Math.PI / 2; } else { x = FW / 2 + dist; z = t * L2; ry = -Math.PI / 2; } if (side === 1 && Math.abs(x) < 3.2 && dist < 3) continue; spots.push({ x: x + rnd(-.15, .15), z: z + rnd(-.15, .15), ry, sit, ph: Math.random() * 6 }); } };
+  ring(1.6, LOW ? 10 : 15, 1); ring(2.5, LOW ? 9 : 14, 0); if (!LOW) ring(3.3, 13, 0);
+  const n = spots.length, bodyG = new THREE.CapsuleGeometry(.17, .42, 4, 8), headG = new THREE.SphereGeometry(.13, 10, 8), hairG = new THREE.SphereGeometry(.137, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2);
+  const bodies = new THREE.InstancedMesh(bodyG, M('#ffffff', { roughness: .85 }), n), heads = new THREE.InstancedMesh(headG, M('#ffffff', { roughness: .7 }), n), hairs = new THREE.InstancedMesh(hairG, M('#120c08', { roughness: .8 }), n);
+  const cl = ['#e74c3c', '#2563eb', '#16a34a', '#f59e0b', '#9333ea', '#f5f5f5', '#0ea5e9', '#ec4899', '#facc15', '#1f2937'], sk = ['#9a6a4f', '#6e4532', '#b58467', '#83563d'], c = new THREE.Color();
+  spots.forEach((s, i) => { bodies.setColorAt(i, c.set(pick(cl))); heads.setColorAt(i, c.set(pick(sk))); });
+  bodies.castShadow = true; [bodies, heads, hairs].forEach(m => { m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); scene.add(m); });
+  CROWD.push({ spots, bodies, heads, hairs });
 }
-const star = new THREE.Mesh(new THREE.OctahedronGeometry(.18, 0), new THREE.MeshBasicMaterial({ color: '#ffd23f' })); star.visible = false; scene.add(star);
-const ring = new THREE.Mesh(new THREE.RingGeometry(.5, .66, 28), new THREE.MeshBasicMaterial({ color: '#ffd23f', transparent: true, opacity: .8, side: THREE.DoubleSide, depthWrite: false })); ring.rotation.x = -Math.PI / 2; ring.visible = false; scene.add(ring);
-const reachRing = new THREE.Mesh(new THREE.RingGeometry(2.25, 2.4, 40), new THREE.MeshBasicMaterial({ color: '#ff5a3c', transparent: true, opacity: .55, side: THREE.DoubleSide, depthWrite: false })); reachRing.rotation.x = -Math.PI / 2; reachRing.visible = false; scene.add(reachRing);
-const dustTex = ctex(64, 64, (x) => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(200,160,110,.85)'); g.addColorStop(1, 'rgba(200,160,110,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); });
-const dusts = Array.from({ length: 16 }, () => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: dustTex, transparent: true, depthWrite: false, opacity: 0 })); s.visible = false; scene.add(s); return { s, t: 1 }; });
-let dI = 0; function dust(x, z, k) { for (let i = 0; i < 4; i++) { const d = dusts[dI++ % dusts.length]; d.t = 0; d.k = k || 1; d.s.visible = true; d.s.position.set(x + rnd(-.5, .5), .3, z + rnd(-.5, .5)); } }
+const m4 = new THREE.Matrix4(), q4 = new THREE.Quaternion(), v4 = new THREE.Vector3(), s4 = new THREE.Vector3(1, 1, 1);
+let crowdExcite = 0;
+function updCrowd(T0) {
+  const C = CROWD[0]; if (!C) return;
+  C.spots.forEach((s, i) => {
+    const jump = Math.max(0, Math.sin(T0 * (5 + crowdExcite * 4) + s.ph)) * (.03 + crowdExcite * .25) * (s.sit ? .4 : 1), base = s.sit ? .32 : .55;
+    q4.setFromEuler(new THREE.Euler(0, s.ry, Math.sin(T0 * 2 + s.ph) * .05)); v4.set(s.x, base + jump, s.z); s4.set(1, s.sit ? .7 : 1, 1); m4.compose(v4, q4, s4); C.bodies.setMatrixAt(i, m4);
+    v4.set(s.x, base + jump + (s.sit ? .48 : .58), s.z); s4.set(1, 1, 1); m4.compose(v4, q4, s4); C.heads.setMatrixAt(i, m4); v4.y += .02; m4.compose(v4, q4, s4); C.hairs.setMatrixAt(i, m4);
+  });
+  C.bodies.instanceMatrix.needsUpdate = C.heads.instanceMatrix.needsUpdate = C.hairs.instanceMatrix.needsUpdate = true;
+}
+// ধুলো
+const dustTex = ctex(64, 64, (x) => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(210,170,120,.9)'); g.addColorStop(1, 'rgba(210,170,120,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); });
+const dusts = Array.from({ length: 40 }, () => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: dustTex, transparent: true, depthWrite: false, opacity: 0 })); s.visible = false; scene.add(s); return { s, t: 1, k: 1, vx: 0, vz: 0 }; });
+let dI = 0; function dust(x, z, k, n = 4) { for (let i = 0; i < n; i++) { const d = dusts[dI++ % dusts.length]; d.t = 0; d.k = k || 1; d.vx = rnd(-1, 1); d.vz = rnd(-1, 1); d.s.visible = true; d.s.position.set(x + rnd(-.3, .3), .2, z + rnd(-.3, .3)); } }
+// নির্দেশক: আমার রেইডারের নিচে আলো, ছোঁয়ার বৃত্ত
+const glowT = ctex(128, 128, (x) => { const g = x.createRadialGradient(64, 64, 20, 64, 64, 64); g.addColorStop(0, 'rgba(255,220,110,0)'); g.addColorStop(.62, 'rgba(255,220,110,.85)'); g.addColorStop(.72, 'rgba(255,220,110,.9)'); g.addColorStop(1, 'rgba(255,220,110,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); });
+const meRing = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.5), new THREE.MeshBasicMaterial({ map: glowT, transparent: true, depthWrite: false, toneMapped: false })); meRing.rotation.x = -Math.PI / 2; meRing.visible = false; scene.add(meRing);
+const reachRing = new THREE.Mesh(new THREE.RingGeometry(2.2, 2.32, 48), new THREE.MeshBasicMaterial({ color: '#ff5a3c', transparent: true, opacity: .5, side: THREE.DoubleSide, depthWrite: false })); reachRing.rotation.x = -Math.PI / 2; reachRing.visible = false; scene.add(reachRing);
+const tagMark = new THREE.Mesh(new THREE.ConeGeometry(.14, .3, 4), new THREE.MeshBasicMaterial({ color: '#ff3b3b', toneMapped: false })); tagMark.rotation.x = Math.PI;
 
-/* ================= খেলার অবস্থা ================= */
+/* ================= খেলোয়াড় ================= */
 // দল ০ = আমাদের (z > 0, ক্যামেরার দিকে), দল ১ = পাশের গ্রাম (z < 0)
 const HOME = [[-4, 3.1], [-2.5, 3.9], [-.9, 4.4], [.9, 4.4], [2.5, 3.9], [4, 3.1], [0, 5.5]];
-const LV = [{ n: 'স্কুলের দল', dsp: 3.1, rsp: 3.5, agg: .55, react: .5 }, { n: 'গ্রামের দল', dsp: 3.6, rsp: 4.0, agg: .8, react: .32 }, { n: 'জেলা চ্যাম্পিয়ন', dsp: 4.1, rsp: 4.5, agg: 1, react: .2 }];
-const RAIDS = 8, BREATH = 10;
-let lv = 1, T = null, S = null, W = 0, H = 0, last = 0;
+const LV = [{ n: 'স্কুলের দল', dsp: 3.4, rsp: 3.7, agg: .55, react: .42, dodge: .05 }, { n: 'গ্রামের দল', dsp: 3.85, rsp: 4.1, agg: .8, react: .28, dodge: .15 }, { n: 'জেলা চ্যাম্পিয়ন', dsp: 4.25, rsp: 4.5, agg: 1, react: .18, dodge: .28 }];
+const RAIDS = 7, BREATH = 9, BEAT = .5, TOUCH = .9, KICK = 1.45;
+const SKINS = ['#9a6a4f', '#6e4532', '#b58467', '#83563d', '#8a5a40'];
+let lv = 1, TM = null, S = null, W = 0, H = 0, last = 0, timeScale = 1, slowT = 0, shake = 0;
 const homeOf = (team, i) => { const [x, z] = HOME[i]; return team ? [-x, -z] : [x, z]; };
-function newMatch() {
-  if (T) T.forEach(tm => tm.forEach(p => scene.remove(p.m.g)));
-  T = [0, 1].map(team => HOME.map((h, i) => { const m = mkMan(team, i + 1), [x, z] = homeOf(team, i); m.g.position.set(x, 0, z); m.g.rotation.y = team ? 0 : Math.PI; return { m, x, z, out: false, team, i, vx: 0, vz: 0, tagged: false, dive: 0 }; }));
-  S = { score: [0, 0], raid: 0, side: 0, phase: 'intro', t: 0, raider: null, tags: [], breath: BREATH, entered: false, grabUsed: false, held: 0, struggle: 0, myTags: 0, myTackles: 0, over: false, rIdx: [0, 0], joy: null, cpuPlan: null, msgT: 0 };
+function buildTeams() {
+  if (TM) return;
+  TM = [0, 1].map(team => HOME.map((hh, i) => {
+    const h = makeHuman(THREE, { skin: SKINS[(i * 3 + team) % 5], shirt: team ? '#b91c1c' : '#15803d', shorts: team ? '#1e1b4b' : '#111827', trim: team ? '#fde047' : '#fef3c7', number: i + 1, hairStyle: (i + team) % 3, mustache: (i + team * 2) % 4 === 0, look: team ? 'angry' : 'calm' });
+    h.root.traverse(o => { if (o.isMesh) o.castShadow = true; }); scene.add(h.root);
+    return { h, team, i, x: 0, z: 0, vx: 0, vz: 0, out: false, tagged: false };
+  }));
 }
-const alive = team => T[team].filter(p => !p.out);
-function revive(team, n) { const outs = T[team].filter(p => p.out); for (let k = 0; k < n && k < outs.length; k++) { const p = outs[k]; p.out = false; const [x, z] = homeOf(team, p.i); p.x = x; p.z = z; p.m.g.visible = true; p.m.g.position.set(x, 0, z); p.m.body.rotation.x = 0; } }
-function setOut(p) { p.out = true; p.tagged = false; p.x = (p.team ? -1 : 1) * 5.9 + (p.team ? -1 : 1) * (p.i % 2) * .7; p.z = (p.team ? -1 : 1) * (1 + Math.floor(p.i / 2) * .9); p.m.g.position.set(p.x, 0, p.z); p.m.body.rotation.x = 0; p.m.g.rotation.y = p.team ? Math.PI / 2 : -Math.PI / 2; }
-function addPoints(team, n, why) { if (n <= 0) return; S.score[team] += n; revive(team, n); hud(); }
-function allOutCheck() { for (const t of [0, 1]) if (!alive(t).length) { S.score[1 - t] += 2; revive(t, 7); shout('সবাই আউট! লোনা +২', t ? '#9dffb8' : '#ff9a8a'); $('com').textContent = '🎙️ ' + (t ? 'পাশের গ্রামের সবাই আউট! আমাদের দুই পয়েন্ট বোনাস!' : 'আমাদের সবাই আউট! ওরা দুই পয়েন্ট বোনাস পাইলো।'); hud(); } }
+function newMatch() {
+  buildTeams();
+  TM.forEach(tm => tm.forEach(p => { p.out = false; p.tagged = false; p.holding = false; p.dive = 0; p.fallT = 0; const [x, z] = homeOf(p.team, p.i); p.x = x; p.z = z; p.vx = p.vz = 0; p.h.root.visible = true; p.h.snap({ run: 0, crouch: 0, wide: 0, reach: 0, dive: 0, fall: 0, kick: 0, cheer: 0, sit: 0, hold: 0, struggle: 0, lean: 0, shout: 0 }); p.h.root.position.set(x, 0, z); p.h.root.rotation.y = p.team ? 0 : Math.PI; }));
+  S = { score: [0, 0], raid: 0, side: 0, phase: 'idle', t: 0, raider: null, tags: [], breath: BREATH, entered: false, grabUsed: false, held: 0, struggle: 0, myTags: 0, myTackles: 0, perfect: 0, combo: 0, best: 0, over: false, rIdx: [-1, -1], joy: null, cpuPlan: null, beat: 0, kickT: 0, kickCd: 0, qte: null };
+}
+const alive = team => TM[team].filter(p => !p.out);
+function revive(team, n) { const outs = TM[team].filter(p => p.out); for (let k = 0; k < n && k < outs.length; k++) { const p = outs[k]; p.out = false; p.h.set({ sit: 0 }); const [x, z] = homeOf(team, p.i); p.tx = x; p.tz = z; } }
+function setOut(p) { p.out = true; p.tagged = false; p.holding = false; p.h.set({ sit: 1, crouch: 0, wide: 0, dive: 0, fall: 0, hold: 0, struggle: 0, run: 0 }); }
+const outSpot = p => [(p.team ? -1 : 1) * (FW / 2 + .9), (p.team ? -1 : 1) * (1 + p.i * .75)];
+function addPoints(team, n) { if (n <= 0) return; S.score[team] += n; revive(team, n); hud(); }
+function allOutCheck() { for (const t of [0, 1]) if (!alive(t).length) { S.score[1 - t] += 2; revive(t, 7); shout('লোনা! সবাই আউট +২', t ? '#9dffb8' : '#ff9a8a'); $('com').textContent = '🎙️ ' + (t ? 'পাশের গ্রামের সবাই আউট! আমাদের দুই পয়েন্ট বোনাস!' : 'আমাদের সবাই আউট! ওরা দুই পয়েন্ট বোনাস পাইলো।'); hud(); } }
 function shout(text, col) { const e = $('say'); e.textContent = text; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(shout.t); shout.t = setTimeout(() => e.hidden = true, 1500); }
+function pop(text, cls) { const e = document.createElement('div'); e.className = 'pop ' + (cls || ''); e.textContent = text; $('stage').appendChild(e); setTimeout(() => e.remove(), 900); }
 function hud() { $('sMe').textContent = bn(S.score[0]); $('sOp').textContent = bn(S.score[1]); $('nOp').textContent = LV[lv].n; $('pMe').classList.toggle('on', S.side === 0); $('pOp').classList.toggle('on', S.side === 1); }
 const COM = {
   myTag: ['ছুঁয়ে দিছে! এখন ফেরেন জলদি!', 'একটারে ছুঁইছে! মাঠ কাঁপতেছে!', 'চালাক রেইডার! আরেকটা?'],
+  kickTag: ['পা বাড়াইয়া ছুঁইয়া দিলো! কী কৌশল!', 'লাথি-ছোঁয়া! ডিফেন্ডার হতভম্ব!'],
   back: ['নিরাপদে ফিরছে! পয়েন্ট আমাদের!', 'দাগ পার! আমাদের গ্রামে উল্লাস!'],
   caught: ['ধইরা ফেলছে! রেইডার আউট!', 'চাইরজনে মিলা জাপটাইয়া ধরলো!'],
   escape: ['ছুটে গেছে! কী শক্তি! দাগ ছুঁইয়া দিলো!', 'জাপটা খাইয়াও ছুটে আসলো! বাঘের বাচ্চা!'],
   breath: ['দম ফুরাইয়া গেছে! আউট!', 'হা-ডু-ডু থামলো, রেইডার আউট!'],
-  tackle: ['ধরছে! দারুণ ট্যাকেল!', 'ওদের রেইডার মাটিতে! আমাদের পয়েন্ট!'],
+  tackle: ['ধরছে! একদম সময়মতো ঝাঁপ!', 'ওদের রেইডার মাটিতে! আমাদের পয়েন্ট!'],
   miss: ['ফসকাইয়া গেল! ভুল সময়ে ঝাঁপ!', 'হায় হায়, ধরতে গিয়া নিজেরাই পড়লো!'],
   empty: ['খালি রেইড, কেউ কাউকে ছুঁইতে পারলো না', 'ভয়ে ভয়ে ফিরা আসলো!']
 };
 function com(k) { $('com').textContent = '🎙️ ' + pick(COM[k]); }
+function ctlMode(m) { // কোন বোতাম দেখা যাবে
+  $('chantB').hidden = $('kickB').hidden = m !== 'raid' && m !== 'struggle'; $('kickB').hidden = m !== 'raid';
+  $('grabB').hidden = m !== 'def'; $('qte').hidden = true; $('dom').hidden = m === 'none'; $('beatHud').hidden = m !== 'raid' && m !== 'struggle';
+  $('chantB').querySelector('b').textContent = m === 'struggle' ? 'ছোটো!' : 'হা-ডু-ডু';
+}
 
-/* ---------- রেইড শুরু ---------- */
+/* ---------- রেইড ---------- */
 function nextRaid() {
-  T.forEach(tm => tm.forEach(p => { p.tagged = false; p.dive = 0; if (!p.out) { const [x, z] = homeOf(p.team, p.i); p.tx = x; p.tz = z; } }));
+  TM.forEach(tm => tm.forEach(p => { p.tagged = false; p.holding = false; p.dive = 0; p.fallT = 0; p.h.set({ dive: 0, fall: 0, hold: 0, struggle: 0, kick: 0, reach: 0, cheer: 0 }); if (!p.out) { const [x, z] = homeOf(p.team, p.i); p.tx = x; p.tz = z; } }));
   if (S.raid >= RAIDS * 2) return endMatch();
-  S.side = S.raid % 2; S.raid++; S.phase = 'intro'; S.t = 0; S.tags = []; S.breath = BREATH; S.entered = false; S.grabUsed = false; S.held = 0; S.joy = null;
-  const team = S.side, al = alive(team); S.rIdx[team] = (S.rIdx[team] + 1) % al.length; const r = al[S.rIdx[team] % al.length]; S.raider = r;
-  r.x = 0; r.z = team ? -.8 : .8; r.m.g.position.set(r.x, 0, r.z);
-  hud(); $('dom').hidden = true; $('grabB').hidden = true; reachRing.visible = false;
-  $('hint').textContent = (team === 0 ? 'আপনার রেইড ' : 'ওদের রেইড ') + bn(Math.ceil(S.raid / 2)) + '/' + bn(RAIDS) + (team === 0 ? ' · মাঠে আঙুল টেনে চালান' : ' · ঠিক সময়ে "ধরো!" চাপুন');
+  S.side = S.raid % 2; S.raid++; S.phase = 'intro'; S.t = 0; S.tags = []; S.breath = BREATH; S.entered = false; S.grabUsed = false; S.held = 0; S.joy = null; S.combo = 0; S.kickT = 0; S.kickCd = 0; S.qte = null; S.beat = 0;
+  const team = S.side, al = alive(team); S.rIdx[team] = (S.rIdx[team] + 1) % al.length; const r = al[S.rIdx[team]]; S.raider = r;
+  hud(); ctlMode('none'); reachRing.visible = false; $('joy').hidden = true;
+  $('hint').textContent = (team === 0 ? 'আপনার রেইড ' : 'ওদের রেইড ') + bn(Math.ceil(S.raid / 2)) + '/' + bn(RAIDS);
   shout(team === 0 ? 'আপনার রেইড!' : 'ওদের রেইড!', team === 0 ? '#ffe27a' : '#ffb27a');
-  S.cpuPlan = { want: Math.random() < LV[lv].agg * .5 ? 2 : 1, target: null, retreat: false };
+  S.cpuPlan = { want: Math.random() < LV[lv].agg * .5 ? 2 : 1, target: null, retreat: false, kickCd: 1.5 };
 }
 function raidResult(kind) {
-  S.phase = 'result'; S.t = 0; $('dom').hidden = true; $('grabB').hidden = true; reachRing.visible = false; star.visible = ring.visible = false; $('joy').hidden = true; S.joy = null;
+  S.phase = 'result'; S.t = 0; ctlMode('none'); reachRing.visible = false; meRing.visible = false; $('joy').hidden = true; S.joy = null;
   const atk = S.side, def = 1 - atk, r = S.raider;
   if (kind === 'back') {
     const n = S.tags.length; S.tags.forEach(setOut); addPoints(atk, n);
-    if (n) { sfx('point'); crowd(atk ? .08 : .3, 1.6); shout('+' + bn(n) + ' পয়েন্ট!', atk ? '#ff9a8a' : '#9dffb8'); com(atk ? 'back' : 'back'); if (!atk) S.myTags += n; if (atk) $('com').textContent = '🎙️ ওদের রেইডার ' + bn(n) + 'জনকে ছুঁইয়া ফিরা গেল!'; }
-    else { com('empty'); }
+    if (n) { sfx('point'); crowd(atk ? .08 : .35, 1.8); crowdExcite = atk ? .2 : 1; shout('+' + bn(n) + ' পয়েন্ট!', atk ? '#ff9a8a' : '#9dffb8'); com('back'); if (!atk) { S.myTags += n; r.h.set({ cheer: 1, shout: 1 }); } if (atk) $('com').textContent = '🎙️ ওদের রেইডার ' + bn(n) + 'জনকে ছুঁইয়া ফিরা গেল!'; }
+    else com('empty');
   } else if (kind === 'caught' || kind === 'breath') {
-    setOut(r); addPoints(def, 1); sfx(kind === 'caught' ? 'thud' : 'bad'); crowd(def === 0 ? .3 : .08, 1.6);
+    setOut(r); addPoints(def, 1); sfx(kind === 'caught' ? 'thud' : 'bad'); crowd(def === 0 ? .35 : .08, 1.8); crowdExcite = def === 0 ? 1 : .2;
     if (kind === 'breath') com('breath'); else if (atk === 1) { com('tackle'); S.myTackles++; } else com('caught');
     shout(def === 0 ? (kind === 'breath' ? 'দম শেষ! +১' : 'ধরা পড়লো! +১') : 'রেইডার আউট!', def === 0 ? '#9dffb8' : '#ff9a8a');
+    if (def === 0) alive(0).forEach(p => p.h.set({ cheer: 1, shout: 1 }));
   } else if (kind === 'escape') {
-    const n = S.tags.length + S.held; S.tags.forEach(setOut); T[def].filter(p => p.holding).forEach(setOut); addPoints(atk, n || 1);
-    sfx('point'); crowd(atk === 0 ? .4 : .1, 2); com('escape'); shout('ছুটে গেছে! +' + bn(n || 1), atk === 0 ? '#9dffb8' : '#ff9a8a'); if (atk === 0) S.myTags += n;
+    const holders = TM[def].filter(p => p.holding), n = S.tags.length + holders.length; S.tags.forEach(setOut); holders.forEach(setOut); addPoints(atk, n || 1);
+    sfx('point'); crowd(atk === 0 ? .45 : .1, 2); crowdExcite = atk === 0 ? 1 : .2; com('escape'); shout('ছুটে গেছে! +' + bn(n || 1), atk === 0 ? '#9dffb8' : '#ff9a8a'); if (atk === 0) { S.myTags += n; r.h.set({ cheer: 1, shout: 1 }); }
   }
-  T.forEach(tm => tm.forEach(p => { p.holding = false; }));
+  TM.forEach(tm => tm.forEach(p => { p.holding = false; }));
   allOutCheck();
 }
+const TIPS = ['জানেন কি? হাডুডু (কাবাডি) বাংলাদেশের জাতীয় খেলা। ১৯৭২ সালে একে জাতীয় খেলার মর্যাদা দেওয়া হয়।', 'টিপস: "হা-ডু-ডু" বোতাম ঠিক তালে চাপলে দম বাড়ে। ডিফেন্ডারের এক হাত দূরে থাকলে "পা বাড়াও" দিয়ে দূর থেকে ছোঁয়া যায়।', 'টিপস: ডিফেন্সে কাঁটা যখন সবুজ ঘরে, তখনই "ধরো!"। আগে বা পরে চাপলে নিজেরাই পড়ে যাবেন।', 'জানেন কি? দক্ষিণ এশিয়ার বিভিন্ন দেশে কাবাডির নানা নাম: বাংলাদেশে হাডুডু, ভারতে কাবাডি, নেপালে ডুডু।'];
+let lastScore = 0;
 function endMatch() {
-  S.over = true; S.phase = 'end'; $('dom').hidden = true; $('grabB').hidden = true;
-  const [a, b] = S.score, won = a > b, sc = Math.max(10, (won ? 300 + lv * 150 : 0) + Math.max(0, a - b) * 20 + S.myTags * 10 + S.myTackles * 15);
+  S.over = true; S.phase = 'end'; ctlMode('none');
+  const [a, b] = S.score, won = a > b, sc = Math.max(10, (won ? 300 + lv * 150 : 0) + Math.max(0, a - b) * 20 + S.myTags * 12 + S.myTackles * 18 + S.perfect * 2 + S.best * 5);
   $('endT').textContent = won ? 'আমাদের গ্রাম জিতছে! 🏆' : a === b ? 'ড্র! সমান সমান' : 'পাশের গ্রাম জিতলো';
   $('endTitle').textContent = won ? (lv === 2 ? 'জেলার হাডুডু বীর' : 'গ্রামের হিরো') : a === b ? 'লড়াকু দল' : 'আগামী বছর শোধ';
   $('endLine').textContent = (won ? 'মাইকে ঘোষণা: "আমাদের গ্রামের জয়! আজকে খিচুড়ি হবে!"' : a === b ? 'দুই গ্রামের হাড্ডাহাড্ডি লড়াই, কেউ হারলো না।' : 'পাশের গ্রামের লোকেরা ঢোল বাজাইতেছে…') + ' (' + bn(a) + ' - ' + bn(b) + ')';
   $('eS').textContent = bn(sc); $('eK').textContent = bn(S.myTags); $('eL').textContent = bn(S.myTackles);
   const best = store.get('kh-hadudu-best', 0); if (sc > best) store.set('kh-hadudu-best', sc);
-  $('eBest').textContent = 'আপনার সেরা: ' + bn(Math.max(best, sc)); $('eTip').textContent = pick(TIPS);
-  setTimeout(() => { $('endO').hidden = false; sfx(won ? 'win' : 'lose'); crowd(won ? .4 : .05, 2.5); if (won && window.KHViral) KHViral.confetti(); }, 900);
+  $('eBest').textContent = 'আপনার সেরা: ' + bn(Math.max(best, sc)) + ' · সেরা তাল: ' + bn(S.best) + ' টানা'; $('eTip').textContent = pick(TIPS);
+  TM[0].forEach(p => p.h.set(won ? { cheer: 1, shout: 1 } : { cheer: 0 })); TM[1].forEach(p => p.h.set(!won && a !== b ? { cheer: 1, shout: 1 } : { cheer: 0 }));
+  setTimeout(() => { $('endO').hidden = false; sfx(won ? 'win' : 'lose'); crowd(won ? .4 : .05, 2.5); if (won && window.KHViral) KHViral.confetti(); }, 1400);
   saveScore(sc); lastScore = sc;
 }
-const TIPS = ['জানেন কি? হাডুডু (কাবাডি) বাংলাদেশের জাতীয় খেলা। ১৯৭২ সালে একে জাতীয় খেলার মর্যাদা দেওয়া হয়।', 'জানেন কি? হাডুডুতে দম ধরে রাখার অনুশীলন ফুসফুস শক্ত করে, আর দৌড়ঝাঁপে শরীর থাকে চাঙ্গা।', 'জানেন কি? দক্ষিণ এশিয়ার বিভিন্ন দেশে কাবাডির নানা নাম: বাংলাদেশে হাডুডু, ভারতে কাবাডি, নেপালে ডুডু।'];
-let lastScore = 0;
 
-/* ---------- নিয়ন্ত্রণ: জয়স্টিক (রেইড), ধরো (ডিফেন্স), বারবার চাপ (ছোটা) ---------- */
+/* ---------- নিয়ন্ত্রণ ---------- */
 $('stage').addEventListener('pointerdown', e => {
-  if (e.target.closest('.over,.chost,button') || !S || S.over) return; audio();
-  if (S.phase === 'struggle' && S.side === 0) { S.struggle += 1; sfx('tag'); return; }
+  if (e.target.closest('.over,.chost,button,.qte') || !S || S.over) return; audio();
   if (S.side === 0 && (S.phase === 'raid' || S.phase === 'intro')) { const r = $('stage').getBoundingClientRect(); S.joy = { x: e.clientX, y: e.clientY, dx: 0, dy: 0, id: e.pointerId }; const j = $('joy'); j.style.left = (e.clientX - r.left) + 'px'; j.style.top = (e.clientY - r.top) + 'px'; j.hidden = false; $('knob').style.transform = ''; try { $('stage').setPointerCapture(e.pointerId); } catch (er) {} }
 });
 $('stage').addEventListener('pointermove', e => { if (!S || !S.joy || e.pointerId !== S.joy.id) return; let dx = e.clientX - S.joy.x, dy = e.clientY - S.joy.y; const L = Math.hypot(dx, dy), mx = 45; if (L > mx) { dx *= mx / L; dy *= mx / L; } S.joy.dx = dx / mx; S.joy.dy = dy / mx; $('knob').style.transform = `translate(${dx}px,${dy}px)`; });
 ['pointerup', 'pointercancel'].forEach(ev => $('stage').addEventListener(ev, e => { if (S && S.joy && e.pointerId === S.joy.id) { S.joy = null; $('joy').hidden = true; } }));
-$('grabB').addEventListener('pointerdown', e => { e.preventDefault(); grab(); });
+$('chantB').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); chant(); });
+$('kickB').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); kick(); });
+$('grabB').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); grab(); });
+addEventListener('keydown', e => { if (e.code === 'Space') chant(); if (e.code === 'KeyK') kick(); if (e.code === 'KeyG') grab(); });
+// তালে তালে "ডু": বিটের কাছাকাছি চাপলে দম বাড়ে
+function chant() {
+  if (!S || S.side !== 0) return; audio();
+  if (S.phase === 'struggle') { S.struggle += 1; sfx('tag'); S.raider.h.set({ shout: 1 }); return; }
+  if (S.phase !== 'raid' && S.phase !== 'intro') return;
+  const ph = (S.beat % BEAT) / BEAT, err = Math.min(ph, 1 - ph) * BEAT;
+  if (sndOn && ac) du(ac.currentTime, 210 + S.combo * 4, .2);
+  S.raider.h.set({ shout: 1 }); setTimeout(() => S && S.raider && S.raider.h.set({ shout: 0 }), 140);
+  if (err < .09) { S.combo++; S.perfect++; S.breath = Math.min(BREATH + 3, S.breath + .62); pop('দারুণ তাল! ডু', 'good'); sfx('perfect'); $('beatHud').classList.add('hit'); }
+  else if (err < .18) { S.combo++; S.breath = Math.min(BREATH + 3, S.breath + .32); pop('ডু!', ''); }
+  else { S.combo = 0; S.breath = Math.max(0, S.breath - .35); pop('তাল কাটলো', 'bad'); }
+  S.best = Math.max(S.best, S.combo); setTimeout(() => $('beatHud').classList.remove('hit'), 120);
+}
+function kick() {
+  if (!S || S.side !== 0 || S.phase !== 'raid' || S.kickCd > 0) return;
+  S.kickT = .5; S.kickCd = 3; S.raider.h.set({ kick: 1 }); sfx('whoosh'); $('kickB').classList.add('cd');
+}
 function grab() {
   if (!S || S.side !== 1 || S.phase !== 'raid' || S.grabUsed) return; S.grabUsed = true; $('grabB').hidden = true;
   const r = S.raider, defs = alive(0).map(p => ({ p, d: Math.hypot(p.x - r.x, p.z - r.z) })).sort((a, b) => a.d - b.d);
-  const near = defs.filter(o => o.d < 2.3), divers = defs.filter(o => o.d < 3.4).slice(0, 3);
-  divers.forEach(o => { o.p.dive = .55; o.p.dx = r.x; o.p.dz = r.z; });
-  const okP = [.9, .75, .6][lv] + (near.length >= 3 ? .15 : 0);
-  if (near.length >= 2 && Math.random() < okP) { S.phase = 'tackled'; S.t = 0; r.held = true; sfx('thud'); dust(r.x, r.z, 1.6); crowd(.35, 1.5); if (navigator.vibrate) try { navigator.vibrate(60); } catch (e) {} }
-  else { sfx('bad'); com('miss'); divers.forEach(o => { if (o.d < 3.4 && !S.tags.includes(o.p)) { o.p.tagged = true; S.tags.push(o.p); } }); S.cpuPlan.retreat = true; dust(r.x, r.z, .8); }
+  const near = defs.filter(o => o.d < 2.4), divers = defs.filter(o => o.d < 3.6).slice(0, 4);
+  const Q = S.qte, pos = Q ? Q.pos : 0, inZone = Q && Math.abs(pos - .5) < Q.half;
+  divers.forEach(o => { o.p.dive = .7; o.p.dx = r.x; o.p.dz = r.z; o.p.h.set({ dive: 1, reach: 1 }); });
+  slow(.9); shake = .35; $('qte').hidden = true;
+  const acc = Q ? 1 - Math.abs(pos - .5) / Q.half : 0, okP = clamp(.55 + acc * .5 + (near.length >= 3 ? .1 : 0) - LV[lv].dodge, 0, .97);
+  if (near.length >= 2 && inZone && Math.random() < okP) { S.phase = 'tackled'; S.t = 0; r.h.set({ fall: 1, struggle: 1 }); sfx('thud'); dust(r.x, r.z, 1.8, 8); crowd(.4, 1.6); if (navigator.vibrate) try { navigator.vibrate(70); } catch (e) {} pop(Math.abs(pos - .5) < Q.half * .4 ? 'একদম ঠিক সময়!' : 'ধরেছি!', 'good'); }
+  else { sfx('bad'); com('miss'); pop(!Q || near.length < 2 ? 'কাছে লোক নেই!' : inZone ? 'পিছলে বেরিয়ে গেল!' : pos < .5 ? 'আগে ঝাঁপ!' : 'দেরিতে ঝাঁপ!', 'bad'); divers.forEach(o => { o.p.fallT = 1.2; if (o.d < 3.6 && !S.tags.includes(o.p)) { o.p.tagged = true; S.tags.push(o.p); } }); S.cpuPlan.retreat = true; dust(r.x, r.z, 1, 6); }
 }
+function slow(d) { slowT = d; }
 
 /* ---------- প্রতি ফ্রেম ---------- */
-function moveTo(p, tx, tz, sp, dt) { const dx = tx - p.x, dz = tz - p.z, L = Math.hypot(dx, dz); if (L < .05) { p.vx = p.vz = 0; return 0; } const s = Math.min(sp, L / dt); p.vx = dx / L * s; p.vz = dz / L * s; p.x += p.vx * dt; p.z += p.vz * dt; return L; }
+function moveTo(p, tx, tz, sp, dt) { const dx = tx - p.x, dz = tz - p.z, L = Math.hypot(dx, dz); if (L < .05) { p.vx *= .7; p.vz *= .7; return 0; } const s = Math.min(sp, L / dt); p.vx += (dx / L * s - p.vx) * Math.min(1, dt * 10); p.vz += (dz / L * s - p.vz) * Math.min(1, dt * 10); p.x += p.vx * dt; p.z += p.vz * dt; return L; }
 function step(dt) {
-  S.t += dt; const r = S.raider, atk = S.side, def = 1 - atk, L = LV[lv];
-  if (S.phase === 'intro') { if (S.t > 1.1) { S.phase = 'raid'; S.t = 0; sfx('whistle'); $('dom').hidden = false; if (atk === 1) { $('grabB').hidden = false; reachRing.visible = true; } } }
-  else if (S.phase === 'raid') {
+  S.t += dt; S.beat += dt; S.kickCd = Math.max(0, S.kickCd - dt); if (S.kickCd <= 0) $('kickB').classList.remove('cd');
+  const r = S.raider, atk = S.side, def = 1 - atk, L = LV[lv];
+  if (S.phase === 'intro') {
+    moveTo(r, 0, atk ? -.6 : .6, 2.5, dt);
+    if (S.t > 1.3) { S.phase = 'raid'; S.t = 0; S.beat = 0; sfx('whistle'); ctlMode(atk === 0 ? 'raid' : 'def'); if (atk === 1) reachRing.visible = true; $('hint').textContent = atk === 0 ? 'বাম আঙুলে টেনে চালান · ডানে তালে তালে "হা-ডু-ডু"' : 'রেইডার কাছে এলে কাঁটা সবুজে থাকতে "ধরো!"'; }
+  } else if (S.phase === 'raid') {
     S.breath -= dt; const inOpp = atk === 0 ? r.z < 0 : r.z > 0;
     if (inOpp && Math.abs(r.z) > .7) S.entered = true;
-    // রেইডার চলা
-    if (atk === 0) { if (S.joy) { const sp = 4.3; r.x += S.joy.dx * sp * dt; r.z += S.joy.dy * sp * dt; r.vx = S.joy.dx * sp; r.vz = S.joy.dy * sp; } else r.vx = r.vz = 0; }
-    else { // কম্পিউটার রেইডার
-      const P = S.cpuPlan, mine = alive(0).filter(p => !p.tagged);
-      const close = alive(0).filter(p => Math.hypot(p.x - r.x, p.z - r.z) < 2.2).length;
-      if (S.tags.length >= P.want || S.breath < 3.6 || (close >= 3 && S.tags.length) || (close >= 2 && S.t > 2 && Math.random() < dt * 2 * L.agg)) P.retreat = true;
-      if (P.retreat || !mine.length) moveTo(r, r.x * .9, -1.2, L.rsp * 1.05, dt);
-      else { if (!P.target || P.target.tagged || P.target.out) P.target = mine.sort((a, b) => Math.hypot(a.x - r.x, a.z - r.z) - Math.hypot(b.x - r.x, b.z - r.z))[0]; const dT = Math.hypot(P.target.x - r.x, P.target.z - r.z); moveTo(r, P.target.x + Math.sin(S.t * 3) * .5, P.target.z - .2, L.rsp * (dT < 1.7 ? 1.7 : dT > 2.6 ? 1 : .55), dt); }
+    S.kickT = Math.max(0, S.kickT - dt); if (S.kickT <= 0) r.h.set({ kick: 0 });
+    const reach = S.kickT > .05 && S.kickT < .36 ? KICK : TOUCH;
+    if (atk === 0) {
+      const sp = S.kickT > 0 ? 1.2 : 4.0;
+      if (S.joy && Math.hypot(S.joy.dx, S.joy.dy) > .1) { const tx = S.joy.dx * sp, tz = S.joy.dy * sp; r.vx += (tx - r.vx) * Math.min(1, dt * 12); r.vz += (tz - r.vz) * Math.min(1, dt * 12); } else { r.vx *= .8; r.vz *= .8; }
+      r.x += r.vx * dt; r.z += r.vz * dt;
+    } else { // কম্পিউটার রেইডার
+      const P = S.cpuPlan, mine = alive(0).filter(p => !p.tagged && !(p.fallT > 0)), close = alive(0).filter(p => Math.hypot(p.x - r.x, p.z - r.z) < 2.2).length;
+      P.kickCd -= dt;
+      if (S.tags.length >= P.want || (S.tags.length && Math.random() < dt * 3) || S.breath < 3.4 || (close >= 3 && S.tags.length) || (close >= 2 && S.t > 2 && Math.random() < dt * 2 * L.agg)) P.retreat = true;
+      if (P.retreat || !mine.length) moveTo(r, r.x * .9, -1.3, L.rsp * 1.08, dt);
+      else {
+        if (!P.target || P.target.tagged || P.target.out) P.target = mine.sort((a, b) => Math.hypot(a.x - r.x, a.z - r.z) - Math.hypot(b.x - r.x, b.z - r.z))[0];
+        const d = Math.hypot(P.target.x - r.x, P.target.z - r.z);
+        if (d < KICK * .95 && d > TOUCH * .8 && P.kickCd <= 0 && Math.random() < .5 + L.agg * .5) { S.kickT = .42; P.kickCd = 2.5; r.h.set({ kick: 1 }); r.h.root.rotation.y = Math.atan2(P.target.x - r.x, P.target.z - r.z); sfx('whoosh'); }
+        if (S.kickT <= 0) { const ox = (r.x - P.target.x) / (d || 1), oz = (r.z - P.target.z) / (d || 1), stand = KICK * .85; moveTo(r, P.target.x + ox * stand + Math.sin(S.t * 3) * .5, P.target.z + oz * stand, L.rsp * (d > 2.5 ? 1 : .7), dt); } else { r.vx *= .85; r.vz *= .85; }
+      }
+      if (sndOn && ac && Math.floor(S.beat / BEAT) !== Math.floor((S.beat - dt) / BEAT)) du(ac.currentTime, 170, .12);
+      r.h.set({ shout: (S.beat % BEAT) < .15 ? 1 : 0 });
     }
     r.x = clamp(r.x, -FW / 2 + .2, FW / 2 - .2); r.z = clamp(r.z, -FL / 2 + .2, FL / 2 - .2);
-    // ছোঁয়া
-    for (const p of alive(def)) if (!p.tagged && Math.hypot(p.x - r.x, p.z - r.z) < .85) { p.tagged = true; S.tags.push(p); sfx('tag'); crowd(.18, .8); if (atk === 0) { shout('ছুঁইছে! ✋', '#ffe27a'); com('myTag'); const helper = alive(def).find(q => q !== p && Math.hypot(q.x - r.x, q.z - r.z) < 1.7); if (helper && Math.random() < L.agg * .3) { S.phase = 'struggle'; S.t = 0; S.struggle = 0; p.holding = helper.holding = true; S.held = 2; sfx('thud'); dust(r.x, r.z, 1.4); shout('গোড়ালি ধরছে! বারবার চাপুন!', '#ff9a8a'); $('hint').textContent = '👆👆 দ্রুত বারবার চাপুন, মাঝের দাগের দিকে ছুটুন!'; return; } } else $('com').textContent = '🎙️ ' + (p.i + 1) + ' নম্বররে ছুঁইয়া দিছে! ধরেন!'; }
-    // ডিফেন্ডার
-    const defs = alive(def);
-    if (atk === 0) { // কম্পিউটার ডিফেন্স: ঘিরে ধরা
-      const deep = -r.z, hunt = S.tags.length > 0 || deep > BAULK - .4 || S.t > 3.5;
-      defs.forEach((p, k) => {
-        const [hx, hz] = homeOf(1, p.i); let tx = hx + r.x * .35, tz = hz;
-        if (hunt) { const d = Math.hypot(p.x - r.x, p.z - r.z); if (d < 4.2 * L.agg + 1) { tx = r.x + (p.x - r.x) * .1; tz = r.z + .25 + (k % 2 ? .3 : -.3); } }
-        // ফেরার পথ আটকানো
-        if (hunt && k === defs.length - 1) { tx = r.x; tz = Math.min(-.4, r.z + 1.3); }
-        moveTo(p, tx, tz, L.dsp * (hunt ? (S.tags.length ? 1.25 : 1) : .6), dt);
-      });
-      const grabbers = defs.filter(p => Math.hypot(p.x - r.x, p.z - r.z) < 1.15);
-      if (grabbers.length >= 2 && r.z < -.3) { S.held += dt; if (S.held > L.react) { S.phase = 'struggle'; S.t = 0; S.struggle = 0; grabbers.forEach(p => p.holding = true); S.held = grabbers.length; sfx('thud'); dust(r.x, r.z, 1.4); shout('ধরা পড়ছেন! বারবার চাপুন!', '#ff9a8a'); $('hint').textContent = '👆👆 দ্রুত বারবার চাপুন, মাঝের দাগের দিকে ছুটুন!'; if (navigator.vibrate) try { navigator.vibrate([60, 40, 60]); } catch (e) {} } }
-      else S.held = Math.max(0, S.held - dt);
-    } else { // আমার ডিফেন্ডাররা নিজে থেকে সাজে, রেইডারের দিকে সরে
-      defs.forEach(p => { if (p.dive > 0) return; const [hx, hz] = homeOf(0, p.i); const deep = r.z; let tx = hx + clamp(r.x * .45, -1.5, 1.5), tz = hz - (deep > 2 ? .6 : 0); if (S.tags.length && Math.hypot(p.x - r.x, p.z - r.z) < 3) { tx = (tx + r.x) / 2; tz = (tz + r.z) / 2; } moveTo(p, tx, tz, 2.6, dt); });
-      reachRing.position.set(r.x, .05, r.z);
-      const nearN = defs.filter(p => Math.hypot(p.x - r.x, p.z - r.z) < 2.3).length; reachRing.material.color.set(nearN >= 2 ? '#22c55e' : '#ff5a3c');
+    // ছোঁয়া (লাথি-ছোঁয়ায় বেশি দূর পর্যন্ত)
+    for (const p of alive(def)) if (!p.tagged && Math.hypot(p.x - r.x, p.z - r.z) < reach && (reach === KICK ? true : true)) {
+      p.tagged = true; S.tags.push(p); sfx('tag'); crowd(.2, .8); p.h.set({ lean: -.25 }); slow(reach === KICK ? .35 : 0);
+      if (atk === 0) { shout(reach === KICK ? 'লাথি-ছোঁয়া! 🦶' : 'ছুঁইছে! ✋', '#ffe27a'); com(reach === KICK ? 'kickTag' : 'myTag'); } else $('com').textContent = '🎙️ ' + (p.i + 1) + ' নম্বররে ছুঁইয়া দিছে! ধরেন!';
     }
-    // ফেরা, দম
+    const defs = alive(def);
+    if (atk === 0) { // কম্পিউটার ডিফেন্স: শিকল বানিয়ে ঘিরে ধরা
+      const deep = -r.z, hunt = S.tags.length > 0 || deep > BAULK - .5 || S.t > 3.2;
+      const chasers = S.tags.length ? defs.filter(p => !(p.fallT > 0)).sort((a, b) => Math.hypot(a.x - r.x, a.z - r.z) - Math.hypot(b.x - r.x, b.z - r.z)).slice(0, 2) : [];
+      defs.forEach((p, k) => {
+        if (p.fallT > 0) return;
+        const [hx, hz] = homeOf(1, p.i); let tx = hx + r.x * .35, tz = hz;
+        if (hunt) { const d = Math.hypot(p.x - r.x, p.z - r.z); if (d < 4.2 * L.agg + 1) { tx = r.x + (p.x - r.x) * .12; tz = r.z + .25 + (k % 2 ? .3 : -.3); } }
+        if (hunt && k === defs.length - 1) { tx = r.x; tz = Math.min(-.4, r.z + 1.3); }
+        const chaser = S.tags.length && p === chasers[0] || p === chasers[1];
+        if (chaser) { tx = r.x + r.vx * .25; tz = r.z + r.vz * .25; }
+        moveTo(p, tx, tz, L.dsp * (hunt ? (chaser ? 1.12 : 1) : .6), dt);
+      });
+      const grabbers = defs.filter(p => Math.hypot(p.x - r.x, p.z - r.z) < 1.25 && !(p.fallT > 0));
+      if (grabbers.length >= 2 && r.z < -.3) { S.held += dt; if (S.held > L.react) {
+        S.phase = 'struggle'; S.t = 0; S.struggle = 0; grabbers.forEach(p => { p.holding = true; p.h.set({ hold: 1, crouch: .6 }); }); S.held = grabbers.length; sfx('thud'); dust(r.x, r.z, 1.6, 8); shake = .4; slow(.5);
+        r.h.set({ struggle: 1 }); shout('ধরা পড়ছেন! বারবার চাপুন!', '#ff9a8a'); ctlMode('struggle'); $('hint').textContent = '👆👆 "ছোটো!" বারবার চাপুন, মাঝের দাগের দিকে টানুন!'; if (navigator.vibrate) try { navigator.vibrate([60, 40, 60]); } catch (e) {} } }
+      else S.held = Math.max(0, S.held - dt);
+    } else { // আমার ডিফেন্ডাররা নিজে থেকে সাজে
+      defs.forEach(p => { if (p.dive > 0 || p.fallT > 0) return; const [hx, hz] = homeOf(0, p.i); const deep = r.z; let tx = hx + clamp(r.x * .45, -1.5, 1.5), tz = hz - (deep > 2 ? .6 : 0); if (Math.hypot(p.x - r.x, p.z - r.z) < 3.2) { tx = (tx * 2 + r.x) / 3; tz = (tz * 2 + r.z) / 3; } moveTo(p, tx, tz, 2.7, dt); });
+      reachRing.position.set(r.x, .05, r.z);
+      const nearN = defs.filter(p => Math.hypot(p.x - r.x, p.z - r.z) < 2.4 && !(p.fallT > 0)).length; reachRing.material.color.set(nearN >= 2 ? '#22c55e' : '#ff5a3c');
+      // সময় মেলানোর কাঁটা: কাছে ২ জন থাকলে চালু
+      if (!S.grabUsed) {
+        if (nearN >= 2 && r.z > .3) { if (!S.qte) { S.qte = { t: 0, pos: 0, half: [.2, .16, .12][lv] + (nearN >= 3 ? .05 : 0) }; $('qte').hidden = false; } }
+        if (S.qte) { const Q = S.qte; Q.t += dt; Q.pos = (Math.sin(Q.t * (3.2 + lv * .7) - Math.PI / 2) + 1) / 2; Q.half = [.2, .16, .12][lv] + (nearN >= 3 ? .05 : 0); $('qteN').style.left = (Q.pos * 100) + '%'; $('qteG').style.left = ((.5 - Q.half) * 100) + '%'; $('qteG').style.width = (Q.half * 200) + '%'; if (nearN < 2) { S.qte = null; $('qte').hidden = true; } }
+      }
+    }
     const home = atk === 0 ? r.z > .15 : r.z < -.15;
     if (S.entered && home) return raidResult('back');
     if (S.breath <= 0) return raidResult(home ? 'back' : 'breath');
     if (!S.entered && S.t > 6) return raidResult(home ? 'back' : 'breath');
     $('domB').style.width = clamp(S.breath / BREATH * 100, 0, 100) + '%';
-    $('chant').textContent = 'হা-ডু-ডু' + '-ডু'.repeat(Math.floor(S.t * 2.5) % 5);
-    $('domT').textContent = 'দম ' + bn(Math.ceil(Math.max(0, S.breath))) + ' সেকেন্ড' + (S.tags.length ? ' · ছোঁয়া ' + bn(S.tags.length) : '');
-    if (sndOn && ac && Math.floor(S.t * 2.5) !== Math.floor((S.t - dt) * 2.5)) du(ac.currentTime, atk === 0 ? 200 : 170);
-  }
-  else if (S.phase === 'struggle') { // ধরা পড়ার পর ছোটার চেষ্টা
-    const need = 3 + lv * 1.2; r.z += S.struggle * .25; S.struggle = 0; r.z -= dt * (.2 + lv * .1);
-    alive(def).filter(p => p.holding).forEach(p => { p.x += (r.x - p.x) * .2; p.z += (r.z - p.z) * .2; });
-    $('domT').textContent = 'ছুটুন! মাঝের দাগ পর্যন্ত যান'; $('domB').style.width = clamp(100 - S.t / 1.8 * 100, 0, 100) + '%';
-    if (r.z > .1) return raidResult('escape');
-    if (S.t > 1.8) return raidResult('caught');
-  }
-  else if (S.phase === 'tackled') { if (S.t > .7) raidResult('caught'); }
-  else if (S.phase === 'result') { if (S.t > 1.8) nextRaid(); }
-  // ডাইভ অ্যানিমেশন
-  T.forEach(tm => tm.forEach(p => { if (p.dive > 0) { p.dive -= dt; p.x += (p.dx - p.x) * dt * 5; p.z += (p.dz - p.z) * dt * 5; } }));
-  if (S.phase !== 'raid' && S.phase !== 'struggle') T.forEach(tm => tm.forEach(p => { if (p.out || p === S.raider && S.phase === 'tackled') return; const [hx, hz] = homeOf(p.team, p.i); if (p !== S.raider || S.phase === 'result' || S.phase === 'intro') moveTo(p, p === S.raider && S.phase === 'intro' ? p.x : hx, p === S.raider && S.phase === 'intro' ? p.z : hz, 2.2, dt); }));
+    $('domT').textContent = (atk === 0 ? 'দম ' : 'ওদের দম ') + bn(Math.ceil(Math.max(0, S.breath))) + ' সে' + (S.tags.length ? ' · ছোঁয়া ' + bn(S.tags.length) : '') + (atk === 0 && S.combo > 1 ? ' · তাল ×' + bn(S.combo) : '');
+    const bp = (S.beat % BEAT) / BEAT; $('beatRing').style.transform = `scale(${1.55 - bp * .55})`; $('beatRing').style.opacity = .25 + bp * .75;
+  } else if (S.phase === 'struggle') {
+    r.z += S.struggle * .2; S.struggle = 0; r.z -= dt * (.28 + lv * .12);
+    alive(def).filter(p => p.holding).forEach(p => { p.x += (r.x + (p.x - r.x) * .5 - p.x) * .2; p.z += (r.z + (p.z - r.z) * .5 - p.z) * .2; });
+    $('domT').textContent = 'ছুটুন! মাঝের দাগ পর্যন্ত যান'; $('domB').style.width = clamp(100 - S.t / 1.7 * 100, 0, 100) + '%';
+    if (r.z > .1) { r.h.set({ struggle: 0 }); return raidResult('escape'); }
+    if (S.t > 1.7) { r.h.set({ struggle: 0, fall: 1 }); return raidResult('caught'); }
+  } else if (S.phase === 'tackled') { if (S.t > 1.0) raidResult('caught'); }
+  else if (S.phase === 'result') { if (S.t > 2.0) nextRaid(); }
+  TM.forEach(tm => tm.forEach(p => {
+    if (p.dive > 0) { p.dive -= dt; p.x += (p.dx - p.x) * dt * 4; p.z += (p.dz - p.z) * dt * 4; if (p.dive <= 0) { p.h.set({ dive: 0, reach: 0 }); } }
+    if (p.fallT > 0) { p.fallT -= dt; p.h.set({ dive: p.fallT > .3 ? 1 : 0 }); }
+  }));
+  if (S.phase !== 'raid' && S.phase !== 'struggle') TM.forEach(tm => tm.forEach(p => { if (p.out || (p === S.raider && S.phase === 'tackled')) return; const [hx, hz] = homeOf(p.team, p.i); if (p !== S.raider || S.phase === 'result') moveTo(p, hx, hz, 2.4, dt); }));
+  TM.forEach(tm => tm.forEach(p => { if (p.out) { const [ox, oz] = outSpot(p); moveTo(p, ox, oz, 2.5, dt); } }));
 }
-function pose(p, T0) {
-  const g = p.m.g, sp = Math.hypot(p.vx || 0, p.vz || 0), run = Math.min(1, sp / 3);
-  g.position.set(p.x, 0, p.z);
-  if (sp > .2) g.rotation.y = Math.atan2(p.vx, p.vz);
-  else if (!p.out) { const r = S && S.raider; if (r && r !== p) g.rotation.y = Math.atan2(r.x - p.x, r.z - p.z); }
-  const s = Math.sin(T0 * 13 + p.i) * run; p.m.legL.rotation.x = s * .9; p.m.legR.rotation.x = -s * .9; p.m.armL.rotation.x = -s * .8; p.m.armR.rotation.x = s * .8;
-  // ডিফেন্ডারের ঝুঁকে থাকা ভঙ্গি, ডাইভ, ধরা
-  const crouch = !p.out && S && S.phase === 'raid' && p.team !== S.side ? .35 : 0;
-  p.m.body.rotation.x = p.dive > 0 || p.holding ? 1.1 : crouch; p.m.body.position.y = p.dive > 0 ? -.5 : 0;
-  if (crouch && !run) { p.m.armL.rotation.x = p.m.armR.rotation.x = -.9; }
-  if (p.out) { p.m.body.rotation.x = 0; p.m.legL.rotation.x = p.m.legR.rotation.x = -1.4; p.m.body.position.y = -.55; }
+function pose(p, dt) {
+  const h = p.h, sp = Math.hypot(p.vx || 0, p.vz || 0), r = S && S.raider, raiding = S && (S.phase === 'raid' || S.phase === 'intro');
+  h.root.position.set(p.x, 0, p.z);
+  let face = null;
+  if (sp > .35 && !(p === r && S.kickT > 0)) face = Math.atan2(p.vx, p.vz);
+  else if (!p.out && r && r !== p) face = Math.atan2(r.x - p.x, r.z - p.z);
+  else if (p.out) face = p.team ? Math.PI / 2 : -Math.PI / 2;
+  if (face !== null) { const d = Math.atan2(Math.sin(face - h.root.rotation.y), Math.cos(face - h.root.rotation.y)); h.root.rotation.y += d * Math.min(1, dt * 10); }
+  const isDef = !p.out && raiding && p.team !== S.side;
+  if (!p.out && !(p.dive > 0) && !(p.fallT > 0)) h.set({ run: Math.min(1, sp / 3.2), crouch: isDef ? .75 : (p === r && raiding ? .25 : 0), wide: isDef ? 1 : 0 });
+  h.look = r && r !== p && !p.out ? r : null;
+  h.update(dt, sp);
+  if (p.tagged && !p.out) { if (!tagMark.parent || tagMark.userData.p !== p) { h.root.add(tagMark); tagMark.userData.p = p; } tagMark.position.set(0, 2.55 + Math.sin(performance.now() / 150) * .06, 0); }
 }
 
 /* ---------- ক্যামেরা আর লুপ ---------- */
-function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 60 : 46; cam.updateProjectionMatrix(); }
+function resize() { const rc = $('stage').getBoundingClientRect(); W = rc.width; H = rc.height; if (renderer) renderer.setSize(W, H, false); if (composer) { composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(W, H); } cam.aspect = W / H; cam.fov = W / H < .8 ? 58 : 44; cam.updateProjectionMatrix(); }
 addEventListener('resize', resize);
-const camPos = new THREE.Vector3(0, 13, 14), camLook = new THREE.Vector3(0, 0, -.5);
+const camPos = new THREE.Vector3(0, 13, 18), camLook = new THREE.Vector3(0, 0, -.5), camCur = new THREE.Vector3(0, .8, 0);
 function loop(ts) {
-  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  let dtr = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  if (slowT > 0) { slowT -= dtr; timeScale += (.28 - timeScale) * Math.min(1, dtr * 12); } else timeScale += (1 - timeScale) * Math.min(1, dtr * 6);
+  const dt = dtr * timeScale;
   if (S && !S.over) step(dt);
-  if (T) T.forEach(tm => tm.forEach(p => pose(p, T0)));
-  if (S && S.raider && !S.over && (S.phase === 'raid' || S.phase === 'intro' || S.phase === 'struggle')) { const r = S.raider; star.visible = true; star.position.set(r.x, 2.7 + Math.sin(T0 * 6) * .08, r.z); star.rotation.y = T0 * 3; ring.visible = S.side === 0; ring.position.set(r.x, .05, r.z); }
-  dusts.forEach(d => { if (d.t >= 1) { d.s.visible = false; return; } d.t = Math.min(1, d.t + dt * 1.6); const s = .8 + d.t * 2.6 * d.k; d.s.scale.set(s, s, 1); d.s.material.opacity = (1 - d.t) * .6; d.s.position.y += dt * .7; });
-  crowds.forEach((c, i) => c.position.y = 1.45 + Math.abs(Math.sin(T0 * (S && S.phase === 'result' ? 9 : 2.5) + i)) * (S && S.phase === 'result' ? .18 : .04));
+  if (TM) TM.forEach(tm => tm.forEach(p => pose(p, dt)));
+  if (tagMark.parent && (!tagMark.userData.p || !tagMark.userData.p.tagged || tagMark.userData.p.out)) tagMark.parent.remove(tagMark);
+  const r = S && S.raider;
+  if (r && S && !S.over && (S.phase === 'raid' || S.phase === 'intro' || S.phase === 'struggle')) { meRing.visible = S.side === 0; meRing.position.set(r.x, .04, r.z); meRing.material.opacity = .7 + Math.sin(T0 * 6) * .25; }
+  dusts.forEach(d => { if (d.t >= 1) { d.s.visible = false; return; } d.t = Math.min(1, d.t + dt * 1.4); const s = .6 + d.t * 2.4 * d.k; d.s.scale.set(s, s, 1); d.s.material.opacity = (1 - d.t) * .55; d.s.position.y += dt * .6; d.s.position.x += d.vx * dt; d.s.position.z += d.vz * dt; });
+  // দৌড়ের ধুলো
+  if (TM && Math.random() < dt * 8) { const all = TM[0].concat(TM[1]).filter(p => Math.hypot(p.vx, p.vz) > 2.8); if (all.length) { const p = pick(all); dust(p.x, p.z, .45, 1); } }
+  crowdExcite = Math.max(0, crowdExcite - dt * .35); updCrowd(T0);
   bunting.forEach((m, i) => m.rotation.x = Math.sin(T0 * 3 + i) * .3);
-  const fz = S && S.raider ? clamp(S.raider.z, -4, 4) : 0, port = W / H < .8;
-  camPos.set(0, port ? 12.5 : 10.5, (port ? 10.5 : 11) + fz * .4); camLook.set(0, 0, -1.6 + fz * .5);
-  cam.position.lerp(camPos, .06); cam.lookAt(camLook);
-  if (renderer) renderer.render(scene, cam); requestAnimationFrame(loop);
+  // ক্যামেরা: রেইডারের পেছন থেকে, ধরার মুহূর্তে কাছে
+  const port = W / H < .8;
+  if (S && !S.over && r) {
+    const fz = clamp(r.z, -4, 4), close = S.phase === 'struggle' || S.phase === 'tackled' ? 1 : 0, side = S.side ? -1 : 1;
+    camPos.set(r.x * .45, (port ? 10.5 : 8.5) - close * 3.5, fz + side * ((port ? 10.5 : 9.5) - close * 4)); camLook.set(r.x * .6, .6, fz - side * (1.2 - close));
+  } else { const a = T0 * .08; camPos.set(Math.sin(a) * 16, port ? 14 : 10, Math.cos(a) * 16); camLook.set(0, .5, 0); }
+  cam.position.lerp(camPos, Math.min(1, dtr * 3)); camCur.lerp(camLook, Math.min(1, dtr * 4)); cam.lookAt(camCur);
+  if (shake > 0) { shake = Math.max(0, shake - dtr); cam.position.x += rnd(-1, 1) * shake * .25; cam.position.y += rnd(-1, 1) * shake * .2; }
+  sun.target.position.set(camCur.x, 0, camCur.z); sun.position.set(camCur.x - 14, 15, camCur.z - 18); fill.position.set(cam.position.x * .5 + 4, 9, cam.position.z); sun.target.updateMatrixWorld();
+  if (renderer) { if (composer) composer.render(dtr); else renderer.render(scene, cam); }
+  requestAnimationFrame(loop);
 }
 function start(level) {
   audio(); lv = level; store.set('kh-hadudu-lv', lv); newMatch(); hud(); ['startO', 'endO'].forEach(i => $(i).hidden = true);
-  $('com').textContent = '🎙️ মাইকে: "আমাদের গ্রাম বনাম ' + LV[lv].n + '! প্রথম রেইড আমাদের!"'; crowd(.25, 2); nextRaid();
+  $('com').textContent = '🎙️ মাইকে: "আমাদের গ্রাম বনাম ' + LV[lv].n + '! প্রথম রেইড আমাদের!"'; crowd(.25, 2); crowdExcite = .6; nextRaid();
 }
 document.querySelectorAll('[data-lv]').forEach(b => b.onclick = () => start(+b.dataset.lv));
 $('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
 $('shareBtn').onclick = () => { const t = `খেলাঘরে হাডুডুতে ${bn(lastScore)} পয়েন্ট! 🤼 হা-ডু-ডু-ডু! ${location.origin}/games/hadudu/`; try { navigator.clipboard.writeText(t).then(() => { $('shareBtn').textContent = 'কপি হয়েছে ✓'; setTimeout(() => $('shareBtn').textContent = 'কপি করে শেয়ার', 2000); }, () => {}); } catch (e) {} };
-lv = store.get('kh-hadudu-lv', 1); newMatch(); S.over = true; resize(); cam.position.copy(camPos);
+lv = store.get('kh-hadudu-lv', 1); newMatch(); S.over = true; ctlMode('none'); resize(); cam.position.copy(camPos);
 if (renderer) renderer.compile(scene, cam);
 last = performance.now(); requestAnimationFrame(loop);
 if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
@@ -479,7 +614,8 @@ async function saveScore(sc) {
 const MY_H = ['আজকে তোদের সবগুলারে ছুঁইয়া আসবো!', 'আমাদের গ্রামের দম সবচেয়ে বেশি!', 'ধরতে পারলে ধর দেখি!', 'হারলে খিচুড়ি তোদের খাওয়াইতে হবে!'];
 const OP_H = ['আগে দাগ তো পার হও!', 'চারজনে মিলা জাপটাইয়া ধরবো!', 'গত বছরের কথা মনে আছে তো?', 'দম রাখো, কথা কম কও!'];
 if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY_H, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP_H), 'M3', '🤼 পাশের গ্রাম', true), 2600); } });
-window.KHHadudu = { get S() { return S; }, get T() { return T; }, start, grab, joy: (dx, dy) => { S.joy = dx === null ? null : { dx, dy, id: -1 }; }, tap: () => { if (S.phase === 'struggle') S.struggle++; } };
+window.KHHadudu = { get S() { return S; }, get T() { return TM; }, start, grab, chant, kick, joy: (dx, dy) => { S.joy = dx === null ? null : { dx, dy, id: -1 }; }, tap: () => chant(), tick: n => { for (let i = 0; i < n; i++) if (S && !S.over) step(1 / 60); } };
+
 </script>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
 </body></html>
