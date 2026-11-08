@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#1a1208">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>হাডুডু · খেলাঘর</title>
+<meta name="description" content="গ্রামের মাঠে ৩ডি হাডুডু (কাবাডি)! দম ধরে রেইড দিন, প্রতিপক্ষকে ছুঁয়ে ফিরে আসুন, ডিফেন্সে সময়মতো ধরুন। বাংলাদেশের জাতীয় খেলা।">
+<link rel="canonical" href="https://khelaghorbd.online/games/hadudu/">
+<meta property="og:title" content="হাডুডু · খেলাঘর">
+<meta property="og:description" content="বাংলাদেশের জাতীয় খেলা হাডুডু, ৩ডি-তে!">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<style>
+/* হাডুডু: শীতের বিকেলে গ্রামের মাঠ, চুনের দাগ, চারপাশে দর্শক, সোনালি রোদ। */
+:root{--bg:#13200f;--fg:#fff6e6;--muted:#d7bf98;--line:#4d7a34;--accent:#ffcf5a;--me:#2fbf71;--op:#e0473a;
+  --display:'Baloo Da 2','Noto Sans Bengali',system-ui,sans-serif;--body:'Noto Sans Bengali','Hind Siliguri',system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+.app{position:fixed;inset:0;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.hud{display:flex;align-items:center;gap:8px;padding:8px max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px));background:linear-gradient(180deg,#24361a,#13200f);z-index:2}
+.back,.hb{color:var(--fg);display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.08);border:0;cursor:pointer;flex:none}
+.back svg{width:20px;height:20px}.hb svg{width:18px;height:18px}.hb.off{opacity:.4}
+.pl{flex:1;display:flex;align-items:center;gap:8px;padding:4px 10px;border-radius:14px;background:rgba(255,255,255,.05);border:2px solid transparent;transition:border-color .3s,background .3s;min-width:0}
+.pl.on{border-color:var(--accent);background:rgba(255,207,90,.12)}
+.pl.r{flex-direction:row-reverse;text-align:right}
+.pl i{width:22px;height:22px;border-radius:50%;flex:none;box-shadow:inset -3px -4px 6px rgba(0,0,0,.35),0 2px 3px rgba(0,0,0,.4)}
+.pl div{min-width:0;line-height:1.1}
+.pl b{display:block;font-family:var(--display);font-size:1.25rem}
+.pl small{display:block;font-size:.66rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stage{position:relative;flex:1;min-height:0}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.com{position:absolute;left:10px;right:10px;top:8px;z-index:3;text-align:center;font-weight:700;font-size:.85rem;color:#fff3d6;text-shadow:0 2px 4px rgba(0,0,0,.8);pointer-events:none}
+.say{position:absolute;left:50%;top:42%;transform:translateX(-50%);z-index:3;font-family:var(--display);font-weight:800;font-size:clamp(1.6rem,8vw,2.8rem);white-space:nowrap;text-shadow:0 4px 0 rgba(0,0,0,.45),0 0 24px rgba(0,0,0,.6);pointer-events:none;animation:sIn .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes sIn{from{transform:translateX(-50%) scale(.3);opacity:0}}
+.dom{position:absolute;left:50%;top:40px;transform:translateX(-50%);z-index:4;width:min(260px,72%);background:rgba(10,20,6,.7);border:2px solid #ffd23f;border-radius:16px;padding:5px 12px 7px;text-align:center;pointer-events:none}
+.dom span{font-family:var(--display);font-weight:800;font-size:1.2rem;color:#ffd23f;letter-spacing:.02em}.dom small{display:block;font-size:.7rem;color:#dfeccf;font-weight:700}
+.bar{height:12px;border-radius:99px;background:rgba(255,255,255,.15);overflow:hidden;margin-top:3px}.bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ef4444,#facc15 40%,#22c55e);border-radius:99px;transition:width .1s linear}
+.joy{position:absolute;width:110px;height:110px;margin:-55px 0 0 -55px;border-radius:50%;border:3px solid rgba(255,255,255,.45);background:rgba(255,255,255,.08);z-index:3;pointer-events:none}.joy i{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(255,226,122,.85);box-shadow:0 3px 8px rgba(0,0,0,.4)}
+.grab{font-size:1.25rem!important;padding:12px 22px!important;background:linear-gradient(180deg,#ff8a6a,#e0473a)!important;color:#fff!important;box-shadow:0 5px 0 #8a1c1c!important;animation:pulse .7s infinite alternate}@keyframes pulse{to{transform:scale(1.08)}}
+.chost{position:absolute;left:max(10px,env(safe-area-inset-left,0px));bottom:10px;z-index:3}
+.ctl{padding:8px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:linear-gradient(0deg,#24361a,#13200f);display:flex;align-items:center;gap:10px;z-index:2;min-height:62px}
+.hint{flex:1;text-align:center;font-weight:700;font-size:.88rem;color:var(--muted)}
+.stopB{border:0;border-radius:14px;padding:10px 14px;font:800 .95rem var(--display);color:#2a1a08;background:linear-gradient(180deg,#ffe08a,#f2b23a);box-shadow:0 4px 0 #9a6410;cursor:pointer}
+.over{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:16px;background:rgba(12,8,3,.74);backdrop-filter:blur(2px)}
+.card{width:100%;max-width:390px;background:linear-gradient(180deg,#3c5a26,#1f3314);border:1px solid var(--line);border-radius:24px;padding:20px 18px;display:flex;flex-direction:column;gap:12px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5);max-height:100%;overflow:auto}
+.card h1{font-family:var(--display);font-size:2.4rem;margin:0;line-height:1.05;color:var(--accent)}
+.card h2{font-family:var(--display);font-size:1.8rem;margin:0;line-height:1.1}
+.card p{margin:0;color:var(--muted);font-size:.9rem}
+.story{color:var(--fg)!important;font-weight:600}
+.rules{text-align:left;display:flex;flex-direction:column;gap:4px;font-size:.84rem;color:var(--muted);background:rgba(0,0,0,.22);border-radius:14px;padding:10px 12px}
+.rules b{color:var(--fg)}
+.lvl{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.lvl button{border:0;border-radius:14px;padding:10px 4px;font:800 1rem var(--display);color:#2a1a08;cursor:pointer;background:linear-gradient(180deg,#bff0c8,#4fc77a);box-shadow:0 4px 0 #1f7a42}
+.lvl button small{display:block;font:600 .66rem var(--body);opacity:.75}
+.lvl button:nth-child(2){background:linear-gradient(180deg,#ffe2a8,#f0a83c);box-shadow:0 4px 0 #9a5a10}
+.lvl button:nth-child(3){background:linear-gradient(180deg,#ffb0a0,#e04838);box-shadow:0 4px 0 #8a1c1c;color:#fff}
+.lvl button:active{transform:translateY(3px)}
+.gbtn{border:0;border-radius:16px;padding:13px 20px;font-family:var(--display);font-size:1.2rem;font-weight:800;color:#fff;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#5ee28a,#22c55e 55%,#16a34a);box-shadow:0 5px 0 #15803d,inset 0 2px 0 rgba(255,255,255,.4)}
+.gbtn.ghost{background:rgba(255,255,255,.08);box-shadow:0 4px 0 rgba(0,0,0,.3);font-size:1rem}
+.acts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats div{background:rgba(255,255,255,.06);border-radius:14px;padding:8px}
+.stats b{display:block;font-family:var(--display);font-size:1.4rem;line-height:1.1}
+.stats span{font-size:.72rem;color:var(--muted)}
+.title{display:inline-block;align-self:center;background:linear-gradient(135deg,#ffe27a,#ffb627);color:#3a2200;border-radius:999px;padding:3px 14px;font-weight:800}
+.lb{display:flex;flex-direction:column;gap:4px;text-align:left}
+.lb h3{margin:4px 0 2px;font-size:.9rem;color:var(--muted);font-weight:700;text-align:center}
+.lb div{display:grid;grid-template-columns:24px 1fr auto;gap:8px;background:rgba(255,255,255,.05);border-radius:10px;padding:5px 10px;font-size:.88rem}
+.lb div.me{background:rgba(255,207,90,.18)}
+.lb em{font-style:normal;color:var(--muted);font-weight:700}
+.small{font-size:.75rem!important}
+.tip{background:rgba(54,209,196,.14);border:1px solid rgba(54,209,196,.4);border-radius:12px;padding:8px 10px;text-align:left;font-size:.82rem!important;line-height:1.45;color:var(--fg)!important}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="pl on" id="pMe"><i style="background:#16a34a"></i><div><b id="sMe">০</b><small id="nMe">আমাদের গ্রাম</small></div></div>
+    <div class="pl r" id="pOp"><i style="background:#dc2626"></i><div><b id="sOp">০</b><small id="nOp">পাশের গ্রাম</small></div></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas id="cv"></canvas>
+    <div class="com" id="com"></div>
+    <div class="say" id="say" hidden></div>
+    <div class="dom" id="dom" hidden><span id="chant">হা-ডু-ডু</span><div class="bar"><i id="domB"></i></div><small id="domT">দম</small></div>
+    <div class="joy" id="joy" hidden><i id="knob"></i></div>
+    <div class="chost" id="chatHost"></div>
+
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>হাডুডু</h1>
+        <p class="story">শীতের বিকেল, গ্রামের মাঠে চুন দিয়ে দাগ কাটা। আমাদের গ্রাম বনাম পাশের গ্রাম, চারপাশে লোকে লোকারণ্য। মাইকে ঘোষণা: "খেলা শুরু হইতেছে!"</p>
+        <div class="rules">
+          <div>🏃 <b>রেইড</b>: মাঠে আঙুল রেখে টেনে আপনার রেইডারকে (মাথায় হলুদ তারা) চালান। দম ফুরানোর আগে ওদের ছুঁয়ে <b>মাঝের দাগ পার হয়ে ফিরে আসুন</b></div>
+          <div>✋ যতজনকে ছুঁয়ে ফিরবেন, তত পয়েন্ট, আর তারা আউট। ধরা পড়লে দ্রুত <b>বারবার চাপুন</b>, মাঝের দাগে পৌঁছাতে পারলে বেঁচে যাবেন</div>
+          <div>🛡️ <b>ডিফেন্স</b>: ওদের রেইডার আপনার দিকে এলে সময়মতো <b>"ধরো!"</b> চাপুন। কাছাকাছি ২ জন থাকলে ধরা পড়বে, একবারই সুযোগ!</div>
+          <div>🏆 দুই দল ৮টা করে রেইড দেবে, বেশি পয়েন্ট যার সে জিতবে। সবাই আউট হলে প্রতিপক্ষ ২ পয়েন্ট বোনাস পায়</div>
+        </div>
+        <p>পাশের গ্রামের দল:</p>
+        <div class="lvl">
+          <button data-lv="0">স্কুলের দল<small>সহজ</small></button>
+          <button data-lv="1">গ্রামের দল<small>মাঝারি</small></button>
+          <button data-lv="2">জেলা চ্যাম্পিয়ন<small>কঠিন</small></button>
+        </div>
+        <a href="/help/#hadudu" style="color:inherit;opacity:.85;font-size:.85rem;font-weight:700;text-decoration:underline;align-self:center">📖 কিভাবে খেলবেন? পুরো নিয়ম পড়ুন</a>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+      </div>
+    </div>
+
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">খেলা শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eK">০</b><span>ছোঁয়া</span></div><div><b id="eL">০</b><span>ধরা</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার খেলি</button><button class="gbtn ghost" id="menuBtn">লেভেল বদলাই</button><button class="gbtn ghost" id="shareBtn">কপি করে শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+
+    <div class="over" id="gate" hidden>
+      <div class="card">
+        <div style="font-size:2.4rem;line-height:1">🤼</div>
+        <h2 id="gateT">আগে লগইন করুন</h2>
+        <p id="gateP">মাঠে নামতে হলে আগে নাম লেখাতে হবে! হাবে গিয়ে লগইন করে আসেন।</p>
+        <a class="gbtn" href="/" id="gateA">হাবে গিয়ে লগইন করুন</a>
+      </div>
+    </div>
+  </div>
+  <div class="ctl"><div class="hint" id="hint">মাঠে আঙুল রেখে টেনে রেইডারকে চালান</div><button class="stopB grab" id="grabB" hidden>ধরো! 🤼</button></div>
+</div>
+
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { firebaseConfig, ADMIN_EMAILS } from "/js/firebase-config.js";
+import { attachGameVideos } from "/js/videos.js";
+
+const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
+attachGameVideos(cb => onSnapshot(doc(db, 'config', 'videos'), d => cb(d.exists() ? d.data() : {}), () => {}));
+const $ = id => document.getElementById(id);
+const bn = n => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const rnd = (a, b) => a + Math.random() * (b - a);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const store = { get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+const GAME = 'hadudu';
+
+/* ================= শব্দ ================= */
+let sndOn = store.get('kh-sfx', true), ac = null, crowdG = null;
+function audio() { if (!ac) { const A = window.AudioContext || window.webkitAudioContext; if (!A) return null; ac = new A(); } if (ac.state === 'suspended') ac.resume(); return ac; }
+function tone(fr, t, d, type, v, to) { const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(fr, t); if (to) o.frequency.exponentialRampToValueAtTime(to, t + d); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + d + .02); }
+function noise(t, d, v, fr, type) { const n = Math.max(1, Math.floor(ac.sampleRate * d)), b = ac.createBuffer(1, n, ac.sampleRate), x = b.getChannelData(0); for (let i = 0; i < n; i++) x[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 1.4); const s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain(); fl.type = type || 'lowpass'; fl.frequency.value = fr; s.buffer = b; g.gain.value = v; s.connect(fl); fl.connect(g); g.connect(ac.destination); s.start(t); }
+// "ডু" শব্দ: গলার মতো নিচু স্বর
+function du(t, f) { const o = ac.createOscillator(), g = ac.createGain(), fl = ac.createBiquadFilter(); o.type = 'sawtooth'; o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * .9, t + .14); fl.type = 'bandpass'; fl.frequency.value = 700; fl.Q.value = 3; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.16, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + .15); o.connect(fl); fl.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + .17); }
+const SFX = {
+  whistle() { const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain(), l = ac.createOscillator(), lg = ac.createGain(); o.frequency.value = 2800; l.frequency.value = 32; lg.gain.value = 220; l.connect(lg); lg.connect(o.frequency); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.14, t + .02); g.gain.setValueAtTime(.14, t + .35); g.gain.exponentialRampToValueAtTime(.0001, t + .45); o.connect(g); g.connect(ac.destination); o.start(t); l.start(t); o.stop(t + .5); l.stop(t + .5); },
+  tag() { const t = ac.currentTime; tone(900, t, .08, 'square', .12, 1400); noise(t, .05, .3, 3000, 'highpass'); },
+  thud() { const t = ac.currentTime; tone(110, t, .25, 'sine', .55, 50); noise(t, .2, .5, 500); },
+  point() { const t = ac.currentTime; [659, 880].forEach((f, i) => tone(f, t + i * .1, .18, 'triangle', .2)); },
+  bad() { const t = ac.currentTime; tone(240, t, .3, 'sawtooth', .1, 140); },
+  win() { const t = ac.currentTime; [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, t + i * .12, .3, 'triangle', .3)); },
+  lose() { const t = ac.currentTime; [392, 349, 311, 233].forEach((f, i) => tone(f, t + i * .2, .35, 'triangle', .25)); }
+};
+function sfx(n) { if (!sndOn || !audio()) return; try { SFX[n](); } catch (e) {} }
+function crowd(level, dur) {
+  if (!sndOn || !audio()) return;
+  if (!crowdG) { const n = ac.sampleRate * 2, b = ac.createBuffer(1, n, ac.sampleRate), x = b.getChannelData(0); for (let i = 0; i < n; i++) x[i] = Math.random() * 2 - 1; const s = ac.createBufferSource(); s.buffer = b; s.loop = true; const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 900; f.Q.value = .5; crowdG = ac.createGain(); crowdG.gain.value = .02; s.connect(f); f.connect(crowdG); crowdG.connect(ac.destination); s.start(); }
+  const t = ac.currentTime; crowdG.gain.cancelScheduledValues(t); crowdG.gain.setTargetAtTime(level, t, .06); crowdG.gain.setTargetAtTime(.02, t + (dur || 1.2), .5);
+}
+$('snd').onclick = () => { sndOn = !sndOn; store.set('kh-sfx', sndOn); $('snd').classList.toggle('off', !sndOn); if (crowdG) crowdG.gain.value = sndOn ? .02 : 0; };
+$('snd').classList.toggle('off', !sndOn);
+
+/* ================= ৩ডি মাঠ ================= */
+let renderer = null;
+try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: true }); } catch (e) {}
+const LOW = (navigator.hardwareConcurrency || 4) <= 2;
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(48, 1, .1, 300);
+scene.background = new THREE.Color('#bcd8ef'); scene.fog = new THREE.Fog('#d9e4d0', 40, 110);
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, LOW ? 1.25 : 2)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; renderer.shadowMap.enabled = !LOW; renderer.shadowMap.type = THREE.PCFSoftShadowMap; }
+scene.add(new THREE.HemisphereLight('#fff1d6', '#5b6b3a', 1.2));
+const sun = new THREE.DirectionalLight('#ffe0a8', 2.6); sun.position.set(-12, 18, 8); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -14, right: 14, top: 14, bottom: -14 }); sun.shadow.bias = -.0005; scene.add(sun);
+function ctex(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
+const M = (c, o) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: .9 }, o || {}));
+const FW = 10, FL = 13, BAULK = 3.75;
+// ঘাস আর মাঠ
+const grassT = ctex(512, 512, (x, w, h) => { x.fillStyle = '#6f8f3a'; x.fillRect(0, 0, w, h); for (let i = 0; i < 14000; i++) { const v = Math.random(); x.fillStyle = `rgba(${80 + v * 70},${110 + v * 60},${40 + v * 30},.5)`; x.fillRect(Math.random() * w, Math.random() * h, 1.5, 3 + Math.random() * 3); } });
+grassT.wrapS = grassT.wrapT = THREE.RepeatWrapping; grassT.repeat.set(14, 14);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), M('#6f8f3a', { map: grassT })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+const courtT = ctex(512, 666, (x, w, h) => {
+  x.fillStyle = '#a77b4f'; x.fillRect(0, 0, w, h);
+  for (let i = 0; i < 9000; i++) { const v = Math.random(); x.fillStyle = `rgba(${140 + v * 50},${100 + v * 40},${60 + v * 30},.4)`; x.fillRect(Math.random() * w, Math.random() * h, 2, 2); }
+  for (let i = 0; i < 40; i++) { x.fillStyle = 'rgba(90,60,30,.15)'; x.beginPath(); x.ellipse(Math.random() * w, Math.random() * h, 10 + Math.random() * 30, 5 + Math.random() * 15, Math.random() * 3, 0, 7); x.fill(); }
+  const Z = z => (z / FL + .5) * h, X = v => (v / FW + .5) * w;
+  x.strokeStyle = 'rgba(255,255,250,.92)'; x.lineWidth = 7; x.strokeRect(X(-FW / 2) + 4, 4, w - 8, h - 8);
+  x.lineWidth = 9; x.beginPath(); x.moveTo(0, Z(0)); x.lineTo(w, Z(0)); x.stroke();
+  x.lineWidth = 5; [BAULK, -BAULK].forEach(z => { x.beginPath(); x.moveTo(8, Z(z)); x.lineTo(w - 8, Z(z)); x.stroke(); });
+  x.setLineDash([14, 12]); x.lineWidth = 4; [4.75, -4.75].forEach(z => { x.beginPath(); x.moveTo(8, Z(z)); x.lineTo(w - 8, Z(z)); x.stroke(); });
+});
+const court = new THREE.Mesh(new THREE.PlaneGeometry(FW + .6, FL + .6), M('#a77b4f', { map: courtT })); court.rotation.x = -Math.PI / 2; court.position.y = .02; court.receiveShadow = true; scene.add(court);
+// দর্শক (চারপাশে) আর গাছপালা
+const crowdTex = (n, seed) => ctex(512, 128, (x, w, h) => { x.clearRect(0, 0, w, h); for (let r = 0; r < 2; r++) for (let i = 0; i < n; i++) { const cx = 12 + i * (w - 24) / (n - 1) + (r ? 14 : 0), cy = r ? 70 : 52, col = ['#e74c3c', '#2563eb', '#16a34a', '#f59e0b', '#9333ea', '#ffffff', '#0ea5e9'][(i * 3 + r + seed) % 7]; x.fillStyle = col; x.beginPath(); x.roundRect ? x.roundRect(cx - 11, cy, 22, 60, 7) : x.fillRect(cx - 11, cy, 22, 60); x.fill(); x.fillStyle = ['#c68642', '#8d5524', '#a86b3c', '#6b4423'][(i + seed) % 4]; x.beginPath(); x.arc(cx, cy - 10, 10, 0, 7); x.fill(); x.fillStyle = '#141414'; x.beginPath(); x.arc(cx, cy - 14, 10, Math.PI, 0); x.fill(); if ((i + r + seed) % 5 === 0) { x.fillStyle = '#f5f5f5'; x.beginPath(); x.arc(cx, cy - 15, 10, Math.PI, 0); x.fill(); } } });
+const crowds = [];
+[[0, -9.5, 0, 16], [0, 9.8, Math.PI, 16], [-7.6, 0, Math.PI / 2, 15], [7.6, 0, -Math.PI / 2, 15]].forEach(([x, z, r, w], i) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, 3), new THREE.MeshBasicMaterial({ map: crowdTex(18, i), transparent: true, side: THREE.DoubleSide })); m.position.set(x, 1.45, z); m.rotation.y = r; scene.add(m); crowds.push(m); });
+const leafM = M('#3f6b2a'), leafM2 = M('#4f7f30'), barkM = M('#5a3e28');
+function tree(x, z, s) { const g = new THREE.Group(); const tr = new THREE.Mesh(new THREE.CylinderGeometry(.25 * s, .4 * s, 4 * s, 7), barkM); tr.position.y = 2 * s; tr.castShadow = true; g.add(tr); for (let k = 0; k < 3; k++) { const c = new THREE.Mesh(new THREE.IcosahedronGeometry((2 - k * .3) * s, 0), k % 2 ? leafM : leafM2); c.position.set(rnd(-.7, .7) * s, (4 + k * 1.1) * s, rnd(-.7, .7) * s); c.castShadow = true; g.add(c); } g.position.set(x, 0, z); scene.add(g); }
+[[-12, -14, 1.4], [12, -15, 1.6], [-16, -4, 1.2], [16, -6, 1.3], [-14, 8, 1.2], [15, 10, 1.4], [-6, -20, 1.8], [6, -22, 1.7], [0, -26, 1.5]].forEach(a => tree(...a));
+// মাইক আর বাঁশের খুঁটিতে রঙিন কাগজ
+const bambooM = M('#c9a35a');
+[[-5.6, -7], [5.6, -7]].forEach(([x, z]) => { const p = new THREE.Mesh(new THREE.CylinderGeometry(.08, .1, 5, 6), bambooM); p.position.set(x, 2.5, z); p.castShadow = true; scene.add(p); });
+const flagM = ['#e74c3c', '#facc15', '#16a34a', '#2563eb'].map(c => new THREE.MeshStandardMaterial({ color: c, side: THREE.DoubleSide }));
+const tri = new THREE.BufferGeometry(); tri.setAttribute('position', new THREE.Float32BufferAttribute([-.18, 0, 0, .18, 0, 0, 0, -.38, 0], 3)); tri.computeVertexNormals();
+const bunting = [];
+[[-5.6, 5.6, -7]].forEach(([a, b, z]) => { for (let i = 0; i <= 22; i++) { const t = i / 22, m = new THREE.Mesh(tri, flagM[i % 4]); m.position.set(a + (b - a) * t, 4.8 - Math.sin(t * Math.PI) * .9, z); scene.add(m); bunting.push(m); } });
+[[-5.6, -7, 5.6, 7], [5.6, -7, -5.6, 7]].forEach(() => {});
+
+// খেলোয়াড়ের মডেল (গেঞ্জি আর লুঙ্গি/হাফপ্যান্ট)
+const SKIN = ['#c68642', '#8d5524', '#a86b3c', '#b07a4a'];
+function shirtTex(c, n) { return ctex(64, 64, (x, w, h) => { x.fillStyle = c; x.fillRect(0, 0, w, h); x.fillStyle = 'rgba(255,255,255,.9)'; x.font = '800 30px sans-serif'; x.textAlign = 'center'; x.fillText(String(n), w / 2, 44); }); }
+const shortsM = [M('#1f2937'), M('#1e3a8a')];
+function mkMan(team, n) {
+  const g = new THREE.Group(), body = new THREE.Group(); g.add(body);
+  const skin = M(pick(SKIN), { roughness: .7 }), shirt = new THREE.MeshStandardMaterial({ map: shirtTex(team ? '#dc2626' : '#16a34a', n), roughness: .8 });
+  const box = (w, h, d, x, y, z, m) => { const me = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); me.position.set(x, y, z); me.castShadow = true; body.add(me); return me; };
+  box(.46, .55, .26, 0, 1.2, 0, shirt); box(.46, .26, .28, 0, .82, 0, shortsM[team]);
+  const mk = (x, y, w, h) => { const p = new THREE.Group(); p.position.set(x, y, 0); const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, w), skin); m.position.y = -h / 2; m.castShadow = true; p.add(m); body.add(p); return p; };
+  const legL = mk(-.12, .72, .15, .7), legR = mk(.12, .72, .15, .7), armL = mk(-.31, 1.45, .12, .58), armR = mk(.31, 1.45, .12, .58);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(.16, 14, 10), skin); head.position.y = 1.67; head.castShadow = true; body.add(head);
+  const hair = new THREE.Mesh(new THREE.SphereGeometry(.17, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), M('#111')); hair.position.y = 1.7; body.add(hair);
+  g.scale.setScalar(1.25); scene.add(g); return { g, body, legL, legR, armL, armR };
+}
+const star = new THREE.Mesh(new THREE.OctahedronGeometry(.18, 0), new THREE.MeshBasicMaterial({ color: '#ffd23f' })); star.visible = false; scene.add(star);
+const ring = new THREE.Mesh(new THREE.RingGeometry(.5, .66, 28), new THREE.MeshBasicMaterial({ color: '#ffd23f', transparent: true, opacity: .8, side: THREE.DoubleSide, depthWrite: false })); ring.rotation.x = -Math.PI / 2; ring.visible = false; scene.add(ring);
+const reachRing = new THREE.Mesh(new THREE.RingGeometry(2.25, 2.4, 40), new THREE.MeshBasicMaterial({ color: '#ff5a3c', transparent: true, opacity: .55, side: THREE.DoubleSide, depthWrite: false })); reachRing.rotation.x = -Math.PI / 2; reachRing.visible = false; scene.add(reachRing);
+const dustTex = ctex(64, 64, (x) => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(200,160,110,.85)'); g.addColorStop(1, 'rgba(200,160,110,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); });
+const dusts = Array.from({ length: 16 }, () => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: dustTex, transparent: true, depthWrite: false, opacity: 0 })); s.visible = false; scene.add(s); return { s, t: 1 }; });
+let dI = 0; function dust(x, z, k) { for (let i = 0; i < 4; i++) { const d = dusts[dI++ % dusts.length]; d.t = 0; d.k = k || 1; d.s.visible = true; d.s.position.set(x + rnd(-.5, .5), .3, z + rnd(-.5, .5)); } }
+
+/* ================= খেলার অবস্থা ================= */
+// দল ০ = আমাদের (z > 0, ক্যামেরার দিকে), দল ১ = পাশের গ্রাম (z < 0)
+const HOME = [[-4, 3.1], [-2.5, 3.9], [-.9, 4.4], [.9, 4.4], [2.5, 3.9], [4, 3.1], [0, 5.5]];
+const LV = [{ n: 'স্কুলের দল', dsp: 3.1, rsp: 3.5, agg: .55, react: .5 }, { n: 'গ্রামের দল', dsp: 3.6, rsp: 4.0, agg: .8, react: .32 }, { n: 'জেলা চ্যাম্পিয়ন', dsp: 4.1, rsp: 4.5, agg: 1, react: .2 }];
+const RAIDS = 8, BREATH = 10;
+let lv = 1, T = null, S = null, W = 0, H = 0, last = 0;
+const homeOf = (team, i) => { const [x, z] = HOME[i]; return team ? [-x, -z] : [x, z]; };
+function newMatch() {
+  if (T) T.forEach(tm => tm.forEach(p => scene.remove(p.m.g)));
+  T = [0, 1].map(team => HOME.map((h, i) => { const m = mkMan(team, i + 1), [x, z] = homeOf(team, i); m.g.position.set(x, 0, z); m.g.rotation.y = team ? 0 : Math.PI; return { m, x, z, out: false, team, i, vx: 0, vz: 0, tagged: false, dive: 0 }; }));
+  S = { score: [0, 0], raid: 0, side: 0, phase: 'intro', t: 0, raider: null, tags: [], breath: BREATH, entered: false, grabUsed: false, held: 0, struggle: 0, myTags: 0, myTackles: 0, over: false, rIdx: [0, 0], joy: null, cpuPlan: null, msgT: 0 };
+}
+const alive = team => T[team].filter(p => !p.out);
+function revive(team, n) { const outs = T[team].filter(p => p.out); for (let k = 0; k < n && k < outs.length; k++) { const p = outs[k]; p.out = false; const [x, z] = homeOf(team, p.i); p.x = x; p.z = z; p.m.g.visible = true; p.m.g.position.set(x, 0, z); p.m.body.rotation.x = 0; } }
+function setOut(p) { p.out = true; p.tagged = false; p.x = (p.team ? -1 : 1) * 5.9 + (p.team ? -1 : 1) * (p.i % 2) * .7; p.z = (p.team ? -1 : 1) * (1 + Math.floor(p.i / 2) * .9); p.m.g.position.set(p.x, 0, p.z); p.m.body.rotation.x = 0; p.m.g.rotation.y = p.team ? Math.PI / 2 : -Math.PI / 2; }
+function addPoints(team, n, why) { if (n <= 0) return; S.score[team] += n; revive(team, n); hud(); }
+function allOutCheck() { for (const t of [0, 1]) if (!alive(t).length) { S.score[1 - t] += 2; revive(t, 7); shout('সবাই আউট! লোনা +২', t ? '#9dffb8' : '#ff9a8a'); $('com').textContent = '🎙️ ' + (t ? 'পাশের গ্রামের সবাই আউট! আমাদের দুই পয়েন্ট বোনাস!' : 'আমাদের সবাই আউট! ওরা দুই পয়েন্ট বোনাস পাইলো।'); hud(); } }
+function shout(text, col) { const e = $('say'); e.textContent = text; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(shout.t); shout.t = setTimeout(() => e.hidden = true, 1500); }
+function hud() { $('sMe').textContent = bn(S.score[0]); $('sOp').textContent = bn(S.score[1]); $('nOp').textContent = LV[lv].n; $('pMe').classList.toggle('on', S.side === 0); $('pOp').classList.toggle('on', S.side === 1); }
+const COM = {
+  myTag: ['ছুঁয়ে দিছে! এখন ফেরেন জলদি!', 'একটারে ছুঁইছে! মাঠ কাঁপতেছে!', 'চালাক রেইডার! আরেকটা?'],
+  back: ['নিরাপদে ফিরছে! পয়েন্ট আমাদের!', 'দাগ পার! আমাদের গ্রামে উল্লাস!'],
+  caught: ['ধইরা ফেলছে! রেইডার আউট!', 'চাইরজনে মিলা জাপটাইয়া ধরলো!'],
+  escape: ['ছুটে গেছে! কী শক্তি! দাগ ছুঁইয়া দিলো!', 'জাপটা খাইয়াও ছুটে আসলো! বাঘের বাচ্চা!'],
+  breath: ['দম ফুরাইয়া গেছে! আউট!', 'হা-ডু-ডু থামলো, রেইডার আউট!'],
+  tackle: ['ধরছে! দারুণ ট্যাকেল!', 'ওদের রেইডার মাটিতে! আমাদের পয়েন্ট!'],
+  miss: ['ফসকাইয়া গেল! ভুল সময়ে ঝাঁপ!', 'হায় হায়, ধরতে গিয়া নিজেরাই পড়লো!'],
+  empty: ['খালি রেইড, কেউ কাউকে ছুঁইতে পারলো না', 'ভয়ে ভয়ে ফিরা আসলো!']
+};
+function com(k) { $('com').textContent = '🎙️ ' + pick(COM[k]); }
+
+/* ---------- রেইড শুরু ---------- */
+function nextRaid() {
+  T.forEach(tm => tm.forEach(p => { p.tagged = false; p.dive = 0; if (!p.out) { const [x, z] = homeOf(p.team, p.i); p.tx = x; p.tz = z; } }));
+  if (S.raid >= RAIDS * 2) return endMatch();
+  S.side = S.raid % 2; S.raid++; S.phase = 'intro'; S.t = 0; S.tags = []; S.breath = BREATH; S.entered = false; S.grabUsed = false; S.held = 0; S.joy = null;
+  const team = S.side, al = alive(team); S.rIdx[team] = (S.rIdx[team] + 1) % al.length; const r = al[S.rIdx[team] % al.length]; S.raider = r;
+  r.x = 0; r.z = team ? -.8 : .8; r.m.g.position.set(r.x, 0, r.z);
+  hud(); $('dom').hidden = true; $('grabB').hidden = true; reachRing.visible = false;
+  $('hint').textContent = (team === 0 ? 'আপনার রেইড ' : 'ওদের রেইড ') + bn(Math.ceil(S.raid / 2)) + '/' + bn(RAIDS) + (team === 0 ? ' · মাঠে আঙুল টেনে চালান' : ' · ঠিক সময়ে "ধরো!" চাপুন');
+  shout(team === 0 ? 'আপনার রেইড!' : 'ওদের রেইড!', team === 0 ? '#ffe27a' : '#ffb27a');
+  S.cpuPlan = { want: Math.random() < LV[lv].agg * .5 ? 2 : 1, target: null, retreat: false };
+}
+function raidResult(kind) {
+  S.phase = 'result'; S.t = 0; $('dom').hidden = true; $('grabB').hidden = true; reachRing.visible = false; star.visible = ring.visible = false; $('joy').hidden = true; S.joy = null;
+  const atk = S.side, def = 1 - atk, r = S.raider;
+  if (kind === 'back') {
+    const n = S.tags.length; S.tags.forEach(setOut); addPoints(atk, n);
+    if (n) { sfx('point'); crowd(atk ? .08 : .3, 1.6); shout('+' + bn(n) + ' পয়েন্ট!', atk ? '#ff9a8a' : '#9dffb8'); com(atk ? 'back' : 'back'); if (!atk) S.myTags += n; if (atk) $('com').textContent = '🎙️ ওদের রেইডার ' + bn(n) + 'জনকে ছুঁইয়া ফিরা গেল!'; }
+    else { com('empty'); }
+  } else if (kind === 'caught' || kind === 'breath') {
+    setOut(r); addPoints(def, 1); sfx(kind === 'caught' ? 'thud' : 'bad'); crowd(def === 0 ? .3 : .08, 1.6);
+    if (kind === 'breath') com('breath'); else if (atk === 1) { com('tackle'); S.myTackles++; } else com('caught');
+    shout(def === 0 ? (kind === 'breath' ? 'দম শেষ! +১' : 'ধরা পড়লো! +১') : 'রেইডার আউট!', def === 0 ? '#9dffb8' : '#ff9a8a');
+  } else if (kind === 'escape') {
+    const n = S.tags.length + S.held; S.tags.forEach(setOut); T[def].filter(p => p.holding).forEach(setOut); addPoints(atk, n || 1);
+    sfx('point'); crowd(atk === 0 ? .4 : .1, 2); com('escape'); shout('ছুটে গেছে! +' + bn(n || 1), atk === 0 ? '#9dffb8' : '#ff9a8a'); if (atk === 0) S.myTags += n;
+  }
+  T.forEach(tm => tm.forEach(p => { p.holding = false; }));
+  allOutCheck();
+}
+function endMatch() {
+  S.over = true; S.phase = 'end'; $('dom').hidden = true; $('grabB').hidden = true;
+  const [a, b] = S.score, won = a > b, sc = Math.max(10, (won ? 300 + lv * 150 : 0) + Math.max(0, a - b) * 20 + S.myTags * 10 + S.myTackles * 15);
+  $('endT').textContent = won ? 'আমাদের গ্রাম জিতছে! 🏆' : a === b ? 'ড্র! সমান সমান' : 'পাশের গ্রাম জিতলো';
+  $('endTitle').textContent = won ? (lv === 2 ? 'জেলার হাডুডু বীর' : 'গ্রামের হিরো') : a === b ? 'লড়াকু দল' : 'আগামী বছর শোধ';
+  $('endLine').textContent = (won ? 'মাইকে ঘোষণা: "আমাদের গ্রামের জয়! আজকে খিচুড়ি হবে!"' : a === b ? 'দুই গ্রামের হাড্ডাহাড্ডি লড়াই, কেউ হারলো না।' : 'পাশের গ্রামের লোকেরা ঢোল বাজাইতেছে…') + ' (' + bn(a) + ' - ' + bn(b) + ')';
+  $('eS').textContent = bn(sc); $('eK').textContent = bn(S.myTags); $('eL').textContent = bn(S.myTackles);
+  const best = store.get('kh-hadudu-best', 0); if (sc > best) store.set('kh-hadudu-best', sc);
+  $('eBest').textContent = 'আপনার সেরা: ' + bn(Math.max(best, sc)); $('eTip').textContent = pick(TIPS);
+  setTimeout(() => { $('endO').hidden = false; sfx(won ? 'win' : 'lose'); crowd(won ? .4 : .05, 2.5); if (won && window.KHViral) KHViral.confetti(); }, 900);
+  saveScore(sc); lastScore = sc;
+}
+const TIPS = ['জানেন কি? হাডুডু (কাবাডি) বাংলাদেশের জাতীয় খেলা। ১৯৭২ সালে একে জাতীয় খেলার মর্যাদা দেওয়া হয়।', 'জানেন কি? হাডুডুতে দম ধরে রাখার অনুশীলন ফুসফুস শক্ত করে, আর দৌড়ঝাঁপে শরীর থাকে চাঙ্গা।', 'জানেন কি? দক্ষিণ এশিয়ার বিভিন্ন দেশে কাবাডির নানা নাম: বাংলাদেশে হাডুডু, ভারতে কাবাডি, নেপালে ডুডু।'];
+let lastScore = 0;
+
+/* ---------- নিয়ন্ত্রণ: জয়স্টিক (রেইড), ধরো (ডিফেন্স), বারবার চাপ (ছোটা) ---------- */
+$('stage').addEventListener('pointerdown', e => {
+  if (e.target.closest('.over,.chost,button') || !S || S.over) return; audio();
+  if (S.phase === 'struggle' && S.side === 0) { S.struggle += 1; sfx('tag'); return; }
+  if (S.side === 0 && (S.phase === 'raid' || S.phase === 'intro')) { const r = $('stage').getBoundingClientRect(); S.joy = { x: e.clientX, y: e.clientY, dx: 0, dy: 0, id: e.pointerId }; const j = $('joy'); j.style.left = (e.clientX - r.left) + 'px'; j.style.top = (e.clientY - r.top) + 'px'; j.hidden = false; $('knob').style.transform = ''; try { $('stage').setPointerCapture(e.pointerId); } catch (er) {} }
+});
+$('stage').addEventListener('pointermove', e => { if (!S || !S.joy || e.pointerId !== S.joy.id) return; let dx = e.clientX - S.joy.x, dy = e.clientY - S.joy.y; const L = Math.hypot(dx, dy), mx = 45; if (L > mx) { dx *= mx / L; dy *= mx / L; } S.joy.dx = dx / mx; S.joy.dy = dy / mx; $('knob').style.transform = `translate(${dx}px,${dy}px)`; });
+['pointerup', 'pointercancel'].forEach(ev => $('stage').addEventListener(ev, e => { if (S && S.joy && e.pointerId === S.joy.id) { S.joy = null; $('joy').hidden = true; } }));
+$('grabB').addEventListener('pointerdown', e => { e.preventDefault(); grab(); });
+function grab() {
+  if (!S || S.side !== 1 || S.phase !== 'raid' || S.grabUsed) return; S.grabUsed = true; $('grabB').hidden = true;
+  const r = S.raider, defs = alive(0).map(p => ({ p, d: Math.hypot(p.x - r.x, p.z - r.z) })).sort((a, b) => a.d - b.d);
+  const near = defs.filter(o => o.d < 2.3), divers = defs.filter(o => o.d < 3.4).slice(0, 3);
+  divers.forEach(o => { o.p.dive = .55; o.p.dx = r.x; o.p.dz = r.z; });
+  const okP = [.9, .75, .6][lv] + (near.length >= 3 ? .15 : 0);
+  if (near.length >= 2 && Math.random() < okP) { S.phase = 'tackled'; S.t = 0; r.held = true; sfx('thud'); dust(r.x, r.z, 1.6); crowd(.35, 1.5); if (navigator.vibrate) try { navigator.vibrate(60); } catch (e) {} }
+  else { sfx('bad'); com('miss'); divers.forEach(o => { if (o.d < 3.4 && !S.tags.includes(o.p)) { o.p.tagged = true; S.tags.push(o.p); } }); S.cpuPlan.retreat = true; dust(r.x, r.z, .8); }
+}
+
+/* ---------- প্রতি ফ্রেম ---------- */
+function moveTo(p, tx, tz, sp, dt) { const dx = tx - p.x, dz = tz - p.z, L = Math.hypot(dx, dz); if (L < .05) { p.vx = p.vz = 0; return 0; } const s = Math.min(sp, L / dt); p.vx = dx / L * s; p.vz = dz / L * s; p.x += p.vx * dt; p.z += p.vz * dt; return L; }
+function step(dt) {
+  S.t += dt; const r = S.raider, atk = S.side, def = 1 - atk, L = LV[lv];
+  if (S.phase === 'intro') { if (S.t > 1.1) { S.phase = 'raid'; S.t = 0; sfx('whistle'); $('dom').hidden = false; if (atk === 1) { $('grabB').hidden = false; reachRing.visible = true; } } }
+  else if (S.phase === 'raid') {
+    S.breath -= dt; const inOpp = atk === 0 ? r.z < 0 : r.z > 0;
+    if (inOpp && Math.abs(r.z) > .7) S.entered = true;
+    // রেইডার চলা
+    if (atk === 0) { if (S.joy) { const sp = 4.3; r.x += S.joy.dx * sp * dt; r.z += S.joy.dy * sp * dt; r.vx = S.joy.dx * sp; r.vz = S.joy.dy * sp; } else r.vx = r.vz = 0; }
+    else { // কম্পিউটার রেইডার
+      const P = S.cpuPlan, mine = alive(0).filter(p => !p.tagged);
+      const close = alive(0).filter(p => Math.hypot(p.x - r.x, p.z - r.z) < 2.2).length;
+      if (S.tags.length >= P.want || S.breath < 3.6 || (close >= 3 && S.tags.length) || (close >= 2 && S.t > 2 && Math.random() < dt * 2 * L.agg)) P.retreat = true;
+      if (P.retreat || !mine.length) moveTo(r, r.x * .9, -1.2, L.rsp * 1.05, dt);
+      else { if (!P.target || P.target.tagged || P.target.out) P.target = mine.sort((a, b) => Math.hypot(a.x - r.x, a.z - r.z) - Math.hypot(b.x - r.x, b.z - r.z))[0]; const dT = Math.hypot(P.target.x - r.x, P.target.z - r.z); moveTo(r, P.target.x + Math.sin(S.t * 3) * .5, P.target.z - .2, L.rsp * (dT < 1.7 ? 1.7 : dT > 2.6 ? 1 : .55), dt); }
+    }
+    r.x = clamp(r.x, -FW / 2 + .2, FW / 2 - .2); r.z = clamp(r.z, -FL / 2 + .2, FL / 2 - .2);
+    // ছোঁয়া
+    for (const p of alive(def)) if (!p.tagged && Math.hypot(p.x - r.x, p.z - r.z) < .85) { p.tagged = true; S.tags.push(p); sfx('tag'); crowd(.18, .8); if (atk === 0) { shout('ছুঁইছে! ✋', '#ffe27a'); com('myTag'); const helper = alive(def).find(q => q !== p && Math.hypot(q.x - r.x, q.z - r.z) < 1.7); if (helper && Math.random() < L.agg * .3) { S.phase = 'struggle'; S.t = 0; S.struggle = 0; p.holding = helper.holding = true; S.held = 2; sfx('thud'); dust(r.x, r.z, 1.4); shout('গোড়ালি ধরছে! বারবার চাপুন!', '#ff9a8a'); $('hint').textContent = '👆👆 দ্রুত বারবার চাপুন, মাঝের দাগের দিকে ছুটুন!'; return; } } else $('com').textContent = '🎙️ ' + (p.i + 1) + ' নম্বররে ছুঁইয়া দিছে! ধরেন!'; }
+    // ডিফেন্ডার
+    const defs = alive(def);
+    if (atk === 0) { // কম্পিউটার ডিফেন্স: ঘিরে ধরা
+      const deep = -r.z, hunt = S.tags.length > 0 || deep > BAULK - .4 || S.t > 3.5;
+      defs.forEach((p, k) => {
+        const [hx, hz] = homeOf(1, p.i); let tx = hx + r.x * .35, tz = hz;
+        if (hunt) { const d = Math.hypot(p.x - r.x, p.z - r.z); if (d < 4.2 * L.agg + 1) { tx = r.x + (p.x - r.x) * .1; tz = r.z + .25 + (k % 2 ? .3 : -.3); } }
+        // ফেরার পথ আটকানো
+        if (hunt && k === defs.length - 1) { tx = r.x; tz = Math.min(-.4, r.z + 1.3); }
+        moveTo(p, tx, tz, L.dsp * (hunt ? (S.tags.length ? 1.25 : 1) : .6), dt);
+      });
+      const grabbers = defs.filter(p => Math.hypot(p.x - r.x, p.z - r.z) < 1.15);
+      if (grabbers.length >= 2 && r.z < -.3) { S.held += dt; if (S.held > L.react) { S.phase = 'struggle'; S.t = 0; S.struggle = 0; grabbers.forEach(p => p.holding = true); S.held = grabbers.length; sfx('thud'); dust(r.x, r.z, 1.4); shout('ধরা পড়ছেন! বারবার চাপুন!', '#ff9a8a'); $('hint').textContent = '👆👆 দ্রুত বারবার চাপুন, মাঝের দাগের দিকে ছুটুন!'; if (navigator.vibrate) try { navigator.vibrate([60, 40, 60]); } catch (e) {} } }
+      else S.held = Math.max(0, S.held - dt);
+    } else { // আমার ডিফেন্ডাররা নিজে থেকে সাজে, রেইডারের দিকে সরে
+      defs.forEach(p => { if (p.dive > 0) return; const [hx, hz] = homeOf(0, p.i); const deep = r.z; let tx = hx + clamp(r.x * .45, -1.5, 1.5), tz = hz - (deep > 2 ? .6 : 0); if (S.tags.length && Math.hypot(p.x - r.x, p.z - r.z) < 3) { tx = (tx + r.x) / 2; tz = (tz + r.z) / 2; } moveTo(p, tx, tz, 2.6, dt); });
+      reachRing.position.set(r.x, .05, r.z);
+      const nearN = defs.filter(p => Math.hypot(p.x - r.x, p.z - r.z) < 2.3).length; reachRing.material.color.set(nearN >= 2 ? '#22c55e' : '#ff5a3c');
+    }
+    // ফেরা, দম
+    const home = atk === 0 ? r.z > .15 : r.z < -.15;
+    if (S.entered && home) return raidResult('back');
+    if (S.breath <= 0) return raidResult(home ? 'back' : 'breath');
+    if (!S.entered && S.t > 6) return raidResult(home ? 'back' : 'breath');
+    $('domB').style.width = clamp(S.breath / BREATH * 100, 0, 100) + '%';
+    $('chant').textContent = 'হা-ডু-ডু' + '-ডু'.repeat(Math.floor(S.t * 2.5) % 5);
+    $('domT').textContent = 'দম ' + bn(Math.ceil(Math.max(0, S.breath))) + ' সেকেন্ড' + (S.tags.length ? ' · ছোঁয়া ' + bn(S.tags.length) : '');
+    if (sndOn && ac && Math.floor(S.t * 2.5) !== Math.floor((S.t - dt) * 2.5)) du(ac.currentTime, atk === 0 ? 200 : 170);
+  }
+  else if (S.phase === 'struggle') { // ধরা পড়ার পর ছোটার চেষ্টা
+    const need = 3 + lv * 1.2; r.z += S.struggle * .25; S.struggle = 0; r.z -= dt * (.2 + lv * .1);
+    alive(def).filter(p => p.holding).forEach(p => { p.x += (r.x - p.x) * .2; p.z += (r.z - p.z) * .2; });
+    $('domT').textContent = 'ছুটুন! মাঝের দাগ পর্যন্ত যান'; $('domB').style.width = clamp(100 - S.t / 1.8 * 100, 0, 100) + '%';
+    if (r.z > .1) return raidResult('escape');
+    if (S.t > 1.8) return raidResult('caught');
+  }
+  else if (S.phase === 'tackled') { if (S.t > .7) raidResult('caught'); }
+  else if (S.phase === 'result') { if (S.t > 1.8) nextRaid(); }
+  // ডাইভ অ্যানিমেশন
+  T.forEach(tm => tm.forEach(p => { if (p.dive > 0) { p.dive -= dt; p.x += (p.dx - p.x) * dt * 5; p.z += (p.dz - p.z) * dt * 5; } }));
+  if (S.phase !== 'raid' && S.phase !== 'struggle') T.forEach(tm => tm.forEach(p => { if (p.out || p === S.raider && S.phase === 'tackled') return; const [hx, hz] = homeOf(p.team, p.i); if (p !== S.raider || S.phase === 'result' || S.phase === 'intro') moveTo(p, p === S.raider && S.phase === 'intro' ? p.x : hx, p === S.raider && S.phase === 'intro' ? p.z : hz, 2.2, dt); }));
+}
+function pose(p, T0) {
+  const g = p.m.g, sp = Math.hypot(p.vx || 0, p.vz || 0), run = Math.min(1, sp / 3);
+  g.position.set(p.x, 0, p.z);
+  if (sp > .2) g.rotation.y = Math.atan2(p.vx, p.vz);
+  else if (!p.out) { const r = S && S.raider; if (r && r !== p) g.rotation.y = Math.atan2(r.x - p.x, r.z - p.z); }
+  const s = Math.sin(T0 * 13 + p.i) * run; p.m.legL.rotation.x = s * .9; p.m.legR.rotation.x = -s * .9; p.m.armL.rotation.x = -s * .8; p.m.armR.rotation.x = s * .8;
+  // ডিফেন্ডারের ঝুঁকে থাকা ভঙ্গি, ডাইভ, ধরা
+  const crouch = !p.out && S && S.phase === 'raid' && p.team !== S.side ? .35 : 0;
+  p.m.body.rotation.x = p.dive > 0 || p.holding ? 1.1 : crouch; p.m.body.position.y = p.dive > 0 ? -.5 : 0;
+  if (crouch && !run) { p.m.armL.rotation.x = p.m.armR.rotation.x = -.9; }
+  if (p.out) { p.m.body.rotation.x = 0; p.m.legL.rotation.x = p.m.legR.rotation.x = -1.4; p.m.body.position.y = -.55; }
+}
+
+/* ---------- ক্যামেরা আর লুপ ---------- */
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 60 : 46; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+const camPos = new THREE.Vector3(0, 13, 14), camLook = new THREE.Vector3(0, 0, -.5);
+function loop(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  if (S && !S.over) step(dt);
+  if (T) T.forEach(tm => tm.forEach(p => pose(p, T0)));
+  if (S && S.raider && !S.over && (S.phase === 'raid' || S.phase === 'intro' || S.phase === 'struggle')) { const r = S.raider; star.visible = true; star.position.set(r.x, 2.7 + Math.sin(T0 * 6) * .08, r.z); star.rotation.y = T0 * 3; ring.visible = S.side === 0; ring.position.set(r.x, .05, r.z); }
+  dusts.forEach(d => { if (d.t >= 1) { d.s.visible = false; return; } d.t = Math.min(1, d.t + dt * 1.6); const s = .8 + d.t * 2.6 * d.k; d.s.scale.set(s, s, 1); d.s.material.opacity = (1 - d.t) * .6; d.s.position.y += dt * .7; });
+  crowds.forEach((c, i) => c.position.y = 1.45 + Math.abs(Math.sin(T0 * (S && S.phase === 'result' ? 9 : 2.5) + i)) * (S && S.phase === 'result' ? .18 : .04));
+  bunting.forEach((m, i) => m.rotation.x = Math.sin(T0 * 3 + i) * .3);
+  const fz = S && S.raider ? clamp(S.raider.z, -4, 4) : 0, port = W / H < .8;
+  camPos.set(0, port ? 12.5 : 10.5, (port ? 10.5 : 11) + fz * .4); camLook.set(0, 0, -1.6 + fz * .5);
+  cam.position.lerp(camPos, .06); cam.lookAt(camLook);
+  if (renderer) renderer.render(scene, cam); requestAnimationFrame(loop);
+}
+function start(level) {
+  audio(); lv = level; store.set('kh-hadudu-lv', lv); newMatch(); hud(); ['startO', 'endO'].forEach(i => $(i).hidden = true);
+  $('com').textContent = '🎙️ মাইকে: "আমাদের গ্রাম বনাম ' + LV[lv].n + '! প্রথম রেইড আমাদের!"'; crowd(.25, 2); nextRaid();
+}
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = () => start(+b.dataset.lv));
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `খেলাঘরে হাডুডুতে ${bn(lastScore)} পয়েন্ট! 🤼 হা-ডু-ডু-ডু! ${location.origin}/games/hadudu/`; try { navigator.clipboard.writeText(t).then(() => { $('shareBtn').textContent = 'কপি হয়েছে ✓'; setTimeout(() => $('shareBtn').textContent = 'কপি করে শেয়ার', 2000); }, () => {}); } catch (e) {} };
+lv = store.get('kh-hadudu-lv', 1); newMatch(); S.over = true; resize(); cam.position.copy(camPos);
+if (renderer) renderer.compile(scene, cam);
+last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+
+/* ================= লগইন, স্কোর, মেরামত ================= */
+let user = null, prof = null, gameSt = 'live', siteMaint = false;
+function gate() {
+  const admin = user && ADMIN_EMAILS.includes(user.email), off = !admin && (gameSt === 'maint' || gameSt === 'hidden' || siteMaint);
+  if (off) { $('gateT').textContent = 'মাঠ আজ বন্ধ!'; $('gateP').textContent = 'মাঠে পানি জমছে, একটু পরে আসেন।'; $('gateA').textContent = 'হাবে ফিরে যান'; }
+  else if (user && prof && prof.banned) { $('gateT').textContent = 'একাউন্ট বন্ধ'; $('gateP').textContent = 'হাবের যোগাযোগ পাতায় অ্যাডমিনকে লিখুন।'; $('gateA').textContent = 'হাবে ফিরে যান'; }
+  else if (user && !prof) { $('gateT').textContent = 'আগে ইউজারনেম'; $('gateP').textContent = 'হাবে গিয়ে ইউজারনেম বেছে নিন, তারপর খেলুন।'; $('gateA').textContent = 'হাবে যান'; }
+  $('gate').hidden = !(!user || !prof || prof.banned || off);
+}
+onAuthStateChanged(auth, u => {
+  user = u; if (!u) { prof = null; gate(); return; }
+  onSnapshot(doc(db, 'users', u.uid), s => { prof = s.exists() ? s.data() : null; gate(); }, () => { prof = null; gate(); });
+  getDoc(doc(db, 'scores', GAME, 'players', u.uid)).then(d => { if (d.exists() && d.data().score > store.get('kh-hadudu-best', 0)) store.set('kh-hadudu-best', d.data().score); drawBest(); }).catch(() => {});
+});
+onSnapshot(doc(db, 'config', 'games'), d => { gameSt = ((d.exists() && d.data().status) || {})['হাডুডু'] || 'live'; if (gameSt === 'soon') gameSt = 'live'; gate(); }, () => {});
+onSnapshot(doc(db, 'config', 'site'), d => { siteMaint = !!(d.exists() && d.data().maintenance); gate(); }, () => {});
+function drawBest() { const b = store.get('kh-hadudu-best', 0); if (renderer) $('bestTxt').textContent = b ? 'আপনার সেরা স্কোর: ' + bn(b) : ''; }
+drawBest();
+let top = [];
+function drawLB() { const h = top.length ? '<h3>মাঠের সেরা খেলোয়াড়</h3>' + top.map((r, i) => `<div class="${user && r.id === user.uid ? 'me' : ''}"><em>${bn(i + 1)}</em><span>${esc(r.name)}</span><b>${bn(r.score)}</b></div>`).join('') : ''; $('lb1').innerHTML = h; $('lb2').innerHTML = h; }
+onSnapshot(query(collection(db, 'scores', GAME, 'players'), orderBy('score', 'desc'), limit(10)), s => { top = (s.docs || []).map(d => ({ id: d.id, ...d.data() })); drawLB(); }, () => {});
+async function saveScore(sc) {
+  if (!user || !prof || sc <= 0) return;
+  try { const ref = doc(db, 'scores', GAME, 'players', user.uid), d = await getDoc(ref); if (d.exists() && d.data().score >= sc) return; await setDoc(ref, { score: Math.min(100000, Math.round(sc)), name: prof.name, username: prof.username, at: serverTimestamp() }); } catch (e) {}
+}
+const MY_H = ['আজকে তোদের সবগুলারে ছুঁইয়া আসবো!', 'আমাদের গ্রামের দম সবচেয়ে বেশি!', 'ধরতে পারলে ধর দেখি!', 'হারলে খিচুড়ি তোদের খাওয়াইতে হবে!'];
+const OP_H = ['আগে দাগ তো পার হও!', 'চারজনে মিলা জাপটাইয়া ধরবো!', 'গত বছরের কথা মনে আছে তো?', 'দম রাখো, কথা কম কও!'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY_H, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP_H), 'M3', '🤼 পাশের গ্রাম', true), 2600); } });
+window.KHHadudu = { get S() { return S; }, get T() { return T; }, start, grab, joy: (dx, dy) => { S.joy = dx === null ? null : { dx, dy, id: -1 }; }, tap: () => { if (S.phase === 'struggle') S.struggle++; } };
+</script>
+<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
+</body></html>

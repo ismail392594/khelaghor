@@ -24,3 +24,7 @@
 
 ## প্রতিটা নতুন গেমের সাথে
 index.html GAMES-এ url, SHOT ম্যাপ + icons/shots/*.png, lbTabs চিপ, js/fun.js SOLO, admin BUILT + scGame, js/howto.js নোট, help/index.html অংশ, sitemap.xml, sw.js CORE + VERSION বাড়ানো, tools/build-voice-lines.mjs তালিকা, Playwright পরীক্ষা, কমিট + পুশ, ব্যবহারকারীকে আপডেট।
+
+## ৫. ✅ #১০ হাডুডু (শেষ, ৮ নভেম্বর)
+
+## ৬. পরের: #১১ কলব্রিজ, #১২ টুয়েন্টি নাইন (তাস, ৪ জন, কম্পিউটার সঙ্গী), #১৩ দাবা, #১৪ গোল্লাছুট, #১৫ দাড়িয়াবান্ধা, #১৬ কানামাছি
