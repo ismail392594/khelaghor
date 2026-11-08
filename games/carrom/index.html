@@ -48,6 +48,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .com{position:absolute;left:10px;right:10px;top:8px;z-index:3;text-align:center;font-weight:700;font-size:.85rem;color:#fff3d6;text-shadow:0 2px 4px rgba(0,0,0,.7);pointer-events:none}
 .say{position:absolute;left:50%;top:40%;transform:translateX(-50%);z-index:3;font-family:var(--display);font-weight:800;font-size:clamp(1.6rem,8vw,2.8rem);white-space:nowrap;text-shadow:0 4px 0 rgba(0,0,0,.45),0 0 24px rgba(0,0,0,.6);pointer-events:none;animation:sIn .5s cubic-bezier(.2,1.6,.4,1)}
 @keyframes sIn{from{transform:translateX(-50%) scale(.3);opacity:0}}
+.onl{display:flex;flex-direction:column;gap:6px;border-top:1px dashed var(--line);padding-top:10px}.onl p{margin:0}
 .chost{position:absolute;left:max(10px,env(safe-area-inset-left,0px));bottom:10px;z-index:3}
 .ctl{padding:8px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:linear-gradient(0deg,#33200f,#1e130b);display:flex;flex-direction:column;gap:6px;z-index:2}
 .hint{text-align:center;font-weight:700;font-size:.85rem;color:var(--muted);min-height:1.3em}
@@ -144,6 +145,7 @@ input[type=range]:disabled{opacity:.4}
         </div></div>
 <a href="/help/#carrom" style="color:inherit;opacity:.85;font-size:.85rem;font-weight:700;text-decoration:underline;align-self:center">📖 কিভাবে খেলবেন? পুরো নিয়ম পড়ুন</a>
         <button class="gbtn" id="goBtn">খেলা শুরু 🎯</button>
+        <div class="onl"><p>🌐 অনলাইনে বন্ধুদের সাথে (আলাদা ফোনে)</p><div class="acts"><button class="gbtn ghost" data-on="2">২ জনের রুম</button><button class="gbtn ghost" data-on="4">৪ জনের রুম (পার্টনার)</button></div><p class="small">রুম বানিয়ে বন্ধুকে ইউজারনেম দিয়ে ইনভাইট দিন বা লিংক পাঠান। সবাই এলে "খেলা শুরু"।</p></div>
         <p class="small" id="bestTxt"></p>
         <div class="lb" id="lb1"></div>
       </div>
@@ -358,7 +360,7 @@ function hud() {
   const qs = k => S.queen === k ? ' 👑' : (S.qPend !== null && S.seats[S.qPend].team === k) ? ' (রানী?)' : '';
   $('nMe').textContent = teamName('w') + ' · সাদা' + qs('w'); $('opName').textContent = teamName('b') + ' · কালো' + qs('b');
   const sd = seat(); $('pMe').classList.toggle('on', sd.team === 'w'); $('pOp').classList.toggle('on', sd.team === 'b');
-  $('turn').innerHTML = `<i class="${sd.team}"></i>${esc(sd.n)} এর পালা${sd.human ? '' : ' 🤖'}`;
+  $('turn').innerHTML = `<i class="${sd.team}"></i>${sd.n === "আপনি" ? "আপনার" : esc(sd.n) + " এর"} পালা${sd.human ? '' : ' 🤖'}`;
   const [bx, bz] = toW(sd.side, 0, BASE_Z); bar.position.x = bx; bar.position.z = bz; bar.rotation.z = sd.side % 2 ? Math.PI / 2 : 0; bar.material.color.set(sd.team === 'w' ? '#ffe9a8' : '#ff9a5a');
 }
 function shout(text, col) { const e = $('say'); e.textContent = text; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(shout.t); shout.t = setTimeout(() => e.hidden = true, 1300); }
@@ -371,7 +373,7 @@ function setStriker(lx) {
   badRing.visible = sd.human && !stValid(); badRing.position.set(x, .08, z);
 }
 const placeStriker = f => setStriker(f * BASE_X);
-$('pos').addEventListener('input', () => { if (S && seat().human && S.phase === 'place') { placeStriker($('pos').value / 100); sfx('tick'); } });
+$('pos').addEventListener('input', () => { if (S && seat().human && S.phase === 'place' && (!ON || seat().uid === ON.uid)) { placeStriker($('pos').value / 100); sfx('tick'); } });
 const nudge = d => { if (!S || !seat().human || S.phase !== 'place') return; $('pos').value = Math.max(-100, Math.min(100, +$('pos').value + d)); placeStriker($('pos').value / 100); sfx('tick'); };
 let hold = null; [['sL', -2], ['sR', 2]].forEach(([id, d]) => { const b = $(id); b.addEventListener('pointerdown', e => { e.preventDefault(); nudge(d * 2); clearInterval(hold); hold = setInterval(() => nudge(d), 40); }); ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, () => clearInterval(hold))); });
 
@@ -404,30 +406,32 @@ $('stage').addEventListener('pointerdown', e => {
 $('stage').addEventListener('pointermove', e => { if (!drag) return; const p = boardPt(e); if (!p) return; drag.a = aimFrom(drag.x - p.x, drag.z - p.z); drawAim(drag.a); $('hint').textContent = drag.a ? 'জোর: ' + bn(Math.round(drag.a.pw * 100)) + '% · ছাড়লেই শট' : 'পেছনে টানুন'; });
 $('stage').addEventListener('pointerup', () => { if (!drag) return; const a = drag.a; drag = null; drawAim(null); if (a && a.pw > .06) shoot(a.ux, a.uz, a.pw); else $('hint').textContent = 'আরেকটু বেশি টানুন, তারপর ছাড়ুন'; });
 $('stage').addEventListener('pointercancel', () => { drag = null; drawAim(null); });
-function shoot(ux, uz, pw) {
-  const v = 30 + pw * 230; S.st.vx = ux * v; S.st.vz = uz * v; S.phase = 'move'; S.shot = { pocketed: [] };
+function shoot(ux, uz, pw, remote) {
+  if (ON && !remote) { ON.anim = ON.cm.seq; onPost('shoot', { seq: ON.cm.seq, lx: S.lx, ux, uz, pw }).catch(e => { toastOn(e.message); applyPlace(ON.cm); }); }
+  S.acc = 0; const v = 30 + pw * 230; S.st.vx = ux * v; S.st.vz = uz * v; S.phase = 'move'; S.shot = { pocketed: [] };
   badRing.visible = false; $('pos').disabled = true; $('hint').textContent = ''; sfx('shot'); puff(S.st.x, S.st.z, pw);
 }
 
-/* ---------- ফিজিক্স ---------- */
+/* ---------- ফিজিক্স (স্থির ধাপে, সব ফোনে একই ফল) ---------- */
+const hyp = (a, b) => Math.sqrt(a * a + b * b);
 function physics(dt) {
   const P = S.pcs.filter(p => p.in);
-  for (const p of P) { const sp = Math.hypot(p.vx, p.vz); if (sp > 0) { const ns = Math.max(0, sp - (38 + sp * .55) * dt); p.vx *= ns / sp; p.vz *= ns / sp; } p.x += p.vx * dt; p.z += p.vz * dt; }
+  for (const p of P) { const sp = hyp(p.vx, p.vz); if (sp > 0) { const ns = Math.max(0, sp - (38 + sp * .55) * dt); p.vx *= ns / sp; p.vz *= ns / sp; } p.x += p.vx * dt; p.z += p.vz * dt; }
   for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) {
-    const a = P[i], b = P[j], dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz), rr = a.r + b.r; if (d >= rr || d === 0) continue;
+    const a = P[i], b = P[j], dx = b.x - a.x, dz = b.z - a.z, d = hyp(dx, dz), rr = a.r + b.r; if (d >= rr || d === 0) continue;
     const nx = dx / d, nz = dz / d, ov = rr - d, ta = b.mass / (a.mass + b.mass); a.x -= nx * ov * ta; a.z -= nz * ov * ta; b.x += nx * ov * (1 - ta); b.z += nz * ov * (1 - ta);
     const rv = (b.vx - a.vx) * nx + (b.vz - a.vz) * nz; if (rv >= 0) continue; const e = .92, jj = -(1 + e) * rv / (1 / a.mass + 1 / b.mass);
     a.vx -= jj / a.mass * nx; a.vz -= jj / a.mass * nz; b.vx += jj / b.mass * nx; b.vz += jj / b.mass * nz;
     if (-rv > 8) sfx('hit', -rv / 160); if (-rv > 40) puff(a.x + nx * a.r, a.z + nz * a.r, -rv / 200);
   }
   for (const p of P) {
-    for (const [px, pz] of POCKETS) if (Math.hypot(p.x - px, p.z - pz) < PR) { p.in = false; p.drop = .001; p.px = px; p.pz = pz; p.vx = p.vz = 0; S.shot.pocketed.push(p); sfx('pocket'); flashAt(px, pz); break; }
+    for (const [px, pz] of POCKETS) if (hyp(p.x - px, p.z - pz) < PR) { p.in = false; p.drop = .001; p.px = px; p.pz = pz; p.vx = p.vz = 0; S.shot.pocketed.push(p); sfx('pocket'); flashAt(px, pz); break; }
     if (!p.in) continue; const lim = HALF - p.r;
     if (p.x < -lim) { p.x = -lim; if (p.vx < 0) { if (-p.vx > 10) sfx('wall', -p.vx / 200); p.vx = -p.vx * .72; } } if (p.x > lim) { p.x = lim; if (p.vx > 0) { if (p.vx > 10) sfx('wall', p.vx / 200); p.vx = -p.vx * .72; } }
     if (p.z < -lim) { p.z = -lim; if (p.vz < 0) { if (-p.vz > 10) sfx('wall', -p.vz / 200); p.vz = -p.vz * .72; } } if (p.z > lim) { p.z = lim; if (p.vz > 0) { if (p.vz > 10) sfx('wall', p.vz / 200); p.vz = -p.vz * .72; } }
   }
 }
-const moving = () => S.pcs.some(p => p.in && Math.hypot(p.vx, p.vz) > .6);
+const moving = () => S.pcs.some(p => p.in && hyp(p.vx, p.vz) > .6);
 
 /* ---------- নিয়ম ---------- */
 function respawn(p) { const [x, z] = freeSpot(0, 0, RC); p.in = true; p.drop = 0; p.x = x; p.z = z; p.vx = p.vz = 0; p.m.visible = true; p.m.scale.setScalar(1); p.m.position.set(x, .45, z); }
@@ -453,17 +457,20 @@ function resolve() {
     const qOn = S.pcs.find(p => p.kind === 'q').in || S.qPend !== null;
     for (const k of ['w', 'b']) if (left(k) === 0 && qOn && !S.queen) { const c = S.pcs.find(p => p.kind === k && !p.in); respawn(c); if (k === mk) cont = false; $('com').textContent = '🎙️ আগে রানী তুলতে হবে! শেষ গুটি ফেরত গেল।'; }
   }
+  if (ON) return onlineDone(left('w') === 0 ? 'w' : left('b') === 0 ? 'b' : null, cont ? t : (t + 1) % S.seats.length);
   if (left('w') === 0 || left('b') === 0) { hud(); return endGame(left('w') === 0 ? 'w' : 'b'); }
   if (!cont) S.turn = (t + 1) % S.seats.length;
   startTurn();
 }
 function startTurn() {
-  const sd = seat(), prev = S.lastHuman; S.phase = sd.human ? 'place' : 'think'; hud();
-  if (humans() > 1 && sd.human) { camT = sd.side * Math.PI / 2; if (prev !== undefined && prev !== S.turn) { shout('📱 ' + sd.n + ' এর পালা', sd.team === 'w' ? '#fff3c4' : '#ffb27a'); } S.lastHuman = S.turn; }
+  const sd = seat(), prev = S.lastHuman;
+  if (ON) { hud(); drawAim(null); if (sd.uid !== ON.uid) { S.phase = 'wait'; $('pos').disabled = true; setStriker(0); badRing.visible = false; $('hint').textContent = '⏳ ' + sd.n + ' এর পালা…'; return; } shout('🎯 আপনার পালা!', '#fff3c4'); if (navigator.vibrate) try { navigator.vibrate(40); } catch (e) {} }
+  S.phase = sd.human ? 'place' : 'think'; hud();
+  if (!ON && humans() > 1 && sd.human) { camT = sd.side * Math.PI / 2; if (prev !== undefined && prev !== S.turn) { shout('📱 ' + sd.n + ' এর পালা', sd.team === 'w' ? '#fff3c4' : '#ffb27a'); } S.lastHuman = S.turn; }
   if (sd.human) {
     $('pos').disabled = false; $('pos').value = 0; setStriker(0);
     if (!stValid()) for (const f of [.3, -.3, .6, -.6, .9, -.9]) { $('pos').value = f * 100; placeStriker(f); if (stValid()) break; }
-    $('hint').textContent = (humans() > 1 ? sd.n + ' · ' : 'আপনার চাল · ') + 'স্ট্রাইকার বসান, বোর্ডে টেনে ছাড়ুন';
+    $('hint').textContent = (!ON && humans() > 1 ? sd.n + ' · ' : 'আপনার চাল · ') + 'স্ট্রাইকার বসান, বোর্ডে টেনে ছাড়ুন';
   } else { $('pos').disabled = true; $('hint').textContent = sd.n + ' ভাবতেছে…'; setStriker(0); S.cpu = cpuPlan(); S.thinkT = rnd(.9, 1.6); }
 }
 
@@ -495,7 +502,10 @@ function cpuPlan() {
 
 /* ---------- লুপ ---------- */
 function frame(dt) {
-  if (S.phase === 'move') { const n = 8; for (let i = 0; i < n; i++) physics(dt / n); if (!moving()) { S.pcs.forEach(p => { p.vx = p.vz = 0; }); S.phase = 'settle'; S.settleT = .45; } }
+  if (S.phase === 'move') {
+    const h = 1 / 480; S.acc = (S.acc || 0) + dt; let k = 0;
+    while (S.acc >= h && k++ < 40) { physics(h); S.acc -= h; if (!moving()) { S.pcs.forEach(p => { p.vx = p.vz = 0; }); S.phase = 'settle'; S.settleT = .45; S.acc = 0; break; } }
+  }
   else if (S.phase === 'settle') { S.settleT -= dt; if (S.settleT <= 0) resolve(); }
   else if (S.phase === 'think') {
     S.thinkT -= dt; setStriker(S.lx + (S.cpu.sx - S.lx) * Math.min(1, dt * 4));
@@ -532,6 +542,7 @@ function loop(ts) {
 
 function endGame(win) {
   S.over = true; S.phase = 'end'; $('pos').disabled = true; drawAim(null);
+  if (ON) return onlineEnd(win);
   const meWon = win === 'w', solo = humans() === 1, mine = 9 - left('w'), oppLeft = left('b');
   const sc = Math.max(10, (meWon ? 300 + oppLeft * 30 + lv * 100 : 0) + mine * 25 + (S.queen === 'w' ? 100 : 0) + S.bestStreak * 10 - S.fouls * 10);
   if (solo) { $('endT').textContent = meWon ? (CFG.mode === 4 ? 'আপনার দল জিতছে! 🏆' : 'আপনি জিতছেন! 🏆') : 'হেরে গেলেন'; }
@@ -583,6 +594,7 @@ function gate() {
 }
 onAuthStateChanged(auth, u => {
   user = u; if (!u) { me = null; gate(); return; }
+  if (RID) onlineInit();
   onSnapshot(doc(db, 'users', u.uid), s => { me = s.exists() ? s.data() : null; gate(); }, () => { me = null; gate(); });
   getDoc(doc(db, 'scores', GAME, 'players', u.uid)).then(d => { if (d.exists() && d.data().score > store.get('kh-carrom-best', 0)) store.set('kh-carrom-best', d.data().score); drawBest(); }).catch(() => {});
 });
@@ -600,6 +612,75 @@ async function saveScore(sc) {
 const MY_C = ['ভাই, আজকে কিন্তু রানী আমার!', 'আঙুলে পাউডার লাগাইছি, এবার দেখেন!', 'হারলে চা-সিঙারা আপনার!', 'বোর্ডে ঠিকমতো পাউডার দেন তো!'];
 const OP_C = ['ছোট মানুষ, আগে খেলা শিখো!', 'রানী তুলতে পারবা না, লিখে রাখো!', 'আমি বিশ বছর ধরে এই বোর্ডে খেলি!', 'চায়ের অর্ডার দিয়া রাখো, হারতেছো!'];
 if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY_C, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP_C), 'M3', '🎯 ' + ((S && S.seats.find(x => !x.human && x.team === 'b')) || { n: 'প্রতিপক্ষ' }).n, true), 2600); } });
+/* ================= অনলাইন: বন্ধুদের রুম (rooms/{id}.cm) ================= */
+const RID = (new URLSearchParams(location.search).get('r') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+let ON = null, onUnsub = null;
+function toastOn(t) { $('com').textContent = '⚠️ ' + t; }
+async function onPost(action, extra) {
+  const t = await user.getIdToken();
+  const r = await fetch('/api/carrom', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t }, body: JSON.stringify({ action, roomId: RID, ...extra }) });
+  const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || 'সার্ভারে সমস্যা'); return j;
+}
+const r4 = v => Math.round(v * 1e4) / 1e4;
+function setBoard(b) {
+  if (!b) return;
+  b.forEach((q, i) => { const p = S.pcs[i]; p.x = q[0]; p.z = q[1]; p.in = !!q[2]; p.vx = p.vz = 0; p.drop = 0; p.m.visible = p.in; p.m.scale.setScalar(1); p.m.position.set(p.x, .45, p.z); });
+}
+const boardNow = () => S.pcs.slice(0, 19).map(p => [r4(p.x), r4(p.z), p.in ? 1 : 0]);
+function applyPlace(cm) {
+  ON.pending = false; setBoard(cm.board); S.queen = cm.queen; S.qPend = cm.qPend; S.turn = cm.turn;
+  if (cm.last && cm.last.txt) $('com').textContent = '🎙️ ' + cm.last.txt;
+  startTurn();
+}
+function onlineInit() {
+  if (onUnsub || !RID || !user) return;
+  $('startO').hidden = true; $('hint').textContent = 'অনলাইন খেলা লোড হচ্ছে…'; $('pos').disabled = true;
+  onUnsub = onSnapshot(doc(db, 'rooms', RID), snap => {
+    const r = snap.exists() ? snap.data() : null, cm = r && r.cm;
+    if (!cm) { $('hint').textContent = r ? 'রুমের মালিক এখনো খেলা শুরু করেননি…' : 'রুম পাওয়া যায়নি'; return; }
+    if (!ON) {
+      const my = cm.seats.findIndex(x => x.uid === user.uid);
+      if (my < 0) { $('hint').textContent = 'আপনি এই খেলায় নেই'; return; }
+      newGame(); S.seats = cm.seats.map(x => ({ side: x.side, team: x.team, human: true, uid: x.uid, n: x.uid === user.uid ? 'আপনি' : x.name }));
+      ON = { uid: user.uid, my, team: cm.seats[my].team, seq: -1, anim: -1, cm };
+      camT = camA = cm.seats[my].side * Math.PI / 2; placeCam(); S.over = false; ['startO', 'endO'].forEach(id => $(id).hidden = true);
+      $('nMe').title = ''; audio();
+      $('com').textContent = '🎙️ অনলাইন ক্যারম! ' + (cm.size === 4 ? 'আপনার পার্টনার সামনে বসে আছে।' : 'বন্ধুর সাথে লড়াই!') + ' আপনার দল ' + (ON.team === 'w' ? 'সাদা' : 'কালো') + '।';
+      setInterval(() => { const c = ON.cm; if (c && c.status === 'playing' && c.phase === 'place' && Date.now() - c.turnAt > 47000) onPost('tick', {}).catch(() => {}); }, 10000);
+    }
+    ON.cm = cm;
+    if (cm.status === 'over') { if (!S.over) { if (cm.board && S.phase !== 'move') setBoard(cm.board); S.queen = cm.queen; hud(); endGame(cm.win); } return; }
+    if (cm.phase === 'move' && cm.shot && cm.shot.seq !== ON.anim) { // অন্য কারো শট: একই হিসাবে চালিয়ে দেখানো
+      ON.anim = cm.shot.seq; setBoard(cm.board); S.queen = cm.queen; S.qPend = cm.qPend; S.turn = cm.shot.seat; hud(); drawAim(null);
+      setStriker(cm.shot.lx); shoot(cm.shot.ux, cm.shot.uz, cm.shot.pw, true); return;
+    }
+    if (cm.phase === 'place' && cm.seq !== ON.seq) { ON.seq = cm.seq; if (S.phase === 'move' || S.phase === 'settle') { ON.pending = true; return; } applyPlace(cm); }
+  }, () => { $('hint').textContent = 'রুম পড়া যায়নি, আবার লগইন করে দেখুন'; });
+}
+// শট থামার পর: যে মারলো তার ফোন ফলাফল পাঠায়; অন্যরা ১৫ সেকেন্ড পরও না এলে নিজেরাই পাঠায়
+function onlineDone(win, nextTurn) {
+  hud(); S.phase = 'wait'; const shot = ON.cm.shot, seq = shot ? shot.seq : -1;
+  const body = { seq, board: boardNow(), turn: nextTurn, queen: S.queen, qPend: S.qPend, win, txt: $('com').textContent.replace('🎙️ ', '') };
+  const send = () => onPost('result', body).catch(() => {});
+  if (seat().uid === ON.uid) send();
+  else setTimeout(() => { if (ON.cm.phase === 'move' && ON.cm.shot && ON.cm.shot.seq === seq) send(); }, 16000);
+  if (ON.pending) applyPlace(ON.cm);
+  $('hint').textContent = '…';
+}
+function onlineEnd(win) {
+  const meWon = win === ON.team, mine = 9 - left(ON.team), why = ON.cm.why || '';
+  const sc = meWon ? 400 + mine * 20 + (S.queen === ON.team ? 100 : 0) : mine * 20;
+  $('endT').textContent = meWon ? (ON.cm.size === 4 ? 'আপনার দল জিতছে! 🏆' : 'আপনি জিতছেন! 🏆') : 'হেরে গেলেন';
+  $('endTitle').textContent = teamName(win) + ' জিতছে';
+  $('endLine').textContent = why.startsWith('left:') ? why.slice(5) + ' খেলা ছেড়ে চলে গেছেন।' : why.startsWith('idle:') ? why.slice(5) + ' অনেকক্ষণ চাল দেননি, তাই খেলা শেষ।' : meWon ? 'বন্ধুদের সামনে জিতলেন, আজকে চা আপনার নামে!' : 'বন্ধুরা আজ জিতলো, পরের ম্যাচে শোধ নিবেন!';
+  $('eS').textContent = bn(sc); $('eG').textContent = bn(mine) + '/৯'; $('eQ').textContent = S.queen === 'w' ? '👑 সাদা' : S.queen === 'b' ? 'কালো' : '-';
+  $('eBest').textContent = 'অনলাইন ম্যাচ · আপনার দল ' + (ON.team === 'w' ? 'সাদা' : 'কালো');
+  $('eTip').textContent = pick(TIPS); $('againBtn').textContent = 'হাবে নতুন রুম'; $('againBtn').onclick = () => { location.href = '/#newroom-carrom-' + ON.cm.size; };
+  $('lvBtn').textContent = 'কম্পিউটারের সাথে'; $('lvBtn').onclick = () => { location.href = '/games/carrom/'; };
+  setTimeout(() => { $('endO').hidden = false; sfx(meWon ? 'win' : 'lose'); if (meWon && window.KHViral) KHViral.confetti(); }, 700);
+  if (sc > 0) saveScore(sc); S.lastScore = sc;
+}
+document.querySelectorAll('[data-on]').forEach(b => b.onclick = () => { location.href = '/#newroom-carrom-' + b.dataset.on; });
 window.KHCarrom = { get S() { return S; }, get CFG() { return CFG; }, shoot: (ux, uz, pw) => shoot(ux, uz, pw), place: f => placeStriker(f), start, cpuPlan: () => cpuPlan() };
 </script>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>

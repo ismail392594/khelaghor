@@ -5,7 +5,7 @@
 ## ০. আগে যাচাই
 - গল্পের আসর: /api/story?cron=1 চালু হয়েছে কিনা ব্যবহারকারীর কাছে জানা। errors থাকলে ঠিক করা (Vertex AI: service account-এ Agent Platform User দেওয়া আছে)।
 
-## ১. অনলাইন ক্যারম (বন্ধুদের সাথে, ২ বা ৪ জন)
+## ১. ✅ অনলাইন ক্যারম (শেষ, ৮ নভেম্বর)
 - হাবের রুম ব্যবস্থা (js/online.js: createRoom/openRoom/roomStart) কাজে লাগানো। ক্যারম পেজে "অনলাইনে বন্ধুদের সাথে" বোতাম → `/#newroom-carrom-2` বা `-4` → হাবে রুম তৈরি।
 - roomStart: game === 'ক্যারম' হলে /api/carrom {action:'room'}; রুমে matchId এলে সবাইকে `/games/carrom/?m=ID`-তে পাঠানো। ৩ জন হলে চলবে না (২ বা ৪)।
 - api/carrom.js (নতুন): `cmatches/{id}` ডক: players, size, turn, seq, board ([x,z,in]×১৯), queen, qPend, shot {seq, seat, lx, ux, uz, pw, at}, status। কাজ: room, shoot (পালা যাচাই), result (শুটার বা ১২ সেকেন্ড পর যে কেউ), tick (৪০ সেকেন্ড চুপ থাকলে পালা বদল), leave (অন্য দল জেতে)।

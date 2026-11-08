@@ -15,6 +15,8 @@ const K = window.KH; // হাব পেজের সাহায্যকার
 
 let user = null, me = null, unsubs = [], roomUnsub = null, roomId = null, roomData = null;
 const pendingRoom = (location.hash.match(/^#room-([A-Z0-9]{6})$/) || [])[1] || null;
+// ক্যারম পেজ থেকে "অনলাইনে বন্ধুদের সাথে": #newroom-carrom-2 বা -4
+const pendingNew = (location.hash.match(/^#newroom-carrom-([24])$/) || [])[1] || null;
 
 /* ---------- লগইন ---------- */
 const ERR = {
@@ -121,7 +123,7 @@ onAuthStateChanged(auth, u => {
     document.querySelector('.lvl').textContent = 'লেভেল ' + bn(lv);
     document.querySelector('.xp i').style.width = Math.round(100 * (me.points - lo) / (hi - lo)) + '%';
     drawDaily(); drawPremium(); drawMission();
-    if (first) { savePrivate(); listenInvites(); listenMyMsgs(); drawMission(); if (pendingRoom) joinRoom(pendingRoom); if (me.banned) K.toast('আপনার একাউন্ট আপাতত বন্ধ করা আছে। যোগাযোগ পাতায় অ্যাডমিনকে লিখুন।'); }
+    if (first) { savePrivate(); listenInvites(); listenMyMsgs(); drawMission(); if (pendingRoom) joinRoom(pendingRoom); if (pendingNew) { history.replaceState(null, '', location.pathname); createRoom('ক্যারম', +pendingNew); } if (me.banned) K.toast('আপনার একাউন্ট আপাতত বন্ধ করা আছে। যোগাযোগ পাতায় অ্যাডমিনকে লিখুন।'); }
   }, e => K.toast('প্রোফাইল লোড হয়নি: ' + e.code)));
   listenLeaderboard();
 });
@@ -284,18 +286,29 @@ function openRoom(id) {
     }).join('');
     const n = r.players.length;
     $('roomStart').hidden = !host;
-    $('roomStart').disabled = n < 2;
-    $('roomStart').textContent = n < 2 ? 'বন্ধুর জন্য অপেক্ষা…' : 'খেলা শুরু (' + bn(n) + ' জন)';
+    const bad3 = r.game === 'ক্যারম' && n === 3;
+    $('roomStart').disabled = n < 2 || bad3;
+    $('roomStart').textContent = n < 2 ? 'বন্ধুর জন্য অপেক্ষা…' : bad3 ? 'ক্যারমে ২ বা ৪ জন লাগে, আরেকজন আসুক…' : 'খেলা শুরু (' + bn(n) + ' জন)';
     $('roomWait').hidden = host; $('roomWait').textContent = r.status === 'started' ? 'খেলা শুরু হয়েছে!' : 'হোস্ট খেলা শুরু করার অপেক্ষায়…';
     if (r.matchId && r.game === 'লুডু') { K.toast('খেলা শুরু! বোর্ডে নিয়ে যাচ্ছি…'); setTimeout(() => { location.href = '/games/ludo/?m=' + r.matchId; }, 600); }
-    else if (r.status === 'started' && r.game !== 'লুডু') K.toast(r.game + ' এর অনলাইন খেলা শিগগিরই আসছে');
+    else if (r.game === 'ক্যারম' && r.cm && r.cm.status === 'playing') { K.toast('খেলা শুরু! ক্যারম বোর্ডে নিয়ে যাচ্ছি…'); setTimeout(() => { location.href = '/games/carrom/?r=' + id; }, 600); }
+    else if (r.status === 'started' && r.game !== 'লুডু' && r.game !== 'ক্যারম') K.toast(r.game + ' এর অনলাইন খেলা শিগগিরই আসছে');
   });
   K.openS('roomSheet');
 }
 $('roomStart').onclick = async () => {
   if (!roomId || !roomData) return;
-  if (roomData.game !== 'লুডু') { K.toast(roomData.game + ' এর অনলাইন খেলা শিগগিরই আসছে, এখন লুডু খেলুন'); return; }
+  if (roomData.game !== 'লুডু' && roomData.game !== 'ক্যারম') { K.toast(roomData.game + ' এর অনলাইন খেলা শিগগিরই আসছে, এখন লুডু খেলুন'); return; }
   const b = $('roomStart'); b.disabled = true; b.textContent = 'শুরু হচ্ছে…';
+  if (roomData.game === 'ক্যারম') {
+    try {
+      const t = await user.getIdToken();
+      const r = await fetch('/api/carrom', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t }, body: JSON.stringify({ action: 'start', roomId }) });
+      const j = await r.json().catch(() => ({})); if (!r.ok || j.error) throw new Error(j.error || 'শুরু করা যায়নি');
+      location.href = '/games/carrom/?r=' + roomId;
+    } catch (e) { K.toast(e.message); b.disabled = false; b.textContent = 'খেলা শুরু'; }
+    return;
+  }
   try {
     const t = await user.getIdToken();
     const r = await fetch('/api/ludo', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t }, body: JSON.stringify({ action: 'room', roomId, entry: 100 }) });
