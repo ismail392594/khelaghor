@@ -194,7 +194,7 @@ $('packs').onclick = e => {
 const COLORS = ['#e5484d', '#3b78f0', '#2fa36b', '#f2b100', '#7c3aed', '#db2777', '#0f9488', '#f27a1a'];
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 let lbTab = 'points', lbUnsub = null;
-const LB_SUB = { points: 'মোট পয়েন্ট', mosha: 'মশা মারোর সেরা স্কোর', jam: 'জ্যাম রানারের সেরা স্কোর' };
+const LB_SUB = { points: 'মোট পয়েন্ট', mosha: 'মশা মারোর সেরা স্কোর', jam: 'জ্যাম রানারের সেরা স্কোর', bazar: 'বাজার দর চ্যালেঞ্জের সেরা স্কোর' };
 function listenLeaderboard() {
   if (lbUnsub) lbUnsub();
   $('lbSub').textContent = LB_SUB[lbTab];

@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0f3b46">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>বাজার দর চ্যালেঞ্জ · খেলাঘর</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<style>
+/* Layout: market screen — striped tarpaulin awning header with wallet & clock, shopping-list chips, vendor stall card with haggling buttons, overlays for day summary / result. Morning bazaar palette: tarp blue and orange on deep teal. */
+:root{--bg:#0f3b46;--bg2:#0b2e37;--card:#fffaf0;--ink:#1f2433;--muted:#6b7280;--tarp1:#1e6fd9;--tarp2:#ff8a1f;--accent:#ffc727;--good:#16a34a;--bad:#dc2626;--line:#e8dcc6;
+  --display:'Baloo Da 2','Noto Sans Bengali',system-ui,sans-serif;--body:'Noto Sans Bengali','Hind Siliguri',system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{background:var(--bg)}
+body{margin:0;min-height:100vh;color:#fff;font-family:var(--body);font-size:16px;line-height:1.5;
+  background:radial-gradient(700px 400px at 50% 0,#17606f 0,transparent 70%),linear-gradient(180deg,var(--bg),var(--bg2));
+  padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+.awning{position:sticky;top:0;z-index:5;padding-top:env(safe-area-inset-top,0px);background:repeating-linear-gradient(90deg,var(--tarp1) 0 34px,var(--tarp2) 34px 68px);box-shadow:0 6px 16px rgba(0,0,0,.3)}
+.awning::after{content:"";display:block;height:12px;background:radial-gradient(circle at 17px -4px,var(--tarp1) 15px,transparent 16px) 0 0/68px 12px repeat-x,radial-gradient(circle at 51px -4px,var(--tarp2) 15px,transparent 16px) 0 0/68px 12px repeat-x}
+.bar{max-width:560px;margin:0 auto;display:flex;align-items:center;gap:8px;padding:8px max(12px,env(safe-area-inset-right,0px)) 6px max(12px,env(safe-area-inset-left,0px))}
+.back{color:#fff;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.25)}
+.back svg{width:20px;height:20px}
+.pill{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.35);border-radius:999px;padding:4px 12px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill b{font-family:var(--display);font-size:1.15rem}
+.pill small{font-size:.68rem;font-weight:600;opacity:.85}
+.pill.low{background:rgba(220,38,38,.6)}
+.sp{flex:1}
+.hb{width:36px;height:36px;border-radius:50%;border:0;background:rgba(0,0,0,.25);color:#fff;display:grid;place-items:center;cursor:pointer}
+.hb svg{width:18px;height:18px}.hb.off{opacity:.4}
+.wrap{max-width:560px;margin:0 auto;padding:14px max(14px,env(safe-area-inset-right,0px)) 0 max(14px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:14px}
+button{font-family:var(--body)}
+button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.day{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.day h2{font-family:var(--display);margin:0;font-size:1.5rem;line-height:1.1}
+.day span{color:#bfe3ea;font-size:.85rem}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.item{display:flex;align-items:center;gap:8px;border:2px solid transparent;border-radius:14px;padding:8px 10px;background:rgba(255,255,255,.1);color:#fff;cursor:pointer;text-align:left;min-width:0}
+.item .ic{font-size:1.5rem;line-height:1;flex:none}
+.item div{min-width:0}
+.item b{display:block;font-size:.92rem;line-height:1.2}
+.item small{font-size:.74rem;color:#bfe3ea}
+.item[aria-pressed="true"]{border-color:var(--accent);background:rgba(255,199,39,.15)}
+.item.done{background:rgba(22,163,74,.25)}
+.item.done small{color:#bbf7d0}
+.item.skip{opacity:.5}
+.stall{background:var(--card);color:var(--ink);border-radius:22px;overflow:hidden;box-shadow:0 10px 0 rgba(0,0,0,.18),0 18px 30px rgba(0,0,0,.25)}
+.stallTop{height:16px;background:repeating-linear-gradient(90deg,#dc2626 0 22px,#fff 22px 44px)}
+.stallIn{padding:14px;display:flex;flex-direction:column;gap:12px}
+.vendor{display:flex;gap:12px;align-items:flex-end}
+.vendor svg{width:76px;height:84px;flex:none}
+.bubble{position:relative;flex:1;background:#fff;border:2px solid var(--line);border-radius:16px 16px 16px 4px;padding:10px 12px;font-weight:600;font-size:.98rem;line-height:1.4;min-height:56px}
+.bubble small{display:block;color:var(--muted);font-weight:700;font-size:.75rem;margin-bottom:2px}
+.bubble.mad{border-color:#fca5a5;background:#fff1f2}
+.bubble.happy{border-color:#86efac;background:#f0fdf4}
+.price{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;background:#fff3d6;border-radius:14px;padding:10px 12px}
+.price .nm{font-weight:700}
+.price .nm small{color:var(--muted);font-weight:600}
+.price .tk{font-family:var(--display);font-size:1.9rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.price .tk s{font-size:1rem;color:var(--muted);margin-right:6px}
+.patience{display:flex;align-items:center;gap:4px;font-size:.78rem;color:var(--muted);font-weight:600}
+.patience i{width:10px;height:10px;border-radius:50%;background:#f59e0b}
+.patience i.gone{background:#e5e7eb}
+.acts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.btn{border:0;border-radius:14px;padding:10px 6px;font-weight:800;font-size:.95rem;cursor:pointer;color:var(--ink);background:#fde68a;box-shadow:0 4px 0 #d4a017;font-variant-numeric:tabular-nums;line-height:1.2}
+.btn small{display:block;font-weight:600;font-size:.7rem;opacity:.75}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #d4a017}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+.btn.buy{grid-column:1/-1;background:linear-gradient(180deg,#5ee28a,#22c55e);color:#fff;box-shadow:0 5px 0 #15803d;font-family:var(--display);font-size:1.2rem;padding:12px}
+.btn.alt{background:#e0e7ff;box-shadow:0 4px 0 #a5b4fc}
+.btn.skipb{background:#f3f4f6;box-shadow:0 4px 0 #d1d5db}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.custom{display:flex;gap:8px}
+.custom input{flex:1;min-width:0;border:2px solid var(--line);border-radius:12px;padding:8px 10px;font:700 1rem var(--body);color:var(--ink);background:#fff}
+.custom .btn{padding:8px 14px}
+.hint{margin:0;color:#bfe3ea;font-size:.85rem;text-align:center}
+.event{background:linear-gradient(135deg,#dc2626,#f97316);border-radius:14px;padding:10px 12px;font-weight:700;display:flex;gap:8px;align-items:center;animation:pop .4s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{from{transform:scale(.7);opacity:0}}
+.over{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:16px;background:rgba(5,25,30,.8);overflow:auto}
+.card{width:100%;max-width:400px;background:var(--card);color:var(--ink);border-radius:24px;padding:20px 18px;display:flex;flex-direction:column;gap:12px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5);max-height:100%;overflow:auto;animation:pop .4s cubic-bezier(.2,1.6,.4,1)}
+.card h1{font-family:var(--display);font-size:2.3rem;margin:0;line-height:1.05;color:var(--tarp1)}
+.card h1 span{color:var(--tarp2)}
+.card h2{font-family:var(--display);font-size:1.8rem;margin:0;line-height:1.1}
+.card p{margin:0;color:var(--muted);font-size:.92rem}
+.story{color:var(--ink)!important;font-weight:600}
+.gbtn{border:0;border-radius:16px;padding:13px 20px;font-family:var(--display);font-size:1.2rem;font-weight:800;color:#fff;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;
+  background:linear-gradient(180deg,#5ee28a,#22c55e 55%,#16a34a);box-shadow:0 5px 0 #15803d,inset 0 2px 0 rgba(255,255,255,.4)}
+.gbtn.ghost{background:#eef2ff;color:#3730a3;box-shadow:0 4px 0 #c7d2fe;font-size:1rem}
+.ract{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.mom{display:flex;gap:10px;align-items:flex-end;text-align:left}
+.mom svg{width:64px;height:72px;flex:none}
+.mom .bubble{font-size:.95rem}
+.sum{display:flex;flex-direction:column;gap:4px;text-align:left;font-size:.9rem}
+.sum div{display:flex;justify-content:space-between;gap:8px;background:#fff3d6;border-radius:10px;padding:5px 10px;font-variant-numeric:tabular-nums}
+.sum .miss{background:#fee2e2;color:#991b1b}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats div{background:#fff3d6;border-radius:14px;padding:8px}
+.stats b{display:block;font-family:var(--display);font-size:1.4rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.stats span{font-size:.72rem;color:var(--muted)}
+.title{display:inline-block;align-self:center;background:linear-gradient(135deg,#ffe27a,#ffb627);color:#3a2200;border-radius:999px;padding:3px 14px;font-weight:800}
+.lb{display:flex;flex-direction:column;gap:4px;text-align:left}
+.lb h3{margin:4px 0 2px;font-size:.9rem;color:var(--muted);font-weight:700;text-align:center}
+.lb div{display:grid;grid-template-columns:24px 1fr auto;gap:8px;background:#f3f4f6;border-radius:10px;padding:5px 10px;font-size:.88rem}
+.lb div.me{background:#fef3c7}
+.lb em{font-style:normal;color:var(--muted);font-weight:700}
+.lb b{font-variant-numeric:tabular-nums}
+.small{font-size:.75rem!important}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head><body>
+<header class="awning"><div class="bar">
+  <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+  <span class="pill" id="walletP" aria-label="হাতে টাকা"><small>হাতে</small><b id="money">৳৫০০</b></span>
+  <span class="pill" id="clockP" aria-label="সময়"><small>⏰</small><b id="clock">৭:০০</b></span>
+  <span class="sp"></span>
+  <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+</div></header>
+
+<main class="wrap" id="game" hidden>
+  <div class="day"><h2 id="dayT">দিন ১: বৃহস্পতিবার</h2><span id="dayS">বাজার বন্ধ ১০টায়</span></div>
+  <div id="eventBox"></div>
+  <div class="list" id="list"></div>
+  <section class="stall" id="stall">
+    <div class="stallTop"></div>
+    <div class="stallIn">
+      <div class="vendor"><span id="vFace"></span><div class="bubble" id="vBubble"><small id="vName"></small><span id="vSay"></span></div></div>
+      <div class="price"><span class="nm" id="pName"></span><span class="tk" id="pTk"></span></div>
+      <div class="patience" id="pat"></div>
+      <div class="acts" id="offers"></div>
+      <div class="custom"><input id="myOffer" inputmode="numeric" placeholder="নিজের দাম বলুন, যেমন ৯০" aria-label="নিজের দাম"><button class="btn" id="myOfferBtn">বলুন</button></div>
+      <div class="row2"><button class="btn alt" id="otherBtn">অন্য দোকানে যান<small>৫ মিনিট লাগবে</small></button><button class="btn skipb" id="skipBtn">এটা বাদ দিন<small>আম্মা রাগ করবে</small></button></div>
+    </div>
+  </section>
+  <p class="hint">দরদাম করলে দাম কমে, কিন্তু দোকানদারের ধৈর্য (হলুদ বিন্দু) শেষ হলে রেগে যাবে। প্রতিটা কথায় ৪ মিনিট যায়।</p>
+</main>
+
+<div class="over" id="startO">
+  <div class="card">
+    <h1>বাজার দর <span>চ্যালেঞ্জ</span></h1>
+    <p class="story">আম্মা হাতে ৫০০ টাকা আর একটা ফর্দ দিয়ে বললেন, "সব আনবি, টাকা যেন বাঁচে!" তিন দিনের বাজার, দাম প্রতিদিন বাড়ছে। পারবেন?</p>
+    <div class="mom"><span id="momFace1"></span><div class="bubble"><small>আম্মা</small>দরদাম না করে কিনলে খবর আছে! আর পেঁয়াজ আনতে ভুলবি না।</div></div>
+    <p>ফর্দের জিনিসে চাপ দিন, দোকানদারের সাথে দরদাম করুন, তারপর কিনুন। সব জিনিস কিনলে আর টাকা বাঁচালে বেশি পয়েন্ট। বাজার সকাল ১০টায় বন্ধ!</p>
+    <p class="small" id="bestTxt"></p>
+    <button class="gbtn" id="startBtn">বাজারে যাই!</button>
+    <div class="lb" id="lb1"></div>
+  </div>
+</div>
+
+<div class="over" id="dayO" hidden>
+  <div class="card">
+    <h2 id="dEndT">দিন শেষ</h2>
+    <div class="sum" id="dSum"></div>
+    <div class="mom"><span id="momFace2"></span><div class="bubble" id="momSay"><small>আম্মা</small><span></span></div></div>
+    <div class="stats"><div><b id="dItems">০</b><span>জিনিস কেনা</span></div><div><b id="dSaved">০</b><span>টাকা বাঁচলো</span></div><div><b id="dScore">০</b><span>আজকের পয়েন্ট</span></div></div>
+    <button class="gbtn" id="nextDayBtn">পরের দিন</button>
+  </div>
+</div>
+
+<div class="over" id="endO" hidden>
+  <div class="card">
+    <h2 id="endT">বাজার শেষ!</h2>
+    <span class="title" id="endTitle"></span>
+    <p id="endLine"></p>
+    <div class="stats"><div><b id="eS">০</b><span>মোট পয়েন্ট</span></div><div><b id="eSaved">০</b><span>মোট বাঁচানো ৳</span></div><div><b id="eItems">০</b><span>জিনিস কেনা</span></div></div>
+    <p class="small" id="eBest"></p>
+    <div class="ract"><button class="gbtn" id="againBtn">আবার বাজারে যাই</button><button class="gbtn ghost" id="shareBtn">কপি করে শেয়ার</button></div>
+    <div class="lb" id="lb2"></div>
+  </div>
+</div>
+
+<div class="over" id="gate" hidden>
+  <div class="card">
+    <div style="font-size:2.4rem;line-height:1">🛒</div>
+    <h2 id="gateT">আগে লগইন করুন</h2>
+    <p id="gateP">গেস্ট হইয়া শুধু দেখা যায়, বাজার করতে হইলে একাউন্ট লাগে!</p>
+    <a class="gbtn" href="/" id="gateA">হাবে গিয়ে লগইন করুন</a>
+  </div>
+</div>
+
+<script src="/js/voice.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { firebaseConfig, ADMIN_EMAILS } from "/js/firebase-config.js";
+
+const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
+const $ = id => document.getElementById(id);
+const bn = n => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+const en = s => String(s).replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const rnd = (a, b) => a + Math.random() * (b - a);
+const r5 = x => Math.max(5, Math.round(x / 5) * 5);
+const store = { get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+const GAME = 'bazar';
+
+/* ================= শব্দ ও ভয়েস ================= */
+let sndOn = store.get('kh-sfx', true), ac = null;
+function audio() { if (!ac) { const A = window.AudioContext || window.webkitAudioContext; if (!A) return null; ac = new A(); } if (ac.state === 'suspended') ac.resume(); return ac; }
+function tone(f, t, d, type, v, to) { const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); if (to) o.frequency.exponentialRampToValueAtTime(to, t + d); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + d + .02); }
+const SFX = {
+  cash() { const t = ac.currentTime; tone(1568, t, .08, 'square', .1); tone(2093, t + .07, .25, 'square', .1); },
+  talk() { const t = ac.currentTime; for (let i = 0; i < 3; i++) tone(rnd(300, 500), t + i * .07, .06, 'triangle', .08); },
+  no() { const t = ac.currentTime; tone(300, t, .15, 'sawtooth', .1, 200); tone(220, t + .15, .2, 'sawtooth', .1, 150); },
+  yes() { const t = ac.currentTime; [659, 880].forEach((f, i) => tone(f, t + i * .08, .15, 'triangle', .2)); },
+  alarm() { const t = ac.currentTime; for (let i = 0; i < 3; i++) tone(880, t + i * .18, .1, 'square', .1); },
+  win() { const t = ac.currentTime; [523, 659, 784, 1047].forEach((f, i) => tone(f, t + i * .12, .3, 'triangle', .3)); },
+  sad() { const t = ac.currentTime; [392, 349, 311].forEach((f, i) => tone(f, t + i * .2, .3, 'triangle', .25)); }
+};
+function sfx(n) { if (!sndOn || !audio()) return; try { SFX[n](); } catch (e) {} }
+let voiceOn = store.get('kh-voice', true);
+function say(t, force) { if (voiceOn && window.KHVoice) window.KHVoice.say(t, force); }
+$('snd').onclick = () => { sndOn = !sndOn; store.set('kh-sfx', sndOn); $('snd').classList.toggle('off', !sndOn); };
+$('snd').classList.toggle('off', !sndOn);
+
+/* ================= বাজারের তথ্য ================= */
+// দামগুলো খেলার জন্য বানানো আনুমানিক দাম, আসল বাজারদর না
+const ITEMS = [
+  { id: 'rice', ic: '🍚', nm: 'চাল', q: '২ কেজি', p: 140 }, { id: 'dal', ic: '🫘', nm: 'মসুর ডাল', q: '১ কেজি', p: 120 },
+  { id: 'oil', ic: '🫗', nm: 'সয়াবিন তেল', q: '১ লিটার', p: 180 }, { id: 'onion', ic: '🧅', nm: 'পেঁয়াজ', q: '১ কেজি', p: 90 },
+  { id: 'potato', ic: '🥔', nm: 'আলু', q: '২ কেজি', p: 60 }, { id: 'egg', ic: '🥚', nm: 'ডিম', q: '১ হালি', p: 50 },
+  { id: 'chili', ic: '🌶️', nm: 'কাঁচা মরিচ', q: '২৫০ গ্রাম', p: 40 }, { id: 'fish', ic: '🐟', nm: 'রুই মাছ', q: '১ কেজি', p: 320 },
+  { id: 'chicken', ic: '🍗', nm: 'ব্রয়লার মুরগি', q: '১ কেজি', p: 200 }, { id: 'salt', ic: '🧂', nm: 'লবণ', q: '১ কেজি', p: 40 },
+  { id: 'garlic', ic: '🧄', nm: 'রসুন', q: '২৫০ গ্রাম', p: 60 }, { id: 'tomato', ic: '🍅', nm: 'টমেটো', q: '১ কেজি', p: 80 },
+  { id: 'gourd', ic: '🥒', nm: 'লাউ', q: '১টা', p: 60 }, { id: 'sugar', ic: '🍬', nm: 'চিনি', q: '১ কেজি', p: 130 }
+];
+const VENDORS = [['রহিম মামা', '#7c3aed', 'cap'], ['জমিলা খালা', '#db2777', 'scarf'], ['বাবলু ভাই', '#0ea5e9', 'none'], ['মন্টু মিয়া', '#16a34a', 'cap'], ['করিম চাচা', '#ea580c', 'beard'], ['শেফালি আপা', '#9333ea', 'scarf']];
+const DAYS = ['বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
+const V = {
+  greet: ['আসেন মামা, একদম টাটকা মাল!', 'আপা, আজকেই আনছি, ফ্রেশ!', 'নেন নেন, এই বাজারে এর চেয়ে ভালো পাইবেন না!', 'দেখেন, হাত দিয়া দেখেন, ভালো না হইলে টাকা নিমু না!'],
+  counter: ['এত কমে হয় না মামা, কিনা দামই বেশি!', 'আচ্ছা, আপনার জন্য একটু কম দিলাম।', 'ভাই, আমারও তো সংসার আছে!', 'শেষ দাম বলতেছি, আর কমবে না কিন্তু!', 'আপনি নিয়মিত কাস্টমার, তাই কমাইলাম।'],
+  accept: ['নেন মামা, লস দিয়া দিলাম, দোয়া কইরেন!', 'ঠিক আছে, বউনি করলাম আপনারে দিয়া!', 'আপনার মতো দরদাম কেউ পারে না!', 'যান, নিয়া যান, আবার আইসেন!'],
+  grumble: ['এই দামে দিলাম, কাউরে বইলেন না!', 'আজকে লস খাইলাম, আপনারে মনে রাখমু!'],
+  mad: ['ধুর মিয়া, অন্য দোকান দেখেন!', 'এই দামে আমার দোকানে আসবেন না!', 'বাজারের দাম জানেন? যান যান!'],
+  madAgain: ['আবার আসছেন? আগের দামই, এক পয়সাও কম না!'],
+  bought: ['ব্যাগে ভরলাম!', 'কেনা শেষ!']
+};
+const EVENTS = [
+  { t: 'পেঁয়াজের দাম হঠাৎ বাড়লো! সিন্ডিকেট!', id: 'onion', m: 1.5 },
+  { t: 'বৃষ্টি নামলো, সবজির দাম বেড়ে গেল!', id: ['tomato', 'gourd', 'chili', 'potato'], m: 1.25 },
+  { t: 'ডিমের সাপ্লাই কম, দাম চড়া!', id: 'egg', m: 1.4 },
+  { t: 'নদীতে জাল ভরা মাছ, মাছের দাম কমলো!', id: 'fish', m: .8 },
+  { t: 'তেলের নতুন দাম ঘোষণা হলো!', id: 'oil', m: 1.2 }
+];
+const MOM = {
+  great: ['আম্মা: এত কম টাকায় এত বাজার? তুই তো জিনিয়াস!', 'আম্মা: আজকে তোর জন্য স্পেশাল রান্না!'],
+  ok: ['আম্মা: মোটামুটি হইছে, কালকে আরো দরদাম করবি।', 'আম্মা: ঠিক আছে, কিন্তু আরো টাকা বাঁচানো যাইতো।'],
+  missing: ['আম্মা: সব আনিস নাই? তরকারি রাঁধবো কী দিয়ে?', 'আম্মা: ফর্দ দিলাম কেন তাহলে? কালকে আবার যাবি!'],
+  broke: ['আম্মা: সব টাকা শেষ? তোর বাবারে বলতেছি!', 'আম্মা: টাকা উড়াইছিস! কাল থেকে বাজার আমি করবো।']
+};
+const TITLES = [[0, 'নতুন খরিদ্দার'], [600, 'দরদামের ছাত্র'], [1100, 'বাজারের নিয়মিত মুখ'], [1600, 'দরদাম মাস্টার'], [2100, 'বাজার সম্রাট'], [2600, 'দোকানদারের আতঙ্ক']];
+const OPEN = 7 * 60, CLOSE = 10 * 60, BUDGET = 500;
+
+/* ================= মুখ আঁকা ================= */
+function face(col, kind, mood, w) {
+  const mouth = mood === 'mad' ? '<path d="M30 60 q8 -6 16 0" stroke="#1f2433" stroke-width="3" fill="none" stroke-linecap="round"/>' : mood === 'happy' ? '<path d="M28 56 q10 10 20 0" stroke="#1f2433" stroke-width="3" fill="#fff" stroke-linecap="round"/>' : '<path d="M30 58 h16" stroke="#1f2433" stroke-width="3" stroke-linecap="round"/>';
+  const brows = mood === 'mad' ? '<path d="M24 36 l10 4 M52 36 l-10 4" stroke="#1f2433" stroke-width="3" stroke-linecap="round"/>' : '';
+  const hat = kind === 'cap' ? '<path d="M18 30 a20 16 0 0 1 40 0 z" fill="#fff" stroke="#d1d5db"/>' : kind === 'scarf' ? `<path d="M12 44 a26 30 0 0 1 52 0 v30 h-8 v-30 a18 20 0 0 0 -36 0 v30 h-8z" fill="${col}"/>` : '<path d="M18 30 q20 -18 40 0 q-8 -6 -20 -6 q-12 0 -20 6z" fill="#1f2433"/>';
+  const beard = kind === 'beard' ? '<path d="M22 54 q16 26 32 0 q-4 14 -16 14 q-12 0 -16 -14z" fill="#e5e7eb"/>' : '';
+  return `<svg viewBox="0 0 76 84" aria-hidden="true"><rect x="10" y="64" width="56" height="20" rx="10" fill="${col}"/><circle cx="38" cy="44" r="22" fill="#e8b58a"/>${hat}<circle cx="30" cy="44" r="3" fill="#1f2433"/><circle cx="46" cy="44" r="3" fill="#1f2433"/>${brows}${beard}${mouth}${kind === 'cap' || kind === 'none' ? '<path d="M28 52 q10 4 20 0" stroke="#5b3a29" stroke-width="3" fill="none"/>' : ''}</svg>`;
+}
+function momFace(mood) { return face('#be185d', 'scarf', mood); }
+$('momFace1').innerHTML = momFace('happy');
+
+/* ================= খেলার অবস্থা ================= */
+let S = null, cur = null;
+function newGame() { return { day: 0, total: 0, savedTotal: 0, boughtTotal: 0 }; }
+function newDay() {
+  const infl = 1 + S.day * .08;
+  let list;
+  for (let k = 0; k < 200; k++) { // বাজেট কাছাকাছি এমন ফর্দ
+    list = [...ITEMS].sort(() => Math.random() - .5).slice(0, 5);
+    const sum = list.reduce((s, it) => s + it.p, 0) * infl;
+    if (sum > 430 && sum < 545 && list.some(it => it.id === 'onion' || k > 150)) break;
+  }
+  S.money = BUDGET; S.time = OPEN; S.event = null;
+  S.items = list.map(it => {
+    const base = it.p * infl;
+    return { ...it, base, state: 'todo', paid: 0, vendors: [0, 1].map(() => mkVendor(base)), vi: 0 };
+  });
+  // মাঝে মাঝে বাজারে কিছু ঘটে
+  if (Math.random() < .75) {
+    const ev = pick(EVENTS.filter(e => [].concat(e.id).some(id => S.items.some(i => i.id === id))) .concat([null]));
+    if (ev) S.pendingEvent = { ...ev, at: OPEN + Math.floor(rnd(30, 80)) };
+  }
+  S.sel = 0;
+}
+function mkVendor(base) {
+  const [nm, col, kind] = pick(VENDORS);
+  const ask = r5(base * rnd(1.18, 1.45)), floor = r5(base * rnd(.82, .97));
+  return { nm, col, kind, ask, start: ask, floor: Math.min(floor, ask - 5), pat: 2 + Math.floor(Math.random() * 3), patMax: 0, mad: false, say: pick(V.greet), mood: 'neutral' };
+}
+const fmtT = m => bn(Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0'));
+
+/* ================= আঁকা ================= */
+function render() {
+  $('dayT').textContent = 'দিন ' + bn(S.day + 1) + ': ' + DAYS[S.day];
+  $('dayS').textContent = 'দাম বেড়েছে ' + bn(S.day * 8) + '% · বাজার বন্ধ ১০টায়';
+  $('money').textContent = '৳' + bn(S.money); $('clock').textContent = fmtT(S.time);
+  $('walletP').classList.toggle('low', S.money < 100); $('clockP').classList.toggle('low', CLOSE - S.time <= 30);
+  $('list').innerHTML = S.items.map((it, i) => `<button class="item ${it.state === 'done' ? 'done' : it.state === 'skip' ? 'skip' : ''}" data-i="${i}" aria-pressed="${i === S.sel}"><span class="ic">${it.ic}</span><div><b>${it.nm}</b><small>${it.state === 'done' ? '✓ কেনা ৳' + bn(it.paid) : it.state === 'skip' ? 'বাদ দিলাম' : it.q}</small></div></button>`).join('');
+  $('eventBox').innerHTML = S.event ? `<div class="event">📢 ${esc(S.event.t)}</div>` : '';
+  const it = S.items[S.sel];
+  cur = it;
+  const v = it.vendors[it.vi];
+  $('stall').hidden = false;
+  $('vFace').innerHTML = face(v.col, v.kind, v.mood);
+  $('vName').textContent = v.nm + (it.vendors.length > 1 ? ' · দোকান ' + bn(it.vi + 1) + '/' + bn(it.vendors.length) : '');
+  $('vSay').textContent = it.state === 'done' ? pick(V.bought) : v.say;
+  $('vBubble').className = 'bubble ' + (v.mood === 'mad' ? 'mad' : v.mood === 'happy' ? 'happy' : '');
+  $('pName').innerHTML = `${it.ic} ${it.nm} <small>${it.q}</small>`;
+  $('pTk').innerHTML = (v.ask < v.start ? `<s>৳${bn(v.start)}</s>` : '') + '৳' + bn(v.ask);
+  $('pat').innerHTML = v.mad ? '😠 রেগে আছে, দাম আর কমবে না' : 'ধৈর্য: ' + Array.from({ length: v.patMax || v.pat }, (_, k) => `<i class="${k < v.pat ? '' : 'gone'}"></i>`).join('');
+  if (!v.patMax) v.patMax = v.pat;
+  const done = it.state !== 'todo', closed = S.time >= CLOSE;
+  const offers = [.9, .8, .7].map(f => r5(v.ask * f));
+  $('offers').innerHTML = `<button class="btn buy" id="buyBtn" ${done || closed || S.money < v.ask ? 'disabled' : ''}>${S.money < v.ask && !done ? 'টাকা কম! দরদাম করুন' : 'কিনুন ৳' + bn(v.ask)}</button>` +
+    offers.map(o => `<button class="btn" data-o="${o}" ${done || closed || v.mad ? 'disabled' : ''}>৳${bn(o)}<small>বলে দেখি</small></button>`).join('');
+  $('myOfferBtn').disabled = $('myOffer').disabled = done || closed || v.mad;
+  $('otherBtn').disabled = done || closed;
+  $('skipBtn').disabled = done || closed;
+  $('buyBtn').onclick = buy;
+  document.querySelectorAll('[data-o]').forEach(b => b.onclick = () => offer(+b.dataset.o));
+}
+$('list').onclick = e => { const b = e.target.closest('[data-i]'); if (!b) return; S.sel = +b.dataset.i; sfx('talk'); render(); const v = S.items[S.sel].vendors[S.items[S.sel].vi]; if (S.items[S.sel].state === 'todo') say(v.say); };
+
+/* ================= কাজ ================= */
+function spend(min) {
+  S.time = Math.min(CLOSE, S.time + min);
+  if (S.pendingEvent && S.time >= S.pendingEvent.at) {
+    const ev = S.pendingEvent; S.pendingEvent = null; S.event = ev;
+    S.items.forEach(it => { if (it.state === 'todo' && [].concat(ev.id).includes(it.id)) it.vendors.forEach(v => { v.ask = r5(v.ask * ev.m); v.start = Math.max(v.start, v.ask); v.floor = r5(v.floor * ev.m); if (v.floor >= v.ask) v.floor = v.ask - 5; }); });
+    sfx('alarm'); say(ev.t, true);
+  }
+  if (S.time >= CLOSE) { setTimeout(endDay, 900); say('বাজার বন্ধ! দোকান গুটাইতেছে!', true); }
+}
+function offer(o) {
+  const it = cur, v = it.vendors[it.vi];
+  if (it.state !== 'todo' || v.mad || S.time >= CLOSE) return;
+  if (!(o > 0)) return;
+  if (o > S.money) { v.say = 'টাকা তো আপনার কাছে এত নাই মামা!'; v.mood = 'neutral'; render(); return; }
+  audio(); spend(4);
+  if (o >= v.ask) { v.ask = o; buy(); return; }
+  if (o >= v.floor) {
+    v.ask = r5(o); v.mood = 'happy'; v.say = o < v.floor * 1.04 ? pick(V.grumble) : pick(V.accept);
+    sfx('yes'); say(v.say, true); render(); return;
+  }
+  v.pat--;
+  if (v.pat <= 0) { v.mad = true; v.mood = 'mad'; v.ask = r5(v.ask * 1.05); v.say = pick(V.mad); sfx('no'); say(v.say, true); render(); return; }
+  const tooLow = o < v.floor * .7;
+  v.ask = r5(Math.max(v.floor + 5, v.ask - (v.ask - o) * (tooLow ? rnd(.1, .2) : rnd(.3, .55))));
+  v.mood = tooLow ? 'mad' : 'neutral';
+  v.say = tooLow ? 'এই দামে তো কিনাও পাই না! ' + pick(V.counter) : pick(V.counter);
+  sfx('talk'); say(v.say, true); render();
+}
+$('myOfferBtn').onclick = () => { const o = parseInt(en($('myOffer').value), 10); $('myOffer').value = ''; if (o > 0) offer(o); };
+$('myOffer').addEventListener('keydown', e => { if (e.key === 'Enter') $('myOfferBtn').click(); });
+function buy() {
+  const it = cur, v = it.vendors[it.vi];
+  if (it.state !== 'todo' || S.money < v.ask || S.time >= CLOSE) return;
+  S.money -= v.ask; it.paid = v.ask; it.state = 'done'; v.mood = 'happy';
+  sfx('cash'); spend(5);
+  const next = S.items.findIndex(x => x.state === 'todo');
+  if (next >= 0) { S.sel = next; render(); setTimeout(() => say(S.items[next].vendors[S.items[next].vi].say), 400); }
+  else { render(); setTimeout(endDay, 700); }
+}
+$('otherBtn').onclick = () => {
+  const it = cur; if (it.state !== 'todo') return;
+  spend(5);
+  if (it.vendors.length < 3 && it.vi === it.vendors.length - 1) it.vendors.push(mkVendor(it.base * (S.event && [].concat(S.event.id).includes(it.id) ? S.event.m : 1)));
+  it.vi = (it.vi + 1) % it.vendors.length;
+  const v = it.vendors[it.vi]; if (v.mad) v.say = pick(V.madAgain);
+  sfx('talk'); render(); say(v.say);
+};
+$('skipBtn').onclick = () => { const it = cur; if (it.state !== 'todo') return; it.state = 'skip'; spend(1); const next = S.items.findIndex(x => x.state === 'todo'); if (next >= 0) { S.sel = next; render(); } else { render(); setTimeout(endDay, 500); } };
+
+function endDay() {
+  if (!$('dayO').hidden || !S.items) return;
+  const bought = S.items.filter(i => i.state === 'done'), missing = S.items.filter(i => i.state !== 'done');
+  const saved = S.money, fair = bought.reduce((s, i) => s + i.base, 0), haggled = Math.max(0, Math.round(fair - bought.reduce((s, i) => s + i.paid, 0)));
+  const score = Math.max(0, bought.length * 100 + saved * 2 + haggled - missing.length * 80);
+  S.total += score; S.savedTotal += saved; S.boughtTotal += bought.length;
+  $('dEndT').textContent = DAYS[S.day] + 'ের বাজার শেষ';
+  $('dSum').innerHTML = S.items.map(i => `<div class="${i.state === 'done' ? '' : 'miss'}"><span>${i.ic} ${i.nm}</span><span>${i.state === 'done' ? '৳' + bn(i.paid) : 'আনা হয়নি'}</span></div>`).join('');
+  const mood = missing.length ? (saved < 30 ? 'broke' : 'missing') : saved >= 60 ? 'great' : 'ok';
+  const line = pick(MOM[mood]);
+  $('momFace2').innerHTML = momFace(mood === 'great' ? 'happy' : mood === 'ok' ? 'neutral' : 'mad');
+  $('momSay').querySelector('span').textContent = line.replace('আম্মা: ', '');
+  $('dItems').textContent = bn(bought.length) + '/' + bn(S.items.length); $('dSaved').textContent = '৳' + bn(saved); $('dScore').textContent = bn(score);
+  $('nextDayBtn').textContent = S.day < DAYS.length - 1 ? 'পরের দিন: ' + DAYS[S.day + 1] : 'ফলাফল দেখুন';
+  $('dayO').hidden = false; sfx(mood === 'great' || mood === 'ok' ? 'win' : 'sad'); say(line, true);
+}
+$('nextDayBtn').onclick = () => {
+  $('dayO').hidden = true;
+  if (S.day < DAYS.length - 1) { S.day++; newDay(); render(); window.scrollTo(0, 0); say(DAYS[S.day] + '। দাম আরো বাড়ছে, সাবধানে কিনবেন!', true); }
+  else endGame();
+};
+
+let best = store.get('kh-bazar-best', 0);
+function endGame() {
+  const sc = S.total, title = TITLES.filter(t => sc >= t[0]).pop()[1], newBest = sc > best;
+  if (newBest) { best = sc; store.set('kh-bazar-best', best); }
+  $('endT').textContent = newBest && sc > 0 ? 'নতুন রেকর্ড! 🎉' : 'তিন দিনের বাজার শেষ!';
+  $('endTitle').textContent = title;
+  $('endLine').textContent = sc >= 1600 ? 'দোকানদাররা আপনাকে দেখলেই দাম কমিয়ে দেয়!' : sc >= 900 ? 'ভালো বাজার করেছেন, আম্মা মোটামুটি খুশি।' : 'দোকানদাররা আজ খুব খুশি, আপনার টাকায় তাদের ঈদ!';
+  $('eS').textContent = bn(sc); $('eSaved').textContent = bn(S.savedTotal); $('eItems').textContent = bn(S.boughtTotal) + '/' + bn(15);
+  $('eBest').textContent = 'আপনার সেরা: ' + bn(best);
+  $('game').hidden = true; $('endO').hidden = false; sfx('win'); say($('endLine').textContent, true);
+  saveScore(sc);
+}
+$('shareBtn').onclick = () => {
+  const t = `বাজার দর চ্যালেঞ্জে ৫০০ টাকায় তিন দিনের বাজার করে ${bn(S.total)} পয়েন্ট! আমি এখন "${$('endTitle').textContent}" 🛒\nতুমি পারবা? ${location.origin}/games/bazar/`;
+  try { navigator.clipboard.writeText(t).then(() => { $('shareBtn').textContent = 'কপি হয়েছে ✓'; setTimeout(() => $('shareBtn').textContent = 'কপি করে শেয়ার', 2000); }, () => {}); } catch (e) {}
+};
+function start() { audio(); S = newGame(); newDay(); ['startO', 'endO', 'dayO'].forEach(id => $(id).hidden = true); $('game').hidden = false; render(); window.scrollTo(0, 0); say('বাজারে আসছি! আজকে টাকা বাঁচাইতেই হবে!', true); }
+$('startBtn').onclick = start; $('againBtn').onclick = start;
+
+/* ================= লগইন, স্কোর, মেরামত ================= */
+let user = null, me = null, gameSt = 'live', siteMaint = false;
+function gate() {
+  const admin = user && ADMIN_EMAILS.includes(user.email), off = !admin && (gameSt === 'maint' || gameSt === 'hidden' || siteMaint);
+  if (off) { $('gateT').textContent = 'বাজার আজ বন্ধ!'; $('gateP').textContent = 'হরতাল চলছে, একটু পরে আসেন।'; $('gateA').textContent = 'হাবে ফিরে যান'; }
+  else if (user && me && me.banned) { $('gateT').textContent = 'একাউন্ট বন্ধ'; $('gateP').textContent = 'হাবের যোগাযোগ পাতায় অ্যাডমিনকে লিখুন।'; $('gateA').textContent = 'হাবে ফিরে যান'; }
+  else if (user && !me) { $('gateT').textContent = 'আগে ইউজারনেম'; $('gateP').textContent = 'হাবে গিয়ে ইউজারনেম বেছে নিন, তারপর খেলুন।'; $('gateA').textContent = 'হাবে যান'; }
+  $('gate').hidden = !(!user || !me || me.banned || off);
+}
+onAuthStateChanged(auth, u => {
+  user = u; if (!u) { me = null; gate(); return; }
+  onSnapshot(doc(db, 'users', u.uid), s => { me = s.exists() ? s.data() : null; gate(); }, () => { me = null; gate(); });
+  getDoc(doc(db, 'scores', GAME, 'players', u.uid)).then(d => { if (d.exists() && d.data().score > best) { best = d.data().score; store.set('kh-bazar-best', best); } drawBest(); }).catch(() => {});
+});
+onSnapshot(doc(db, 'config', 'games'), d => { gameSt = ((d.exists() && d.data().status) || {})['বাজার দর চ্যালেঞ্জ'] || 'live'; if (gameSt === 'soon') gameSt = 'live'; gate(); }, () => {});
+onSnapshot(doc(db, 'config', 'site'), d => { siteMaint = !!(d.exists() && d.data().maintenance); gate(); }, () => {});
+function drawBest() { $('bestTxt').textContent = best ? 'আপনার সেরা স্কোর: ' + bn(best) : ''; }
+drawBest();
+let top = [];
+function drawLB() { const h = top.length ? '<h3>সেরা দরদামকারী</h3>' + top.map((r, i) => `<div class="${user && r.id === user.uid ? 'me' : ''}"><em>${bn(i + 1)}</em><span>${esc(r.name)}</span><b>${bn(r.score)}</b></div>`).join('') : ''; $('lb1').innerHTML = h; $('lb2').innerHTML = h; }
+onSnapshot(query(collection(db, 'scores', GAME, 'players'), orderBy('score', 'desc'), limit(10)), s => { top = (s.docs || []).map(d => ({ id: d.id, ...d.data() })); drawLB(); }, () => {});
+async function saveScore(sc) {
+  if (!user || !me || sc <= 0) return;
+  try { const ref = doc(db, 'scores', GAME, 'players', user.uid), d = await getDoc(ref); if (d.exists() && d.data().score >= sc) return; await setDoc(ref, { score: sc, name: me.name, username: me.username, at: serverTimestamp() }); } catch (e) {}
+}
+</script>
+<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
+</body></html>
