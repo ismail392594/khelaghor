@@ -36,13 +36,15 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:
 canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .pw{position:absolute;left:50%;transform:translateX(-50%);top:8px;display:flex;gap:6px;z-index:2;pointer-events:none;white-space:nowrap}
 .pw span{background:rgba(0,0,0,.5);border-radius:999px;padding:2px 10px;font-size:.78rem;font-weight:700}
-.ctrl{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:space-between;gap:8px;padding:0 14px;z-index:2;pointer-events:none}
-.ctrl button{pointer-events:auto;width:64px;height:64px;border-radius:50%;border:0;background:rgba(0,0,0,.35);color:#fff;font-size:1.6rem;display:grid;place-items:center;cursor:pointer;box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
-.ctrl button:active{background:rgba(255,182,39,.5)}
-.ctrl .brake{width:84px;border-radius:20px;font:800 1rem var(--display);background:rgba(239,79,95,.55)}
-.ctrl .gas{width:84px;border-radius:20px;font:800 1rem var(--display);background:rgba(34,197,94,.6)}
-.ctrl .gas.on{background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.4)}
-.ctrl .brake.on{background:#ef4f5f;box-shadow:0 0 0 4px rgba(239,79,95,.4)}
+.ctrl{position:absolute;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;align-items:center;gap:6px;padding:6px;border-radius:26px;background:rgba(10,8,30,.45);backdrop-filter:blur(4px);box-shadow:0 6px 18px rgba(0,0,0,.35);z-index:2;touch-action:none}
+.ctrl button{width:62px;height:62px;border-radius:18px;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:1.5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;cursor:pointer;box-shadow:inset 0 -3px 0 rgba(0,0,0,.25),inset 0 0 0 2px rgba(255,255,255,.18);line-height:1;-webkit-tap-highlight-color:transparent}
+.ctrl button small{font:800 .66rem var(--display);margin-top:2px}
+.ctrl button.on,.ctrl button:active{transform:translateY(2px);box-shadow:inset 0 0 0 2px rgba(255,255,255,.4)}
+.ctrl .brake{background:linear-gradient(180deg,#f0646f,#c92a3b)}
+.ctrl .gas{background:linear-gradient(180deg,#4ade80,#16a34a)}
+.ctrl .gas.on{box-shadow:0 0 0 4px rgba(34,197,94,.45)}
+.ctrl .brake.on{box-shadow:0 0 0 4px rgba(239,79,95,.45)}
+@media (max-width:340px){.ctrl button{width:54px;height:54px}}
 
 .over{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:16px;background:rgba(14,12,30,.74);backdrop-filter:blur(2px)}
 .card{width:100%;max-width:380px;background:linear-gradient(180deg,#2c2752,#1e1a3b);border:1px solid var(--line);border-radius:24px;padding:20px 18px;display:flex;flex-direction:column;gap:12px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5);max-height:100%;overflow:auto}
@@ -101,7 +103,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
     <div class="fx" id="fx"></div>
     <div class="pw" id="pw"></div>
     <div class="spd" id="spd" hidden></div>
-    <div class="ctrl" id="ctrl" hidden><button id="lBtn" aria-label="বামে">◀</button><button id="bBtn" class="brake" aria-label="ব্রেক (চেপে ধরুন)">ব্রেক</button><button id="gBtn" class="gas" aria-label="স্পিড বাড়ান (চেপে ধরুন)">গ্যাস</button><button id="rBtn" aria-label="ডানে">▶</button></div>
+    <div class="ctrl" id="ctrl" hidden><button id="lBtn" aria-label="বামে">◀<small>বামে</small></button><button id="bBtn" class="brake" aria-label="ব্রেক (চেপে ধরুন)">▼<small>ব্রেক</small></button><button id="gBtn" class="gas" aria-label="স্পিড বাড়ান (চেপে ধরুন)">▲<small>গ্যাস</small></button><button id="rBtn" aria-label="ডানে">▶<small>ডানে</small></button></div>
 
     <div class="over" id="startO">
       <div class="card">
@@ -869,7 +871,7 @@ $('stage').addEventListener('pointerup', e => {
   else if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) move(dx > 0 ? 1 : -1);
   else { const r = $('stage').getBoundingClientRect(); move(e.clientX - r.left < r.width / 2 ? -1 : 1); }
 });
-$('lBtn').onclick = () => move(-1); $('rBtn').onclick = () => move(1);
+$('lBtn').addEventListener('pointerdown', e => { e.preventDefault(); move(-1); }); $('rBtn').addEventListener('pointerdown', e => { e.preventDefault(); move(1); });
 function gas(on) { if (!S || !running || demo) return; S.p.gas = on; $('gBtn').classList.toggle('on', on); if (on) sfx('rev'); }
 $('gBtn').addEventListener('pointerdown', e => { e.preventDefault(); gas(true); });
 ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => $('gBtn').addEventListener(ev, () => gas(false)));

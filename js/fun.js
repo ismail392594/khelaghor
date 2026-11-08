@@ -84,7 +84,9 @@
     coin() { const t = ctx.currentTime; tone(988, t, 0.08, 'square', 0.18, sfxGain); tone(1319, t + 0.08, 0.25, 'square', 0.18, sfxGain); },
     tada() { const t = ctx.currentTime; [523, 659, 784, 1047].forEach((f, i) => tone(f, t + i * 0.08, 0.22, 'triangle', 0.3, sfxGain)); },
     boing() { const t = ctx.currentTime; tone(180, t, 0.35, 'sine', 0.5, sfxGain, 90); tone(360, t, 0.2, 'triangle', 0.15, sfxGain, 600); },
-    whoosh() { const t = ctx.currentTime; noise(t, 0.25, 0.2, sfxGain, 1500); }
+    whoosh() { const t = ctx.currentTime; noise(t, 0.25, 0.2, sfxGain, 1500); },
+    boom() { const t = ctx.currentTime; tone(120, t, 0.5, 'sine', 0.9, sfxGain, 35); tone(60, t, 0.7, 'triangle', 0.6, sfxGain, 30); noise(t, 0.45, 0.6, sfxGain, 300); },
+    fuse() { const t = ctx.currentTime; noise(t, 0.35, 0.12, sfxGain, 5000); }
   };
   function sfx(name) { if (!sfxOn || !audio() || ctx.state !== 'running') return; try { SFX[name](); } catch (e) {} }
 
@@ -150,9 +152,9 @@
     return bnVoice;
   }
   if (synth) { findVoice(); synth.onvoiceschanged = findVoice; }
-  function speak(text) {
+  function speak(text, who) {
     if (!voiceOn || !unlocked) return;
-    if (window.KHVoice) { window.KHVoice.say(text, true); return; }
+    if (window.KHVoice) { window.KHVoice.say(text, true, who); return; }
     if (!synth || (!bnVoice && !findVoice())) {
       if (!warnedVoice) { warnedVoice = true; K.toast('ফোনে বাংলা ভয়েস নেই। Settings → Text-to-speech → Google → বাংলা ভাষা ডাউনলোড করুন'); }
       return;
@@ -164,7 +166,7 @@
     synth.speak(u);
   }
   if (window.KHVoice) window.KHVoice.onstart = a => { duck(true); a.addEventListener('ended', () => duck(false)); a.addEventListener('pause', () => duck(false)); };
-  K.speak = speak;
+  K.speak = speak; K.sfx = sfx;
 
   // ব্রাউজার নিয়ম: প্রথম ছোঁয়ার পরেই শব্দ চালু করা যায়
   let unlocked = false;

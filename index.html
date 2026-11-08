@@ -312,6 +312,25 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 .rtile .logo svg{width:26px;height:26px;overflow:visible}
 .rtile .logo svg *{fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
 .rtile .logo svg .f{fill:#fff;stroke:none}.rtile .logo svg .y{fill:#ffd23f;stroke:none}.rtile .logo svg .d{fill:#1d1640;stroke:none}.rtile .logo svg .h{fill:rgba(255,255,255,.45);stroke:none}.rtile .logo svg text.t{fill:#1d1640;stroke:none;font:700 15px var(--body);text-anchor:middle}
+.bombs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;perspective:600px}
+.bomb{position:relative;border:0;cursor:pointer;background:none;color:#fff;display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 2px;font:700 .82rem var(--body);-webkit-tap-highlight-color:transparent}
+.bomb .ball{position:relative;width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#6b6b80 0,#2a2838 38%,#0d0c16 75%);box-shadow:0 8px 14px rgba(0,0,0,.45),inset -6px -8px 14px rgba(0,0,0,.6);display:grid;place-items:center;font-size:1.6rem;transition:transform .15s;animation:bob 3s ease-in-out infinite}
+.bomb:nth-child(3n+2) .ball{animation-delay:-1s}.bomb:nth-child(3n) .ball{animation-delay:-2s}
+@keyframes bob{50%{transform:translateY(-4px) rotate(-4deg)}}
+.bomb .ball::before{content:"";position:absolute;top:-10px;right:10px;width:14px;height:14px;border-radius:4px;background:#8a6a3c;transform:rotate(25deg)}
+.bomb .ball::after{content:"";position:absolute;top:-18px;right:4px;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,#fff6a8,#ffb627 45%,rgba(255,80,0,0) 70%);animation:spark .25s steps(2) infinite}
+@keyframes spark{50%{transform:scale(1.5) rotate(40deg)}}
+.bomb.r18 .ball{background:radial-gradient(circle at 32% 28%,#ff8aa8 0,#c2185b 40%,#4a0623 78%)}
+.bomb .tag18{position:absolute;top:2px;left:50%;margin-left:14px;background:#ef4f5f;border-radius:999px;font-size:.6rem;padding:0 5px;z-index:1}
+.bomb.boom .ball{animation:blast .55s ease-out}
+@keyframes blast{0%{transform:scale(1)}20%{transform:scale(1.35) rotate(-8deg);filter:brightness(2.2)}40%{transform:scale(.85) rotate(6deg)}100%{transform:scale(1)}}
+.bomb .bang{position:absolute;left:50%;top:36px;width:10px;height:10px;margin:-5px;border-radius:50%;pointer-events:none;background:radial-gradient(circle,#fff 0,#ffe066 30%,#ff7a00 55%,rgba(255,60,0,0) 72%);animation:bang .5s ease-out forwards}
+@keyframes bang{to{transform:scale(14);opacity:0}}
+.bomb .say{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#fff;color:var(--ink);border-radius:14px;padding:6px 10px;font-size:.8rem;width:max-content;max-width:180px;box-shadow:0 6px 14px rgba(0,0,0,.3);pointer-events:none;animation:sayIn 2.4s ease forwards;z-index:3}
+@keyframes sayIn{0%{opacity:0;scale:.8}10%{opacity:1;scale:1}85%{opacity:1}100%{opacity:0}}
+.bomb:nth-child(3n+1) .say{left:0;transform:none}.bomb:nth-child(3n) .say{left:auto;right:0;transform:none}
+.bomb.lock .ball{background:radial-gradient(circle at 32% 28%,#9aa0b4 0,#4b5063 45%,#1e2130 80%);animation:none}
+.bomb.lock .ball::after{display:none}
 .riddle{background:linear-gradient(135deg,#ffecb3,#ffd6e0);color:var(--ink);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 6px 0 rgba(0,0,0,.2)}
 .riddle .rq{margin:0;font-family:var(--display);font-size:1.25rem;line-height:1.4;text-wrap:balance}
 .riddle .rans{margin:0;background:#fff;border-radius:12px;padding:8px 12px;font-weight:700;color:#15803d;animation:bin .4s cubic-bezier(.2,1.6,.4,1) both}
@@ -395,6 +414,8 @@ label.f input:focus{outline:none;border-color:#6d5cff}
       </div>
       <label class="adult"><input type="checkbox" id="adultChk"> বড়দের মজা (১৮+) চালু করুন</label>
     </section>
+    <div class="sec"><h2>শব্দ বোমা 💣</h2><span>চাপলেই ফাটবে!</span></div>
+    <section class="bombs" id="bombs" aria-label="শব্দ বোমা: চাপলে মজার কথা বলে"></section>
     <div class="sec"><h2>ধাঁধার আসর</h2><span id="rCount"></span></div>
     <section class="riddle" id="riddle">
       <p class="rq" id="rQ"></p>
@@ -688,6 +709,44 @@ $('adultChk').onchange=e=>{
   adult=e.target.checked;dIdx=-1;nextDlg();
 };
 function resetModal(){$('modal').hidden=true;$('mt').textContent='অভিনন্দন!';$('mAmt').parentElement.hidden=false;$('mOk').textContent='ধন্যবাদ';$('mOk').onclick=()=>$('modal').hidden=true;const n=$('mNo');if(n)n.remove()}
+
+/* শব্দ বোমা: প্রতিটা বোমা সবসময় একই গলায় একই কথা বলে */
+const BOMBS=[
+ ['🐂','বলদ','ওরে বলদ! এটাও পারলি না?','M3'],
+ ['😤','ধুর মিয়া','ধুর মিয়া! যান তো এখান থেকে!','M1'],
+ ['💸','আমার টাকা','আমার টাকা ফেরত দে! এখনই দে!','F1'],
+ ['🤏','কিপটা','এত কিপটা কেন রে? এক কাপ চা খাওয়াইতে কলিজা ফাটে?','F2'],
+ ['😱','হায় হায়','হায় হায়! এইটা কী করলি!','F2'],
+ ['🤫','চুপ','চুপ! একদম চুপ! কোনো কথা না!','M3'],
+ ['😭','মা গো','মা গো! আমি আর পারতেছি না!','M2'],
+ ['🧑‍🦲','টাকলা','টাকলা মাথায় চিরুনি দিয়া লাভ কী?','M2'],
+ ['🍵','চা খাওয়া','আগে চা খাওয়াও, তারপর কথা!','M1']
+];
+const BOMBS18=[
+ ['💩','গোবর মাথা','তোর মাথায় কি গোবর ভরা?','M1'],
+ ['🤑','ঘুষখোর','ঘুষখোর মামা, চা-পানির টাকা ছাড়া ফাইল নড়ে না!','M3'],
+ ['👰','শ্বশুরবাড়ি','শ্বশুরবাড়ি আইসা জামাই এখন বাজারের ব্যাগ টানে!','F1'],
+ ['📵','এক্স','এক্স ফোন দিছে? ধরবি না! ব্লক মার!','F1'],
+ ['🍛','বউয়ের ধমক','আবার দেরি করছো? আজকে রাতে ভাত নাই!','F2'],
+ ['👔','বস','বেতন বাড়বে? আগে আমার বাসার বাজারটা করে দাও!','M3']
+];
+function drawBombs(){
+  const a=ls.get('kh-18',false);
+  $('bombs').innerHTML=BOMBS.map((b,i)=>`<button class="bomb" data-b="${i}"><span class="ball">${b[0]}</span>${b[1]}</button>`).join('')+
+    (a?BOMBS18.map((b,i)=>`<button class="bomb r18" data-b18="${i}"><span class="tag18">১৮+</span><span class="ball">${b[0]}</span>${b[1]}</button>`).join(''):'<button class="bomb lock" id="bombLock"><span class="ball">🔒</span>১৮+ বোমা খুলুন</button>');
+}
+drawBombs();
+$('bombs').onclick=e=>{
+  const el=e.target.closest('.bomb');if(!el)return;
+  if(el.id==='bombLock'){const c=$('adultChk');c.checked=true;c.dispatchEvent(new Event('change'));const t=setInterval(()=>{if(ls.get('kh-18',false)||$('modal').hidden){clearInterval(t);drawBombs()}},300);return}
+  const b=el.dataset.b18!==undefined?BOMBS18[+el.dataset.b18]:BOMBS[+el.dataset.b];
+  el.classList.remove('boom');void el.offsetWidth;el.classList.add('boom');
+  const bang=document.createElement('span');bang.className='bang';el.appendChild(bang);setTimeout(()=>bang.remove(),520);
+  el.querySelectorAll('.say').forEach(x=>x.remove());const sy=document.createElement('span');sy.className='say';sy.textContent=b[2];el.appendChild(sy);setTimeout(()=>sy.remove(),2400);
+  if(navigator.vibrate)try{navigator.vibrate(60)}catch(_){}
+  window.KH&&KH.sfx&&KH.sfx('boom');
+  if(window.KHVoice)setTimeout(()=>KHVoice.say(b[2],true,b[3]),120);
+};
 
 /* profile shim (real login lives in /js/online.js) */
 let profile={name:'খেলোয়াড়'};
