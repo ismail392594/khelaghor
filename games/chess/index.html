@@ -158,6 +158,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 <script src="/js/share-card.js"></script>
 <script type="module">
 import * as THREE from "/js/vendor/three.module.min.js";
+import { composerFor } from "/js/kh-scene.js";
 import * as C from "/js/chess-engine.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -366,7 +367,8 @@ function placeCam() {
   const dist = Math.max(asp < 1.2 ? 11 : 12.5, need), c = Math.cos(camA), s = Math.sin(camA);
   cam.position.set(Math.cos(el) * dist * s, Math.sin(el) * dist, Math.cos(el) * dist * c); cam.lookAt(0, 0, asp < .8 ? .15 * c : .25 * c);
 }
-function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 52 : 42; cam.updateProjectionMatrix(); placeCam(); }
+let composer = null;
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); if (!composer && renderer) composer = composerFor(THREE, renderer, scene, cam, { strength: 0.25, threshold: .88 }); if (composer) { composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(W, H); } cam.aspect = W / H; cam.fov = W / H < .8 ? 52 : 42; cam.updateProjectionMatrix(); placeCam(); }
 addEventListener('resize', resize);
 const ease = k => k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
 function loop(ts) {
@@ -374,7 +376,7 @@ function loop(ts) {
   anims = anims.filter(a => { a.t += dt / a.dur; const k = Math.min(1, a.t), e = ease(k); a.m.position.lerpVectors(a.from, a.to, e); a.m.position.y += Math.sin(k * Math.PI) * a.hop; if (a.spin) { a.m.rotation.x += dt * 7; a.m.rotation.z += dt * 4; a.m.scale.setScalar(.95 * (1 - k * .5)); } if (k >= 1) { a.res(); return false; } return true; });
   selRing.material.opacity = .65 + Math.sin(T * 6) * .3; checkM.material.opacity = .4 + Math.sin(T * 7) * .2; marks.forEach(m => { if (m.visible) m.scale.setScalar(1 + Math.sin(T * 5) * .1); });
   let d = camT - camA; d = Math.atan2(Math.sin(d), Math.cos(d)); if (Math.abs(d) > .001) { camA += d * Math.min(1, dt * 3); placeCam(); }
-  if (renderer) renderer.render(scene, cam); requestAnimationFrame(loop);
+  if (renderer) { if (composer) composer.render(); else renderer.render(scene, cam); } requestAnimationFrame(loop);
 }
 lv = store.get('kh-chess-lv', 1); rebuild(); hud(); resize(); $('tipB').hidden = $('undoB').hidden = true;
 if (renderer) renderer.compile(scene, cam);

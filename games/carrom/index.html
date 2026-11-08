@@ -188,6 +188,7 @@ input[type=range]:disabled{opacity:.4}
 <script src="/js/share-card.js"></script>
 <script type="module">
 import * as THREE from "/js/vendor/three.module.min.js";
+import { composerFor } from "/js/kh-scene.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -536,12 +537,13 @@ function fit() {
 }
 function placeCam() { const [x, z] = toWa(camA, 0, camDir[1] * camD + 2), [lx, lz] = toWa(camA, 0, 2); cam.position.set(x, camDir[0] * camD, z); cam.lookAt(lx, 0, lz); }
 function toWa(a, x, z) { const c = Math.cos(a), s = Math.sin(a); return [x * c + z * s, -x * s + z * c]; }
-function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); fit(); }
+let composer = null;
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); if (!composer && renderer) composer = composerFor(THREE, renderer, scene, cam, { strength: 0.25, threshold: .88 }); if (composer) { composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(W, H); } fit(); }
 addEventListener('resize', resize);
 function loop(ts) {
   const dt = Math.min(.04, (ts - last) / 1000 || 0); last = ts; if (S && !S.over) frame(dt); fx(dt);
   let d = camT - camA; d = Math.atan2(Math.sin(d), Math.cos(d)); if (Math.abs(d) > .001) { camA += d * Math.min(1, dt * 3.5); placeCam(); }
-  if (renderer) renderer.render(scene, cam); requestAnimationFrame(loop);
+  if (renderer) { if (composer) composer.render(); else renderer.render(scene, cam); } requestAnimationFrame(loop);
 }
 
 function endGame(win) {
