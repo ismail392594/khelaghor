@@ -3,8 +3,9 @@
 // শুধু আমাদের নিজের ডায়লগ (_voice-lines.js) পড়বে, অন্য কোনো লেখা না, যাতে কেউ অপব্যবহার করতে না পারে।
 // দরকার: Google Cloud-এ "Cloud Text-to-Speech API" চালু (প্রজেক্ট khelaghor-160)।
 import { cert, initializeApp, getApps } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { splitStory } from '../js/story-split.js';
+import { createHash } from 'node:crypto';
 import LINES from './_voice-lines.js';
 
 const ALLOWED = new Set(LINES);
@@ -56,6 +57,24 @@ async function storyPart(id, p) {
   return splitStory(d.data().title, d.data().body)[p] || null;
 }
 
+// ভয়েসের ভাণ্ডার: একবার বানানো mp3 Firestore-এ (tts/{হ্যাশ}) জমা থাকে। একই লেখা + একই কণ্ঠ আবার চাইলে
+// Google TTS-কে আর ডাকা হয় না, ভাণ্ডার থেকেই দেওয়া হয়। নতুন লেখা এলে তখনই শুধু AI কণ্ঠ বানায়।
+function fdb() {
+  if (!getApps().length) { const raw = process.env.FIREBASE_SERVICE_ACCOUNT; if (!raw) return null; initializeApp({ credential: cert(JSON.parse(raw)) }); }
+  return getFirestore();
+}
+async function cachedSynth(text, voice, kind) {
+  const id = createHash('sha256').update([voice.name, voice.rate, voice.pitch, text].join('|')).digest('hex').slice(0, 40);
+  let db = null; try { db = fdb(); } catch (e) {}
+  if (db) {
+    try { const d = await db.collection('tts').doc(id).get(); if (d.exists && d.data().mp3) { return Buffer.from(d.data().mp3); } } catch (e) { console.error('tts read', e.message); }
+  }
+  const mp3 = await synth(text, voice);
+  // সেভ শেষ হওয়া পর্যন্ত অপেক্ষা (উত্তর পাঠানোর পরে সার্ভার থেমে যেতে পারে)
+  if (db && mp3.length < 1000000) { try { await db.collection('tts').doc(id).set({ mp3, kind, chars: text.length, bytes: mp3.length, hits: 0, at: FieldValue.serverTimestamp() }); } catch (e) { console.error('tts save', e.message); } }
+  return mp3;
+}
+
 export default async function handler(req, res) {
   let text = String((req.query && req.query.t) || '').trim();
   const v = VOICES[String((req.query && req.query.v) || 'M1')] || VOICES.M1;
@@ -63,7 +82,7 @@ export default async function handler(req, res) {
     try {
       const part = await storyPart(String(req.query.s), Math.floor(+req.query.p || 0));
       if (!part) { res.setHeader('Cache-Control', 'no-store'); return res.status(404).json({ error: 'এই অংশ নেই' }); }
-      const mp3 = await synth(part, { ...v, rate: v.rate * .95 });
+      const mp3 = await cachedSynth(part, { ...v, rate: v.rate * .95 }, 'story');
       res.setHeader('Content-Type', 'audio/mpeg');
       res.setHeader('Cache-Control', 'public, max-age=31536000, s-maxage=31536000, immutable');
       return res.status(200).send(mp3);
@@ -74,7 +93,7 @@ export default async function handler(req, res) {
     return res.status(404).json({ error: 'এই লেখার ভয়েস নেই' });
   }
   try {
-    const mp3 = await synth(text, v);
+    const mp3 = await cachedSynth(text, v, 'line');
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Cache-Control', 'public, max-age=31536000, s-maxage=31536000, immutable');
     return res.status(200).send(mp3);
