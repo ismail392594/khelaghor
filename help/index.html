@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2f3cc9">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<title>কিভাবে খেলবেন · খেলাঘর</title>
+<meta name="description" content="খেলাঘরের সব গেমের নিয়ম: অনলাইনে বন্ধুদের সাথে লুডু, ক্যারম, ঢাকা জ্যাম রানার, মশা মারো, বাজার দর চ্যালেঞ্জ, আর্জেন্টিনা বনাম ব্রাজিল। ধাপে ধাপে বাংলায়।">
+<link rel="canonical" href="https://khelaghorbd.online/help/">
+<meta property="og:title" content="কিভাবে খেলবেন · খেলাঘর">
+<meta property="og:description" content="অনলাইনে লুডু থেকে ক্যারম, খেলাঘরের সব গেমের নিয়ম বাংলায়।">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap">
+<style>
+/* নির্দেশিকা: হাবের গাঢ় নীল-বেগুনি রং, উপরে গেমের চিপ দিয়ে লাফ, প্রতিটা গেম আলাদা কার্ডে ধাপে ধাপে */
+:root{--deep:#1a1460;--sky1:#2f3cc9;--sky2:#5a1fa8;--card:#ffffff;--ink:#1d1640;--muted:#5d5880;--gold:#ffc727;--line:#e6e2f7;--soft:#f5f3ff;
+  --display:'Baloo Da 2','Noto Sans Bengali',system-ui,sans-serif;--body:'Noto Sans Bengali','Hind Siliguri',system-ui,sans-serif;color-scheme:light}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:120px}
+body{margin:0;background:linear-gradient(180deg,var(--sky1),var(--sky2) 320px,var(--deep) 700px) var(--deep);background-attachment:scroll;color:var(--ink);font-family:var(--body);line-height:1.65}
+.wrap{max-width:720px;margin:0 auto;padding-block:0 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{position:sticky;top:0;z-index:5;padding-top:env(safe-area-inset-top,0px);background:rgba(36,30,140,.92);backdrop-filter:blur(8px)}
+.top{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:10px max(16px,env(safe-area-inset-right,0px)) 6px max(16px,env(safe-area-inset-left,0px));color:#fff}
+.top a.back{color:#fff;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.14);flex:none}
+.top h1{font-family:var(--display);font-size:1.35rem;margin:0;line-height:1.1}
+.jump{max-width:720px;margin:0 auto;display:flex;gap:6px;overflow-x:auto;padding:4px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));scrollbar-width:none}
+.jump::-webkit-scrollbar{display:none}
+.jump a{flex:none;color:#fff;text-decoration:none;font-weight:700;font-size:.82rem;background:rgba(255,255,255,.14);border-radius:99px;padding:4px 12px;white-space:nowrap}
+.intro{color:#fff;padding:18px 2px 6px}
+.intro p{margin:0;opacity:.9}
+.card{background:var(--card);border-radius:22px;padding:18px 18px 16px;margin-top:14px;box-shadow:0 10px 30px rgba(10,6,50,.35)}
+.card h2{font-family:var(--display);font-size:1.5rem;margin:0 0 2px;display:flex;align-items:center;gap:10px;line-height:1.2;text-wrap:balance}
+.card h2 span{font-size:1.7rem}
+.card h3{font-size:1rem;margin:14px 0 4px;color:var(--sky2)}
+.tag{display:inline-block;font-size:.75rem;font-weight:700;color:var(--muted);background:var(--soft);border-radius:99px;padding:1px 10px;margin:2px 4px 6px 0}
+ol,ul{margin:4px 0;padding-left:1.4em}
+li{margin:3px 0}
+b{color:#2a1f80}
+.note{background:#fff7d6;border-left:4px solid var(--gold);border-radius:10px;padding:8px 12px;margin-top:10px;font-size:.92rem}
+.play{display:inline-flex;margin-top:12px;text-decoration:none;font-family:var(--display);font-weight:800;color:#fff;background:linear-gradient(180deg,#5ee28a,#16a34a);box-shadow:0 4px 0 #15803d;border-radius:14px;padding:8px 18px}
+kbd{font-family:inherit;font-weight:700;background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:0 6px}
+footer{color:#c9c4ff;text-align:center;font-size:.85rem;margin-top:24px}
+footer a{color:#fff}
+</style>
+</head><body>
+<header>
+  <div class="top"><a class="back" href="/" aria-label="হাবে ফিরুন"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a><h1>📖 কিভাবে খেলবেন</h1></div>
+  <nav class="jump" aria-label="গেম">
+    <a href="#start">শুরু</a><a href="#ludo">লুডু</a><a href="#carrom">ক্যারম</a><a href="#jam">ঢাকা জ্যাম</a><a href="#mosha">মশা মারো</a><a href="#bazar">বাজার দর</a><a href="#argbra">আর্জে-ব্রা</a><a href="#talk">কথা বলুন</a><a href="#points">পয়েন্ট</a>
+  </nav>
+</header>
+<main class="wrap">
+  <div class="intro"><p>প্রতিটা গেমের নিয়ম আর বোতাম এখানে ধাপে ধাপে লেখা আছে। উপরের নাম চাপলে সরাসরি সেই গেমে চলে যাবেন।</p></div>
+
+  <section class="card" id="start">
+    <h2><span>🚀</span>প্রথমবার শুরু করা</h2>
+    <ol>
+      <li>হোম পেজে <b>লগইন</b> চাপুন, তারপর Google (Gmail) দিয়ে ঢুকুন।</li>
+      <li>একটা <b>ইউজারনেম</b> বেছে নিন, যেমন <kbd>rashed_99</kbd>। এই নাম দিয়েই বন্ধুরা আপনাকে খুঁজে ইনভাইট পাঠাবে।</li>
+      <li>"সব গেম" থেকে যেকোনো গেমে চাপুন।</li>
+    </ol>
+    <h3>ফোনে অ্যাপ হিসেবে রাখতে চাইলে</h3>
+    <p>হোম পেজের <b>📲 অ্যাপ</b> বোতাম চাপুন, তারপর আপনার ব্রাউজারের জন্য দেখানো ধাপগুলো মানুন। Play Store লাগবে না। ইনস্টল করলে খেলাঘর আলাদা অ্যাপের মতো খুলবে।</p>
+  </section>
+
+  <section class="card" id="ludo">
+    <h2><span>🎲</span>লুডু</h2>
+    <span class="tag">১ জন</span><span class="tag">এক ফোনে ২-৪ জন</span><span class="tag">অনলাইনে ২-৪ জন</span>
+    <h3>খেলার নিয়ম</h3>
+    <ul>
+      <li>ঘর থেকে গুটি বের করতে <b>৬</b> লাগবে। ৬ উঠলে আবার চাল পাবেন। টানা তিনবার ৬ উঠলে সেই পালা বাতিল।</li>
+      <li>প্রতিপক্ষের গুটির উপর পড়লে সেটা <b>কাটা</b> যায়, আর আপনি আবার চাল পান।</li>
+      <li>তারকা চিহ্ন আর রঙিন শুরুর ঘর নিরাপদ, সেখানে কাটা যায় না।</li>
+      <li>মাঝখানে পৌঁছাতে ঠিক সংখ্যা লাগবে। যে আগে চারটা গুটি তুলবে সে জিতবে।</li>
+      <li>৩০ সেকেন্ডে চাল না দিলে নিজে থেকে চাল হয়ে যায়। অনলাইনে টানা ৩ বার এমন হলে খেলা থেকে বাদ।</li>
+    </ul>
+    <h3>খেলার উপায়</h3>
+    <ul>
+      <li><b>কম্পিউটারের সাথে:</b> এন্ট্রি ১০০ পয়েন্ট, জিতলে ২০০।</li>
+      <li><b>এক ফোনে কয়েকজন:</b> পাশে বসে ফোন হাতে হাতে দিয়ে খেলুন। এতে পয়েন্ট লাগে না।</li>
+      <li><b>অনুশীলন:</b> কম্পিউটারের সাথে, পয়েন্ট ছাড়া। ইন্টারনেট ছাড়াও চলে।</li>
+    </ul>
+    <h3>🌐 অনলাইনে অচেনাদের সাথে</h3>
+    <ol>
+      <li>লুডু খুলে <b>অনলাইনে অচেনাদের সাথে</b> বেছে নিন।</li>
+      <li>এন্ট্রি বেছে নিন (<b>১০০ / ৫০০ / ১০০০</b> পয়েন্ট), তারপর <b>২ জন</b> বা <b>৪ জন</b>।</li>
+      <li>সার্ভার সারা দেশ থেকে খেলোয়াড় খুঁজে দেবে। ৪ জনের টেবিলে ৪৫ সেকেন্ডের মধ্যে ২-৩ জন পেলে তাদের নিয়েই খেলা শুরু হয়।</li>
+      <li>পুরস্কার: ২ জনের খেলায় জিতলে এন্ট্রির দ্বিগুণ। ৪ জনের খেলায় ১ম হলে ২.৫ গুণ, ২য় হলে ১.৫ গুণ।</li>
+    </ol>
+    <h3>👫 বন্ধুদের সাথে অনলাইনে (প্রাইভেট রুম)</h3>
+    <ol>
+      <li>হোম পেজে লুডু চাপুন, তারপর <b>বন্ধুকে ইনভাইট</b> চাপুন। আপনার জন্য একটা রুম আর ৬ অক্ষরের <b>রুম কোড</b> তৈরি হবে।</li>
+      <li>বন্ধুকে আনার দুইটা উপায় আছে:
+        <ul>
+          <li>রুমের ঘরে বন্ধুর <b>ইউজারনেম</b> লিখে ইনভাইট পাঠান। বন্ধু খেলাঘর খুললেই ইনভাইট দেখবে, <b>গ্রহণ</b> চাপলে রুমে চলে আসবে।</li>
+          <li>অথবা <b>কপি</b> চেপে রুমের লিংক মেসেঞ্জার বা হোয়াটসঅ্যাপে পাঠান। লিংকে চাপলেই বন্ধু রুমে ঢুকবে।</li>
+        </ul>
+      </li>
+      <li>বন্ধুর কাছে শুধু কোড থাকলে: হোম পেজে লুডু চাপুন, নিচে <b>"বন্ধুর রুম কোড আছে?"</b> ঘরে কোডটা লিখে <b>ঢুকুন</b> চাপুন।</li>
+      <li>সবাই চলে এলে রুমের মালিক <b>খেলা শুরু</b> চাপবেন। সবার ফোনে বোর্ড নিজে থেকে খুলে যাবে।</li>
+    </ol>
+    <div class="note">ছক্কা আর চাল সার্ভারে হয়, তাই কেউ ছক্কা বা পয়েন্টে কারচুপি করতে পারে না। খেলা চলার সময় <b>💬 কথা বলুন</b> বোতাম দিয়ে "জলদি চাল দেন!" এর মতো লাইন পাঠাতে পারবেন।</div>
+    <a class="play" href="/games/ludo/">লুডু খেলি →</a>
+  </section>
+
+  <section class="card" id="carrom">
+    <h2><span>🎯</span>ক্যারম</h2>
+    <span class="tag">১ জন</span><span class="tag">এক ফোনে ২ জন</span><span class="tag">৪ জন: ২ বনাম ২ পার্টনার</span>
+    <h3>কিভাবে মারবেন</h3>
+    <ol>
+      <li>নিচের <b>স্লাইডার</b> বা <b>◀ ▶</b> বোতাম দিয়ে স্ট্রাইকার বেসলাইনে ডানে-বামে বসান। লাল দাগ দেখালে বুঝবেন স্ট্রাইকার কোনো গুটির উপর আছে, একটু সরান।</li>
+      <li>বোর্ডের যেকোনো জায়গায় আঙুল রেখে <b>পেছনে টানুন</b>। যত বেশি টানবেন, তত জোরে লাগবে।</li>
+      <li>টানার সময় সাদা দাগ দেখায় স্ট্রাইকার কোথায় লাগবে, আর হলুদ দাগ দেখায় গুটিটা কোন দিকে যাবে। ঠিক হলে আঙুল ছেড়ে দিন।</li>
+    </ol>
+    <h3>নিয়ম</h3>
+    <ul>
+      <li>আপনার দল <b>সাদা</b>, প্রতিপক্ষ <b>কালো</b>। নিজের গুটি পকেটে ফেললে আবার চাল পাবেন।</li>
+      <li>লাল গুটিটা <b>রানী</b>। রানী তুললে পরের চালে নিজের একটা গুটি ফেলে <b>কভার</b> দিতে হবে, নইলে রানী আবার মাঝখানে ফিরে যাবে।</li>
+      <li>স্ট্রাইকার পকেটে পড়লে <b>ফাউল</b>, আপনার তোলা একটা গুটি বোর্ডে ফেরত যাবে।</li>
+      <li>রানী বোর্ডে থাকতে নিজের শেষ গুটি ফেলা যায় না, ফেললে সেটা ফেরত যায়।</li>
+      <li>যে দল আগে নিজের ৯টা গুটি তুলবে, সেই দল জিতবে।</li>
+    </ul>
+    <h3>কতজন খেলবেন</h3>
+    <ul>
+      <li><b>১ জন:</b> কম্পিউটারের সাথে খেলা। লেভেল তিনটা: পাড়ার ছোটভাই (সহজ), ক্লাবের বড়ভাই (মাঝারি), ক্যারম চাচা (কঠিন)।</li>
+      <li><b>২ জন:</b> এক ফোনে দুজন। যার পালা, বোর্ড ঘুরে তার দিকে চলে আসে।</li>
+      <li><b>৪ জন:</b> পার্টনার মুখোমুখি বসে, সাদা দল বনাম কালো দল। বাকি তিন আসনে আলাদা করে "🙂 মানুষ" বা "🤖 কম্পিউটার" বেছে নিন। মানুষ দিলে একই ফোন হাতে হাতে দিয়ে খেলবেন।</li>
+    </ul>
+    <div class="note">একা খেললে (বাকিরা কম্পিউটার) তবেই স্কোর লিডারবোর্ডে যায়। এক ফোনে কয়েকজন মানুষ মিলে খেললে যায় না।</div>
+    <a class="play" href="/games/carrom/">ক্যারম খেলি →</a>
+  </section>
+
+  <section class="card" id="jam">
+    <h2><span>🛵</span>ঢাকা জ্যাম রানার</h2>
+    <span class="tag">১ জন · ৩ডি</span>
+    <p><b>মিশন:</b> সকাল ৮টায় বাসা 🏠 থেকে বের হয়ে ৯টার আগে অফিস 🏢 পৌঁছাতে হবে।</p>
+    <ul>
+      <li>নিচের মাঝখানের <b>▲</b> চেপে ধরলে গ্যাস, <b>▼</b> চাপলে ব্রেক। <b>◀ ▶</b> দিয়ে লেন বদলান, বা স্ক্রিনে বামে-ডানে সোয়াইপ করুন।</li>
+      <li>বাম কোণার <b>ম্যাপে হলুদ দাগ</b> ধরে চালান। মোড় কাছে এলে <b>↰ বামে / ↱ ডানে</b> বোতাম আসবে। চাপলে মোড়ে ঘুরবেন, না চাপলে সোজা যাবেন। কিবোর্ডে <kbd>Q</kbd> / <kbd>E</kbd>।</li>
+      <li><b>লাল বাতিতে</b> ব্রেক চেপে থামুন, নইলে পুলিশ মামলা দেবে। স্পিড ব্রেকার আর রাস্তা পার হওয়া মানুষ দেখে আস্তে চালান।</li>
+      <li>বাস, ট্রাক, সিএনজি, রিকশা আর গর্ত এড়িয়ে চলুন। ☕ চা নিলে জোরে ছুট, ⛑️ হেলমেট নিলে একটা বাড়তি জীবন।</li>
+      <li>চালানোর বোতামগুলোর উপরের সারিতে আছে <b>হর্ন</b>, <b>বোমা</b> (মজার শব্দ) আর <b>ক্যামেরা</b> বদলানোর বোতাম।</li>
+      <li>৩টা হেলমেট শেষ হলে বা ঘড়িতে ৯টা বাজলে খেলা শেষ। অফিসে পৌঁছালে বোনাস পাবেন।</li>
+    </ul>
+    <a class="play" href="/games/jam/">অফিসে চলি →</a>
+  </section>
+
+  <section class="card" id="mosha">
+    <h2><span>🦟</span>মশা মারো</h2>
+    <span class="tag">১ জন</span>
+    <ul>
+      <li>মশার উপর <b>চাপ দিলে থাপ্পড়</b> পড়ে। ফসকালে নিজের হাতেই থাপ্পড় খাবেন।</li>
+      <li>সাধারণ মশা <b>১</b> পয়েন্ট। ডোরাকাটা <b>এডিস মশা ৩</b> পয়েন্ট, কিন্তু দ্রুত উড়ে। <b>মশার সর্দার</b> মারতে ৩টা থাপ্পড় লাগে, পাবেন ১০ পয়েন্ট।</li>
+      <li>মশা হাতে বসে আস্তে আস্তে রক্ত খেয়ে লাল হয়, পুরো ভরার আগেই মারুন।</li>
+      <li>পরপর মারলে <b>কম্বো</b> হয়। কয়েল, ইলেকট্রিক ব্যাট আর মলম ধরলে বিশেষ সুবিধা পাবেন।</li>
+    </ul>
+    <div class="note">শেষে ডেঙ্গু থেকে বাঁচার একটা টিপসও দেখাবে, ওটা পড়ে নিন।</div>
+    <a class="play" href="/games/mosha/">মশা মারি →</a>
+  </section>
+
+  <section class="card" id="bazar">
+    <h2><span>🛒</span>বাজার দর চ্যালেঞ্জ</h2>
+    <span class="tag">১ জন · ৩ দিন</span>
+    <p>আম্মা ৫০০ টাকা আর একটা ফর্দ দিয়েছেন। সব আনতে হবে, আর টাকাও বাঁচাতে হবে।</p>
+    <ol>
+      <li>ফর্দের একটা জিনিসে চাপ দিন। দোকানদার একটা দাম বলবেন।</li>
+      <li>নিচের দামের বোতাম দিয়ে <b>দরদাম</b> করুন। বেশি টানাটানি করলে দোকানদারের ধৈর্য শেষ হয়ে যাবে।</li>
+      <li>কেনার আগে <b>⚖️ পরখ করুন</b> চাপুন: মাছ-সবজি টাটকা কিনা, আর দাঁড়িপাল্লায় ওজনে কম দিচ্ছে কিনা।</li>
+      <li>দাম ঠিক মনে হলে <b>কিনুন</b> চাপুন।</li>
+      <li>দিনের শেষে রিকশা ভাড়াও দরদাম করতে হবে, চাইলে হেঁটেও ফিরতে পারেন। বাজার সকাল ১০টায় বন্ধ হয়ে যায়।</li>
+    </ol>
+    <div class="note">পচা জিনিস, ওজনে কম, বা ফর্দের কিছু বাদ পড়লে আম্মা ধরবেন, পয়েন্ট কাটা যাবে। দাম প্রতিদিন একটু করে বাড়ে।</div>
+    <a class="play" href="/games/bazar/">বাজারে যাই →</a>
+  </section>
+
+  <section class="card" id="argbra">
+    <h2><span>⚽</span>আর্জেন্টিনা বনাম ব্রাজিল</h2>
+    <span class="tag">১ জন · ৩ডি পেনাল্টি</span>
+    <ol>
+      <li>শুরুতে দল বেছে নিন: <b>আর্জেন্টিনা</b> অথবা <b>ব্রাজিল</b>।</li>
+      <li><b>শট মারা:</b> বলের কাছ থেকে আঙুল দিয়ে উপরের দিকে সোয়াইপ করুন। যেদিকে টানবেন বল সেদিকে যাবে। লম্বা করে টানলে বল উঁচুতে যায়, দ্রুত টানলে জোরে।</li>
+      <li><b>গোলকিপিং:</b> প্রতিপক্ষ মারার সময় নিচের <b>বামে / মাঝে / ডানে</b> বোতাম চাপুন, কিপার সেদিকে লাফ দেবে।</li>
+      <li>দুই দল ৫টা করে শট নেয়। সমান হলে <b>সাডেন ডেথ</b>।</li>
+    </ol>
+    <div class="note">পয়েন্ট: গোলপ্রতি ১০০, সেভপ্রতি ৮০, জিতলে বোনাস ৩০০।</div>
+    <a class="play" href="/games/argbra/">মাঠে নামি →</a>
+  </section>
+
+  <section class="card" id="talk">
+    <h2><span>💬</span>কথা বলুন আর আওয়াজ</h2>
+    <ul>
+      <li>প্রতিটা গেমে <b>💬 কথা বলুন</b> বোতাম আছে। চাপলে ফানি লাইনের তালিকা আসে। একটা বেছে নিলে আপনার চরিত্র সেটা বলবে, প্রতিপক্ষও পাল্টা জবাব দেবে।</li>
+      <li>গেমের ভেতর ডায়লগ নিজে থেকে কথা বলে না, শুধু আপনি চাইলে বলে। সব সময় শুনতে চাইলে হোম পেজের সাউন্ড বারে <b>অটো ডায়লগ চালু</b> করুন।</li>
+      <li>হোম পেজে <b>শব্দ বোমা</b> চাপলে মজার আওয়াজ হয়। খেলার উপরের 🔊 বোতাম দিয়ে শব্দ বন্ধ বা চালু করা যায়।</li>
+    </ul>
+  </section>
+
+  <section class="card" id="points">
+    <h2><span>🏆</span>পয়েন্ট, কয়েন আর লিডারবোর্ড</h2>
+    <ul>
+      <li>প্রতিদিন হোম পেজে <b>দৈনিক বোনাস</b> নিন, এই পয়েন্ট দিয়ে লুডু খেলা যায়।</li>
+      <li>প্রতিটা গেমের সেরা স্কোর নিচের <b>সেরা</b> ট্যাবে দেখা যায়, গেম অনুযায়ী আলাদা তালিকায়।</li>
+      <li>পয়েন্ট কম পড়লে <b>দোকান</b> থেকে কেনা যায়।</li>
+      <li>কোনো সমস্যা হলে নিচের <b>যোগাযোগ</b> ট্যাবে অ্যাডমিনকে লিখুন।</li>
+    </ul>
+  </section>
+
+  <footer><p>নতুন গেম আসলে এই পাতাতেও নিয়ম যোগ হবে। <a href="/">← হাবে ফিরুন</a></p></footer>
+</main>
+</body></html>
