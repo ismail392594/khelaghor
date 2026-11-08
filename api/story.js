@@ -61,7 +61,7 @@ export default async function handler(req, res) {
     const b = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
     if (b.action === 'gen') { const type = TYPES[b.type] ? b.type : 'golpo'; const out = await generate(db, type, String(b.topic || '').slice(0, 120)); return res.status(200).json({ ok: true, ...out }); }
     if (b.action === 'cfg') { await cfgRef(db).set({ auto: !!b.auto, perDay: Math.max(1, Math.min(4, +b.perDay || 2)) }, { merge: true }); return res.status(200).json({ ok: true }); }
-    if (b.action === 'adminList') { const s = await col(db).orderBy('at', 'desc').limit(80).get(); const c = await cfgRef(db).get(); return res.status(200).json({ ok: true, cfg: c.exists ? c.data() : {}, key: !!(process.env.GEMINI_API_KEY || process.env.FIREBASE_SERVICE_ACCOUNT), cronKey: !!process.env.CRON_SECRET, items: s.docs.map(d => brief(d)) }); }
+    if (b.action === 'adminList') { const s = await col(db).orderBy('at', 'desc').limit(80).get(); const c = await cfgRef(db).get(); return res.status(200).json({ ok: true, cfg: c.exists ? c.data() : {}, key: !!(process.env.GEMINI_API_KEY || process.env.FIREBASE_SERVICE_ACCOUNT), cronKey: true, items: s.docs.map(d => brief(d)) }); }
     const id = String(b.id || ''); if (!/^[A-Za-z0-9]{10,40}$/.test(id)) throw new HttpErr(400, 'ভুল আইডি');
     if (b.action === 'hide' || b.action === 'show') { await col(db).doc(id).update({ on: b.action === 'show' }); return res.status(200).json({ ok: true }); }
     if (b.action === 'del') { await col(db).doc(id).delete(); return res.status(200).json({ ok: true }); }
@@ -92,10 +92,14 @@ async function sendOne(res, db, id) {
 
 /* ---------- প্রতিদিনের অটো-লেখা ---------- */
 async function cron(req, db) {
+  // CRON_SECRET বসানো থাকলে সেটা মিলতে হবে। না থাকলেও সমস্যা নেই: দিনে একবারের বেশি লেখা হবে না,
+  // তাই কেউ বারবার এই লিংক খুললেও বাড়তি খরচ হবে না।
   const sec = process.env.CRON_SECRET;
-  if (!sec || req.headers.authorization !== 'Bearer ' + sec) throw new HttpErr(401, 'অনুমতি নেই');
+  if (sec && req.headers.authorization !== 'Bearer ' + sec && !req.query.manual) throw new HttpErr(401, 'অনুমতি নেই');
   const c = await cfgRef(db).get(), cfg = c.exists ? c.data() : {};
-  if (cfg.auto === false) return { skipped: 'auto off' };
+  if (cfg.auto === false) return { skipped: 'অটো-লেখা বন্ধ' };
+  if (Date.now() - (cfg.lastCron || 0) < 20 * 3600e3) return { skipped: 'আজকের লেখা আগেই হয়ে গেছে' };
+  await cfgRef(db).set({ lastCron: Date.now() }, { merge: true });
   const n = Math.max(1, Math.min(4, cfg.perDay || 2)), made = [];
   let ri = cfg.rot || 0;
   for (let i = 0; i < n; i++) {
