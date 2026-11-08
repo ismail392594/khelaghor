@@ -103,7 +103,6 @@ onAuthStateChanged(auth, u => {
   unsubs.forEach(f => f()); unsubs = []; user = u; me = null; K.authed = false; K.banned = false; drawMyMsgs([]); checkMaint();
   if (!u) {
     K.setProfile({ name: 'খেলোয়াড়' }); document.querySelector('.lvl').textContent = 'অতিথি'; document.querySelector('.xp i').style.width = '0%';
-    if (!isGuest()) K.openS('loginSheet');
     return;
   }
   K.closeS('loginSheet');

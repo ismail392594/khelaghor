@@ -150,6 +150,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:cro
 
 <script src="/js/voice.js"></script>
 <script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -591,7 +592,7 @@ function gate() {
   if (off) { $('gateT').textContent = 'মশা মারোতে মেরামত চলছে!'; $('gateP').textContent = 'মিস্ত্রি ভাই কাজ করতেছে, একটু পরে আসেন।'; $('gateA').textContent = 'হাবে ফিরে যান'; }
   else if (user && me && me.banned) { $('gateT').textContent = 'একাউন্ট বন্ধ'; $('gateP').textContent = 'হাবের যোগাযোগ পাতায় অ্যাডমিনকে লিখুন।'; $('gateA').textContent = 'হাবে ফিরে যান'; }
   else if (user && !me) { $('gateT').textContent = 'আগে ইউজারনেম'; $('gateP').textContent = 'হাবে গিয়ে ইউজারনেম বেছে নিন, তারপর খেলুন।'; $('gateA').textContent = 'হাবে যান'; }
-  const blocked = !user || !me || me.banned || off;
+  window.KH_GUEST = !(user && me); const blocked = !!((me && me.banned) || off);
   $('gate').hidden = !blocked;
   if (blocked && running) pause();
 }

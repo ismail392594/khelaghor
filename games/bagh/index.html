@@ -139,6 +139,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 
 <script src="/js/voice.js"></script>
 <script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
 <script type="module">
 import * as THREE from "/js/vendor/three.module.min.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -496,7 +497,7 @@ function gate() {
   if (off) { $('gateT').textContent = 'বন আজ বন্ধ!'; $('gateP').textContent = 'বনরক্ষীরা পাহারায় আছে, একটু পরে আসেন।'; $('gateA').textContent = 'হাবে ফিরে যান'; }
   else if (user && prof && prof.banned) { $('gateT').textContent = 'একাউন্ট বন্ধ'; $('gateP').textContent = 'হাবের যোগাযোগ পাতায় অ্যাডমিনকে লিখুন।'; $('gateA').textContent = 'হাবে ফিরে যান'; }
   else if (user && !prof) { $('gateT').textContent = 'আগে ইউজারনেম'; $('gateP').textContent = 'হাবে গিয়ে ইউজারনেম বেছে নিন, তারপর খেলুন।'; $('gateA').textContent = 'হাবে যান'; }
-  $('gate').hidden = !(!user || !prof || prof.banned || off);
+  window.KH_GUEST = !(user && prof); $('gate').hidden = !((prof && prof.banned) || off);
 }
 onAuthStateChanged(auth, u => {
   user = u; if (!u) { prof = null; gate(); return; }

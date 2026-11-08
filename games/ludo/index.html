@@ -656,6 +656,7 @@ async function go(mode) {
     history.replaceState(null, '', '/games/ludo/?mode=' + mode);
     show('game'); ingest(local); say(mode === 'practice' ? 'চলেন এক দান হয়ে যাক!' : 'খেলা শুরু!', true); return;
   }
+  if (!user || !me) { $('lerr').innerHTML = 'পয়েন্টের খেলায় আগে লগইন লাগবে। <a href="/" style="color:inherit">হাবে গিয়ে লগইন করুন</a>, অথবা নিচের অনুশীলন/এক ফোনে খেলা এখনই খেলুন।'; return; }
   const btns = document.querySelectorAll('[data-go]'); btns.forEach(b => b.disabled = true);
   try {
     const r = mode === 'cpu' ? await api({ action: 'cpu' }) : await api({ action: 'quick', size: mode === 'q4' ? 4 : 2, entry });
@@ -674,12 +675,12 @@ function gate() {
   if (off) { $('gateT').textContent = 'লুডুতে মেরামত চলছে!'; $('gateP').textContent = 'মিস্ত্রি ভাই কাজ করতেছে, একটু পরে আসেন।'; $('gateA').textContent = 'হাবে ফিরে যান'; }
   else if (user && me && me.banned) { $('gateT').textContent = 'একাউন্ট বন্ধ'; $('gateP').textContent = 'আপনার একাউন্ট আপাতত বন্ধ। হাবের যোগাযোগ পাতায় অ্যাডমিনকে লিখুন।'; $('gateA').textContent = 'হাবে ফিরে যান'; }
   else if (user && !me) { $('gateT').textContent = 'আগে ইউজারনেম'; $('gateP').textContent = 'হাবে গিয়ে ইউজারনেম বেছে নিন, তারপর খেলুন।'; $('gateA').textContent = 'হাবে যান'; }
-  $('gate').hidden = !!user && !!me && !me.banned && !off;
+  window.KH_GUEST = !(user && me); $('gate').hidden = !((me && me.banned) || off);
 }
 let unsubU = null;
 onAuthStateChanged(auth, u => {
   user = u; if (unsubU) { unsubU(); unsubU = null; }
-  if (!u) { me = null; gate(); return; }
+  if (!u) { me = null; gate(); $('pts').textContent = '-'; if (!started) { started = true; boot(); } return; }
   unsubU = onSnapshot(doc(db, 'users', u.uid), s => {
     me = s.exists() ? s.data() : null; gate();
     $('pts').textContent = me ? bn(me.points || 0) : '-';

@@ -334,10 +334,6 @@
       $('userT').textContent = 'খেলার আগে একটা ইউজারনেম বেছে নিন!';
       sfx('boing'); K.openS('userSheet'); return;
     }
-    if (!K.authed) {
-      $('loginT').textContent = pick(GATE);
-      sfx('boing'); K.openS('loginSheet'); speak($('loginT').textContent); return;
-    }
     if (K.played) K.played(name);
     howFirst(name, () => {
       if (SOLO[name]) { // একা খেলার গেম: সরাসরি খেলায়
@@ -353,7 +349,7 @@
   const hp = $('heroPlay'); if (hp) hp.onclick = () => { const st = (K.gameStatus || {})['লুডু'] || 'live'; K.tapGame('লুডু', st === 'live' ? '/games/ludo/' : null, st); };
   // কম্পিউটারের সাথে খেলতে গেলেও লগইন লাগবে
   const cpu = $('mCpu');
-  if (cpu) cpu.addEventListener('click', e => { if (!K.authed) { e.preventDefault(); K.closeS('modeSheet'); $('loginT').textContent = pick(GATE); K.openS('loginSheet'); } }, true);
+
 
   /* দৈনিক বোনাস ও পুরস্কারে কয়েনের শব্দ */
   const mOk = $('mOk'); if (mOk) new MutationObserver(() => { if (!$('modal').hidden) sfx('coin'); }).observe($('modal'), { attributes: true, attributeFilter: ['hidden'] });
