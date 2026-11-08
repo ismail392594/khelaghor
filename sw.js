@@ -1,6 +1,6 @@
 // খেলাঘর service worker: পেজগুলো ক্যাশে রাখে, যাতে দুর্বল নেটেও দ্রুত খোলে।
 // নতুন ভার্সন পাবলিশ করলে VERSION বাড়ান।
-const VERSION = 'khelaghor-v17';
+const VERSION = 'khelaghor-v18';
 const CORE = ['/', '/games/ludo/', '/games/mosha/', '/games/jam/', '/games/bazar/', '/offline.html', '/js/game-info.js', '/js/fun.js', '/js/voice.js', '/js/ludo-engine.js', '/js/online.js', '/js/firebase-config.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', e => {

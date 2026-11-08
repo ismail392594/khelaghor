@@ -86,7 +86,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:cro
           <div><canvas id="ic2" width="80" height="80"></canvas><b>এডিস মশা</b>৩ পয়েন্ট, দ্রুত</div>
           <div><canvas id="ic3" width="80" height="80"></canvas><b>মশার সর্দার</b>৩ থাপ্পড়, ১০</div>
         </div>
-        <p>মশায় চাপ দিয়ে থাপ্পড় মারুন। বেশিক্ষণ বসতে দিলে কামড়ে রক্ত খাবে। পরপর মারলে কম্বো! কয়েল, ইলেকট্রিক ব্যাট আর মলম ধরলে বিশেষ সুবিধা।</p>
+        <p>মশায় চাপ দিয়ে থাপ্পড় মারুন। মশা এসে আপনার হাতে বসবে আর আস্তে আস্তে রক্ত খেয়ে লাল হবে, পুরো ভরার আগেই মারুন! ফসকালে নিজের হাতেই থাপ্পড় পড়বে। পরপর মারলে কম্বো! কয়েল, ইলেকট্রিক ব্যাট আর মলম ধরলে বিশেষ সুবিধা।</p>
         <p class="small" id="bestTxt"></p>
         <button class="gbtn" id="startBtn">শুরু করি!</button>
         <div class="lb" id="lb1"></div>
@@ -144,13 +144,13 @@ const rnd = (a, b) => a + Math.random() * (b - a);
 const store = { get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 
 /* ================= শব্দ ও ভয়েস ================= */
-let sndOn = store.get('kh-sfx', true), ac = null, buzzG = null, buzzO = null, buzzL = null;
+let sndOn = store.get('kh-sfx', true), ac = null, buzzG = null, buzzO = null, buzzL = null, buzzP = null;
 function audio() {
   if (!ac) { const A = window.AudioContext || window.webkitAudioContext; if (!A) return null; ac = new A();
     buzzO = ac.createOscillator(); buzzO.type = 'sawtooth'; buzzO.frequency.value = 560;
     const lfo = ac.createOscillator(), lg = ac.createGain(); lfo.frequency.value = 7; lg.gain.value = 35; lfo.connect(lg); lg.connect(buzzO.frequency);
     const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 900; f.Q.value = 2;
-    buzzG = ac.createGain(); buzzG.gain.value = 0; buzzO.connect(f); f.connect(buzzG); buzzG.connect(ac.destination); buzzO.start(); lfo.start(); buzzL = lfo; }
+    buzzG = ac.createGain(); buzzG.gain.value = 0; buzzP = ac.createStereoPanner ? ac.createStereoPanner() : null; buzzO.connect(f); f.connect(buzzG); if (buzzP) { buzzG.connect(buzzP); buzzP.connect(ac.destination); } else buzzG.connect(ac.destination); buzzO.start(); lfo.start(); buzzL = lfo; }
   if (ac.state === 'suspended') ac.resume();
   return ac;
 }
@@ -169,7 +169,7 @@ const SFX = {
   over() { const t = ac.currentTime; [392, 349, 311, 233].forEach((f, i) => tone(f, t + i * .2, .35, 'triangle', .25)); }
 };
 function sfx(n) { if (!sndOn || !audio()) return; try { SFX[n](); } catch (e) {} }
-function setBuzz(v) { if (!ac || !buzzG) return; buzzG.gain.setTargetAtTime(sndOn ? Math.min(.05, v) : 0, ac.currentTime, .15); }
+function setBuzz(v, pan, pitch) { if (!ac || !buzzG) return; buzzG.gain.setTargetAtTime(sndOn ? Math.min(.07, v) : 0, ac.currentTime, .12); if (buzzP && pan !== undefined) buzzP.pan.setTargetAtTime(Math.max(-1, Math.min(1, pan)), ac.currentTime, .1); if (pitch) buzzO.frequency.setTargetAtTime(pitch, ac.currentTime, .2); }
 const synth = window.speechSynthesis; let bnVoice = null, voiceOn = store.get('kh-voice', true);
 function findVoice() { if (!synth) return null; const v = synth.getVoices(); bnVoice = v.find(x => /^bn[-_]BD/i.test(x.lang)) || v.find(x => /^bn/i.test(x.lang)) || null; return bnVoice; }
 if (synth) { findVoice(); synth.onvoiceschanged = findVoice; }
@@ -194,6 +194,9 @@ const L = {
   boss: ['মশার সর্দার আইছে!', 'এইটা মশা না হেলিকপ্টার!'],
   bossDead: ['সর্দার শেষ! মশারা এতিম!', 'বড় ভাই খতম!'],
   miss: ['মিস!', 'হাওয়ায় থাপ্পড়!'],
+  self: ['নিজের হাতে থাপ্পড়! উফ!', 'আরে, নিজেরেই মারলাম!', 'হাত লাল হয়ে গেল!'],
+  land: ['হাতে বসছে! জলদি মারেন!', 'রক্ত খাইতেছে! থাপ্পড় দেন!'],
+  itch: ['চুলকাচ্ছে! উফ!', 'হাত ফুলে গেল!'],
   coil: ['কয়েল জ্বালাইলাম, মশা ধীর!'], bat: ['ইলেকট্রিক ব্যাট হাতে, এবার দেখ!'], cream: ['মলম মাখলাম, কামড় দিতে পারবি না!']
 };
 const LEVELS = [
@@ -254,6 +257,35 @@ function drawRoom(dark) {
   return c;
 }
 
+/* আপনার হাত: পর্দার নিচে কনুই থেকে কব্জি */
+function armSeg() { return { ax: -W * .1, ay: H * 1.04, bx: W * .62, by: H * .83, r0: Math.min(46, W * .11), r1: Math.min(36, W * .085) }; }
+function armPt(u) { const a = armSeg(); return { x: a.ax + (a.bx - a.ax) * u, y: a.ay + (a.by - a.ay) * u, r: a.r0 + (a.r1 - a.r0) * u }; }
+function onArm(x, y) {
+  const a = armSeg(), dx = a.bx - a.ax, dy = a.by - a.ay, L2 = dx * dx + dy * dy;
+  const u = Math.max(0, Math.min(1, ((x - a.ax) * dx + (y - a.ay) * dy) / L2)), p = armPt(u);
+  const hand = Math.hypot(x - (a.bx + 34), y - (a.by - 6)) < a.r1 * 1.3;
+  return Math.hypot(x - p.x, y - p.y) < p.r + 8 || hand;
+}
+function drawArm(x, dark, bumps, t) {
+  const a = armSeg(), skin = dark ? '#8a6248' : '#e0a77d', shade = dark ? '#6d4c37' : '#c98d63';
+  const ang = Math.atan2(a.by - a.ay, a.bx - a.ax), len = Math.hypot(a.bx - a.ax, a.by - a.ay);
+  x.save(); x.translate(a.ax, a.ay); x.rotate(ang);
+  x.fillStyle = 'rgba(0,0,0,.25)'; x.beginPath(); x.moveTo(0, -a.r0 + 10); x.lineTo(len, -a.r1 + 10); x.lineTo(len, a.r1 + 10); x.lineTo(0, a.r0 + 10); x.fill();
+  const gr = x.createLinearGradient(0, -a.r0, 0, a.r0); gr.addColorStop(0, skin); gr.addColorStop(.7, skin); gr.addColorStop(1, shade);
+  x.fillStyle = gr; x.beginPath(); x.moveTo(0, -a.r0); x.lineTo(len, -a.r1); x.quadraticCurveTo(len + 8, 0, len, a.r1); x.lineTo(0, a.r0); x.closePath(); x.fill();
+  // হাতের লোম
+  x.strokeStyle = dark ? 'rgba(30,20,10,.35)' : 'rgba(80,50,30,.25)'; x.lineWidth = 1;
+  for (let i = 0; i < 26; i++) { const px = 30 + (i * 37) % (len - 40), py = -a.r0 * .6 + ((i * 53) % (a.r0 * 1.2)); x.beginPath(); x.moveTo(px, py); x.lineTo(px + 5, py - 2); x.stroke(); }
+  // হাতের তালু ও আঙুল
+  x.fillStyle = skin; x.beginPath(); x.ellipse(len + 30, 0, a.r1 * 1.05, a.r1 * .95, 0, 0, 7); x.fill();
+  [-.62, -.22, .18, .55].forEach((o, i) => { x.beginPath(); x.ellipse(len + 30 + a.r1 * (i === 3 ? .6 : 1.05), a.r1 * o, a.r1 * (i === 3 ? .42 : .55), a.r1 * .17, i === 3 ? .5 : 0, 0, 7); x.fill(); });
+  x.fillStyle = dark ? '#3a2b22' : '#7a4a30'; x.fillRect(len - 12, -a.r1 - 1, 9, a.r1 * 2 + 2); // ঘড়ির বেল্ট
+  x.fillStyle = dark ? '#555' : '#d4d4d8'; x.beginPath(); x.arc(len - 8, -a.r1 + 2, 7, 0, 7); x.fill();
+  x.restore();
+  // কামড়ের ফোলা দাগ
+  bumps.forEach(b => { const p = armPt(b.u), py = p.y + b.v * p.r; x.fillStyle = `rgba(235,90,90,${.35 + .2 * Math.sin(t * 3 + b.u * 9)})`; x.beginPath(); x.arc(p.x, py, 9, 0, 7); x.fill(); x.fillStyle = 'rgba(200,40,40,.8)'; x.beginPath(); x.arc(p.x, py, 2.5, 0, 7); x.fill(); });
+}
+
 /* মশা আঁকা */
 function drawMosq(x, m, t, scale) {
   const r = m.r * (scale || 1);
@@ -263,8 +295,9 @@ function drawMosq(x, m, t, scale) {
   [[-1, 1], [1, -1]].forEach(([sx]) => { x.save(); x.rotate(sx * (.4 + flap * .5)); x.beginPath(); x.ellipse(-r * .1, -r * .8 * sx, r * .35, r * .95, sx * .3, 0, 7); x.fill(); x.stroke(); x.restore(); });
   x.strokeStyle = m.type === 1 ? '#e8e8e8' : '#2a2430'; x.lineWidth = Math.max(1, r * .08);
   for (let i = -1; i <= 1; i++) { x.beginPath(); x.moveTo(i * r * .25, r * .1); x.quadraticCurveTo(i * r * .5 - r * .2, r * .8, i * r * .6 - r * .5, r * 1.3); x.stroke(); x.beginPath(); x.moveTo(i * r * .25, -r * .1); x.quadraticCurveTo(i * r * .5 - r * .2, -r * .8, i * r * .6 - r * .5, -r * 1.3); x.stroke(); }
-  const belly = m.fed ? '#c81e2c' : m.type === 1 ? '#1b1b1f' : '#4a3f52';
-  x.fillStyle = belly; x.beginPath(); x.ellipse(-r * .55, 0, r * (m.fed ? .7 : .55), r * (m.fed ? .38 : .22), 0, 0, 7); x.fill();
+  const pr = m.fed ? 1 : (m.prog || 0);
+  const belly = pr > .05 ? `rgb(${Math.round(74 + (200 - 74) * pr)},${Math.round(63 - 33 * pr)},${Math.round(82 - 38 * pr)})` : m.type === 1 ? '#1b1b1f' : '#4a3f52';
+  x.fillStyle = belly; x.beginPath(); x.ellipse(-r * .55, 0, r * (.55 + .2 * pr), r * (.22 + .18 * pr), 0, 0, 7); x.fill();
   if (m.type === 1) { x.fillStyle = '#fff'; for (let i = 0; i < 3; i++) x.fillRect(-r * .9 + i * r * .28, -r * .2, r * .07, r * .4); }
   x.fillStyle = m.type === 1 ? '#111' : '#3a3044'; x.beginPath(); x.ellipse(r * .1, 0, r * .3, r * .22, 0, 0, 7); x.fill();
   x.beginPath(); x.arc(r * .45, 0, r * .17, 0, 7); x.fill();
@@ -292,7 +325,7 @@ function drawPower(x, p, t) {
 let S = null, raf = 0, last = 0, running = false;
 function newGame() {
   return { t: 0, score: 0, kills: 0, blood: 100, combo: 0, comboT: 0, bestCombo: 0, lvl: 0, spawnT: .5, bossT: 26, powT: 14,
-    mos: [], fx: [], pows: [], slow: 0, bat: 0, shield: 0, dark: false, flash: 0, shake: 0, over: false };
+    mos: [], fx: [], pows: [], slow: 0, bat: 0, shield: 0, dark: false, flash: 0, shake: 0, over: false, bumps: [], itchT: 8, selfSlaps: 0 };
 }
 function lvlFor(k) { let i = 0; LEVELS.forEach((l, j) => { if (k >= l.at) i = j; }); return i; }
 function spawn(type) {
@@ -300,7 +333,7 @@ function spawn(type) {
   const x = edge === 0 ? -20 : edge === 1 ? W + 20 : rnd(0, W), y = edge === 2 ? -20 : rnd(H * .05, H * .65);
   const r = type === 2 ? 38 : type === 1 ? 19 : rnd(19, 23);
   S.mos.push({ x, y, r, type, hp: type === 2 ? 3 : 1, tx: rnd(W * .1, W * .9), ty: rnd(H * .1, H * .7), sp: (type === 1 ? 150 : type === 2 ? 55 : 95) * L0.speed * rnd(.85, 1.15),
-    age: 0, biteAt: L0.bite * (type === 2 ? 1.8 : type === 1 ? .8 : 1) * rnd(.85, 1.15), fed: false, flee: false, ang: 0, face: 1, seed: Math.random() * 99 });
+    age: 0, biteAt: L0.bite * (type === 2 ? 1.8 : type === 1 ? .8 : 1) * rnd(.85, 1.15), fed: false, flee: false, ang: 0, face: 1, seed: Math.random() * 99, st: 'fly', prog: 0, spot: null });
   if (type === 2) { say(pick(L.boss), true); floatText(W / 2, H * .3, 'মশার সর্দার!', '#ffd23f', 30); }
 }
 function floatText(x, y, text, col, size) { S.fx.push({ k: 'txt', x, y, text, col: col || '#fff', size: size || 22, life: 1 }); }
@@ -322,26 +355,46 @@ function step(dt) {
   if (S.spawnT <= 0) { const cap = 4 + S.lvl * 2; if (S.mos.filter(m => !m.flee).length < cap) spawn(Math.random() < Math.min(.35, .1 + S.lvl * .05) ? 1 : 0); S.spawnT = L0.spawn * rnd(.7, 1.2); }
   S.bossT -= dt; if (S.bossT <= 0 && S.kills >= 8) { spawn(2); S.bossT = rnd(30, 40); }
   S.powT -= dt; if (S.powT <= 0) { S.pows.push({ kind: pick(['coil', 'bat', 'cream']), x: rnd(40, W - 40), y: rnd(H * .15, H * .6), life: 6, seed: Math.random() * 9 }); S.powT = rnd(16, 24); }
-  // মশা চলা
-  let buzz = 0;
+  // মশা চলা: উড়ে বেড়ায় → হাতে নামে → রক্ত খায় → কামড় দিয়ে পালায়
+  let nearest = 1e9, nx = W / 2, count = 0;
   S.mos.forEach(m => {
     m.age += dt * sm;
-    if (m.flee) { m.tx = m.x < W / 2 ? -60 : W + 60; m.ty = -60; }
-    else if (Math.hypot(m.tx - m.x, m.ty - m.y) < 20 || Math.random() < dt * .8) { m.tx = rnd(W * .08, W * .92); m.ty = rnd(H * .06, H * .7); }
-    const a = Math.atan2(m.ty - m.y, m.tx - m.x), sp = m.sp * sm * (m.flee ? 1.6 : 1);
-    m.x += Math.cos(a) * sp * dt + Math.sin(S.t * 9 + m.seed) * 30 * dt; m.y += Math.sin(a) * sp * dt + Math.cos(S.t * 11 + m.seed) * 26 * dt;
-    m.face = Math.cos(a) >= 0 ? 1 : -1; m.ang = Math.sin(S.t * 6 + m.seed) * .25;
-    if (!m.flee) buzz += m.type === 2 ? .02 : .009;
-    if (!m.flee && m.age > m.biteAt) {
-      m.flee = true;
-      if (S.shield > 0) { floatText(m.x, m.y, 'মলম! কামড় বন্ধ', '#36d1c4', 18); return; }
-      m.fed = true; const dmg = m.type === 1 ? 14 : m.type === 2 ? 20 : 9;
-      S.blood -= dmg; S.flash = .35; S.shake = .25; sfx('bite'); floatText(m.x, m.y, '−' + bn(dmg) + ' রক্ত', '#ff4d5e', 20); say(pick(L.bite));
-      if (navigator.vibrate) try { navigator.vibrate(60); } catch (e) {}
+    const landAt = m.biteAt * .5;
+    if (m.st === 'suck') {
+      const p = armPt(m.spot.u); m.x = p.x; m.y = p.y + m.spot.v * p.r; m.ang = -.5 + Math.sin(S.t * 2 + m.seed) * .05;
+      m.prog += dt * sm / m.suckT;
+      if (m.prog >= 1) {
+        m.st = 'fly'; m.flee = true; m.fed = true;
+        if (S.shield > 0) { floatText(m.x, m.y, 'মলম! কামড় বন্ধ', '#36d1c4', 18); m.fed = false; return; }
+        const dmg = m.type === 1 ? 14 : m.type === 2 ? 20 : 9;
+        S.blood -= dmg; S.flash = .35; S.shake = .25; sfx('bite'); floatText(m.x, m.y - 20, '−' + bn(dmg) + ' রক্ত', '#ff4d5e', 20); say(pick(L.bite));
+        S.bumps.push({ u: m.spot.u, v: m.spot.v }); if (S.bumps.length > 14) S.bumps.shift();
+        if (navigator.vibrate) try { navigator.vibrate(60); } catch (e) {}
+      }
+      return;
     }
+    if (m.flee) { m.tx = m.x < W / 2 ? -60 : W + 60; m.ty = -60; }
+    else if (m.age > landAt) {
+      if (!m.spot) m.spot = { u: rnd(.28, .92), v: rnd(-.55, .45) };
+      const p = armPt(m.spot.u); m.tx = p.x; m.ty = p.y + m.spot.v * p.r;
+      if (Math.hypot(m.tx - m.x, m.ty - m.y) < 10) {
+        if (S.shield > 0) { m.age = 0; m.spot = null; floatText(m.x, m.y, 'মলমের গন্ধে পালালো!', '#36d1c4', 16); }
+        else { m.st = 'suck'; m.prog = 0; m.suckT = Math.max(1.1, m.biteAt * .5); if (Math.random() < .5) say(pick(L.land)); }
+      }
+    }
+    else if (Math.hypot(m.tx - m.x, m.ty - m.y) < 20 || Math.random() < dt * .8) { m.tx = rnd(W * .08, W * .92); m.ty = rnd(H * .06, H * .7); }
+    const a = Math.atan2(m.ty - m.y, m.tx - m.x), landing = !m.flee && m.age > landAt, sp = m.sp * sm * (m.flee ? 1.6 : landing ? 1.2 : 1);
+    const wob = landing ? .35 : 1;
+    m.x += Math.cos(a) * sp * dt + Math.sin(S.t * 9 + m.seed) * 30 * dt * wob; m.y += Math.sin(a) * sp * dt + Math.cos(S.t * 11 + m.seed) * 26 * dt * wob;
+    m.face = Math.cos(a) >= 0 ? 1 : -1; m.ang = Math.sin(S.t * 6 + m.seed) * .25;
+    if (!m.flee) { count++; const d = Math.hypot(m.x - W / 2, m.y - H * .55) / (m.type === 2 ? 1.6 : 1); if (d < nearest) { nearest = d; nx = m.x; } }
   });
   S.mos = S.mos.filter(m => !(m.flee && (m.x < -50 || m.x > W + 50 || m.y < -50)));
-  setBuzz(buzz);
+  // কাছের মশার ভনভন বেশি জোরে, আর যেদিক থেকে আসছে সেদিকের কানে
+  const near = Math.max(0, 1 - nearest / (H * .7));
+  setBuzz(count ? .008 + .055 * near * near + count * .002 : 0, (nx - W / 2) / (W / 2), 520 + near * 160);
+  // কামড়ের জায়গা চুলকায়
+  if (S.bumps.length >= 3) { S.itchT -= dt; if (S.itchT <= 0) { S.itchT = rnd(9, 15); const b = pick(S.bumps), p = armPt(b.u); floatText(p.x, p.y - 30, 'চুলকাচ্ছে!', '#ffb4b4', 18); say(pick(L.itch)); } }
   S.pows.forEach(p => p.life -= dt); S.pows = S.pows.filter(p => p.life > 0);
   S.fx.forEach(f => { f.life -= dt * (f.k === 'splat' ? .25 : 1.3); if (f.k === 'txt') f.y -= 40 * dt; }); S.fx = S.fx.filter(f => f.life > 0);
   S.flash = Math.max(0, S.flash - dt); S.shake = Math.max(0, S.shake - dt);
@@ -367,6 +420,7 @@ function render() {
   if (S.dark) { const c = g.createRadialGradient(W * .85, H * .7, 5, W * .85, H * .7, H * .5); c.addColorStop(0, 'rgba(255,190,90,.22)'); c.addColorStop(1, 'rgba(255,190,90,0)'); g.fillStyle = c; g.fillRect(0, 0, W, H); g.fillStyle = '#f4efe4'; g.fillRect(W * .85 - 5, H * .7 - 4, 10, 26); g.fillStyle = '#ffb627'; g.beginPath(); g.ellipse(W * .85, H * .7 - 9 + Math.sin(S.t * 20) * 1.5, 4, 8, 0, 0, 7); g.fill(); }
   S.fx.filter(f => f.k === 'splat').forEach(f => { g.globalAlpha = Math.min(1, f.life); g.fillStyle = f.fed ? '#b3121f' : '#3a2a2a'; g.beginPath(); g.arc(f.x, f.y, f.r, 0, 7); g.fill(); f.dots.forEach(d => { g.beginPath(); g.arc(f.x + d[0], f.y + d[1], d[2], 0, 7); g.fill(); }); g.globalAlpha = 1; });
   S.pows.forEach(p => { g.globalAlpha = Math.min(1, p.life); drawPower(g, p, S.t); g.globalAlpha = 1; });
+  drawArm(g, S.dark, S.bumps, S.t);
   S.mos.forEach(m => drawMosq(g, m, S.t));
   S.fx.filter(f => f.k === 'ring').forEach(f => { g.strokeStyle = f.col; g.globalAlpha = f.life; g.lineWidth = 4; g.beginPath(); g.arc(f.x, f.y, f.r * (1.6 - f.life), 0, 7); g.stroke(); g.globalAlpha = 1; });
   S.fx.filter(f => f.k === 'hand').forEach(f => { g.save(); g.globalAlpha = Math.min(1, f.life * 3); g.translate(f.x, f.y); g.scale(1 + (1 - f.life) * .4, 1 + (1 - f.life) * .4); g.fillStyle = f.bat ? '#ffd23f' : '#f2c49b'; g.strokeStyle = '#8a5a3a'; g.lineWidth = 2;
@@ -401,7 +455,14 @@ cv.addEventListener('pointerdown', e => {
   const reach = S.bat > 0 ? 2.8 : 1.7;
   const hits = S.mos.filter(m => Math.hypot(m.x - x, m.y - y) < m.r * reach + 8);
   S.fx.push({ k: 'hand', x, y, life: .3, bat: S.bat > 0 });
-  if (!hits.length) { sfx('miss'); if (Math.random() < .25) floatText(x, y, pick(L.miss), '#c9c3f5', 18); S.combo = 0; return; }
+  if (!hits.length) {
+    if (onArm(x, y)) { // ফসকে নিজের হাতে
+      sfx('slap'); S.shake = .15; S.selfSlaps++; S.combo = 0; floatText(x, y - 30, pick(L.self), '#ffb4b4', 20); if (Math.random() < .5) say(pick(L.self));
+      S.mos.forEach(m => { if (m.st === 'suck' && Math.hypot(m.x - x, m.y - y) < 90) { m.st = 'fly'; m.age = 0; m.spot = null; m.prog = 0; } }); // ভয় পেয়ে উড়ে গেল
+      return;
+    }
+    sfx('miss'); if (Math.random() < .25) floatText(x, y, pick(L.miss), '#c9c3f5', 18); S.combo = 0; return;
+  }
   S.bat > 0 ? sfx('zap') : sfx('slap');
   let gained = 0;
   // ব্যাটে কাছের সবগুলো, হাতে শুধু সবচেয়ে কাছেরটা
@@ -413,9 +474,9 @@ cv.addEventListener('pointerdown', e => {
     S.mos = S.mos.filter(q => q !== m);
     S.fx.push({ k: 'splat', x: m.x, y: m.y, r: m.r * .45, fed: m.fed, life: 1, dots: Array.from({ length: 6 }, () => [rnd(-m.r, m.r), rnd(-m.r, m.r), rnd(1.5, 4)]) });
     S.kills++; S.combo++; S.comboT = 1.3; S.bestCombo = Math.max(S.bestCombo, S.combo);
-    const base = m.type === 2 ? 10 : m.type === 1 ? 3 : 1, mult = Math.min(5, 1 + Math.floor((S.combo - 1) / 2));
+    const base = (m.type === 2 ? 10 : m.type === 1 ? 3 : 1) + (m.st === 'suck' && m.prog > .5 ? 1 : 0), mult = Math.min(5, 1 + Math.floor((S.combo - 1) / 2));
     const pts = base * mult; gained += pts; S.score += pts;
-    if (m.fed) { S.blood = Math.min(100, S.blood + 4); floatText(m.x, m.y + 20, 'রক্ত ফেরত +৪', '#ff8a9a', 16); }
+    if (m.fed || m.prog > .3) { const back = m.fed ? 4 : Math.ceil(m.prog * 3); S.blood = Math.min(100, S.blood + back); floatText(m.x, m.y + 20, 'রক্ত ফেরত +' + bn(back), '#ff8a9a', 16); }
     floatText(m.x, m.y - 10, (mult > 1 ? '×' + bn(mult) + ' ' : '') + '+' + bn(pts), m.type === 1 ? '#7be0ff' : m.type === 2 ? '#ffd23f' : '#fff', 22);
     if (m.type === 1) say(pick(L.aedes)); else if (m.type === 2) { say(pick(L.bossDead), true); S.shake = .3; }
   });
