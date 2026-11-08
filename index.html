@@ -496,6 +496,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
       <button class="chip" data-lb="callbridge" aria-pressed="false">কলব্রিজ</button>
       <button class="chip" data-lb="twentynine" aria-pressed="false">২৯</button>
       <button class="chip" data-lb="chess" aria-pressed="false">দাবা</button>
+      <button class="chip" data-lb="gollachut" aria-pressed="false">গোল্লাছুট</button>
     </div>
     <div class="board" id="lb"></div>
     <div class="adslot" hidden><span class="adlbl">বিজ্ঞাপন</span><div class="adbox"></div><button class="adfree" type="button">বিজ্ঞাপন ছাড়া খেলুন →</button></div>
@@ -687,13 +688,13 @@ function setCoins(v){coins=v;ls.set('kh-coins',v);$('bal').textContent=bn(v)}
 const LUDO='/games/ludo/';
 const GAMES=[
  ['লুডু','launch',LUDO],['মশা মারো','launch','/games/mosha/'],['ঢাকা জ্যাম রানার','launch','/games/jam/'],['বাজার দর চ্যালেঞ্জ','launch','/games/bazar/'],['আর্জেন্টিনা বনাম ব্রাজিল','launch','/games/argbra/'],
- ['ক্যারম','trad','/games/carrom/'],['ষোলোগুটি','trad','/games/sholo/'],['বাঘবন্দি','trad','/games/bagh/'],['ঘুড়ি কাটাকাটি','trad','/games/ghuri/'],['হাডুডু','trad','/games/hadudu/'],['কলব্রিজ','trad','/games/callbridge/'],['টুয়েন্টি নাইন','trad','/games/twentynine/'],['দাবা','trad','/games/chess/'],['গোল্লাছুট','trad'],['দাড়িয়াবান্ধা','trad'],['কানামাছি','trad'],['ডাংগুলি','trad'],['লাটিম','trad'],['মার্বেল','trad'],['এক্কা-দোক্কা','trad'],['রুমাল চুরি','trad'],['নৌকা বাইচ','trad'],['বউচি','trad'],
+ ['ক্যারম','trad','/games/carrom/'],['ষোলোগুটি','trad','/games/sholo/'],['বাঘবন্দি','trad','/games/bagh/'],['ঘুড়ি কাটাকাটি','trad','/games/ghuri/'],['হাডুডু','trad','/games/hadudu/'],['কলব্রিজ','trad','/games/callbridge/'],['টুয়েন্টি নাইন','trad','/games/twentynine/'],['দাবা','trad','/games/chess/'],['গোল্লাছুট','trad','/games/gollachut/'],['দাড়িয়াবান্ধা','trad'],['কানামাছি','trad'],['ডাংগুলি','trad'],['লাটিম','trad'],['মার্বেল','trad'],['এক্কা-দোক্কা','trad'],['রুমাল চুরি','trad'],['নৌকা বাইচ','trad'],['বউচি','trad'],
  ['লোকাল বাস হেলপার','viral'],['লোডশেডিং সারভাইভাল','viral'],['রিকশা ভাড়া দরদাম','viral'],['ঈদের বাস টিকিট','viral'],['মেট্রোরেল রাশ','viral'],['ফুচকা মাস্টার','viral'],['বিয়েবাড়ির বিরিয়ানি','viral'],['কোরবানির হাট','viral'],['জলাবদ্ধতা রাইড','viral'],['শেষ বলে ছক্কা','viral'],['পরীক্ষার আগের রাত','viral'],['অটোরিকশা উল্টো পথে','viral'],['চিৎকার করো না','viral'],['গ্যাস সিলিন্ডার মিশন','viral'],['ফেসবুক কমেন্ট যোদ্ধা','viral'],['ডেলিভারি রাইডার','viral'],['বাড়িওয়ালা বনাম ভাড়াটিয়া','viral'],['শীতের পিঠা মেলা','viral'],['ইন্টারভিউ সারভাইভাল','viral'],['পটকা পাহারা','viral']
 ];
 const PAL=[['#ff6a5c','#e0335a'],['#ffb03a','#f27a1a'],['#33c27a','#13915a'],['#38bdf8','#2563eb'],['#a78bfa','#7c3aed'],['#f472b6','#db2777'],['#2dd4bf','#0f9488'],['#facc15','#e08a00']];
 const SOON=['শিগগিরই আসছে! ততক্ষণ লুডু খেলেন, মাথা ঠান্ডা থাকবে।','এই গেম এখনো রান্না হইতেছে, একটু ধৈর্য ধরেন!','ডেভেলপার চা খেতে গেছে, ফিরেই বানাবে!'];
 /* how many can play together */
-const PL={'লুডু':'২-৪','আর্জেন্টিনা বনাম ব্রাজিল':'২','ক্যারম':'১','ষোলোগুটি':'১-২','বাঘবন্দি':'১-২','ঘুড়ি কাটাকাটি':'১','হাডুডু':'১','কলব্রিজ':'১ (+৩ কম্পিউটার)','টুয়েন্টি নাইন':'১ (+৩ কম্পিউটার)','দাবা':'১-২','মার্বেল':'২-৪','লাটিম':'২-৪','নৌকা বাইচ':'২-৪','কানামাছি':'২-৪','শেষ বলে ছক্কা':'২','রিকশা ভাড়া দরদাম':'২','বাড়িওয়ালা বনাম ভাড়াটিয়া':'২','ফুচকা মাস্টার':'২-৪','মশা মারো':'১','ঢাকা জ্যাম রানার':'১'};
+const PL={'লুডু':'২-৪','আর্জেন্টিনা বনাম ব্রাজিল':'২','ক্যারম':'১','ষোলোগুটি':'১-২','বাঘবন্দি':'১-২','ঘুড়ি কাটাকাটি':'১','হাডুডু':'১','কলব্রিজ':'১ (+৩ কম্পিউটার)','টুয়েন্টি নাইন':'১ (+৩ কম্পিউটার)','দাবা':'১-২','গোল্লাছুট':'১ (+দল)','মার্বেল':'২-৪','লাটিম':'২-৪','নৌকা বাইচ':'২-৪','কানামাছি':'২-৪','শেষ বলে ছক্কা':'২','রিকশা ভাড়া দরদাম':'২','বাড়িওয়ালা বনাম ভাড়াটিয়া':'২','ফুচকা মাস্টার':'২-৪','মশা মারো':'১','ঢাকা জ্যাম রানার':'১'};
 let filter='all', curGame=null;
 function drawGrid(){
   const g=$('grid');g.innerHTML='';
@@ -710,7 +711,7 @@ function drawGrid(){
     const [a,b]=PAL[i%PAL.length];
     const el=document.createElement('button');
     el.className='tile '+(st==='live'?'live':st==='maint'?'maint':'soon');el.style.setProperty('--a',a);el.style.setProperty('--b',b);
-    const SHOT={'লুডু':'ludo','মশা মারো':'mosha','ঢাকা জ্যাম রানার':'jam','বাজার দর চ্যালেঞ্জ':'bazar','আর্জেন্টিনা বনাম ব্রাজিল':'argbra','ক্যারম':'carrom','ষোলোগুটি':'sholo','বাঘবন্দি':'bagh','ঘুড়ি কাটাকাটি':'ghuri','হাডুডু':'hadudu','কলব্রিজ':'callbridge','টুয়েন্টি নাইন':'twentynine','দাবা':'chess'}[name];
+    const SHOT={'লুডু':'ludo','মশা মারো':'mosha','ঢাকা জ্যাম রানার':'jam','বাজার দর চ্যালেঞ্জ':'bazar','আর্জেন্টিনা বনাম ব্রাজিল':'argbra','ক্যারম':'carrom','ষোলোগুটি':'sholo','বাঘবন্দি':'bagh','ঘুড়ি কাটাকাটি':'ghuri','হাডুডু':'hadudu','কলব্রিজ':'callbridge','টুয়েন্টি নাইন':'twentynine','দাবা':'chess','গোল্লাছুট':'gollachut'}[name];
     if(SHOT&&url){el.classList.add('shot');el.style.setProperty('--shot',`url(/icons/shots/${SHOT}.png)`)}
     el.onclick=()=>window.KH.tapGame?window.KH.tapGame(name,st==='live'?url:null,st):(st==='live'?openModes(name,url):toast(SOON[i%SOON.length]));
     const inf=(window.GAME_INFO||{})[name]||['',''];
