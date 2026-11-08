@@ -321,6 +321,9 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 .vids{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 10px;margin:0 -2px;scrollbar-width:none}
 .vids .kvid{flex:none;width:min(84vw,420px);scroll-snap-align:center}
 .vids .kvid.tall{width:min(56vw,260px)}
+.ytMini{position:fixed;left:max(10px,env(safe-area-inset-left,0px));bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:9;width:168px;aspect-ratio:16/9;border-radius:14px;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,.45);background:#000}
+.ytMini iframe{width:100%;height:100%;border:0}
+.ytMini button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;font-size:.8rem;cursor:pointer}
 .bombs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;perspective:600px}
 .bomb{position:relative;border:0;cursor:pointer;background:none;color:#fff;display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 2px;font:700 .82rem var(--body);-webkit-tap-highlight-color:transparent}
 .bomb .ball{position:relative;width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#6b6b80 0,#2a2838 38%,#0d0c16 75%);box-shadow:0 8px 14px rgba(0,0,0,.45),inset -6px -8px 14px rgba(0,0,0,.6);display:grid;place-items:center;font-size:1.6rem;transition:transform .15s;animation:bob 3s ease-in-out infinite}
@@ -596,6 +599,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 </div>
 
 <script src="/js/game-info.js"></script>
+<script src="/js/viral.js"></script>
 <script>
 const bn=n=>String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
 const $=id=>document.getElementById(id);
@@ -658,47 +662,7 @@ function copyText(t,el){
 $('roomCopy').onclick=()=>copyText($('invTxt').value,$('invTxt'));
 
 /* dialogues */
-const DLG=[
- ['ভাই, ২ কিলো রাস্তা, ২ ঘণ্টা লাগল। এর চেয়ে হাঁটলে চাকরি বাঁচত!','ঢাকা জ্যাম রানার'],
- ['ওস্তাদ বামে চাপান, আরো দুইজন উঠব, পিছনে খালি!','লোকাল বাস হেলপার'],
- ['পেঁয়াজের দাম শুনে চোখে পানি, কাটার আগেই!','বাজার দর চ্যালেঞ্জ'],
- ['কারেন্ট আসছে! সবাই চার্জার লাগা... গেল আবার!','লোডশেডিং সারভাইভাল'],
- ['এই মশা আমার রক্ত খাইছে, এখন আমার হাতের থাপ্পড় খাবে!','মশা মারো'],
- ['মামা যাবেন? ১০০ টাকা। এই রাস্তা তো আমি হেঁটেই চিনি!','রিকশা ভাড়া দরদাম'],
- ['দরজা বন্ধ হইতেছে! ব্যাগ ভিতরে, আমি বাইরে!','মেট্রোরেল রাশ'],
- ['মামা আরেকটু টক দেন, ঝাল কম... না না, ঝাল বেশি!','ফুচকা মাস্টার'],
- ['আমি বরপক্ষ না কনেপক্ষ? যেই পক্ষে রোস্ট বেশি!','বিয়েবাড়ির বিরিয়ানি'],
- ['ভাই গরুর নাম কী? শাহেনশাহ! দামটাও শাহেনশাহ!','কোরবানির হাট'],
- ['এইটা রাস্তা না নদী? নৌকা আনতাম!','জলাবদ্ধতা রাইড'],
- ['আর ৫ মিনিট রিলস দেখি... সকাল হয়ে গেল!','পরীক্ষার আগের রাত'],
- ['ঘরে যা বাবা, আবার ছক্কা তুলে আয়!','লুডু'],
- ['ভোকাট্টা! নাটাই নিয়া বাসায় যাও!','ঘুড়ি কাটাকাটি'],
- ['দম ফুরাইছে ভাই, কিন্তু ইজ্জত ফুরায় নাই!','হাডুডু'],
- ['তোর মেসি আমার নেইমারের পায়ের ধুলা!','আর্জেন্টিনা বনাম ব্রাজিল'],
- ['আপা আমি গেটে, গেট কোনটা? সব গেট একরকম!','ডেলিভারি রাইডার'],
- ['৫ বছরের অভিজ্ঞতা লাগবে, বয়স ২২। আমি কি মায়ের পেট থেকে কাজ শুরু করব?','ইন্টারভিউ সারভাইভাল'],
- ['ডাল সিদ্ধ হয় নাই, গ্যাস বিদায় নিল!','গ্যাস সিলিন্ডার মিশন'],
- ['আমি না পড়েই শেয়ার দিছি, কারণ শিরোনাম জোস ছিল!','ফেসবুক কমেন্ট যোদ্ধা'],
- ['হারছেন তো কী হইছে, কাল আবার আসবেন, কয়েন রেডি থাকবে!','খেলাঘর']
-];
-const DLG18=[
- ['বিয়ের আগে বলছিল চাঁদ এনে দিবে, বিয়ের পর বলে বাজার থেকে আলুটা নিয়া আসো।','সংসার জীবন'],
- ['বেতন আসে ১ তারিখে, চলে যায় ২ তারিখে, বাকি ২৮ দিন আমি শুধু অভিনয় করি।','চাকরিজীবী'],
- ['বউ বলে "কিছু না"। এই কিছু না-র মানে বুঝতে আমার ৫ বছর লাগছে, এখনো শিখতেছি।','সংসার জীবন'],
- ['বস বলে "একটু থাকো"। ওই একটু শেষ হয় রাত ১০টায়।','অফিস'],
- ['এক্স ফোন দিয়া বলে "কেমন আছো?" আগে কই ছিলা যখন আমার ডাটা প্যাক শেষ ছিল?','প্রেম-ছ্যাঁকা'],
- ['ক্রাশের বিয়ের দাওয়াত পাইছি। রোস্টটা অন্তত ভালো হইলে কষ্ট কম পাইতাম।','প্রেম-ছ্যাঁকা'],
- ['সংসার মানে রিমোট আমার হাতে, কিন্তু চ্যানেল চলবে বউয়ের পছন্দে।','সংসার জীবন'],
- ['ব্যাচেলর লাইফ: সকালে ডিম ভাজি, রাতে ডিম ভাজি, আর মা ফোনে বলে "ঠিকমতো খাস তো?"','ব্যাচেলর'],
- ['বিয়ের পর ওজন বাড়ছে কেন? শাশুড়ির ভালোবাসা প্রতি বেলা ৩ প্লেট।','শ্বশুরবাড়ি'],
- ['প্রেমিকা বলছিল তোমার জন্য জান দিতে পারি। রেস্টুরেন্টের বিল আসতেই বলে আজ তুমি দাও না!','প্রেম'],
- ['অফিসের মিটিং: ১ ঘণ্টা আলোচনা, সিদ্ধান্ত হলো পরের মিটিংয়ে দেখা যাবে।','অফিস'],
- ['রাত ২টায় ফ্রিজ খুলি, কিছু খাই না, শুধু তাকাই। এইটাই আমার ডেট নাইট।','ব্যাচেলর'],
- ['শ্বশুরবাড়িতে জামাই আদর ৩ দিন। ৪ নম্বর দিনে শাশুড়ি বলে, বাবা বাজারটা একটু করে দিবা?','শ্বশুরবাড়ি'],
- ['ঘটক বলছিল ছেলে সরকারি চাকরি করে। পরে জানলাম সরকারি অফিসের সামনে চায়ের দোকান।','বিয়ের বাজার'],
- ['বন্ধুরা সবাই বিয়ে করে ফেলছে, আমি এখনো লুডুতে গুটি কাটতেছি।','সিঙ্গেল লাইফ'],
- ['বউয়ের সাথে ঝগড়ায় জিতছিলাম একবার, স্বপ্নে।','সংসার জীবন']
-];
+const DLG=window.KH_DLG, DLG18=window.KH_DLG18;
 let adult=false, dIdx=-1;
 function curList(){return adult?DLG18:DLG}
 function nextDlg(){

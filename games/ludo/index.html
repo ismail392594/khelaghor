@@ -155,6 +155,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--teal);outline-offse
 .rrow .plus{color:#15803d}.rrow .minus{color:#d61f4f}
 .racts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.tip{color:inherit;margin:0;background:rgba(54,209,196,.14);border:1px solid rgba(54,209,196,.4);border-radius:12px;padding:8px 10px;text-align:left;font-size:.82rem!important;line-height:1.45}
 </style>
 </head><body>
 <div class="wrap">
@@ -217,6 +218,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--teal);outline-offse
     <h2 id="rT">জিতছেন!</h2>
     <p id="rLine"></p>
     <div class="rlist" id="rList"></div>
+    <p class="tip" id="rTip"></p>
     <div class="gvid"></div>
     <div class="racts"><button class="gbtn" id="rAgain">আবার খেলুন</button><a class="gbtn ghost" href="/">হাবে ফিরুন</a></div>
   </div>
@@ -232,6 +234,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--teal);outline-offse
 </div>
 
 <script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -433,6 +436,7 @@ async function playEvent(e) {
     const mineHit = myIdx >= 0 && e.q === myIdx, mineDid = myIdx >= 0 && e.p === myIdx;
     say(pick(mineHit ? LINES.capped : LINES.capMe), true);
     $('msg').textContent = nameOf(e.p) + ' ' + poss(e.q) + ' গুটি কেটে দিয়েছে!' + (mineDid ? ' 🔥' : '');
+    if (window.KHViral && Math.random() < .35) setTimeout(() => KHViral.pop(null, SEAT_VOICE[(G.players[e.p] || {}).color || 0]), 1600);
     await sleep(650);
   } else if (e.k === 'home') { sfx('home'); boardPop('ঘরে!', COL[pl.color]); say(pick(LINES.home)); await sleep(500); }
   else if (e.k === 'skip') {
@@ -558,6 +562,7 @@ function showResult() {
   const r = G.result || { ranks: [] }, w = r.ranks[0], won = myIdx < 0 ? true : w === myIdx;
   $('rT').textContent = myIdx < 0 ? G.players[w].name + ' জিতেছে!' : won ? 'জিতছেন! 🎉' : 'এইবার হইল না!';
   $('rLine').textContent = pick(won ? LINES.win : LINES.lose);
+  $('rTip').textContent = window.KHViral ? KHViral.tip('ludo') : '';
   const po = r.payouts || {};
   $('rList').innerHTML = r.ranks.map((pi, k) => { const pl = G.players[pi], a = pl.uid != null ? po[pl.uid] : undefined;
     return `<div class="rrow"><em>${bn(k + 1)}</em><i style="background:${COL[pl.color]}"></i><span>${esc(pl.name)}${pi === myIdx ? ' (আপনি)' : ''}</span>${a === undefined ? '<span></span>' : `<span class="amt ${a >= 0 ? 'plus' : 'minus'}">${a >= 0 ? '+' : '−'}${bn(Math.abs(a))}</span>`}</div>`; }).join('');

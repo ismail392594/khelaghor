@@ -428,6 +428,7 @@ function drawVideos(cfg) {
   }), { threshold: [0, .7] });
   cards.forEach(c => vidObs.observe(c));
 }
+onSnapshot(doc(db, 'config', 'music'), d => { const c = (d.exists() && d.data()) || {}; window.__khSongs = c; window.KH && window.KH.setSongs && window.KH.setSongs(c); }, () => {});
 onSnapshot(doc(db, 'config', 'videos'), d => drawVideos((d.exists() && d.data()) || {}), () => {});
 onSnapshot(doc(db, 'config', 'bonus'), d => { bonusCfg = (d.exists() && d.data()) || {}; drawMission(); }, () => {});
 function drawMission() {

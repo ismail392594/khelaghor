@@ -102,6 +102,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .lb em{font-style:normal;color:var(--muted);font-weight:700}
 .lb b{font-variant-numeric:tabular-nums}
 .small{font-size:.75rem!important}
+.tip{color:var(--fg)!important;background:rgba(54,209,196,.14);border:1px solid rgba(54,209,196,.4);border-radius:12px;padding:8px 10px;text-align:left;font-size:.82rem!important;line-height:1.45}
 .fx{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}
 .fl{position:absolute;transform:translate(-50%,-50%);font-family:var(--display);font-weight:800;white-space:nowrap;text-shadow:0 2px 0 rgba(0,0,0,.6),0 0 10px rgba(0,0,0,.5);animation:rise 1.2s ease-out forwards}
 @keyframes rise{0%{transform:translate(-50%,-30%) scale(.6);opacity:0}15%{transform:translate(-50%,-50%) scale(1.1);opacity:1}100%{transform:translate(-50%,-160%) scale(1);opacity:0}}
@@ -174,6 +175,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
           <div><b id="eC">০</b><span>কয়েন</span></div>
         </div>
         <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
         <div class="gvid"></div>
         <div class="acts"><button class="gbtn" id="againBtn">আবার চালাই</button><button class="gbtn ghost" id="shareBtn">কপি করে শেয়ার</button></div>
         <div class="lb" id="lb2"></div>
@@ -192,6 +194,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 </div>
 
 <script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
 <script type="module">
 import * as THREE from "/js/vendor/three.module.min.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -880,6 +883,8 @@ function ambientTalk() {
   if (ped && Math.random() < .35) return talk(ped.g, 'ped');
   if (near.length) { const o = pick(near); talk(o.g, roleOf(o)); }
 }
+// রাস্তার কেউ একটা ভাইরাল ডায়লগ দেয়
+function viralTalk() { const c = S.obs.filter(o => !o.static && o.z < -4 && o.z > -45); const d = pick(window.KH_DLG); if (!d) return; if (c.length) { const o = pick(c); talk(o.g, roleOf(o), d[0]); } else { const w = S.walkers.find(x => x.z < -4 && x.z > -30); if (w) talk(w.g, 'ped', d[0]); } }
 function honk() {
   if (!running || demo || !S) return; audio(); sfx('horn');
   const ahead = S.obs.filter(o => !o.static && o.lane === S.p.lane && o.z < 0 && o.z > -30).sort((a, b) => b.z - a.z)[0];
@@ -1113,7 +1118,7 @@ function step(dt) {
     // আড়াআড়ি গাড়ির সাথে ধাক্কা
     for (const o of S.cross) { if (o.done || p.hit > 0) continue; const cz = o.jz.z + o.zo; if (Math.abs(o.x) < ROAD_HALF + 1 && Math.abs(cz) < o.w / 2 + .7 && Math.abs(o.x - p.x) < o.len / 2 + .35) { o.done = true; S.speed = 0; crash(o); talk(o.g, roleOf(o), 'লাল বাতিতে ঢুকলা কেন? চোখে দেখো না?'); if (S.over) return; } }
     // রাস্তার মানুষের কথা
-    S.talkCD -= dt; if (S.talkCD <= 0 && talkT <= 0) { S.talkCD = rnd(3.5, 6); ambientTalk(); }
+    S.talkCD -= dt; if (S.talkCD <= 0 && talkT <= 0) { S.talkCD = rnd(3.5, 6); S.viralN = (S.viralN || 0) + 1; if (S.viralN % 4 === 0 && window.KH_DLG) viralTalk(); else ambientTalk(); }
     if (streetT > 0) { streetT -= dt; if (streetT <= 0) $('street').hidden = true; }
     if (newsT > 0) { newsT -= dt; if (newsT <= 0) $('news').hidden = true; }
     navUpdate(); if (Math.floor(S.t * 10) % 2 === 0) drawMap();
@@ -1258,6 +1263,7 @@ function endGame(why) {
   $('bossLine').innerHTML = '<b>' + bl.replace(':', ':</b>');
   $('eS').textContent = bn(sc); $('eD').textContent = bn(km); $('eC').textContent = bn(S.coins);
   $('eBest').textContent = 'আপনার সেরা: ' + bn(best) + (reached ? ' · অফিস বোনাস +' + bn(300 + left * 4) + ' (' + bn(left) + ' সেকেন্ড আগে)' : '') + (S.wrongs ? ' · ভুল মোড় ' + bn(S.wrongs) + 'টা' : '') + (S.fines ? ' · মামলা খেয়েছেন ' + bn(S.fines) + ' বার 🚨' : ' · একটাও মামলা নেই! 👮');
+  $('eTip').textContent = window.KHViral ? KHViral.tip('jam') : ''; $('eTip').hidden = !$('eTip').textContent;
   $('endO').hidden = false;
   say(reached ? pick(L.office) : pick(L.over), true, 'M2');
   setTimeout(() => say(bl, false, 'M3'), 2600);

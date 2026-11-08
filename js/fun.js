@@ -103,10 +103,28 @@
       mel: [76,-1,-1,74,72,-1,69,-1,72,-1,-1,-1,-1,-1,-1,-1, 74,-1,-1,72,69,-1,67,-1,69,-1,-1,-1,-1,-1,-1,-1],
       bass: [45,45,41,41,48,48,43,43], drum: 'lofi', pad: [[57,60,64],[53,57,60],[60,64,67],[55,59,62]] }
   ];
-  let trackIx = Math.min(store.get('kh-track', 0), TRACKS.length - 1);
+  // অ্যাডমিনের দেওয়া গান (mp3 লিংক বা YouTube) আগে, তারপর খেলাঘরের নিজের ৩টা গান
+  const BUILT = TRACKS.map(t => ({ kind: 'synth', name: t.name, t }));
+  let LIST = BUILT.slice(), trackIx = 0, synthIx = 0, aud = null, ytBox = null;
+  function parseSong(v) {
+    const url = String(v.url || '').trim(); let m;
+    if ((m = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{11})/i))) return { kind: 'yt', id: m[1], name: v.title || 'ইউটিউবের গান' };
+    if ((m = url.match(/drive\.google\.com\/file\/d\/([\w-]+)/i))) return { kind: 'audio', url: 'https://drive.google.com/uc?export=download&id=' + m[1], name: v.title || 'গান' };
+    if (/^https:\/\//i.test(url)) return { kind: 'audio', url: url.replace(/dropbox\.com\/(.*)\?dl=0/i, 'dropbox.com/$1?raw=1'), name: v.title || 'গান' };
+    return null;
+  }
+  K.setSongs = cfg => {
+    cfg = cfg || {}; const own = (cfg.list || []).filter(v => v && v.on !== false).map(parseSong).filter(Boolean);
+    const cur = LIST[trackIx]; LIST = own.concat(cfg.builtin === false && own.length ? [] : BUILT);
+    const k = cur ? LIST.findIndex(x => x.name === cur.name && x.kind === cur.kind) : -1;
+    const was = !!timer || (aud && !aud.paused) || !!ytBox;
+    if (was && k >= 0) trackIx = k; else { trackIx = 0; if (was) { stopMusic(); setTimeout(() => { if (musicOn) startMusic(); drawSound(); }, 700); } }
+    drawSound();
+  };
+  if (window.__khSongs) K.setSongs(window.__khSongs);
   let step = 0, nextT = 0, timer = null;
   function schedule() {
-    const T = TRACKS[trackIx], STEP = 60 / T.bpm / 2;
+    const T = TRACKS[synthIx], STEP = 60 / T.bpm / 2;
     while (nextT < ctx.currentTime + 0.15) {
       const t = nextT + (step % 2 ? T.swing * STEP : 0);
       const m = T.mel[step % T.mel.length];
@@ -130,17 +148,37 @@
     }
   }
   function startMusic() {
-    if (!audio() || timer) return;
+    if (!audio()) return;
+    const C = LIST[trackIx % LIST.length];
+    if (C.kind === 'audio') {
+      if (!aud) { aud = new Audio(); aud.preload = 'none'; aud.addEventListener('ended', nextTrack); aud.addEventListener('error', () => { if (musicOn && LIST[trackIx] && LIST[trackIx].kind === 'audio') { K.toast && K.toast('গানটা চালানো গেল না, পরেরটা বাজাচ্ছি'); nextTrack(); } }); }
+      if (aud.src !== C.url) aud.src = C.url; aud.volume = .55; aud.play().catch(() => {}); return;
+    }
+    if (C.kind === 'yt') {
+      if (ytBox) return;
+      ytBox = document.createElement('div'); ytBox.className = 'ytMini';
+      ytBox.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${C.id}?autoplay=1&loop=1&playlist=${C.id}&playsinline=1&rel=0" allow="autoplay; encrypted-media" title="${C.name.replace(/"/g, '')}"></iframe><button type="button" aria-label="গান বন্ধ">✕</button>`;
+      ytBox.querySelector('button').onclick = e => { e.stopPropagation(); musicOn = false; store.set('kh-music', false); stopMusic(); drawSound(); };
+      document.body.appendChild(ytBox); return;
+    }
+    synthIx = TRACKS.indexOf(C.t);
+    if (timer) return;
     nextT = ctx.currentTime + 0.05; step = 0; timer = setInterval(schedule, 50);
     musicGain.gain.cancelScheduledValues(ctx.currentTime);
     musicGain.gain.setTargetAtTime(0.45, ctx.currentTime, 0.6);
   }
+  function nextTrack() {
+    trackIx = (trackIx + 1) % LIST.length; store.set('kh-track', trackIx);
+    stopMusic(); setTimeout(() => { if (musicOn) startMusic(); drawSound(); }, 650);
+  }
   function stopMusic() {
+    if (aud) aud.pause();
+    if (ytBox) { ytBox.remove(); ytBox = null; }
     if (!ctx || !timer) return;
     musicGain.gain.setTargetAtTime(0, ctx.currentTime, 0.2);
     const t = timer; timer = null; setTimeout(() => clearInterval(t), 600);
   }
-  function duck(on) { if (ctx && musicGain && timer) musicGain.gain.setTargetAtTime(on ? 0.12 : 0.45, ctx.currentTime, 0.15); }
+  function duck(on) { if (ctx && musicGain && timer) musicGain.gain.setTargetAtTime(on ? 0.12 : 0.45, ctx.currentTime, 0.15); if (aud && !aud.paused) aud.volume = on ? .15 : .55; }
 
   /* ===== AI ভয়েস: ফোনের বাংলা কণ্ঠে ডায়লগ পড়া ===== */
   const synth = window.speechSynthesis;
@@ -175,7 +213,7 @@
     ctx.resume().then(() => { unlocked = true; if (musicOn) startMusic(); drawSound(); });
   }
   ['pointerdown', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, unlock, { passive: true }));
-  document.addEventListener('visibilitychange', () => { if (!ctx) return; if (document.hidden) { ctx.suspend(); synth && synth.cancel(); } else if (unlocked) ctx.resume(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { if (aud) aud.pause(); } else if (unlocked && musicOn && aud && LIST[trackIx] && LIST[trackIx].kind === 'audio') aud.play().catch(() => {}); if (!ctx) return; if (document.hidden) { ctx.suspend(); synth && synth.cancel(); } else if (unlocked) ctx.resume(); });
 
   /* ===== সাউন্ড কন্ট্রোল: গান · পরের গান · ভয়েস ===== */
   const bar = document.createElement('div'); bar.className = 'soundBar';
@@ -187,7 +225,7 @@
     sb.innerHTML = (musicOn
       ? '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
       : '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>')
-      + '<span>' + (playing ? TRACKS[trackIx].name : musicOn ? 'গান শুনুন' : 'গান বন্ধ') + '</span>';
+      + '<span>' + (playing ? (LIST[trackIx % LIST.length] || {}).name : musicOn ? 'গান শুনুন' : 'গান বন্ধ') + '</span>';
     sb.setAttribute('aria-label', musicOn ? 'গান বন্ধ করুন' : 'গান চালু করুন');
     bar.classList.toggle('on', playing);
     sn.hidden = !playing;
@@ -203,9 +241,9 @@
   };
   sn.onclick = e => {
     e.stopPropagation();
-    trackIx = (trackIx + 1) % TRACKS.length; store.set('kh-track', trackIx);
-    stopMusic(); setTimeout(() => { startMusic(); drawSound(); }, 650);
-    sfx('whoosh'); K.bubble && K.bubble('এখন বাজছে: ' + TRACKS[trackIx].name + '! নাচেন!', { sound: 'tada', silent: true });
+    if (!musicOn) { musicOn = true; store.set('kh-music', true); }
+    nextTrack();
+    sfx('whoosh'); K.bubble && K.bubble('এখন বাজছে: ' + LIST[trackIx].name + '! নাচেন!', { sound: 'tada', silent: true });
   };
   sv.onclick = e => {
     e.stopPropagation(); unlock();

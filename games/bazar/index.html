@@ -108,6 +108,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
 .lb em{font-style:normal;color:var(--muted);font-weight:700}
 .lb b{font-variant-numeric:tabular-nums}
 .small{font-size:.75rem!important}
+.tip{color:var(--ink)!important;background:rgba(54,209,196,.14);border:1px solid rgba(54,209,196,.4);border-radius:12px;padding:8px 10px;text-align:left;font-size:.82rem!important;line-height:1.45}
 .shout{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.25);border-radius:12px;padding:6px 10px;font-size:.88rem;font-weight:600;color:#ffe9a8;min-height:36px;overflow:hidden}
 .shout span{animation:slide .45s ease-out}
 @keyframes slide{from{transform:translateX(30px);opacity:0}}
@@ -169,6 +170,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
     <div class="sum" id="dSum"></div>
     <div class="mom"><span id="momFace2"></span><div class="bubble" id="momSay"><small>আম্মা</small><span></span></div></div>
     <div class="stats"><div><b id="dItems">০</b><span>জিনিস কেনা</span></div><div><b id="dSaved">০</b><span>টাকা বাঁচলো</span></div><div><b id="dScore">০</b><span>আজকের পয়েন্ট</span></div></div>
+    <p class="tip" id="dTip"></p>
     <button class="gbtn" id="nextDayBtn">পরের দিন</button>
   </div>
 </div>
@@ -206,6 +208,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
 </div>
 
 <script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -378,7 +381,7 @@ function render() {
   $('buyBtn').onclick = buy;
   document.querySelectorAll('[data-o]').forEach(b => b.onclick = () => offer(+b.dataset.o));
 }
-$('list').onclick = e => { const b = e.target.closest('[data-i]'); if (!b) return; S.sel = +b.dataset.i; sfx('talk'); render(); const v = S.items[S.sel].vendors[S.items[S.sel].vi]; if (S.items[S.sel].state === 'todo') say(v.say, false, vv(v)); };
+$('list').onclick = e => { const b = e.target.closest('[data-i]'); if (!b) return; S.sel = +b.dataset.i; sfx('talk'); { const v0 = S.items[S.sel].vendors[S.items[S.sel].vi]; if (window.KH_DLG && S.items[S.sel].state === 'todo' && !v0.viral && Math.random() < .2) { v0.viral = true; v0.say = pick(window.KH_DLG)[0]; } } render(); const v = S.items[S.sel].vendors[S.items[S.sel].vi]; if (S.items[S.sel].state === 'todo') say(v.say, false, vv(v)); };
 
 /* ================= কাজ ================= */
 function spend(min) {
@@ -493,7 +496,7 @@ function finishDay() {
   $('momSay').querySelector('span').textContent = line.replace('আম্মা: ', '');
   $('dItems').textContent = bn(bought.length) + '/' + bn(S.items.length); $('dSaved').textContent = '৳' + bn(saved); $('dScore').textContent = bn(score);
   $('nextDayBtn').textContent = S.day < DAYS.length - 1 ? 'পরের দিন: ' + DAYS[S.day + 1] : 'ফলাফল দেখুন';
-  $('dayO').hidden = false; sfx(mood === 'great' || mood === 'ok' ? 'win' : 'sad'); say(line, true, 'F2');
+  $('dTip').textContent = window.KHViral ? KHViral.tip('bazar') : ''; $('dayO').hidden = false; sfx(mood === 'great' || mood === 'ok' ? 'win' : 'sad'); say(line, true, 'F2');
 }
 $('nextDayBtn').onclick = () => {
   $('dayO').hidden = true;

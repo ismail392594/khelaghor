@@ -62,6 +62,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:cro
 .lb em{font-style:normal;color:var(--muted);font-weight:700}
 .lb b{font-variant-numeric:tabular-nums}
 .small{font-size:.75rem!important}
+.tip{background:rgba(54,209,196,.14);border:1px solid rgba(54,209,196,.4);border-radius:12px;padding:8px 10px;text-align:left;font-size:.82rem!important;line-height:1.45}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head><body>
@@ -113,6 +114,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:cro
           <div><b id="eC">০</b><span>সেরা কম্বো</span></div>
         </div>
         <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
         <div class="gvid"></div>
         <div class="acts"><button class="gbtn" id="againBtn">আবার খেলি</button><button class="gbtn ghost" id="shareBtn">কপি করে শেয়ার</button></div>
         <div class="lb" id="lb2"></div>
@@ -131,6 +133,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:cro
 </div>
 
 <script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -405,7 +408,7 @@ function step(dt) {
   // লেভেল
   const nl = lvlFor(S.kills);
   if (nl !== S.lvl) {
-    S.lvl = nl; const lv = LEVELS[nl]; sfx('level'); floatText(W / 2, H * .35, 'লেভেল ' + bn(nl + 1) + ': ' + lv.name, '#ffd23f', 24);
+    S.lvl = nl; const lv = LEVELS[nl]; sfx('level'); if (window.KHViral && nl % 2 === 1) setTimeout(() => KHViral.pop(null, pick(['M1', 'F1', 'M2'])), 1800); floatText(W / 2, H * .35, 'লেভেল ' + bn(nl + 1) + ': ' + lv.name, '#ffd23f', 24);
     if (lv.dark && !S.dark) { S.dark = true; sfx('dark'); say('কারেন্ট গেল! মশা বাড়বে!', true); } else if (!lv.dark && S.dark) { S.dark = false; say('কারেন্ট আসছে!', true); } else say(lv.name, true);
   }
   if (S.blood <= 0 && !S.over) endGame();
@@ -513,7 +516,7 @@ function endGame() {
   $('endLine').textContent = sc < 20 ? 'মশারা আজ পার্টি করবে। আবার চেষ্টা করেন!' : sc < 80 ? 'ভালো লড়াই! কিন্তু মশারা এখনো আছে।' : 'মহল্লায় মশার আকাল পড়ে গেছে!';
   $('eSc').textContent = bn(sc); $('eK').textContent = bn(S.kills); $('eC').textContent = bn(S.bestCombo);
   $('eBest').textContent = 'আপনার সেরা: ' + bn(best);
-  $('endO').hidden = false;
+  $('eTip').textContent = window.KHViral ? KHViral.tip('mosha') : ''; $('endO').hidden = false;
   say(newBest && sc > 0 ? 'নতুন রেকর্ড! আপনি ' + title : $('endLine').textContent, true);
   saveScore(sc);
 }
