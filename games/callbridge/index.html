@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#1a1208">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>কলব্রিজ · খেলাঘর</title>
+<meta name="description" content="৩ডি টেবিলে বাংলা কলব্রিজ (কল ব্রেক)। ডাক দিন, স্পেড রং, ৪ জনে ৫ রাউন্ড। কম্পিউটারের সাথে অনলাইনে ফ্রি খেলুন।">
+<link rel="canonical" href="https://khelaghorbd.online/games/callbridge/">
+<meta property="og:title" content="কলব্রিজ · খেলাঘর">
+<meta property="og:description" content="চায়ের দোকানের পেছনের ঘরে ৩ডি কলব্রিজ!">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<style>
+/* কলব্রিজ: চায়ের দোকানের পেছনের ঘর, সবুজ কাপড়ের টেবিল, ঝুলন্ত বাল্ব। হাতের তাস নিচে HTML-এ, টেবিল ৩ডি-তে। */
+:root{--bg:#0f1712;--fg:#fff6e6;--muted:#d7bf98;--line:#3b6a4a;--accent:#ffcf5a;--me:#2fbf71;--op:#e0473a;
+  --display:'Baloo Da 2','Noto Sans Bengali',system-ui,sans-serif;--body:'Noto Sans Bengali','Hind Siliguri',system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+.app{position:fixed;inset:0;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.hud{display:flex;align-items:center;gap:8px;padding:8px max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px));background:linear-gradient(180deg,#1c2a20,#0f1712);z-index:2}
+.back,.hb{color:var(--fg);display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.08);border:0;cursor:pointer;flex:none}
+.back svg{width:20px;height:20px}.hb svg{width:18px;height:18px}.hb.off{opacity:.4}
+.pl{flex:1;display:flex;align-items:center;gap:8px;padding:4px 10px;border-radius:14px;background:rgba(255,255,255,.05);border:2px solid transparent;transition:border-color .3s,background .3s;min-width:0}
+.pl.on{border-color:var(--accent);background:rgba(255,207,90,.12)}
+.pl.r{flex-direction:row-reverse;text-align:right}
+.pl i{width:22px;height:22px;border-radius:50%;flex:none;box-shadow:inset -3px -4px 6px rgba(0,0,0,.35),0 2px 3px rgba(0,0,0,.4)}
+.pl div{min-width:0;line-height:1.1}
+.pl b{display:block;font-family:var(--display);font-size:1.25rem}
+.pl small{display:block;font-size:.66rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stage{position:relative;flex:1;min-height:0}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.com{position:absolute;left:10px;right:10px;top:8px;z-index:3;text-align:center;font-weight:700;font-size:.85rem;color:#fff3d6;text-shadow:0 2px 4px rgba(0,0,0,.8);pointer-events:none}
+.say{position:absolute;left:50%;top:42%;transform:translateX(-50%);z-index:3;font-family:var(--display);font-weight:800;font-size:clamp(1.6rem,8vw,2.8rem);white-space:nowrap;text-shadow:0 4px 0 rgba(0,0,0,.45),0 0 24px rgba(0,0,0,.6);pointer-events:none;animation:sIn .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes sIn{from{transform:translateX(-50%) scale(.3);opacity:0}}
+.chost{position:absolute;left:max(10px,env(safe-area-inset-left,0px));top:46px;z-index:3}
+.ctl{padding:8px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:linear-gradient(0deg,#1c2a20,#0f1712);display:flex;align-items:center;gap:10px;z-index:2;min-height:62px}
+.hint{flex:1;text-align:center;font-weight:700;font-size:.88rem;color:var(--muted)}
+.hand{position:relative;height:150px;z-index:3;margin-top:-118px;pointer-events:none}
+.hand .c{position:absolute;bottom:6px;left:50%;width:74px;height:104px;margin-left:-37px;border-radius:8px;transform-origin:50% 140%;transition:transform .25s ease,filter .2s,opacity .2s;pointer-events:auto;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.45);background-size:cover}
+.hand .c.dim{filter:brightness(.5) saturate(.6)}
+.hand .c.ok:hover,.hand .c.ok:active{margin-bottom:14px}
+.hand .c.in{animation:deal .35s both}@keyframes deal{from{opacity:0;transform:translateY(-160px) scale(.6)}}
+.seat{position:absolute;z-index:3;display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none;font-size:.72rem;text-align:center;min-width:92px}
+.seat b{font-family:var(--display);font-size:.95rem;background:rgba(0,0,0,.55);border-radius:99px;padding:1px 10px;border:2px solid transparent}
+.seat span{background:rgba(0,0,0,.45);border-radius:8px;padding:1px 8px;color:#e6f2e8;font-weight:700}
+.seat.turn b{border-color:#ffd23f;color:#ffd23f;box-shadow:0 0 14px rgba(255,210,63,.6)}
+.seat .bub{background:#fff;color:#1d1640;border-radius:12px;padding:3px 10px;font-weight:800;font-size:.85rem;animation:sIn .4s}
+#seat1{right:8px;top:38%}#seat2{left:50%;top:44px;transform:translateX(-50%)}#seat3{left:8px;top:38%}#seat0{left:50%;bottom:4px;transform:translateX(-50%)}
+.bids{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.bids button{border:0;border-radius:14px;padding:12px 0;font:800 1.3rem var(--display);background:rgba(255,255,255,.1);color:var(--fg);cursor:pointer}
+.bids button.sug{background:linear-gradient(180deg,#ffe27a,#ffb627);color:#2a1a08}
+.sct{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:4px;font-size:.85rem;text-align:center}
+.sct div{background:rgba(255,255,255,.06);border-radius:8px;padding:5px 2px}.sct .h{font-weight:800;color:var(--muted);background:none}.sct .me{background:rgba(255,210,63,.18)}
+.pos{color:#7be0a8;font-weight:800}.neg{color:#ff8a8a;font-weight:800}
+.stopB{border:0;border-radius:14px;padding:10px 14px;font:800 .95rem var(--display);color:#2a1a08;background:linear-gradient(180deg,#ffe08a,#f2b23a);box-shadow:0 4px 0 #9a6410;cursor:pointer}
+.over{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:16px;background:rgba(12,8,3,.74);backdrop-filter:blur(2px)}
+.card{width:100%;max-width:390px;background:linear-gradient(180deg,#24402e,#13241a);border:1px solid var(--line);border-radius:24px;padding:20px 18px;display:flex;flex-direction:column;gap:12px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5);max-height:100%;overflow:auto}
+.card h1{font-family:var(--display);font-size:2.4rem;margin:0;line-height:1.05;color:var(--accent)}
+.card h2{font-family:var(--display);font-size:1.8rem;margin:0;line-height:1.1}
+.card p{margin:0;color:var(--muted);font-size:.9rem}
+.story{color:var(--fg)!important;font-weight:600}
+.rules{text-align:left;display:flex;flex-direction:column;gap:4px;font-size:.84rem;color:var(--muted);background:rgba(0,0,0,.22);border-radius:14px;padding:10px 12px}
+.rules b{color:var(--fg)}
+.lvl{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.lvl button{border:0;border-radius:14px;padding:10px 4px;font:800 1rem var(--display);color:#2a1a08;cursor:pointer;background:linear-gradient(180deg,#bff0c8,#4fc77a);box-shadow:0 4px 0 #1f7a42}
+.lvl button small{display:block;font:600 .66rem var(--body);opacity:.75}
+.lvl button:nth-child(2){background:linear-gradient(180deg,#ffe2a8,#f0a83c);box-shadow:0 4px 0 #9a5a10}
+.lvl button:nth-child(3){background:linear-gradient(180deg,#ffb0a0,#e04838);box-shadow:0 4px 0 #8a1c1c;color:#fff}
+.lvl button:active{transform:translateY(3px)}
+.gbtn{border:0;border-radius:16px;padding:13px 20px;font-family:var(--display);font-size:1.2rem;font-weight:800;color:#fff;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#5ee28a,#22c55e 55%,#16a34a);box-shadow:0 5px 0 #15803d,inset 0 2px 0 rgba(255,255,255,.4)}
+.gbtn.ghost{background:rgba(255,255,255,.08);box-shadow:0 4px 0 rgba(0,0,0,.3);font-size:1rem}
+.acts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats div{background:rgba(255,255,255,.06);border-radius:14px;padding:8px}
+.stats b{display:block;font-family:var(--display);font-size:1.4rem;line-height:1.1}
+.stats span{font-size:.72rem;color:var(--muted)}
+.title{display:inline-block;align-self:center;background:linear-gradient(135deg,#ffe27a,#ffb627);color:#3a2200;border-radius:999px;padding:3px 14px;font-weight:800}
+.lb{display:flex;flex-direction:column;gap:4px;text-align:left}
+.lb h3{margin:4px 0 2px;font-size:.9rem;color:var(--muted);font-weight:700;text-align:center}
+.lb div{display:grid;grid-template-columns:24px 1fr auto;gap:8px;background:rgba(255,255,255,.05);border-radius:10px;padding:5px 10px;font-size:.88rem}
+.lb div.me{background:rgba(255,207,90,.18)}
+.lb em{font-style:normal;color:var(--muted);font-weight:700}
+.small{font-size:.75rem!important}
+.tip{background:rgba(54,209,196,.14);border:1px solid rgba(54,209,196,.4);border-radius:12px;padding:8px 10px;text-align:left;font-size:.82rem!important;line-height:1.45;color:var(--fg)!important}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="pl on" id="pMe"><div><b id="rnd">রাউন্ড ১/৫</b><small id="myInfo">আপনার ডাক –</small></div></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas id="cv"></canvas>
+    <div class="com" id="com"></div>
+    <div class="say" id="say" hidden></div>
+    <div class="chost" id="chatHost"></div>
+
+    <div class="seat" id="seat1"></div><div class="seat" id="seat2"></div><div class="seat" id="seat3"></div><div class="seat me" id="seat0"></div>
+
+    <div class="over" id="bidO" hidden>
+      <div class="card">
+        <h2>আপনার ডাক কত?</h2>
+        <p>হাতের তাস দেখে ঠিক করুন কয়টা পিট (হাত) জিততে পারবেন। ডাকের চেয়ে কম পেলে ডাকের সমান পয়েন্ট কাটা যাবে!</p>
+        <div class="bids" id="bids"></div>
+        <p class="small" id="bidHint"></p>
+      </div>
+    </div>
+
+    <div class="over" id="scoreO" hidden>
+      <div class="card">
+        <h2 id="scT">রাউন্ডের হিসাব</h2>
+        <div class="sct" id="scTable"></div>
+        <button class="gbtn" id="scNext">পরের রাউন্ড ▶</button>
+      </div>
+    </div>
+
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>কলব্রিজ</h1>
+        <p class="story">চায়ের দোকানের পেছনের ঘর, মাথার উপর বাল্ব, সবুজ কাপড়ের টেবিলে চার কাপ চা। রহিম চাচা তাস ফেটাচ্ছেন: "আজকে ৫ রাউন্ড, যে বেশি পায় সে বিল দিবে না!"</p>
+        <div class="rules">
+          <div>🃏 চারজন, প্রত্যেকে <b>১৩টা</b> তাস। <b>স্পেড (♠) সবসময় রং</b> (তুরুপ)</div>
+          <div>📣 শুরুতে <b>ডাক</b> দিন: কয়টা পিট জিতবেন। ডাক পূরণ হলে ডাকের সমান পয়েন্ট, বাড়তি প্রতিটায় ০.১। না হলে ডাকের সমান মাইনাস</div>
+          <div>✋ যে রঙ খেলা হয়েছে সেই রঙ <b>দিতেই হবে</b>, পারলে <b>বড়টা</b>। না থাকলে স্পেড দিতে হবে (পারলে বড় স্পেড)। তাও না থাকলে যেকোনো তাস</div>
+          <div>🏆 ৫ রাউন্ড শেষে যার মোট পয়েন্ট বেশি, সে জিতবে</div>
+        </div>
+        <p>খেলার সঙ্গীরা কেমন খেলবে?</p>
+        <div class="lvl">
+          <button data-lv="0">নতুন খেলোয়াড়<small>সহজ</small></button>
+          <button data-lv="1">চায়ের দোকানের<small>মাঝারি</small></button>
+          <button data-lv="2">পাকা খেলোয়াড়<small>কঠিন</small></button>
+        </div>
+        <a href="/help/#callbridge" style="color:inherit;opacity:.85;font-size:.85rem;font-weight:700;text-decoration:underline;align-self:center">📖 কিভাবে খেলবেন? পুরো নিয়ম পড়ুন</a>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+      </div>
+    </div>
+
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">খেলা শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eK">০</b><span>মোট স্কোর</span></div><div><b id="eL">০</b><span>অবস্থান</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার খেলি</button><button class="gbtn ghost" id="menuBtn">লেভেল বদলাই</button><button class="gbtn ghost" id="shareBtn">কপি করে শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+
+    <div class="over" id="gate" hidden>
+      <div class="card">
+        <div style="font-size:2.4rem;line-height:1">🃏</div>
+        <h2 id="gateT">আগে লগইন করুন</h2>
+        <p id="gateP">টেবিলে বসতে হলে আগে নাম লেখাতে হবে! হাবে গিয়ে লগইন করে আসেন।</p>
+        <a class="gbtn" href="/" id="gateA">হাবে গিয়ে লগইন করুন</a>
+      </div>
+    </div>
+  </div>
+  <div class="hand" id="hand"></div><div class="ctl"><div class="hint" id="hint">তাস বাটা হচ্ছে…</div><button class="stopB" id="tblB">স্কোর 📋</button></div>
+</div>
+
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { firebaseConfig, ADMIN_EMAILS } from "/js/firebase-config.js";
+import { attachGameVideos } from "/js/videos.js";
+
+const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
+attachGameVideos(cb => onSnapshot(doc(db, 'config', 'videos'), d => cb(d.exists() ? d.data() : {}), () => {}));
+const $ = id => document.getElementById(id);
+const bn = n => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+const bnf = v => (v < 0 ? '−' : '') + bn(Math.abs(v).toFixed(1).replace(/\.0$/, ''));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const rnd = (a, b) => a + Math.random() * (b - a);
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const store = { get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+const GAME = 'callbridge';
+
+/* ================= শব্দ ================= */
+let sndOn = store.get('kh-sfx', true), ac = null;
+function audio() { if (!ac) { const A = window.AudioContext || window.webkitAudioContext; if (!A) return null; ac = new A(); } if (ac.state === 'suspended') ac.resume(); return ac; }
+function tone(fr, t, d, type, v, to) { const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(fr, t); if (to) o.frequency.exponentialRampToValueAtTime(to, t + d); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .005); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + d + .02); }
+function noise(t, d, v, fr, type) { const n = Math.max(1, Math.floor(ac.sampleRate * d)), b = ac.createBuffer(1, n, ac.sampleRate), x = b.getChannelData(0); for (let i = 0; i < n; i++) x[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2); const s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain(); fl.type = type || 'highpass'; fl.frequency.value = fr; s.buffer = b; g.gain.value = v; s.connect(fl); fl.connect(g); g.connect(ac.destination); s.start(t); }
+const SFX = {
+  card() { noise(ac.currentTime, .07, .35, 2500); },
+  shuffle() { const t = ac.currentTime; for (let i = 0; i < 14; i++) noise(t + i * .035, .03, .2, 3000); },
+  win() { const t = ac.currentTime; tone(660, t, .1, 'triangle', .15); tone(990, t + .08, .15, 'triangle', .15); },
+  trump() { const t = ac.currentTime; tone(220, t, .2, 'sawtooth', .1, 440); },
+  bad() { tone(200, ac.currentTime, .15, 'square', .06); },
+  fanfare() { const t = ac.currentTime; [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, t + i * .12, .3, 'triangle', .3)); },
+  lose() { const t = ac.currentTime; [392, 349, 311, 233].forEach((f, i) => tone(f, t + i * .2, .35, 'triangle', .25)); }
+};
+function sfx(n) { if (!sndOn || !audio()) return; try { SFX[n](); } catch (e) {} }
+$('snd').onclick = () => { sndOn = !sndOn; store.set('kh-sfx', sndOn); $('snd').classList.toggle('off', !sndOn); };
+$('snd').classList.toggle('off', !sndOn);
+
+/* ================= তাস ================= */
+// suit: 0 ♠ 1 ♥ 2 ♣ 3 ♦ ; rank 2..14
+const SUIT = ['♠', '♥', '♣', '♦'], RED = [false, true, false, true], RN = { 11: 'J', 12: 'Q', 13: 'K', 14: 'A' };
+const rname = r => RN[r] || String(r);
+const cardId = c => c.s * 13 + c.r - 2;
+function drawFace(x, w, h, c) {
+  const col = RED[c.s] ? '#c8102e' : '#141414';
+  x.fillStyle = '#fffdf6'; x.beginPath(); x.roundRect ? x.roundRect(0, 0, w, h, 16) : x.fillRect(0, 0, w, h); x.fill();
+  x.strokeStyle = '#d8d0bc'; x.lineWidth = 3; x.stroke();
+  x.fillStyle = col; x.textAlign = 'center';
+  x.font = `800 ${w * .26}px Georgia,serif`; x.fillText(rname(c.r), w * .17, h * .2);
+  x.font = `${w * .2}px serif`; x.fillText(SUIT[c.s], w * .17, h * .34);
+  x.save(); x.translate(w, h); x.rotate(Math.PI); x.font = `800 ${w * .26}px Georgia,serif`; x.fillText(rname(c.r), w * .17, h * .2); x.font = `${w * .2}px serif`; x.fillText(SUIT[c.s], w * .17, h * .34); x.restore();
+  if (c.r > 10) { // ছবির তাস: রঙিন ফ্রেমে বড় অক্ষর
+    x.fillStyle = RED[c.s] ? 'rgba(200,16,46,.1)' : 'rgba(20,20,20,.08)'; x.fillRect(w * .28, h * .2, w * .44, h * .6); x.strokeStyle = col; x.lineWidth = 3; x.strokeRect(w * .28, h * .2, w * .44, h * .6);
+    x.font = `800 ${w * .36}px Georgia,serif`; x.fillText(rname(c.r), w / 2, h * .52); x.font = `${w * .26}px serif`; x.fillText(SUIT[c.s], w / 2, h * .74);
+  } else { x.font = `${w * .5}px serif`; x.fillText(SUIT[c.s], w / 2, h * .66); }
+}
+function drawBack(x, w, h) {
+  x.fillStyle = '#fffdf6'; x.beginPath(); x.roundRect ? x.roundRect(0, 0, w, h, 16) : x.fillRect(0, 0, w, h); x.fill();
+  const g = x.createLinearGradient(0, 0, w, h); g.addColorStop(0, '#7a1d2e'); g.addColorStop(1, '#3c0d18'); x.fillStyle = g; x.fillRect(10, 10, w - 20, h - 20);
+  x.strokeStyle = 'rgba(255,215,140,.55)'; x.lineWidth = 2; for (let i = -h; i < w + h; i += 14) { x.beginPath(); x.moveTo(i, 10); x.lineTo(i + h, h - 10); x.stroke(); x.beginPath(); x.moveTo(i + h, 10); x.lineTo(i, h - 10); x.stroke(); }
+  x.strokeStyle = '#e8c27a'; x.lineWidth = 4; x.strokeRect(16, 16, w - 32, h - 32);
+  x.fillStyle = '#e8c27a'; x.font = `800 ${w * .2}px 'Baloo Da 2',sans-serif`; x.textAlign = 'center'; x.fillText('খেলাঘর', w / 2, h / 2 + w * .07);
+}
+const CW = 200, CH = 280, faceCache = {}, urlCache = {};
+function canvasFor(c) { const cv = document.createElement('canvas'); cv.width = CW; cv.height = CH; const x = cv.getContext('2d'); c ? drawFace(x, CW, CH, c) : drawBack(x, CW, CH); return cv; }
+function faceTex(c) { const k = c ? cardId(c) : 'b'; if (!faceCache[k]) { const t = new THREE.CanvasTexture(canvasFor(c)); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; faceCache[k] = t; } return faceCache[k]; }
+function faceURL(c) { const k = cardId(c); return urlCache[k] || (urlCache[k] = canvasFor(c).toDataURL()); }
+
+/* ================= ৩ডি ঘর আর টেবিল ================= */
+let renderer = null;
+try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: true }); } catch (e) {}
+const LOW = (navigator.hardwareConcurrency || 4) <= 2;
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(46, 1, .1, 100);
+scene.background = new THREE.Color('#1a140e');
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, LOW ? 1.25 : 2)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1; renderer.shadowMap.enabled = !LOW; renderer.shadowMap.type = THREE.PCFSoftShadowMap; }
+scene.add(new THREE.HemisphereLight('#ffe7c4', '#2a1d12', .65));
+const bulb = new THREE.PointLight('#ffd9a0', 70, 22, 1.6); bulb.position.set(0, 6.5, .3); bulb.castShadow = true; bulb.shadow.mapSize.set(1024, 1024); bulb.shadow.bias = -.001; scene.add(bulb);
+const bulbM = new THREE.Mesh(new THREE.SphereGeometry(.22, 16, 12), new THREE.MeshBasicMaterial({ color: '#fff3c8' })); bulbM.position.copy(bulb.position); scene.add(bulbM);
+const shade = new THREE.Mesh(new THREE.ConeGeometry(.9, .6, 24, 1, true), new THREE.MeshStandardMaterial({ color: '#2f6b4a', side: THREE.DoubleSide, roughness: .5 })); shade.position.set(0, 6.85, .3); scene.add(shade);
+function ctex(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
+const M = (c, o) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: .85 }, o || {}));
+// সবুজ কাপড়ের টেবিল, কাঠের পাড়
+const felt = ctex(512, 512, (x, w, h) => { const g = x.createRadialGradient(w / 2, h / 2, 40, w / 2, h / 2, w * .7); g.addColorStop(0, '#2f8a55'); g.addColorStop(1, '#14502e'); x.fillStyle = g; x.fillRect(0, 0, w, h); for (let i = 0; i < 9000; i++) { x.fillStyle = `rgba(255,255,255,${Math.random() * .04})`; x.fillRect(Math.random() * w, Math.random() * h, 1, 1); } x.strokeStyle = 'rgba(255,230,160,.25)'; x.lineWidth = 3; x.beginPath(); x.arc(w / 2, h / 2, w * .22, 0, 7); x.stroke(); });
+const table = new THREE.Mesh(new THREE.CylinderGeometry(4.2, 4.2, .2, 64), [M('#5a3418', { roughness: .45 }), M('#2f8a55', { map: felt, roughness: .95 }), M('#3a2210')]); table.position.y = -.1; table.receiveShadow = true; scene.add(table);
+const rim = new THREE.Mesh(new THREE.TorusGeometry(4.25, .18, 12, 64), M('#6b3e1c', { roughness: .35 })); rim.rotation.x = Math.PI / 2; rim.position.y = .02; rim.castShadow = true; scene.add(rim);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), M('#3b2a1c')); floor.rotation.x = -Math.PI / 2; floor.position.y = -3; scene.add(floor);
+const wall = new THREE.Mesh(new THREE.PlaneGeometry(40, 14), M('#7a6a52', { map: ctex(256, 128, (x, w, h) => { x.fillStyle = '#7a6a52'; x.fillRect(0, 0, w, h); for (let i = 0; i < 3000; i++) { x.fillStyle = `rgba(0,0,0,${Math.random() * .08})`; x.fillRect(Math.random() * w, Math.random() * h, 3, 3); } x.fillStyle = '#5a7a6a'; x.fillRect(0, h * .7, w, h * .3); }) })); wall.position.set(0, 2, -9); scene.add(wall);
+// চায়ের কাপ
+const cupM = M('#f4efe6', { roughness: .3 }), teaM = M('#8a4a1a', { roughness: .2 });
+function cup(x, z) { const g = new THREE.Group(); const c = new THREE.Mesh(new THREE.CylinderGeometry(.22, .17, .32, 18, 1, true), cupM); c.position.y = .16; c.castShadow = true; g.add(c); const t = new THREE.Mesh(new THREE.CircleGeometry(.2, 18), teaM); t.rotation.x = -Math.PI / 2; t.position.y = .27; g.add(t); const s = new THREE.Mesh(new THREE.CylinderGeometry(.34, .34, .03, 20), cupM); g.add(s); const hd = new THREE.Mesh(new THREE.TorusGeometry(.08, .025, 6, 12), cupM); hd.position.set(.25, .17, 0); g.add(hd); g.position.set(x, 0, z); scene.add(g); return g; }
+[[2.9, 2.6], [-3, 2.4], [3.1, -2.3], [-2.8, -2.6]].forEach(a => cup(...a));
+// ভাপ ওঠা
+const steamT = ctex(64, 64, (x) => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,.5)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); });
+const steams = Array.from({ length: 12 }, (_, i) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: steamT, transparent: true, depthWrite: false, opacity: 0 })); const c = [[2.9, 2.6], [-3, 2.4], [3.1, -2.3], [-2.8, -2.6]][i % 4]; s.userData = { x: c[0], z: c[1], p: i * .7 }; scene.add(s); return s; });
+// প্রতিপক্ষের মানুষ (বসে আছে)
+const SEATPOS = [[0, 5.4], [5.4, 0], [0, -5.4], [-5.4, 0]];
+const PEOPLE = [null, { n: 'রহিম চাচা', shirt: '#e8e4d8', skin: '#a86b3c', cap: true }, { n: 'কামাল ভাই', shirt: '#2563eb', skin: '#8d5524' }, { n: 'শিলা আপা', shirt: '#be185d', skin: '#c68642', hair: true }];
+function person(i) {
+  const P = PEOPLE[i], [x, z] = SEATPOS[i], g = new THREE.Group(); g.position.set(x, -1.5, z); g.lookAt(0, -1.5, 0);
+  const torso = new THREE.Mesh(new THREE.CylinderGeometry(.75, .9, 2.1, 16), M(P.shirt)); torso.position.y = 1.3; torso.castShadow = true; g.add(torso);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(.5, 20, 16), M(P.skin, { roughness: .6 })); head.position.y = 2.85; head.castShadow = true; g.add(head);
+  const hair = new THREE.Mesh(new THREE.SphereGeometry(.52, 20, 16, 0, Math.PI * 2, 0, P.hair ? Math.PI * .62 : Math.PI / 2), M(P.cap ? '#f5f5f5' : '#151515')); hair.position.y = 2.9; g.add(hair);
+  if (P.hair) { const bun = new THREE.Mesh(new THREE.SphereGeometry(.26, 12, 10), M('#151515')); bun.position.set(0, 2.9, -.5); g.add(bun); }
+  [-1, 1].forEach(s => { const e = new THREE.Mesh(new THREE.SphereGeometry(.06, 8, 6), M('#111')); e.position.set(s * .18, 2.92, .45); g.add(e); const arm = new THREE.Mesh(new THREE.CylinderGeometry(.18, .2, 1.6, 10), M(P.shirt)); arm.position.set(s * .85, 1.6, .55); arm.rotation.x = -1.1; arm.castShadow = true; g.add(arm); });
+  scene.add(g); return { g, head };
+}
+const people = [null, person(1), person(2), person(3)];
+// প্রতিপক্ষের হাতে উল্টানো তাস
+const backMat = () => new THREE.MeshStandardMaterial({ map: faceTex(null), roughness: .5, side: THREE.DoubleSide });
+const cardGeo = new THREE.PlaneGeometry(.72, 1.0);
+const oppHands = [null, [], [], []];
+function drawOppHands() {
+  for (let i = 1; i <= 3; i++) {
+    oppHands[i].forEach(m => scene.remove(m)); oppHands[i] = [];
+    const n = G ? G.hands[i].length : 0, [sx, sz] = SEATPOS[i], ang = Math.atan2(sx, sz);
+    for (let k = 0; k < n; k++) { const m = new THREE.Mesh(cardGeo, backMat()); const off = (k - (n - 1) / 2) * .16; const px = sx * .62 + Math.cos(ang) * off, pz = sz * .62 - Math.sin(ang) * off; m.position.set(px, .05 + k * .004, pz); m.rotation.set(-Math.PI / 2, 0, ang + (k - (n - 1) / 2) * .05); m.castShadow = true; scene.add(m); oppHands[i].push(m); }
+  }
+}
+// টেবিলের মাঝে খেলা তাস
+const TRICKPOS = [[0, 1.05], [1.15, 0], [0, -1.05], [-1.15, 0]];
+let trickMeshes = [], anims = [];
+function anim(o) { return new Promise(res => anims.push(Object.assign({ t: 0, res }, o))); }
+async function throwCard(seat, c) {
+  const m = new THREE.Mesh(cardGeo, new THREE.MeshStandardMaterial({ map: faceTex(c), roughness: .45, side: THREE.DoubleSide })); m.castShadow = true;
+  const [sx, sz] = SEATPOS[seat], [tx, tz] = TRICKPOS[seat];
+  m.scale.setScalar(1.6); scene.add(m); trickMeshes.push(m); sfx('card');
+  const rz = rnd(-.25, .25) + Math.atan2(sx, sz);
+  await anim({ m, from: new THREE.Vector3(sx * (seat ? .6 : .55), seat ? .5 : 1.5, sz * (seat ? .6 : .55)), to: new THREE.Vector3(tx, .05 + trickMeshes.length * .01, tz), r0: new THREE.Euler(-Math.PI / 2 + (seat ? 0 : .6), 0, rz + 1), r1: new THREE.Euler(-Math.PI / 2, 0, rz), dur: .35, hop: .6 });
+}
+async function collectTrick(winner) {
+  const [sx, sz] = SEATPOS[winner]; await wait(650);
+  await Promise.all(trickMeshes.map((m, k) => anim({ m, from: m.position.clone(), to: new THREE.Vector3(sx * .45 + k * .04, .1, sz * .45), r0: m.rotation.clone(), r1: new THREE.Euler(-Math.PI / 2, 0, m.rotation.z + .6), dur: .4, hop: .3 })));
+  trickMeshes.forEach(m => scene.remove(m)); trickMeshes = [];
+}
+
+/* ================= খেলার নিয়ম ================= */
+const NAMES = ['আপনি', 'রহিম চাচা', 'কামাল ভাই', 'শিলা আপা'];
+const LV = [{ n: 'নতুন খেলোয়াড়', skill: .35 }, { n: 'চায়ের দোকানের', skill: .75 }, { n: 'পাকা খেলোয়াড়', skill: 1 }];
+const ROUNDS = 5;
+let G = null, lv = 1;
+function deal() { const d = []; for (let s = 0; s < 4; s++) for (let r = 2; r <= 14; r++) d.push({ s, r }); for (let i = d.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [d[i], d[j]] = [d[j], d[i]]; } const h = [0, 1, 2, 3].map(k => d.slice(k * 13, k * 13 + 13)); h.forEach(sortHand); return h; }
+function sortHand(h) { const ord = [0, 1, 2, 3]; h.sort((a, b) => ord.indexOf(a.s) - ord.indexOf(b.s) || b.r - a.r); }
+// কোন তাস দেওয়া যাবে (কল ব্রেকের নিয়ম)
+function winning(trick) { let w = trick[0]; for (const t of trick.slice(1)) { const a = w.c, b = t.c; if (b.s === a.s ? b.r > a.r : b.s === 0) w = t; } return w; }
+function legal(hand, trick) {
+  if (!trick.length) return hand.slice();
+  const lead = trick[0].c.s, w = winning(trick).c, same = hand.filter(c => c.s === lead);
+  if (same.length) { if (w.s === lead) { const hi = same.filter(c => c.r > w.r); return hi.length ? hi : same; } return same; }
+  const sp = hand.filter(c => c.s === 0);
+  if (sp.length) { if (w.s === 0) { const hi = sp.filter(c => c.r > w.r); return hi.length ? hi : hand.slice(); } return sp; }
+  return hand.slice();
+}
+// কম্পিউটারের ডাক: টেক্কা, সাহেব, স্পেডের জোর গুনে
+function estimate(hand) {
+  let t = 0; const bySuit = [0, 1, 2, 3].map(s => hand.filter(c => c.s === s));
+  for (let s = 1; s < 4; s++) { const cs = bySuit[s], n = cs.length; for (const c of cs) { if (c.r === 14) t += n <= 5 ? 1 : .7; else if (c.r === 13) t += n >= 2 && n <= 4 ? .75 : n === 1 ? .2 : .45; else if (c.r === 12) t += n >= 3 && n <= 4 ? .3 : 0; } if (n <= 1) t += bySuit[0].length >= 3 ? .6 : .3; if (n === 2) t += bySuit[0].length >= 3 ? .25 : 0; }
+  const sp = bySuit[0]; for (const c of sp) t += c.r >= 13 ? 1 : c.r >= 11 ? .7 : c.r >= 8 ? .4 : .25;
+  if (sp.length >= 5) t += (sp.length - 4) * .4;
+  return t;
+}
+function cpuBid(i) { const e = estimate(G.hands[i]), sk = LV[lv].skill; return Math.max(1, Math.min(8, Math.round(e * (sk > .6 ? .95 : 1.1) + (Math.random() - .5) * (1.6 - sk)))); }
+function cpuPlay(i) {
+  const hand = G.hands[i], L = legal(hand, G.trick), sk = LV[lv].skill;
+  if (Math.random() > sk) return L[Math.floor(Math.random() * L.length)];
+  const need = G.bids[i] - G.won[i];
+  const beats = c => { if (!G.trick.length) return true; const w = winning(G.trick).c; return c.s === w.s ? c.r > w.r : c.s === 0 && w.s !== 0; };
+  const low = arr => arr.slice().sort((a, b) => (a.s === 0) - (b.s === 0) || a.r - b.r)[0], high = arr => arr.slice().sort((a, b) => b.r - a.r)[0];
+  if (!G.trick.length) { // শুরু করা
+    if (need > 0) { const aces = L.filter(c => c.s !== 0 && c.r === 14); if (aces.length) return aces[0]; const kings = L.filter(c => c.s !== 0 && c.r === 13 && G.played.some(p => p.s === c.s && p.r === 14)); if (kings.length) return kings[0]; const spHi = L.filter(c => c.s === 0 && c.r >= 13); if (spHi.length && G.won[i] + 1 <= G.bids[i]) return spHi[0]; }
+    // ছোট রঙ থেকে ছোট তাস
+    const nonSp = L.filter(c => c.s !== 0); return nonSp.length ? low(nonSp) : low(L);
+  }
+  const win = L.filter(beats), lastToPlay = G.trick.length === 3;
+  if (need > 0 && win.length) return lastToPlay ? low(win) : (win.some(c => c.s !== 0) ? high(win.filter(c => c.s === win[0].s)) : low(win));
+  const lose = L.filter(c => !beats(c)); if (lose.length) return high(lose.length > 1 && need <= 0 ? lose : lose);
+  return low(L);
+}
+
+/* ================= ছবি আর ইন্টারফেস ================= */
+function seatUI() {
+  for (let i = 0; i < 4; i++) {
+    const el = $('seat' + i), b = G && G.bids[i] != null ? G.bids[i] : null, w = G ? G.won[i] : 0;
+    el.innerHTML = `<b>${NAMES[i]}</b><span>${b == null ? 'ডাক –' : 'ডাক ' + bn(b) + ' · পেয়েছে ' + bn(w)}</span>${G && G.bub[i] ? `<span class="bub">${esc(G.bub[i])}</span>` : ''}`;
+    el.classList.toggle('turn', !!G && G.turn === i && G.phase === 'play');
+  }
+  if (G) { $('rnd').textContent = 'রাউন্ড ' + bn(G.round) + '/' + bn(ROUNDS); $('myInfo').textContent = 'মোট: ' + G.total.map((v, i) => (i ? '' : 'আপনি ') + bnf(v)).slice(0, 1)[0] + ' · ' + (G.bids[0] == null ? 'ডাক –' : 'ডাক ' + bn(G.bids[0]) + ', পেয়েছেন ' + bn(G.won[0])); }
+}
+function bubble(i, t, ms) { G.bub[i] = t; seatUI(); clearTimeout(bubble['t' + i]); bubble['t' + i] = setTimeout(() => { if (G) { G.bub[i] = null; seatUI(); } }, ms || 1800); }
+function drawHand() {
+  const h = G.hands[0], el = $('hand'), myTurn = G.phase === 'play' && G.turn === 0, L = myTurn ? legal(h, G.trick) : [];
+  const n = h.length, W = el.clientWidth || 360, spread = Math.min(26, (W - 90) / Math.max(1, n - 1)), ang = Math.min(3, 30 / Math.max(1, n));
+  el.innerHTML = h.map((c, k) => { const off = (k - (n - 1) / 2), ok = L.includes(c); return `<div class="c ${myTurn ? (ok ? 'ok' : 'dim') : ''} ${G.fresh ? 'in' : ''}" data-k="${k}" style="background-image:url(${faceURL(c)});transform:translateX(${off * spread}px) rotate(${off * ang}deg) translateY(${Math.abs(off) * Math.abs(off) * .6}px);animation-delay:${G.fresh ? k * 40 : 0}ms;z-index:${k}"></div>`; }).join('');
+  G.fresh = false;
+}
+$('hand').addEventListener('click', e => {
+  const d = e.target.closest('.c'); if (!d || !G || G.phase !== 'play' || G.turn !== 0 || G.busy) return;
+  const c = G.hands[0][+d.dataset.k]; if (!legal(G.hands[0], G.trick).includes(c)) { sfx('bad'); hint('এই তাস এখন দেওয়া যাবে না: ' + ruleWhy()); return; }
+  playCard(0, c);
+});
+function ruleWhy() { if (!G.trick.length) return ''; const lead = G.trick[0].c.s, has = G.hands[0].some(c => c.s === lead); return has ? SUIT[lead] + ' দিতে হবে, পারলে বড়টা' : 'স্পেড (♠) দিতে হবে, পারলে বড়টা'; }
+function hint(t) { $('hint').textContent = t; }
+function shout(text, col) { const e = $('say'); e.textContent = text; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(shout.t); shout.t = setTimeout(() => e.hidden = true, 1300); }
+const COM = {
+  myWin: ['পিট আপনার!', 'দারুণ চাল!', 'রহিম চাচা মাথা চুলকাইতেছেন…'],
+  trump: ['রং মাইরা দিলো!', 'স্পেড দিয়া কাইটা দিলো!'],
+  bid: { 1: 'রহিম চাচা: "দেখি কয়টা পাই…"', 2: 'কামাল ভাই: "আজকে পকেট গরম!"', 3: 'শিলা আপা: "আমি কিন্তু ছাড় দিবো না!"' },
+  bust: ['ডাক পূরণ হলো না, মাইনাস!', 'বেশি ডাক দিলে এই হয়!'],
+  made: ['ডাক পূরণ! সাবাস!', 'যা বলছেন তা-ই করছেন!']
+};
+
+/* ================= খেলার ধারা ================= */
+async function newRound() {
+  G.round++; G.hands = deal(); G.bids = [null, null, null, null]; G.won = [0, 0, 0, 0]; G.trick = []; G.played = []; G.bub = [null, null, null, null]; G.fresh = true; G.leader = (G.round - 1) % 4; G.phase = 'bid';
+  sfx('shuffle'); drawOppHands(); seatUI(); drawHand(); hint('হাতের তাস দেখে ডাক ঠিক করুন'); $('com').textContent = '🎙️ রাউন্ড ' + bn(G.round) + '! তাস বাটা হলো।';
+  await wait(900);
+  // কম্পিউটারের ডাক আগে, তারপর আপনার
+  for (let k = 1; k <= 3; k++) { const i = (G.leader + k - 1) % 4 || 0; }
+  for (const i of [1, 2, 3]) { G.bids[i] = cpuBid(i); bubble(i, 'ডাক ' + bn(G.bids[i]), 2600); sfx('card'); await wait(500); }
+  const sug = Math.max(1, Math.round(estimate(G.hands[0])));
+  $('bids').innerHTML = Array.from({ length: 8 }, (_, k) => `<button data-b="${k + 1}" class="${k + 1 === sug ? 'sug' : ''}">${bn(k + 1)}</button>`).join('');
+  $('bidHint').textContent = 'হলুদ বোতামটা আমাদের পরামর্শ (আপনার হাতে মোটামুটি ' + bn(sug) + 'টা পিট আছে)। অন্যরা ডেকেছে: ' + [1, 2, 3].map(i => NAMES[i] + ' ' + bn(G.bids[i])).join(', ');
+  $('bidO').hidden = false;
+}
+$('bids').addEventListener('click', e => { const b = e.target.closest('[data-b]'); if (!b || !G || G.phase !== 'bid') return; G.bids[0] = +b.dataset.b; $('bidO').hidden = true; bubble(0, 'ডাক ' + bn(G.bids[0])); startPlay(); });
+async function startPlay() { G.phase = 'play'; G.turn = G.leader; seatUI(); await wait(400); loopTurns(); }
+async function loopTurns() {
+  while (G && G.phase === 'play') {
+    seatUI(); drawHand();
+    if (G.turn === 0) { hint(G.trick.length ? 'আপনার চাল: জ্বলজ্বলে তাস থেকে একটা দিন' : 'আপনার চাল: যেকোনো তাস দিয়ে শুরু করুন'); return; }
+    hint(NAMES[G.turn] + ' ভাবছেন…'); await wait(rnd(550, 900));
+    if (!G || G.phase !== 'play') return;
+    await playCard(G.turn, cpuPlay(G.turn), true);
+  }
+}
+async function playCard(i, c, fromLoop) {
+  G.busy = true; const h = G.hands[i]; h.splice(h.indexOf(c), 1); G.trick.push({ i, c }); G.played.push(c);
+  if (i === 0) drawHand(); else drawOppHands();
+  if (G.trick.length > 1 && c.s === 0 && G.trick[0].c.s !== 0) { sfx('trump'); if (Math.random() < .6) $('com').textContent = '🎙️ ' + NAMES[i] + ' ' + pick(COM.trump); }
+  await throwCard(i, c);
+  if (G.trick.length === 4) {
+    const w = winning(G.trick).i; G.won[w]++; G.phase = 'collect'; seatUI();
+    shout(w === 0 ? 'পিট আপনার! ✔' : NAMES[w] + ' পেলেন', w === 0 ? '#9dffb8' : '#ffe2a8'); if (w === 0) { sfx('win'); if (Math.random() < .4) $('com').textContent = '🎙️ ' + pick(COM.myWin); }
+    await collectTrick(w); G.trick = []; G.turn = w; G.busy = false;
+    if (!G.hands[0].length) return endRound();
+    G.phase = 'play'; if (!fromLoop || i === 0) loopTurns(); return;
+  }
+  G.turn = (G.turn + 1) % 4; G.busy = false;
+  if (i === 0) loopTurns();
+}
+function roundScore(b, w) { return w >= b ? b + (w - b) / 10 : -b; }
+function endRound() {
+  G.phase = 'score'; const rs = [0, 1, 2, 3].map(i => roundScore(G.bids[i], G.won[i])); rs.forEach((v, i) => G.total[i] = Math.round((G.total[i] + v) * 10) / 10); G.hist.push(rs);
+  sfx(rs[0] > 0 ? 'win' : 'bad'); $('com').textContent = '🎙️ ' + pick(rs[0] > 0 ? COM.made : COM.bust);
+  const rows = [0, 1, 2, 3].map(i => `<div class="${i ? '' : 'me'}">${NAMES[i]}</div><div class="${i ? '' : 'me'}">${bn(G.bids[i])}/${bn(G.won[i])}</div><div class="${i ? '' : 'me'} ${rs[i] >= 0 ? 'pos' : 'neg'}">${rs[i] >= 0 ? '+' : ''}${bnf(rs[i])}</div><div class="${i ? '' : 'me'}"><b>${bnf(G.total[i])}</b></div>`).join('');
+  $('scTable').innerHTML = '<div class="h">খেলোয়াড়</div><div class="h">ডাক/পেল</div><div class="h">এই রাউন্ড</div><div class="h">মোট</div>' + rows;
+  $('scT').textContent = 'রাউন্ড ' + bn(G.round) + ' এর হিসাব'; $('scNext').textContent = G.round >= ROUNDS ? 'ফলাফল দেখুন 🏆' : 'পরের রাউন্ড ▶';
+  $('scoreO').hidden = false; seatUI();
+}
+$('scNext').onclick = () => { $('scoreO').hidden = true; if (G.round >= ROUNDS) finish(); else newRound(); };
+$('tblB').onclick = () => { if (!G || !G.hist.length || G.phase === 'score') return; const rows = [0, 1, 2, 3].map(i => `<div class="${i ? '' : 'me'}">${NAMES[i]}</div><div class="${i ? '' : 'me'}">${G.bids[i] == null ? '–' : bn(G.bids[i]) + '/' + bn(G.won[i])}</div><div class="${i ? '' : 'me'}">${G.hist.map(r => bnf(r[i])).join(', ')}</div><div class="${i ? '' : 'me'}"><b>${bnf(G.total[i])}</b></div>`).join(''); $('scTable').innerHTML = '<div class="h">খেলোয়াড়</div><div class="h">এখন</div><div class="h">আগের রাউন্ড</div><div class="h">মোট</div>' + rows; $('scT').textContent = 'স্কোর বোর্ড'; $('scNext').textContent = 'খেলায় ফিরি'; $('scoreO').hidden = false; $('scNext').onclick = () => { $('scoreO').hidden = true; $('scNext').onclick = scNextDefault; }; };
+const scNextDefault = $('scNext').onclick;
+const TIPS = ['জানেন কি? কলব্রিজে ভালো ডাকের হিসাব হলো: প্রতিটা টেক্কা প্রায় একটা পিট, আর লম্বা স্পেড থাকলে বাড়তি পিট আসে।', 'জানেন কি? তাসের খেলা মনে রাখার ক্ষমতা আর হিসাব বাড়ায়, কোন কোন তাস পড়ে গেছে মনে রাখাই ভালো খেলোয়াড়ের লক্ষণ।', 'মনে রাখবেন: খেলাঘরে তাস শুধু বিনোদনের জন্য, এখানে কোনো টাকার বাজি নেই। জুয়া থেকে দূরে থাকুন।'];
+let lastScore = 0;
+function finish() {
+  G.phase = 'end'; const order = [0, 1, 2, 3].sort((a, b) => G.total[b] - G.total[a]), pos = order.indexOf(0) + 1, my = G.total[0];
+  const sc = Math.max(10, Math.round((pos === 1 ? 300 + lv * 100 : pos === 2 ? 120 : 40) + Math.max(0, my) * 15));
+  $('endT').textContent = pos === 1 ? 'আপনি জিতছেন! 🏆' : pos + 'য় হলেন'; $('endT').textContent = pos === 1 ? 'আপনি জিতছেন! 🏆' : ['', '', 'দ্বিতীয় হলেন', 'তৃতীয় হলেন', 'চতুর্থ হলেন'][pos];
+  $('endTitle').textContent = pos === 1 ? 'টেবিলের রাজা' : pos === 2 ? 'প্রায় জিতে গেছিলেন' : 'আজ চায়ের বিল আপনার';
+  $('endLine').textContent = order.map((i, k) => bn(k + 1) + '. ' + NAMES[i] + ' (' + bnf(G.total[i]) + ')').join(' · ');
+  $('eS').textContent = bn(sc); $('eK').textContent = bnf(my); $('eL').textContent = bn(pos);
+  const best = store.get('kh-cb-best', 0); if (sc > best) store.set('kh-cb-best', sc);
+  $('eBest').textContent = 'আপনার সেরা: ' + bn(Math.max(best, sc)); $('eTip').textContent = pick(TIPS);
+  $('endO').hidden = false; sfx(pos === 1 ? 'fanfare' : 'lose'); if (pos === 1 && window.KHViral) KHViral.confetti();
+  saveScore(sc); lastScore = sc; $('hand').innerHTML = ''; drawOppHands(); hint('খেলা শেষ');
+}
+function start(level) {
+  audio(); lv = level; store.set('kh-cb-lv', lv);
+  G = { round: 0, total: [0, 0, 0, 0], hist: [], hands: [[], [], [], []], bids: [null, null, null, null], won: [0, 0, 0, 0], trick: [], played: [], bub: [null, null, null, null], phase: 'bid', turn: 0, busy: false };
+  trickMeshes.forEach(m => scene.remove(m)); trickMeshes = []; ['startO', 'endO', 'scoreO'].forEach(i => $(i).hidden = true); newRound();
+}
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = () => start(+b.dataset.lv));
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `খেলাঘরে কলব্রিজ খেললাম, ${bn(lastScore)} পয়েন্ট! 🃏 আসো এক দান হয়ে যাক: ${location.origin}/games/callbridge/`; try { navigator.clipboard.writeText(t).then(() => { $('shareBtn').textContent = 'কপি হয়েছে ✓'; setTimeout(() => $('shareBtn').textContent = 'কপি করে শেয়ার', 2000); }, () => {}); } catch (e) {} };
+
+/* ---------- লুপ ---------- */
+let W = 0, H = 0, last = 0;
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; const port = W / H < .8; cam.fov = port ? 62 : 46; cam.updateProjectionMatrix(); cam.position.set(0, port ? 9.6 : 8, port ? 6.2 : 6.5); cam.lookAt(0, 0, port ? -.2 : 0); if (G && G.hands[0].length) drawHand(); }
+addEventListener('resize', resize);
+const ease = k => k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+function loop(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T = ts / 1000;
+  anims = anims.filter(a => { a.t += dt / a.dur; const k = Math.min(1, a.t), e = ease(k); a.m.position.lerpVectors(a.from, a.to, e); a.m.position.y += Math.sin(k * Math.PI) * (a.hop || 0); a.m.rotation.set(a.r0.x + (a.r1.x - a.r0.x) * e, a.r0.y + (a.r1.y - a.r0.y) * e, a.r0.z + (a.r1.z - a.r0.z) * e); if (k >= 1) { a.res(); return false; } return true; });
+  steams.forEach(s => { const u = s.userData, k = ((T * .35 + u.p) % 1); s.position.set(u.x + Math.sin(T + u.p) * .1, .35 + k * 1.3, u.z); s.scale.setScalar(.3 + k * .7); s.material.opacity = Math.sin(k * Math.PI) * .35; });
+  people.forEach((p, i) => { if (!p) return; p.head.rotation.y = Math.sin(T * .6 + i) * .25 + (G && G.turn === i && G.phase === 'play' ? Math.sin(T * 4) * .08 : 0); p.head.position.y = 2.85 + (G && G.turn === i ? Math.sin(T * 5) * .03 : 0); });
+  if (renderer) renderer.render(scene, cam); requestAnimationFrame(loop);
+}
+lv = store.get('kh-cb-lv', 1); resize(); seatUI();
+if (renderer) renderer.compile(scene, cam);
+last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+
+/* ================= লগইন, স্কোর, মেরামত ================= */
+let user = null, prof = null, gameSt = 'live', siteMaint = false;
+function gate() {
+  const admin = user && ADMIN_EMAILS.includes(user.email), off = !admin && (gameSt === 'maint' || gameSt === 'hidden' || siteMaint);
+  if (off) { $('gateT').textContent = 'টেবিল আজ বন্ধ!'; $('gateP').textContent = 'দোকানদার ঘর পরিষ্কার করতেছে, একটু পরে আসেন।'; $('gateA').textContent = 'হাবে ফিরে যান'; }
+  else if (user && prof && prof.banned) { $('gateT').textContent = 'একাউন্ট বন্ধ'; $('gateP').textContent = 'হাবের যোগাযোগ পাতায় অ্যাডমিনকে লিখুন।'; $('gateA').textContent = 'হাবে ফিরে যান'; }
+  else if (user && !prof) { $('gateT').textContent = 'আগে ইউজারনেম'; $('gateP').textContent = 'হাবে গিয়ে ইউজারনেম বেছে নিন, তারপর খেলুন।'; $('gateA').textContent = 'হাবে যান'; }
+  $('gate').hidden = !(!user || !prof || prof.banned || off);
+}
+onAuthStateChanged(auth, u => {
+  user = u; if (!u) { prof = null; gate(); return; }
+  onSnapshot(doc(db, 'users', u.uid), s => { prof = s.exists() ? s.data() : null; gate(); }, () => { prof = null; gate(); });
+  getDoc(doc(db, 'scores', GAME, 'players', u.uid)).then(d => { if (d.exists() && d.data().score > store.get('kh-cb-best', 0)) store.set('kh-cb-best', d.data().score); drawBest(); }).catch(() => {});
+});
+onSnapshot(doc(db, 'config', 'games'), d => { gameSt = ((d.exists() && d.data().status) || {})['কলব্রিজ'] || 'live'; if (gameSt === 'soon') gameSt = 'live'; gate(); }, () => {});
+onSnapshot(doc(db, 'config', 'site'), d => { siteMaint = !!(d.exists() && d.data().maintenance); gate(); }, () => {});
+function drawBest() { const b = store.get('kh-cb-best', 0); if (renderer) $('bestTxt').textContent = b ? 'আপনার সেরা স্কোর: ' + bn(b) : ''; }
+drawBest();
+let top = [];
+function drawLB() { const h = top.length ? '<h3>টেবিলের সেরা খেলোয়াড়</h3>' + top.map((r, i) => `<div class="${user && r.id === user.uid ? 'me' : ''}"><em>${bn(i + 1)}</em><span>${esc(r.name)}</span><b>${bn(r.score)}</b></div>`).join('') : ''; $('lb1').innerHTML = h; $('lb2').innerHTML = h; }
+onSnapshot(query(collection(db, 'scores', GAME, 'players'), orderBy('score', 'desc'), limit(10)), s => { top = (s.docs || []).map(d => ({ id: d.id, ...d.data() })); drawLB(); }, () => {});
+async function saveScore(sc) {
+  if (!user || !prof || sc <= 0) return;
+  try { const ref = doc(db, 'scores', GAME, 'players', user.uid), d = await getDoc(ref); if (d.exists() && d.data().score >= sc) return; await setDoc(ref, { score: Math.min(100000, Math.round(sc)), name: prof.name, username: prof.username, at: serverTimestamp() }); } catch (e) {}
+}
+const MY_C = ['এই দানটা কিন্তু আমার!', 'চাচা, তাস লুকাইয়েন না!', 'স্পেডের টেক্কা কার কাছে, জানি কিন্তু!', 'চা ঠান্ডা হইতেছে, জলদি চাল দেন!'];
+const OP_C = ['রহিম চাচা: "পোলাপান মানুষ, আস্তে খেলো!"', 'কামাল ভাই: "আজকে আমার হাত গরম!"', 'শিলা আপা: "চুপচাপ খেলো, ডাক পূরণ করো!"', 'রহিম চাচা: "আমি চল্লিশ বছর তাস খেলি!"'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY_C, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => { const l = pick(OP_C); KHViral.pop(l.split(': ')[1].replace(/"/g, ''), 'M3', '🃏 ' + l.split(':')[0], true); }, 2600); } });
+window.KHCB = { get G() { return G; }, start, legal: () => legal(G.hands[0], G.trick), play: c => playCard(0, c), bid: b => { $('bids').querySelector(`[data-b="${b}"]`).click(); }, cpuPlay: () => cpuPlay(0) };
+</script>
+<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
+</body></html>
