@@ -155,6 +155,8 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAILS } from "/js/firebase-config.js";
 import { attachGameVideos } from "/js/videos.js";
+import { makeHuman } from "/js/kh-human.js";
+import { grassTufts, crowd as mkCrowd, composerFor } from "/js/kh-scene.js";
 
 const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
 attachGameVideos(cb => onSnapshot(doc(db, 'config', 'videos'), d => cb(d.exists() ? d.data() : {}), () => {}));
@@ -238,23 +240,20 @@ function tree(x, z, s) { const g = new THREE.Group(); const tr = new THREE.Mesh(
 // দর্শক ছাত্রছাত্রী (সাদা শার্ট, নীল প্যান্ট/স্কার্ট)
 const kidsTex = seed => ctex(512, 128, (x, w, h) => { x.clearRect(0, 0, w, h); const n = 14; for (let i = 0; i < n; i++) { const cx = 18 + i * (w - 36) / (n - 1), cy = 58 + (i % 2) * 6; x.fillStyle = '#f8f8f4'; x.beginPath(); x.roundRect ? x.roundRect(cx - 11, cy, 22, 30, 6) : x.fillRect(cx - 11, cy, 22, 30); x.fill(); x.fillStyle = (i + seed) % 3 ? '#1e3a8a' : '#0f766e'; x.fillRect(cx - 11, cy + 28, 22, 26); x.fillStyle = ['#c68642', '#8d5524', '#a86b3c'][(i + seed) % 3]; x.beginPath(); x.arc(cx, cy - 10, 10, 0, 7); x.fill(); x.fillStyle = '#141414'; x.beginPath(); x.arc(cx, cy - 13, 10, Math.PI, 0); x.fill(); if ((i + seed) % 2) { x.fillStyle = '#ffffff'; x.fillRect(cx - 12, cy - 6, 4, 10); x.fillRect(cx + 8, cy - 6, 4, 10); } } });
 const crowds = [];
-[[-HX - 3.2, -3, Math.PI / 2], [HX + 3.2, 3, -Math.PI / 2], [-HX - 3.2, 7, Math.PI / 2], [HX + 3.2, -7, -Math.PI / 2]].forEach(([x, z, r], i) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(8, 2.2), new THREE.MeshBasicMaterial({ map: kidsTex(i), transparent: true, side: THREE.DoubleSide, alphaTest: .05 })); m.position.set(x, 1.05, z); m.rotation.y = r; scene.add(m); crowds.push(m); });
+const CSP = []; for (const sx of [-1, 1]) for (let r = 0; r < 2; r++) for (let i = 0; i < 12; i++) CSP.push({ x: sx * (HX + 2.2 + r * .9), z: -9.5 + i * 1.75 + (r ? .8 : 0), ry: sx > 0 ? -Math.PI / 2 : Math.PI / 2, sit: r === 0 });
+const crowdUpd = mkCrowd(THREE, scene, CSP, { colors: ['#f8fafc', '#f1f5f9', '#e2e8f0', '#1e3a8a', '#0f766e', '#f8fafc'] }); let excite = 0; // স্কুল ড্রেসের ছাত্রছাত্রী
+grassTufts(THREE, scene, { n: 1400, range: 24, skip: (x, z) => Math.abs(x) < HX + 1.6 && z > ZE - 1.2 && z < ZS + 2.2 });
 
 // খেলোয়াড়
 const SKIN = ['#c68642', '#8d5524', '#a86b3c', '#b07a4a'];
 function shirtTex(c, n) { return ctex(64, 64, (x, w, h) => { x.fillStyle = c; x.fillRect(0, 0, w, h); x.fillStyle = 'rgba(255,255,255,.9)'; x.font = '800 30px sans-serif'; x.textAlign = 'center'; x.fillText(String(n), w / 2, 44); }); }
 const shortsM = [M('#1f2937'), M('#4c1d95')];
-function mkMan(team, n) {
-  const g = new THREE.Group(), body = new THREE.Group(); g.add(body);
-  const skin = M(pick(SKIN), { roughness: .7 }), shirt = new THREE.MeshStandardMaterial({ map: shirtTex(team ? '#dc2626' : '#16a34a', n), roughness: .8 });
-  const box = (w, h, d, x, y, z, m) => { const me = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); me.position.set(x, y, z); me.castShadow = true; body.add(me); return me; };
-  box(.46, .55, .26, 0, 1.2, 0, shirt); box(.46, .26, .28, 0, .82, 0, shortsM[team]);
-  const mk = (x, y, w, h) => { const p = new THREE.Group(); p.position.set(x, y, 0); const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, w), skin); m.position.y = -h / 2; m.castShadow = true; p.add(m); body.add(p); return p; };
-  const legL = mk(-.12, .72, .15, .7), legR = mk(.12, .72, .15, .7), armL = mk(-.31, 1.45, .12, .58), armR = mk(.31, 1.45, .12, .58);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(.16, 14, 10), skin); head.position.y = 1.67; head.castShadow = true; body.add(head);
-  const hair = new THREE.Mesh(new THREE.SphereGeometry(.17, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), M('#111')); hair.position.y = 1.7; body.add(hair);
-  const bag = new THREE.Mesh(new THREE.SphereGeometry(.13, 10, 8), M('#f4f1ea')); bag.position.set(.34, 1.0, .1); bag.visible = false; body.add(bag); // নুনের পুঁটলি হাতে
-  scene.add(g); return { g, body, legL, legR, armL, armR, bag };
+const POOL = [[], []], SKINS = ['#9a6a4f', '#6e4532', '#b58467', '#83563d', '#8a5a40'];
+function mkMan(team, n) { // হাড়সহ মসৃণ মানুষ (স্কুল ড্রেসের মতো জার্সি), একবার বানিয়ে বারবার ব্যবহার
+  if (POOL[team][n]) return POOL[team][n];
+  const h = makeHuman(THREE, { skin: SKINS[(n * 3 + team) % 5], shirt: team ? '#b91c1c' : '#15803d', shorts: team ? '#1e1b4b' : '#1e3a8a', trim: '#fde68a', number: n, hairStyle: (n + team) % 3, mustache: false, look: team ? 'angry' : 'calm', scale: .92 });
+  const bag = new THREE.Mesh(new THREE.SphereGeometry(.12, 12, 10), new THREE.MeshStandardMaterial({ color: '#f4f1ea', roughness: .6 })); bag.scale.y = .85; bag.position.set(0, -.1, .02); bag.visible = false; h.bones.wrR.add(bag);
+  scene.add(h.root); return POOL[team][n] = { h, g: h.root, bag };
 }
 const star = new THREE.Mesh(new THREE.OctahedronGeometry(.2, 0), new THREE.MeshBasicMaterial({ color: '#ffd23f' })); star.visible = false; scene.add(star);
 const meRing = new THREE.Mesh(new THREE.RingGeometry(.5, .68, 28), new THREE.MeshBasicMaterial({ color: '#ffd23f', transparent: true, opacity: .85, side: THREE.DoubleSide, depthWrite: false })); meRing.rotation.x = -Math.PI / 2; meRing.visible = false; scene.add(meRing);
@@ -270,7 +269,6 @@ const LV = [{ n: 'ছোট ক্লাসের দল', dsp: 2.3, lag: .7, as
 const HALVES = 2, LIVES = 4, HALFT = 70, MYSP = 4.7, MYDEF = 3.4;
 let lv = 1, S = null, W = 0, H = 0, last = 0;
 function newMatch() {
-  if (S) S.P.forEach(t => t.forEach(p => scene.remove(p.m.g)));
   const mk = team => Array.from({ length: 5 }, (_, i) => ({ team, i, x: 0, z: 0, vx: 0, vz: 0, m: mkMan(team, i + 1) }));
   S = { P: [mk(0), mk(1)], score: [0, 0], half: 0, phase: 'idle', t: 0, joy: null, dash: 0, dashCd: 0, myTrips: 0, myTags: 0, over: false };
   setupHalf();
@@ -302,7 +300,7 @@ function caught(byMe, d) {
   S.phase = 'pause'; S.t = 0;
 }
 function trip() {
-  const a = atk(), r = S.cur; S.score[a]++; hud(); sfx('point'); sfx('cheer'); r.salt = false; r.m.bag.visible = false; r.dir = -1;
+  const a = atk(), r = S.cur; S.score[a]++; hud(); sfx('point'); sfx('cheer'); r.cheerT = 1.5; excite = 1; r.salt = false; r.m.bag.visible = false; r.dir = -1;
   if (a === 0) { S.myTrips++; shout('নুন নিয়ে ফিরলেন! +১ 🧂', '#8af58a'); $('com').textContent = '🎙️ ' + pick(['সাবাস! পুরো মাঠ পার!', 'কেউ ছুঁতেই পারলো না!', 'আবার যান, আরেকবার নুন আনেন!']); if (window.KHViral && S.myTrips % 3 === 0) KHViral.confetti(); }
   else { shout('ওরা নুন নিয়ে ফিরলো +১', '#ff9a8a'); $('com').textContent = '🎙️ ' + pick(['ইশ! পুরো পথ পার হয়ে গেলো!', 'পাহারা আরো শক্ত করতে হবে!']); }
 }
@@ -417,31 +415,31 @@ function halfEnd() {
   S.half++; if (S.half >= HALVES) return endMatch();
   shout('অর্ধেক শেষ! এবার পাহারা', '#fff'); setTimeout(() => { if (S && !S.over && S.phase === 'swap') setupHalf(); }, 1600);
 }
+let poseDt = 1 / 60;
 function pose(p, T0) {
-  const g = p.m.g, sp = Math.hypot(p.vx || 0, p.vz || 0), run = Math.min(1, sp / 3.2);
+  const h = p.m.h, g = h.root, sp = Math.hypot(p.vx || 0, p.vz || 0), r = S && S.cur;
   g.position.set(p.x, 0, p.z);
-  const s = Math.sin(T0 * (10 + sp * 1.5) + p.i) * run; p.m.legL.rotation.x = s; p.m.legR.rotation.x = -s; p.m.armL.rotation.x = -s * .9; p.m.armR.rotation.x = s * .9; p.m.armL.rotation.z = p.m.armR.rotation.z = 0; p.m.body.rotation.x = run * .2; p.m.body.position.y = Math.abs(s) * .05;
-  if (p.role === 'line' || p.role === 'mid') { // পাহারাদার: দাগে দাঁড়িয়ে দুই হাত ছড়ানো, ঝুঁকে থাকা
-    const r = S && S.cur; g.rotation.y = r ? (p.z > r.z ? Math.PI : 0) : 0; if (p.role === 'mid' && r) g.rotation.y = r.x > 0 ? Math.PI / 2 : -Math.PI / 2;
-    p.m.body.rotation.x = .35; p.m.armL.rotation.z = -1.1; p.m.armR.rotation.z = 1.1; p.m.armL.rotation.x = p.m.armR.rotation.x = -.4;
-    if (sp > .3) { const side = Math.sin(T0 * 14) * .35; p.m.legL.rotation.z = side; p.m.legR.rotation.z = -side; p.m.legL.rotation.x = p.m.legR.rotation.x = 0; } else p.m.legL.rotation.z = p.m.legR.rotation.z = 0;
-  } else if (sp > .3) g.rotation.y = Math.atan2(p.vx, p.vz);
-  if (p.role === 'wait') g.rotation.y = Math.PI;
-  if (p.role === 'out') { if (sp < .3) { p.m.body.rotation.x = 0; p.m.legL.rotation.x = p.m.legR.rotation.x = -1.4; p.m.body.position.y = -.55; g.rotation.y = 0; } }
-  if (p.tagAnim > 0) { p.tagAnim -= 1 / 60; p.m.armR.rotation.x = -1.6; p.m.armL.rotation.x = -1.6; p.m.body.rotation.x = .6; }
+  let face = null; const guard = p.role === 'line' || p.role === 'mid';
+  if (guard) face = p.role === 'mid' ? (r && r.x > 0 ? Math.PI / 2 : -Math.PI / 2) : (r ? (p.z > r.z ? Math.PI : 0) : 0);
+  else if (sp > .3) face = Math.atan2(p.vx, p.vz); else if (p.role === 'wait') face = Math.PI; else if (p.role === 'out') face = 0;
+  if (face !== null) { const d = Math.atan2(Math.sin(face - g.rotation.y), Math.cos(face - g.rotation.y)); g.rotation.y += d * Math.min(1, poseDt * 12); }
+  h.set({ run: guard ? Math.min(.5, sp / 4) : Math.min(1, sp / 3.4), crouch: guard ? .6 : 0, wide: guard ? 1 : 0, sit: p.role === 'out' && sp < .3 ? 1 : 0, reach: p.tagAnim > 0 ? 1 : 0, lean: p.tagAnim > 0 ? .35 : 0, cheer: p.cheerT > 0 ? 1 : 0, shout: p.cheerT > 0 || (p === r && sp > 4) ? 1 : 0 });
+  if (p.tagAnim > 0) p.tagAnim -= poseDt; if (p.cheerT > 0) p.cheerT -= poseDt;
+  h.look = r && r !== p ? r : null; h.update(poseDt, sp);
 }
 function sideline(dt) { // আউট হওয়ারা মাঠের পাশে বসে
   S.P.forEach(t => t.forEach((p, i) => { if (p.role === 'out') goTo(p, (p.team ? 1 : -1) * (HX + 1.4), ZS - 1 - i * .9, 3, dt); else if (p.role === 'wait') goTo(p, -3 + i * 1.5, ZS + 1.4, 3, dt); }));
 }
 
 /* ---------- ক্যামেরা আর লুপ ---------- */
-function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 60 : 46; cam.updateProjectionMatrix(); }
+const composer = composerFor(THREE, renderer, scene, cam, { strength: .2, threshold: .92 });
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); if (composer) { composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(W, H); } cam.aspect = W / H; cam.fov = W / H < .8 ? 60 : 46; cam.updateProjectionMatrix(); }
 addEventListener('resize', resize);
 const camPos = new THREE.Vector3(0, 16, 18), camLook = new THREE.Vector3(0, 0, 0);
 function loop(ts) {
   const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
   if (S && !S.over) { step(dt); sideline(dt); }
-  if (S) S.P.forEach(tm => tm.forEach(p => pose(p, T0)));
+  poseDt = dt; if (S) S.P.forEach(tm => tm.forEach(p => pose(p, T0)));
   const port = W / H < .8, r = S && S.cur;
   if (S && !S.over && r) {
     star.visible = true; star.position.set(r.x, 2.3 + Math.sin(T0 * 6) * .08, r.z); star.rotation.y = T0 * 3;
@@ -449,11 +447,11 @@ function loop(ts) {
     const fz = clamp(r.z, -7, 8); camPos.set(r.x * .25, port ? 15 : 11, fz + (port ? 10 : 9.5)); camLook.set(r.x * .3, 0, fz - (port ? 4.5 : 3.5));
   } else { star.visible = meRing.visible = false; camPos.set(Math.sin(T0 * .12) * 6, port ? 20 : 14, 18); camLook.set(0, 0, -1); }
   dusts.forEach(d => { if (d.t >= 1) { d.s.visible = false; return; } d.t = Math.min(1, d.t + dt * 1.6); const s = .7 + d.t * 2.2 * d.k; d.s.scale.set(s, s, 1); d.s.material.opacity = (1 - d.t) * .55; d.s.position.y += dt * .6; });
-  crowds.forEach((c, i) => c.position.y = 1.05 + Math.abs(Math.sin(T0 * 2.4 + i)) * .04);
+  excite = Math.max(0, excite - dt * .5); crowdUpd(T0, excite);
   const fp = flagGeo.attributes.position; for (let i = 0; i < fp.count; i++) { const x0 = flagBase[i * 3]; fp.setZ(i, Math.sin(x0 * 3 + T0 * 5) * .12 * (x0 + 1)); } fp.needsUpdate = true;
   saltBag.rotation.y = T0 * .8; lineGlow.material.opacity = .25 + Math.sin(T0 * 6) * .12;
   cam.position.lerp(camPos, .07); cam.lookAt(camLook);
-  if (renderer) renderer.render(scene, cam); requestAnimationFrame(loop);
+  if (renderer) { if (composer) composer.render(dt); else renderer.render(scene, cam); } requestAnimationFrame(loop);
 }
 function start(level) {
   audio(); lv = level; store.set('kh-daria-lv', lv); newMatch(); ['startO', 'endO'].forEach(i => $(i).hidden = true);
