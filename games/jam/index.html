@@ -65,6 +65,12 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .talk::after{content:"";position:absolute;left:12px;bottom:-7px;border:7px solid transparent;border-top-color:#fff;border-bottom:0}
 .sub{position:absolute;left:50%;transform:translateX(-50%);bottom:178px;z-index:2;max-width:92%;background:rgba(0,0,0,.62);border-radius:10px;padding:5px 12px;font-size:.84rem;text-align:center;pointer-events:none}
 .sub b{color:#ffd23f}
+.turn{position:absolute;top:42%;z-index:3;width:84px;height:84px;border-radius:24px;border:0;color:#fff;font:800 2.2rem var(--display);line-height:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;background:rgba(15,107,58,.85);box-shadow:0 6px 0 #0b4d2a,0 10px 24px rgba(0,0,0,.4);animation:tIn .35s cubic-bezier(.2,1.6,.4,1);-webkit-tap-highlight-color:transparent}
+.turn small{font-size:.66rem;font-weight:800}
+.turn.l{left:max(10px,env(safe-area-inset-left,0px))}.turn.r{right:max(10px,env(safe-area-inset-right,0px))}
+.turn.on{background:#ff9f1a;box-shadow:0 6px 0 #b86200,0 0 0 5px rgba(255,159,26,.45);animation:tBlink .6s steps(2) infinite}
+@keyframes tIn{from{transform:scale(.5);opacity:0}}
+@keyframes tBlink{50%{filter:brightness(1.35)}}
 
 .over{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:16px;background:rgba(14,12,30,.74);backdrop-filter:blur(2px)}
 .card{width:100%;max-width:380px;background:linear-gradient(180deg,#2c2752,#1e1a3b);border:1px solid var(--line);border-radius:24px;padding:20px 18px;display:flex;flex-direction:column;gap:12px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5);max-height:100%;overflow:auto}
@@ -128,6 +134,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
     <div class="street" id="street" hidden></div>
     <div class="news" id="news" hidden><b>ঢাকা টুডে ব্রেকিং</b><span id="newsT"></span></div>
     <div class="talk" id="talk" hidden></div>
+    <button class="turn l" id="tL" hidden aria-label="মোড়ে বামে ঘুরুন">↰<small>বামে ঘুরুন</small></button>
+    <button class="turn r" id="tR" hidden aria-label="মোড়ে ডানে ঘুরুন">↱<small>ডানে ঘুরুন</small></button>
     <div class="sub" id="sub" hidden></div>
     <div class="ctrl" id="ctrl" hidden><div class="crow sm"><button id="hornBtn" aria-label="হর্ন">📢<small>হর্ন</small></button><button id="bombBtn" aria-label="শব্দ বোমা">💣<small>বোমা</small></button><button id="camBtn" aria-label="ক্যামেরা বদলান">🎥<small>ক্যামেরা</small></button></div><div class="crow"><button id="lBtn" aria-label="বামে">◀<small>বামে</small></button><button id="bBtn" class="brake" aria-label="ব্রেক (চেপে ধরুন)">▼<small>ব্রেক</small></button><button id="gBtn" class="gas" aria-label="স্পিড বাড়ান (চেপে ধরুন)">▲<small>গ্যাস</small></button><button id="rBtn" aria-label="ডানে">▶<small>ডানে</small></button></div></div>
 
@@ -141,7 +149,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
           <div><i>☕</i><b>চা</b>জোরে ছুট</div>
           <div><i>⛑️</i><b>হেলমেট</b>+১ জীবন</div>
         </div>
-        <p><b>মিশন: বাসা 🏠 থেকে অফিস 🏢!</b> বাম কোণার ম্যাপে হলুদ দাগ ধরে চালান। মোড়ের আগে রাস্তায় তীর আঁকা: বাম লেনে থাকলে বামে ঘুরবেন, মাঝে থাকলে সোজা, ডান লেনে ডানে। বামে-ডানে সোয়াইপ করুন বা স্ক্রিনের দুই পাশে চাপুন। <b>গ্যাস</b> চেপে ধরলে স্পিড বাড়ে। লাল বাতিতে <b>ব্রেক</b> চেপে ধরুন, নইলে পুলিশ মামলা দেবে! স্পিড ব্রেকারেও আস্তে চালান, রাস্তা পার হওয়া মানুষ দেখে চালান। ৩টা হেলমেট শেষ বা ৯টা বাজলে খেলা শেষ।</p>
+        <p><b>মিশন: বাসা 🏠 থেকে অফিস 🏢!</b> বাম কোণার ম্যাপে হলুদ দাগ ধরে চালান। মোড় কাছে এলে <b>↰ বামে / ↱ ডানে</b> বোতাম আসবে (কিবোর্ডে Q/E), চাপলে মোড়ে ঘুরবেন, না চাপলে সোজা। বামে-ডানে সোয়াইপ করুন বা স্ক্রিনের দুই পাশে চাপুন। <b>গ্যাস</b> চেপে ধরলে স্পিড বাড়ে। লাল বাতিতে <b>ব্রেক</b> চেপে ধরুন, নইলে পুলিশ মামলা দেবে! স্পিড ব্রেকারেও আস্তে চালান, রাস্তা পার হওয়া মানুষ দেখে চালান। ৩টা হেলমেট শেষ বা ৯টা বাজলে খেলা শেষ।</p>
         <p class="small no3d" id="no3d" hidden>আপনার ফোন বা ব্রাউজারে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।</p>
         <p class="small" id="bestTxt"></p>
         <button class="gbtn" id="startBtn">চলেন অফিসে!</button>
@@ -204,12 +212,43 @@ const GAME = 'jam';
 
 /* ================= শব্দ ================= */
 let sndOn = store.get('kh-sfx', true), ac = null, eng = null, engG = null;
+let engF = null, amb = null;
+function noiseLoop(brown) {
+  const n = ac.sampleRate * 2, b = ac.createBuffer(1, n, ac.sampleRate), x = b.getChannelData(0); let l = 0;
+  for (let i = 0; i < n; i++) { const w = Math.random() * 2 - 1; if (brown) { l = (l + .02 * w) / 1.02; x[i] = l * 3.5; } else x[i] = w; }
+  const s = ac.createBufferSource(); s.buffer = b; s.loop = true; s.start(); return s;
+}
 function audio() {
   if (!ac) { const A = window.AudioContext || window.webkitAudioContext; if (!A) return null; ac = new A();
-    eng = ac.createOscillator(); eng.type = 'sawtooth'; eng.frequency.value = 70; const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 400;
-    engG = ac.createGain(); engG.gain.value = 0; eng.connect(f); f.connect(engG); engG.connect(ac.destination); eng.start(); }
+    // বাইকের ইঞ্জিন: ভটভট শব্দ
+    eng = ac.createOscillator(); eng.type = 'sawtooth'; eng.frequency.value = 40;
+    const e2 = ac.createOscillator(); e2.type = 'square'; e2.frequency.value = 20;
+    const ef = ac.createBiquadFilter(); ef.type = 'lowpass'; ef.frequency.value = 420; ef.Q.value = 3;
+    const trem = ac.createGain(); trem.gain.value = .55; const lfo = ac.createOscillator(); lfo.frequency.value = 9; const lg = ac.createGain(); lg.gain.value = .45; lfo.connect(lg); lg.connect(trem.gain);
+    engG = ac.createGain(); engG.gain.value = 0; eng.connect(ef); const e2g = ac.createGain(); e2g.gain.value = .5; e2.connect(e2g); e2g.connect(ef); ef.connect(trem); trem.connect(engG); engG.connect(ac.destination);
+    eng.start(); e2.start(); lfo.start(); engF = { e2, ef, lfo };
+    // শহরের শব্দ: গাড়ির গুমগুম, মানুষের হইচই, বৃষ্টি
+    const mk = (src, type, f, q) => { const fl = ac.createBiquadFilter(); fl.type = type; fl.frequency.value = f; if (q) fl.Q.value = q; const g = ac.createGain(); g.gain.value = 0; src.connect(fl); fl.connect(g); g.connect(ac.destination); return g; };
+    amb = { rumble: mk(noiseLoop(true), 'lowpass', 240), crowd: mk(noiseLoop(false), 'bandpass', 1150, .6), rain: mk(noiseLoop(false), 'highpass', 2600) };
+  }
   if (ac.state === 'suspended') ac.resume(); return ac;
 }
+function ambience(on, crowd, wet) {
+  if (!amb) return; const t = ac.currentTime, k = sndOn && on;
+  amb.rumble.gain.setTargetAtTime(k ? .22 : 0, t, .5); amb.crowd.gain.setTargetAtTime(k ? crowd : 0, t, .4); amb.rain.gain.setTargetAtTime(k ? wet * .1 : 0, t, .6);
+}
+function out3(pan, vol) { const g = ac.createGain(); g.gain.value = vol; if (ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = Math.max(-1, Math.min(1, pan)); g.connect(p); p.connect(ac.destination); } else g.connect(ac.destination); return g; }
+// দূরের/কাছের হর্ন, বাম-ডান কান আলাদা
+function hornAt(pan, vol, kind) {
+  if (!sndOn || !ac || vol < .004) return; const t = ac.currentTime, o3 = out3(pan, vol), bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 850; bp.Q.value = .7; bp.connect(o3);
+  const tn = (f, st, d) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = 'square'; o.frequency.value = f * rnd(.97, 1.03); g.gain.setValueAtTime(.0001, t + st); g.gain.exponentialRampToValueAtTime(.5, t + st + .02); g.gain.setValueAtTime(.5, t + st + d - .03); g.gain.exponentialRampToValueAtTime(.0001, t + st + d); o.connect(g); g.connect(bp); o.start(t + st); o.stop(t + st + d + .05); };
+  if (kind === 'bus') { tn(330, 0, .5); tn(415, 0, .5); tn(330, .6, .3); tn(415, .6, .3); }
+  else if (kind === 'truck') { tn(196, 0, 1); tn(247, 0, 1); }
+  else if (kind === 'cng') { [0, .17, .34].forEach(st => tn(640, st, .11)); }
+  else { tn(500, 0, .22); tn(630, 0, .22); tn(500, .3, .25); tn(630, .3, .25); }
+}
+function bellAt(pan, vol) { if (!sndOn || !ac) return; const t = ac.currentTime, o3 = out3(pan, vol); [0, .16].forEach(st => [2350, 3420, 5150].forEach((f, i) => { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = f; g.gain.setValueAtTime(.0001, t + st); g.gain.exponentialRampToValueAtTime(.35 / (i + 1), t + st + .005); g.gain.exponentialRampToValueAtTime(.0001, t + st + .45); o.connect(g); g.connect(o3); o.start(t + st); o.stop(t + st + .5); })); }
+function whooshAt(pan, vol) { if (!sndOn || !ac) return; const t = ac.currentTime, o3 = out3(pan, vol), n = Math.floor(ac.sampleRate * .6), b = ac.createBuffer(1, n, ac.sampleRate), x = b.getChannelData(0); for (let i = 0; i < n; i++) x[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * i / n); const s = ac.createBufferSource(), f = ac.createBiquadFilter(); s.buffer = b; f.type = 'bandpass'; f.Q.value = 1.2; f.frequency.setValueAtTime(300, t); f.frequency.exponentialRampToValueAtTime(1400, t + .3); f.frequency.exponentialRampToValueAtTime(350, t + .6); s.connect(f); f.connect(o3); s.start(t); }
 function tone(fr, t, d, type, v, to) { const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(fr, t); if (to) o.frequency.exponentialRampToValueAtTime(to, t + d); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + d + .02); }
 function noise(t, d, v, fr) { const n = Math.floor(ac.sampleRate * d), b = ac.createBuffer(1, n, ac.sampleRate), x = b.getChannelData(0); for (let i = 0; i < n; i++) x[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 1.5); const s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain(); fl.type = 'lowpass'; fl.frequency.value = fr; s.buffer = b; g.gain.value = v; s.connect(fl); fl.connect(g); g.connect(ac.destination); s.start(t); }
 const SFX = {
@@ -225,15 +264,16 @@ const SFX = {
   bump() { const t = ac.currentTime; tone(90, t, .2, 'sine', .5, 40); noise(t, .15, .4, 500); },
   brake() { noise(ac.currentTime, .3, .2, 4000); },
   rev() { const t = ac.currentTime; tone(90, t, .35, 'sawtooth', .12, 180); },
+  tick() { const t = ac.currentTime; tone(1800, t, .03, 'square', .08); tone(1400, t + .25, .03, 'square', .08); },
   thunder() { const t = ac.currentTime; noise(t, 1.4, .9, 220); tone(55, t, 1.2, 'sine', .4, 30); },
   over() { const t = ac.currentTime; [392, 349, 311, 233].forEach((f, i) => tone(f, t + i * .2, .35, 'triangle', .25)); },
   win() { const t = ac.currentTime; [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, t + i * .12, .3, 'triangle', .3)); }
 };
 function sfx(n) { if (!sndOn || !audio()) return; try { SFX[n](); } catch (e) {} }
-function engine(speed) { if (!ac || !engG) return; engG.gain.setTargetAtTime(sndOn && speed > 0 ? .05 : 0, ac.currentTime, .2); eng.frequency.setTargetAtTime(60 + speed * .25, ac.currentTime, .2); }
+function engine(speed) { if (!ac || !engG) return; const v = speed / 18, t = ac.currentTime, f = 30 + v * 3.4; engG.gain.setTargetAtTime(sndOn && speed > 0 ? .085 : 0, t, .2); eng.frequency.setTargetAtTime(f, t, .12); engF.e2.frequency.setTargetAtTime(f / 2, t, .12); engF.lfo.frequency.setTargetAtTime(5 + v * .8, t, .12); engF.ef.frequency.setTargetAtTime(320 + v * 45, t, .2); }
 let voiceOn = store.get('kh-voice', true), lastSay = 0;
 function say(t, force, who) { if (!voiceOn || !window.KHVoice || demo) return; if (!force && performance.now() - lastSay < 2800) return; lastSay = performance.now(); window.KHVoice.say(t, force, who); }
-$('snd').onclick = () => { sndOn = !sndOn; store.set('kh-sfx', sndOn); $('snd').classList.toggle('off', !sndOn); if (!sndOn) engine(0); };
+$('snd').onclick = () => { sndOn = !sndOn; store.set('kh-sfx', sndOn); $('snd').classList.toggle('off', !sndOn); if (!sndOn) { engine(0); ambience(false); } };
 $('snd').classList.toggle('off', !sndOn);
 
 const L = {
@@ -330,7 +370,9 @@ function cyl(g, r, h, x, y, z, m, rx, rz) { const me = new THREE.Mesh(CYL, m); m
 function sph(g, r, x, y, z, m, sy) { const me = new THREE.Mesh(SPH, m); me.scale.set(r, r * (sy || 1), r); me.position.set(x, y, z); g.add(me); return me; }
 function plane(g, w, h, x, y, z, m, ry) { const me = new THREE.Mesh(PLANE, m); me.scale.set(w, h, 1); me.position.set(x, y, z); if (ry) me.rotation.y = ry; g.add(me); return me; }
 const wheelM = M('#1c1c1e', { roughness: .95 }), rimM = M('#b8bcc4', { metalness: .6, roughness: .35 });
-function wheel(g, r, w, x, y, z) { cyl(g, r, w, x, y, z, wheelM, 0, Math.PI / 2); cyl(g, r * .5, w + .02, x, y, z, rimM, 0, Math.PI / 2); }
+let WL = null; // নতুন গাড়ির চাকা জমা রাখি, যাতে ঘোরানো যায়
+function wheel(g, r, w, x, y, z) { const h = new THREE.Group(); h.position.set(x, y, z); g.add(h); cyl(h, r, w, 0, 0, 0, wheelM, 0, Math.PI / 2); cyl(h, r * .5, w + .02, 0, 0, 0, rimM, 0, Math.PI / 2); box(h, w + .05, r * 1.4, r * .16, 0, 0, 0, rimM, false); box(h, w + .05, r * .16, r * 1.4, 0, 0, 0, rimM, false); if (WL) WL.push([h, r]); }
+function mkV(f) { WL = []; const o = f(); o.wheels = WL; WL = null; return o; }
 
 /* ---- রাস্তা ---- */
 const ROAD_LEN = 420, TILE = 12;
@@ -651,6 +693,8 @@ const helm = sph(rider, .2, 0, .9, -.08, M('#ef4f5f', { roughness: .25, metalnes
 box(rider, .3, .12, .1, 0, .87, -.27, glassM, false);
 box(rider, .36, .42, .16, 0, .5, .22, M('#5b3a29'), false); // ব্যাগ
 [-1, 1].forEach(s => { const a = box(rider, .1, .1, .6, s * .26, .55, -.4, M('#4f86c6'), false); a.rotation.x = .5; box(rider, .12, .5, .14, s * .17, .02, -.05, M('#2f3542'), false).rotation.x = -1.1; });
+const blL = new THREE.MeshStandardMaterial({ color: '#ff9f1a', emissive: '#ff8a00', emissiveIntensity: .2 }), blR = blL.clone();
+box(bikeLean, .08, .06, .06, -.2, .86, .62, blL, false); box(bikeLean, .08, .06, .06, .2, .86, .62, blR, false); box(bikeLean, .08, .06, .06, -.36, 1.02, -.62, blL, false); box(bikeLean, .08, .06, .06, .36, 1.02, -.62, blR, false);
 const shieldBubble = new THREE.Mesh(new THREE.SphereGeometry(1.25, 20, 14), new THREE.MeshBasicMaterial({ color: '#36d1c4', transparent: true, opacity: .16, depthWrite: false })); shieldBubble.position.y = .9; bike.add(shieldBubble); shieldBubble.visible = false;
 bike.traverse(o => { if (o.isMesh && o !== shieldBubble) o.castShadow = true; });
 
@@ -732,8 +776,8 @@ function clearGap(J) { builds.forEach(b => { const s = b.userData.side, z1 = b.p
 function relayout() { [-1, 1].forEach(side => { let z = BEHIND + 4; builds.filter(b => b.userData.side === side).forEach(b => { const gap = Math.random() < .12 ? rnd(3, 6) : rnd(.1, .6); b.position.z = z - b.userData.len / 2; z -= b.userData.len + gap; }); }); poles.forEach((pl, i) => pl.position.z = BEHIND + 20 - i * POLE_GAP); }
 function turnStreet(t) {
   // নতুন রাস্তায় ঢুকলাম: আগের রাস্তার সব সরিয়ে নতুন করে সাজাই
-  [...S.obs, ...S.items, ...S.peds, ...S.bumps, ...S.cross].forEach(o => o.g && scene.remove(o.g));
-  S.obs = []; S.items = []; S.peds = []; S.bumps = []; S.cross = [];
+  [...S.obs, ...S.items, ...S.peds, ...S.bumps, ...S.cross, ...S.walkers].forEach(o => o.g && scene.remove(o.g));
+  S.obs = []; S.items = []; S.peds = []; S.bumps = []; S.cross = []; S.walkers = [];
   if (S.signal) { scene.remove(S.signal.m.g); S.signal = null; }
   S.juncs.forEach(J => scene.remove(J.g)); S.juncs = [];
   relayout(); if (bridge) bridge.position.z = -400;
@@ -742,7 +786,10 @@ function turnStreet(t) {
 }
 function passJunction() {
   const C = S.city, J = S.juncs.find(j => !j.done); if (J) J.done = true;
-  const t = laneTurn(C, S.p.lane), adv = J ? J.adv : null;
+  const al = allowed(C), adv = J ? J.adv : null, req = S.turnReq || 0;
+  let t = al[req] ? req : al[0] ? 0 : (adv !== null && adv !== 'office' && al[adv] ? adv : al[-1] ? -1 : 1);
+  if (!demo && req === 0 && !al[0]) say('রাস্তা শেষ! ঘুরতেই হলো', true, 'M2');
+  S.turnReq = 0; turnUI();
   C.node = nextNode(C); C.trail.push({ ...C.node });
   if (C.node.x === C.office.x && C.node.y === C.office.y) { if (demo) { S.city = newCity(); S.juncs.forEach(j => scene.remove(j.g)); S.juncs = [mkJunction(S.city)]; return; } endGame('office'); return; }
   C.dir = (C.dir + t + 4) % 4; C.segLeft = BLOCK;
@@ -775,13 +822,27 @@ function drawMap() {
   const [px, py] = P(...me); mg.save(); mg.translate(px, py); mg.rotate(C.dir * Math.PI / 2);
   mg.fillStyle = '#ef4f5f'; mg.strokeStyle = '#fff'; mg.lineWidth = 4; mg.beginPath(); mg.moveTo(0, -16); mg.lineTo(11, 12); mg.lineTo(0, 6); mg.lineTo(-11, 12); mg.closePath(); mg.fill(); mg.stroke(); mg.restore();
 }
+function setTurn(side) {
+  if (!running || demo || !S) return; const J = S.juncs.find(j => !j.done); if (!J || !J.al[side]) return;
+  S.turnReq = S.turnReq === side ? 0 : side; audio(); sfx('tick'); turnUI();
+  if (S.turnReq) fc(side < 0 ? '↰ বামে ঘুরব' : '↱ ডানে ঘুরব', '#ffb627', 22);
+}
+let tuiKey = '';
+function turnUI() {
+  const C = S && S.city, J = S && S.juncs.find(j => !j.done), near = !!(J && !demo && running && C.segLeft < 95);
+  const k = [near && J.al[-1], near && J.al[1], S && S.turnReq].join();
+  if (k === tuiKey) return; tuiKey = k;
+  $('tL').hidden = !(near && J.al[-1]); $('tR').hidden = !(near && J.al[1]);
+  $('tL').classList.toggle('on', S && S.turnReq === -1); $('tR').classList.toggle('on', S && S.turnReq === 1);
+}
 function navUpdate() {
   const C = S.city, J = S.juncs.find(j => !j.done); if (!J) return;
   const dist = Math.max(0, Math.round(C.segLeft / 10) * 10), adv = J.adv;
   const ic = adv === 'office' ? '🏢' : adv === -1 ? '⬅' : adv === 1 ? '➡' : '⬆';
-  const lane = adv === 'office' ? '' : adv === -1 ? ' · বাম লেন' : adv === 1 ? ' · ডান লেন' : ' · মাঝের লেন';
-  $('nav').innerHTML = `<b>${ic}</b><span>${bn(dist)} মি${lane}</span>`;
-  $('nav').classList.toggle('hot', C.segLeft < 80 && adv !== 'office' && laneTurn(C, S.p.lane) !== adv);
+  const what = adv === 'office' ? ' · অফিস' : adv === -1 ? ' · বামে ঘুরুন' : adv === 1 ? ' · ডানে ঘুরুন' : ' · সোজা যান';
+  $('nav').innerHTML = `<b>${ic}</b><span>${bn(dist)} মি${what}</span>`;
+  $('nav').classList.toggle('hot', C.segLeft < 90 && adv !== 'office' && (S.turnReq || 0) !== adv);
+  turnUI();
   if (!J.announced && C.segLeft < 110) { J.announced = true; say(adv === 'office' ? 'সামনেই আপনার অফিস!' : adv === -1 ? 'সামনের মোড়ে বামে যান' : adv === 1 ? 'সামনের মোড়ে ডানে যান' : 'সামনের মোড়ে সোজা যান', true, 'F1'); }
 }
 
@@ -814,7 +875,7 @@ function talkView(dt) {
   if (on) { $('talk').style.left = Math.max(70, Math.min(W - 70, (_wp.x * .5 + .5) * W)) + 'px'; $('talk').style.top = Math.max(60, (-_wp.y * .5 + .5) * H) + 'px'; }
 }
 function ambientTalk() {
-  const near = S.obs.filter(o => !o.static && o.z < -6 && o.z > -38);
+  const near = S.obs.filter(o => !o.static && o.z < -4 && o.z > -45);
   const ped = S.peds.find(pd => pd.z < -4 && pd.z > -30);
   if (ped && Math.random() < .35) return talk(ped.g, 'ped');
   if (near.length) { const o = pick(near); talk(o.g, roleOf(o)); }
@@ -843,7 +904,7 @@ function resize() {
 addEventListener('resize', resize);
 function clearDyn() {
   if (!S) return;
-  [...S.obs, ...S.items.map(i => ({ g: i.g })), ...S.peds, ...S.bumps, ...(S.cross || [])].forEach(o => o.g && scene.remove(o.g));
+  [...S.obs, ...S.items.map(i => ({ g: i.g })), ...S.peds, ...S.bumps, ...(S.cross || []), ...(S.walkers || [])].forEach(o => o.g && scene.remove(o.g));
   if (S.signal) scene.remove(S.signal.m.g);
   (S.juncs || []).forEach(J => scene.remove(J.g));
 }
@@ -852,7 +913,7 @@ function newGame() {
   const N = { t: 0, dist: 0, speed: 0, base: 13, coins: 0, score: 0, lives: 3, clock: 0, over: false,
     p: { lane: 1, x: 0, tilt: 0, hit: 0, slow: 0, boost: 0, shield: 0, brake: false },
     obs: [], items: [], peds: [], bumps: [], spawnT: .2, itemT: 2.5, coinRun: 0, lastHorn: 0, warned: false, nextKm: 1,
-    signal: null, nextSignal: 420, nextBump: 260, pedT: 6, rain: 0, nextRain: rnd(35, 55), fines: 0, shake: 0, flash: 0, stuckT: 0, lastStuck: -20, nextBridge: 650, city: newCity(), juncs: [], cross: [], crossT: 0, talkCD: 5, turnFx: null, wrongs: 0 };
+    signal: null, nextSignal: 420, nextBump: 260, pedT: 6, rain: 0, nextRain: rnd(35, 55), fines: 0, shake: 0, flash: 0, stuckT: 0, lastStuck: -20, nextBridge: 650, city: newCity(), juncs: [], cross: [], crossT: 0, talkCD: 3, turnFx: null, wrongs: 0, walkers: [], hornT: 2, turnReq: 0 };
   S = N; relayout(); N.juncs.push(mkJunction(N.city)); return N;
 }
 const CLOCK_SEC = 150; // ৮টা থেকে ৯টা = আড়াই মিনিট খেলা
@@ -880,7 +941,7 @@ function spawnObs(z0) {
   const kinds = [['bus', .22], ['cng', .26], ['rick', .2], ['car', .12], ['truck', .06], ['hole', .08], ['water', .03 + diff * .07 + (S.rain > 0 ? .3 : 0)]];
   let r = Math.random() * kinds.reduce((s, k) => s + k[1], 0), kind = 'cng';
   for (const [k, w] of kinds) { if ((r -= w) < 0) { kind = k; break; } }
-  const o = ({ bus: mkBus, truck: mkTruck, car: mkCar, cng: mkCng, rick: mkRick, hole: mkHole, water: mkWater })[kind]();
+  const o = mkV(({ bus: mkBus, truck: mkTruck, car: mkCar, cng: mkCng, rick: mkRick, hole: mkHole, water: mkWater })[kind]);
   let Z = z0 !== undefined ? z0 : FAR;
   const DJ = S.juncs && S.juncs.find(j => !j.done && j.dead); if (DJ && Z < DJ.z + 14) { Z = DJ.z + 14 + o.len; if (Z > -40) return; }
   const lanes = [0, 1, 2].filter(l => !laneBusy(l, Z - o.len / 2 - 8, Z + o.len / 2 + 8));
@@ -923,6 +984,7 @@ function step(dt) {
     const blockedAhead = S.obs.some(o => o.lane === p.lane && o.z < 0 && o.z > -22);
     if (blockedAhead) { const c = [0, 1, 2].filter(l => !S.obs.some(o => o.lane === l && o.z < 6 && o.z > -24)); if (c.length) p.lane = c.sort((a, b) => Math.abs(a - p.lane) - Math.abs(b - p.lane))[0]; }
     p.brake = S.obs.some(o => o.lane === p.lane && !o.static && o.z < 0 && o.z > -9) || (S.signal && S.signal.state === 'red' && S.signal.z < -1 && S.signal.z > -14);
+    const DJ2 = S.juncs.find(j => !j.done); if (DJ2 && S.city.segLeft < 40 && S.demoJ !== DJ2) { S.demoJ = DJ2; S.turnReq = pick([-1, 0, 1].filter(t => DJ2.al[t])); }
   }
   S.base = 13 + Math.min(9, S.dist / 220);
   const target = p.brake ? 0 : S.base * (p.gas ? 1.4 : .8) * (p.boost > 0 ? 1.4 : 1) * (p.slow > 0 ? .55 : 1) * (p.hit > 1.1 ? .35 : 1) * (S.rain > 0 ? .88 : 1);
@@ -957,8 +1019,18 @@ function step(dt) {
     o.x += (LX(o.lane) - o.x) * Math.min(1, dt * 2.2);
     if (o.tl) o.tl.emissiveIntensity = o.cur < 1.5 ? 2.6 : .35; // ব্রেক লাইট
     if (o.kind === 'bus' && Math.random() < dt * 4) puff(o.x + .8, .5, o.z + o.len / 2 + .2);
-    if (o.kind === 'rick' && o.pu) o.pu.rotation.z = Math.sin(S.t * 6) * .06;
+    if (o.kind === 'rick' && o.pu) { o.pu.rotation.z = Math.sin(S.t * 6) * .06; const u = o.pu.userData, k3 = Math.sin(S.t * 7) * .7 * Math.min(1, o.cur); u.lL.rotation.x = k3; u.lR.rotation.x = -k3; }
+    if (o.wheels) o.wheels.forEach(([h, r]) => h.rotation.x -= o.cur * dt / r);
+    if (o.kind === 'bus' || o.kind === 'cng') o.g.position.y = Math.abs(Math.sin(S.t * 9 + o.z)) * .025 * Math.min(1, o.cur);
+    // মোড়ে কিছু গাড়ি ডানে-বামে ঘুরে চলে যায়
+    const NJx = S.juncs.find(j => !j.done);
+    if (NJx && !o.tc && o.z - o.len / 2 < NJx.z + 1) { o.tc = true; const sides = [-1, 1].filter(sd => NJx.gap[sd]); if (sides.length && (NJx.dead || Math.random() < .4)) { o.toCross = pick(sides); } }
+    // পাশ দিয়ে যাওয়ার শোঁ শব্দ আর কথা
+    if (!demo && o.pz !== undefined && o.pz < 0 && o.z >= 0 && Math.abs(o.x - p.x) < 4.5) { whooshAt((o.x - p.x) / 4, .16); if (Math.abs(o.x - p.x) < 2.9 && S.speed > 11 && Math.random() < .3 && talkT <= 0) talk(o.g, roleOf(o), pick(NEAR)); }
+    o.pz = o.z;
   }
+  S.obs.filter(o => o.toCross).forEach(o => { o.dir = o.toCross; o.turning = true; o.rotT = 0; o.v = Math.max(3, o.cur); const J0 = S.juncs.find(j => !j.done); o.jz = J0; o.zo = o.z - J0.z; S.cross.push(o); });
+  S.obs = S.obs.filter(o => !o.toCross);
   S.obs = S.obs.filter(o => { const keep = o.z - o.len / 2 < BEHIND && o.z > FAR - 60; if (!keep) { scene.remove(o.g); o.g.traverse(m => { if (m.material && m.material === o.tl) m.material.dispose(); }); } return keep; });
   S.obs.forEach(o => { o.g.position.set(o.x, 0, o.z); o.g.rotation.y = (LX(o.lane) - o.x) * .08; if (o.ripple) o.ripple.material.opacity = .75 + Math.sin(S.t * 3) * .1; });
   S.items.forEach(it => { it.z += d; it.g.position.z = it.z; if (it.g.userData.spin) { it.g.userData.spin.rotation.y += dt * 3; it.g.userData.spin.position.y = 1 + Math.sin(S.t * 3 + it.z) * .12; } });
@@ -970,14 +1042,28 @@ function step(dt) {
   S.juncs.forEach(J => { J.z += d; J.g.position.z = J.z; });
   S.juncs = S.juncs.filter(J => { const k = J.z < BEHIND + 30; if (!k) scene.remove(J.g); return k; });
   const NJ = S.juncs.find(j => !j.done);
-  if (NJ && NJ.dead) S.obs = S.obs.filter(o => { const k = o.z > NJ.z + 3; if (!k) scene.remove(o.g); return k; }); // তে-মাথায় সামনের গাড়ি পাশে চলে যায়
   if (NJ && !S.signal && NJ.wantSignal && !NJ.sig && NJ.z > -150) { NJ.sig = true; const m = mkSignal(); S.signal = { z: NJ.z + JW + 1.6, state: 'red', green: rnd(3, 5.5), seen: false, passed: false, m, J: NJ }; m.g.position.z = S.signal.z; }
   if (S.city.segLeft <= 0) { passJunction(); if (S.over) return; }
   // আড়াআড়ি গাড়ি (লাল বাতিতে পাশের রাস্তা দিয়ে)
   const SG = S.signal;
-  if (SG && SG.state === 'red' && SG.green > 2.2 && SG.z > -110 && SG.z < 2) { S.crossT -= dt; if (S.crossT <= 0) { S.crossT = rnd(1.2, 2.2); const sides = [-1, 1].filter(sd => SG.J.gap[sd]); if (sides.length) { const sd = pick(sides), o = pick([mkCar, mkCng, mkBus, mkRick])(); o.dir = -sd; o.x = sd * 26; o.zo = sd < 0 ? 1.8 : -1.8; o.v = o.kind === 'rick' ? 3.5 : rnd(8, 11); o.g.rotation.y = o.dir > 0 ? -Math.PI / 2 : Math.PI / 2; o.jz = SG.J; scene.add(o.g); S.cross.push(o); } } }
-  S.cross.forEach(o => { o.x += o.dir * o.v * (SG && SG.state === 'red' ? 1 : 1.8) * dt; o.g.position.set(o.x, 0, o.jz.z + o.zo); });
+  if (SG && SG.state === 'red' && SG.green > 2.2 && SG.z > -110 && SG.z < 2) { S.crossT -= dt; if (S.crossT <= 0) { S.crossT = rnd(1.2, 2.2); const sides = [-1, 1].filter(sd => SG.J.gap[sd]); if (sides.length) { const sd = pick(sides), o = mkV(pick([mkCar, mkCng, mkBus, mkRick])); o.dir = -sd; o.x = sd * 26; o.zo = sd < 0 ? 1.8 : -1.8; o.v = o.kind === 'rick' ? 3.5 : rnd(8, 11); o.g.rotation.y = o.dir > 0 ? -Math.PI / 2 : Math.PI / 2; o.jz = SG.J; scene.add(o.g); S.cross.push(o); } } }
+  S.cross.forEach(o => {
+    if (o.turning) { o.rotT += dt; const k4 = Math.min(1, o.rotT / 1.3), e = k4 * k4 * (3 - 2 * k4); o.g.rotation.y = -o.dir * Math.PI / 2 * e; o.x += o.dir * o.v * dt * e; o.zo += (-o.dir * 1.6 - o.zo) * Math.min(1, dt * 1.5); }
+    else o.x += o.dir * o.v * (SG && SG.state === 'red' ? 1 : 1.8) * dt;
+    if (o.wheels) o.wheels.forEach(([h, r]) => h.rotation.x -= o.v * dt / r);
+    o.g.position.set(o.x, 0, o.jz.z + o.zo);
+  });
   S.cross = S.cross.filter(o => { const k = Math.abs(o.x) < 50 && o.jz.z < BEHIND; if (!k) scene.remove(o.g); return k; });
+  // ফুটপাতে হাঁটা মানুষ
+  while (S.walkers.length < (LOWEND ? 6 : 12)) addWalker(rnd(FAR + 10, 4));
+  S.walkers.forEach(w => { w.z += d + w.dir * w.v * dt; w.g.position.set(w.x, .22, w.z); w.umb.visible = S.rain > 0; const sw = Math.sin(S.t * 7 + w.seed) * .5; w.p.userData.lL.rotation.x = sw; w.p.userData.lR.rotation.x = -sw; });
+  S.walkers = S.walkers.filter(w => { const k = w.z < BEHIND && w.z > FAR - 20; if (!k) scene.remove(w.g); return k; });
+  // শহরের শব্দ: দূরে-কাছে হর্ন, রিকশার বেল
+  if (!demo) {
+    S.hornT -= dt;
+    if (S.hornT <= 0) { S.hornT = rnd(1.2, 3.5); const c = S.obs.filter(o => !o.static && o.z > -90 && o.z < 12); if (c.length) { const o = pick(c), vol = .012 + .07 * Math.max(0, 1 - Math.abs(o.z) / 90); o.kind === 'rick' ? bellAt((o.x - p.x) / 7, vol * 1.4) : hornAt((o.x - p.x) / 7, vol, o.kind); } else hornAt(rnd(-1, 1), .015, pick(['bus', 'cng', 'car'])); }
+    ambience(running, .025 + (S.signal && S.signal.z > -60 ? .03 : 0) + Math.min(.03, S.peds.length * .01), S.wet || 0);
+  }
   if (S.signal) {
     const s2 = S.signal; s2.z += d; s2.m.g.position.z = s2.z;
     if (s2.z > -95 && s2.state === 'red') { s2.green -= dt; if (s2.green <= 0) { s2.state = 'yellow'; s2.yt = .9; } }
@@ -1027,7 +1113,7 @@ function step(dt) {
     // আড়াআড়ি গাড়ির সাথে ধাক্কা
     for (const o of S.cross) { if (o.done || p.hit > 0) continue; const cz = o.jz.z + o.zo; if (Math.abs(o.x) < ROAD_HALF + 1 && Math.abs(cz) < o.w / 2 + .7 && Math.abs(o.x - p.x) < o.len / 2 + .35) { o.done = true; S.speed = 0; crash(o); talk(o.g, roleOf(o), 'লাল বাতিতে ঢুকলা কেন? চোখে দেখো না?'); if (S.over) return; } }
     // রাস্তার মানুষের কথা
-    S.talkCD -= dt; if (S.talkCD <= 0 && talkT <= 0) { S.talkCD = rnd(5, 9); ambientTalk(); }
+    S.talkCD -= dt; if (S.talkCD <= 0 && talkT <= 0) { S.talkCD = rnd(3.5, 6); ambientTalk(); }
     if (streetT > 0) { streetT -= dt; if (streetT <= 0) $('street').hidden = true; }
     if (newsT > 0) { newsT -= dt; if (newsT <= 0) $('news').hidden = true; }
     navUpdate(); if (Math.floor(S.t * 10) % 2 === 0) drawMap();
@@ -1055,6 +1141,11 @@ function step(dt) {
     hud();
   }
 }
+function addWalker(z) {
+  const dir = pick([-1, 1]), side = pick([-1, 1]), pd = mkPed(1); pd.p.rotation.y = dir < 0 ? 0 : Math.PI;
+  Object.assign(pd, { x: side * (ROAD_HALF + rnd(.5, 2.1)), z, dir, v: rnd(.9, 1.5), seed: Math.random() * 9 }); S.walkers.push(pd);
+}
+const NEAR = ['ওই! গায়ের উপর দিয়া যাইবা নাকি?', 'আস্তে মামা! জান কি একটা?', 'এত তাড়া কিসের? প্লেন ধরবা?'];
 function addPed(z, zebra) {
   const dir = Math.random() < .5 ? 1 : -1; const pd = mkPed(dir);
   Object.assign(pd, { x: -dir * (ROAD_HALF + 1.2), z: zebra && S.signal ? S.signal.z - 2.6 + rnd(-1, 1) : z, dir, vx: rnd(1.2, 1.8), seed: Math.random() * 9, hit: false });
@@ -1088,8 +1179,9 @@ function view(dt) {
   const fov = (portrait ? 70 : 58) + (p.boost > 0 ? 8 : 0) + Math.min(6, S.speed * .18);
   cam.fov += (fov - cam.fov) * Math.min(1, dt * 3); cam.updateProjectionMatrix();
   const sh = S.shake * .35;
-  let ya = 0; if (S.turnFx) { S.turnFx.t += dt; const k2 = Math.min(1, S.turnFx.t / .9); ya = S.turnFx.a * Math.pow(1 - k2, 2); if (k2 >= 1) S.turnFx = null; }
-  bike.rotation.y = ya * .5;
+  let ya = 0; if (S.turnFx) { S.turnFx.t += dt; const k2 = Math.min(1, S.turnFx.t / 1.4), e2 = 1 - (k2 < .5 ? 4 * k2 * k2 * k2 : 1 - Math.pow(-2 * k2 + 2, 3) / 2); ya = S.turnFx.a * e2; bikeLean.rotation.z = -Math.sign(S.turnFx.a) * .32 * Math.sin(Math.PI * Math.min(1, k2 * 1.4)); if (k2 >= 1) S.turnFx = null; }
+  bike.rotation.y = ya * .65;
+  const blink = Math.floor(S.t * 3) % 2 === 0; blL.emissiveIntensity = S.turnReq === -1 && blink ? 3 : .2; blR.emissiveIntensity = S.turnReq === 1 && blink ? 3 : .2;
   let ox, oy, oz, tx, ty, tz;
   if (camMode === 2) { ox = p.x; oy = 1.85; oz = .1; tx = p.x; ty = 1.4; tz = -20; }
   else { camX += (p.x * .72 - camX) * Math.min(1, dt * 6); ox = camX; oy = cy + (camMode === 1 ? 4 : 0); oz = cz + (camMode === 1 ? 3 : 0); tx = p.x * .55; ty = .9; tz = -14; }
@@ -1111,7 +1203,7 @@ function loop(ts) {
 
 /* ================= নিয়ন্ত্রণ ================= */
 let tx0 = null, ty0 = null;
-$('stage').addEventListener('pointerdown', e => { if (e.target.closest('.over,.ctrl')) return; tx0 = e.clientX; ty0 = e.clientY; });
+$('stage').addEventListener('pointerdown', e => { if (e.target.closest('.over,.ctrl,.turn')) return; tx0 = e.clientX; ty0 = e.clientY; });
 $('stage').addEventListener('pointerup', e => {
   if (tx0 === null) return; const dx = e.clientX - tx0, dy = e.clientY - ty0; tx0 = null;
   if (dy > 40 && Math.abs(dy) > Math.abs(dx)) { brake(true); setTimeout(() => brake(false), 900); }
@@ -1119,6 +1211,7 @@ $('stage').addEventListener('pointerup', e => {
   else if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) move(dx > 0 ? 1 : -1);
   else { const r = $('stage').getBoundingClientRect(); move(e.clientX - r.left < r.width / 2 ? -1 : 1); }
 });
+$('tL').addEventListener('pointerdown', e => { e.preventDefault(); setTurn(-1); }); $('tR').addEventListener('pointerdown', e => { e.preventDefault(); setTurn(1); });
 $('hornBtn').addEventListener('pointerdown', e => { e.preventDefault(); honk(); }); $('bombBtn').addEventListener('pointerdown', e => { e.preventDefault(); bombGame(); }); $('camBtn').addEventListener('pointerdown', e => { e.preventDefault(); camNext(); });
 $('lBtn').addEventListener('pointerdown', e => { e.preventDefault(); move(-1); }); $('rBtn').addEventListener('pointerdown', e => { e.preventDefault(); move(1); });
 function gas(on) { if (!S || !running || demo) return; S.p.gas = on; $('gBtn').classList.toggle('on', on); if (on) sfx('rev'); }
@@ -1128,7 +1221,7 @@ function brake(on) { if (!S || !running || demo) return; if (on && !S.p.brake) s
 $('bBtn').addEventListener('pointerdown', e => { e.preventDefault(); brake(true); });
 ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => $('bBtn').addEventListener(ev, () => brake(false)));
 addEventListener('keyup', e => { if (e.key === 'ArrowDown' || e.key === ' ') brake(false); if (e.key === 'ArrowUp' || e.key === 'w') gas(false); });
-addEventListener('keydown', e => { if (e.repeat) return; if (e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); brake(true); return; } if (e.key === 'ArrowUp' || e.key === 'w') { e.preventDefault(); gas(true); return; } if (e.key === 'ArrowLeft' || e.key === 'a') move(-1); else if (e.key === 'ArrowRight' || e.key === 'd') move(1); else if (e.key === 'Escape' || e.key === 'p') running ? pause() : resume(); else if (e.key === 'h') honk(); else if (e.key === 'b') bombGame(); else if (e.key === 'c') camNext(); });
+addEventListener('keydown', e => { if (e.repeat) return; if (e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); brake(true); return; } if (e.key === 'ArrowUp' || e.key === 'w') { e.preventDefault(); gas(true); return; } if (e.key === 'ArrowLeft' || e.key === 'a') move(-1); else if (e.key === 'ArrowRight' || e.key === 'd') move(1); else if (e.key === 'Escape' || e.key === 'p') running ? pause() : resume(); else if (e.key === 'q') setTurn(-1); else if (e.key === 'e') setTurn(1); else if (e.key === 'h') honk(); else if (e.key === 'b') bombGame(); else if (e.key === 'c') camNext(); });
 
 /* ================= শুরু, থামা, শেষ ================= */
 function start() {
@@ -1141,7 +1234,7 @@ function start() {
   say(pick(L.start), true, 'M2');
   setTimeout(() => S && !S.over && !demo && say('অফিসের রাস্তা ম্যাপে হলুদ দাগে দেখানো আছে', false, 'F1'), 3200);
 }
-function pause() { if (!running || !S || S.over || demo) return; running = false; engine(0); $('pauseO').hidden = false; }
+function pause() { if (!running || !S || S.over || demo) return; running = false; engine(0); ambience(false); turnUI(); $('pauseO').hidden = false; }
 function resume() { if (!S || S.over || $('pauseO').hidden) return; $('pauseO').hidden = true; running = true; last = performance.now(); raf = requestAnimationFrame(loop); }
 $('startBtn').onclick = start; $('againBtn').onclick = start;
 $('pauseBtn').onclick = () => running ? pause() : resume();
@@ -1151,7 +1244,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) { pau
 
 let best = store.get('kh-jam-best', 0);
 function endGame(why) {
-  if (S.over) return; S.over = true; running = false; engine(0); ['ctrl', 'spd', 'map', 'nav', 'talk', 'sub', 'street'].forEach(id => $(id).hidden = true); talkT = 0; S.p.brake = false;
+  if (S.over) return; S.over = true; running = false; engine(0); ['ctrl', 'spd', 'map', 'nav', 'talk', 'sub', 'street', 'tL', 'tR'].forEach(id => $(id).hidden = true); ambience(false); tuiKey = ''; talkT = 0; S.p.brake = false;
   const reached = why === 'office', left = Math.max(0, Math.round(CLOCK_SEC - S.clock));
   if (reached) S.score += 300 + left * 4; // অফিসে পৌঁছানোর বোনাস
   news(reached ? 'office' : why === 'time' ? 'late' : 'crash');
