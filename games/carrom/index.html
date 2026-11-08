@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2a1a10">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>ক্যারম · খেলাঘর</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<style>
+/* ক্যারম: পাড়ার ক্লাবঘরের রাত — কাঠের বোর্ড, হলুদ বাল্ব। উপরে স্কোর, মাঝে ৩ডি বোর্ড, নিচে স্ট্রাইকার সরানোর স্লাইডার। */
+:root{--bg:#1e130b;--panel:#2d1d12;--line:#5a3d26;--fg:#fff6e8;--muted:#d4b896;--accent:#ffd23f;--me:#f3e5c4;--op:#3a2a1f;--queen:#e0243c;
+  --display:'Baloo Da 2','Noto Sans Bengali',system-ui,sans-serif;--body:'Noto Sans Bengali','Hind Siliguri',system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+.app{position:fixed;inset:0;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.hud{display:flex;align-items:center;gap:8px;padding:8px max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px));background:linear-gradient(180deg,#33200f,#1e130b);z-index:2}
+.back,.hb{color:var(--fg);display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.08);border:0;cursor:pointer;flex:none}
+.back svg{width:20px;height:20px}.hb svg{width:18px;height:18px}.hb.off{opacity:.4}
+.pl{flex:1;display:flex;align-items:center;gap:8px;padding:4px 10px;border-radius:14px;background:rgba(255,255,255,.05);border:2px solid transparent;transition:border-color .3s,background .3s;min-width:0}
+.pl.on{border-color:var(--accent);background:rgba(255,210,63,.12)}
+.pl.r{flex-direction:row-reverse;text-align:right}
+.pl i{width:22px;height:22px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 3px rgba(0,0,0,.18),0 2px 3px rgba(0,0,0,.4)}
+.pl div{min-width:0;line-height:1.1}
+.pl b{display:block;font-family:var(--display);font-size:1.25rem}
+.pl small{display:block;font-size:.66rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl .q{color:var(--queen);font-size:.8rem}
+.stage{position:relative;flex:1;min-height:0}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.com{position:absolute;left:10px;right:10px;top:8px;z-index:3;text-align:center;font-weight:700;font-size:.85rem;color:#fff3d6;text-shadow:0 2px 4px rgba(0,0,0,.7);pointer-events:none}
+.say{position:absolute;left:50%;top:40%;transform:translateX(-50%);z-index:3;font-family:var(--display);font-weight:800;font-size:clamp(1.6rem,8vw,2.8rem);white-space:nowrap;text-shadow:0 4px 0 rgba(0,0,0,.45),0 0 24px rgba(0,0,0,.6);pointer-events:none;animation:sIn .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes sIn{from{transform:translateX(-50%) scale(.3);opacity:0}}
+.chost{position:absolute;left:max(10px,env(safe-area-inset-left,0px));bottom:10px;z-index:3}
+.ctl{padding:8px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:linear-gradient(0deg,#33200f,#1e130b);display:flex;flex-direction:column;gap:6px;z-index:2}
+.hint{text-align:center;font-weight:700;font-size:.85rem;color:var(--muted);min-height:1.3em}
+.slide{display:flex;align-items:center;gap:10px}
+.slide button{width:44px;height:44px;border-radius:14px;border:0;background:rgba(255,255,255,.1);color:var(--fg);font-size:1.2rem;cursor:pointer;flex:none}
+.slide button:active{background:var(--accent);color:#2a1a10}
+input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:14px;border-radius:99px;background:linear-gradient(90deg,#6b4a2c,#a8784a,#6b4a2c);outline:none;box-shadow:inset 0 2px 4px rgba(0,0,0,.5)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff,#dfe8f3 60%,#9fb3cc);border:3px solid #2f6fd6;box-shadow:0 3px 6px rgba(0,0,0,.5);cursor:grab}
+input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;background:#e9eef5;border:3px solid #2f6fd6}
+input[type=range]:disabled{opacity:.4}
+.over{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:16px;background:rgba(20,10,4,.74);backdrop-filter:blur(2px)}
+.card{width:100%;max-width:390px;background:linear-gradient(180deg,#4a2f1a,#2d1d12);border:1px solid var(--line);border-radius:24px;padding:20px 18px;display:flex;flex-direction:column;gap:12px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5);max-height:100%;overflow:auto}
+.card h1{font-family:var(--display);font-size:2.3rem;margin:0;line-height:1.05;color:var(--accent)}
+.card h2{font-family:var(--display);font-size:1.8rem;margin:0;line-height:1.1}
+.card p{margin:0;color:var(--muted);font-size:.9rem}
+.story{color:var(--fg)!important;font-weight:600}
+.rules{text-align:left;display:flex;flex-direction:column;gap:4px;font-size:.84rem;color:var(--muted);background:rgba(0,0,0,.2);border-radius:14px;padding:10px 12px}
+.rules b{color:var(--fg)}
+.lvl{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.lvl button{border:0;border-radius:14px;padding:10px 4px;font:800 1rem var(--display);color:#2a1a10;cursor:pointer;background:linear-gradient(180deg,#ffe9a8,#f5c451);box-shadow:0 4px 0 #a86f12}
+.lvl button small{display:block;font:600 .66rem var(--body);opacity:.75}
+.lvl button:nth-child(2){background:linear-gradient(180deg,#ffc89a,#f08a3c);box-shadow:0 4px 0 #9a4a10}
+.lvl button:nth-child(3){background:linear-gradient(180deg,#ff9a9a,#e04848);box-shadow:0 4px 0 #8a1c1c;color:#fff}
+.lvl button:active{transform:translateY(3px)}
+.gbtn{border:0;border-radius:16px;padding:13px 20px;font-family:var(--display);font-size:1.2rem;font-weight:800;color:#fff;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#5ee28a,#22c55e 55%,#16a34a);box-shadow:0 5px 0 #15803d,inset 0 2px 0 rgba(255,255,255,.4)}
+.gbtn.ghost{background:rgba(255,255,255,.08);box-shadow:0 4px 0 rgba(0,0,0,.3);font-size:1rem}
+.acts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats div{background:rgba(255,255,255,.06);border-radius:14px;padding:8px}
+.stats b{display:block;font-family:var(--display);font-size:1.4rem;line-height:1.1}
+.stats span{font-size:.72rem;color:var(--muted)}
+.title{display:inline-block;align-self:center;background:linear-gradient(135deg,#ffe27a,#ffb627);color:#3a2200;border-radius:999px;padding:3px 14px;font-weight:800}
+.lb{display:flex;flex-direction:column;gap:4px;text-align:left}
+.lb h3{margin:4px 0 2px;font-size:.9rem;color:var(--muted);font-weight:700;text-align:center}
+.lb div{display:grid;grid-template-columns:24px 1fr auto;gap:8px;background:rgba(255,255,255,.05);border-radius:10px;padding:5px 10px;font-size:.88rem}
+.lb div.me{background:rgba(255,210,63,.18)}
+.lb em{font-style:normal;color:var(--muted);font-weight:700}
+.small{font-size:.75rem!important}
+.tip{background:rgba(54,209,196,.14);border:1px solid rgba(54,209,196,.4);border-radius:12px;padding:8px 10px;text-align:left;font-size:.82rem!important;line-height:1.45;color:var(--fg)!important}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="pl on" id="pMe"><i style="background:radial-gradient(circle at 40% 35%,#fffaf0,#e8d4a8)"></i><div><b id="sMe">০/৯</b><small>আপনি (সাদা) <span class="q" id="qMe"></span></small></div></div>
+    <div class="pl r" id="pOp"><i style="background:radial-gradient(circle at 40% 35%,#6a5040,#24170f)"></i><div><b id="sOp">০/৯</b><small id="opName">বড় ভাই (কালো) <span class="q" id="qOp"></span></small></div></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas id="cv"></canvas>
+    <div class="com" id="com"></div>
+    <div class="say" id="say" hidden></div>
+    <div class="chost" id="chatHost"></div>
+
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>ক্যারম</h1>
+        <p class="story">পাড়ার ক্লাবঘর, মাথার উপর হলুদ বাল্ব, বোর্ডে পাউডার ছিটানো। আজকে ক্লাবের বড় ভাইকে হারাইতে পারলে চা-সিঙারা ফ্রি!</p>
+        <div class="rules">
+          <div>👇 নিচের <b>স্লাইডার</b> দিয়ে স্ট্রাইকার ডানে-বামে বসান</div>
+          <div>🎯 বোর্ডের যেকোনো জায়গায় আঙুল রেখে <b>পেছনে টানুন</b>, তারপর ছাড়ুন। যত টানবেন তত জোরে</div>
+          <div>⚪ আপনার গুটি <b>সাদা</b>, নিজের গুটি পকেটে ফেললে আবার চাল পাবেন</div>
+          <div>🔴 <b>রানী</b> তুললে পরের চালে নিজের একটা গুটি ফেলে <b>কভার</b> দিতে হবে</div>
+          <div>❌ স্ট্রাইকার পকেটে পড়লে <b>ফাউল</b>, একটা গুটি ফেরত যাবে</div>
+        </div>
+        <p>প্রতিপক্ষ বেছে নিন:</p>
+        <div class="lvl">
+          <button data-lv="0">পাড়ার ছোটভাই<small>সহজ</small></button>
+          <button data-lv="1">ক্লাবের বড়ভাই<small>মাঝারি</small></button>
+          <button data-lv="2">ক্যারম চাচা<small>কঠিন</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+      </div>
+    </div>
+
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">খেলা শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eG">০</b><span>আপনার গুটি</span></div><div><b id="eQ">-</b><span>রানী</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার খেলি</button><button class="gbtn ghost" id="lvBtn">প্রতিপক্ষ বদলাই</button><button class="gbtn ghost" id="shareBtn">কপি করে শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+
+    <div class="over" id="gate" hidden>
+      <div class="card">
+        <div style="font-size:2.4rem;line-height:1">🎯</div>
+        <h2 id="gateT">আগে লগইন করুন</h2>
+        <p id="gateP">ক্লাবঘরে ঢুকতে মেম্বারশিপ লাগে! হাবে গিয়ে লগইন করে আসেন।</p>
+        <a class="gbtn" href="/" id="gateA">হাবে গিয়ে লগইন করুন</a>
+      </div>
+    </div>
+  </div>
+  <div class="ctl">
+    <div class="hint" id="hint">স্ট্রাইকার বসান, তারপর বোর্ডে টেনে ছাড়ুন</div>
+    <div class="slide"><button id="sL" aria-label="বামে">◀</button><input type="range" id="pos" min="-100" max="100" value="0" aria-label="স্ট্রাইকারের জায়গা"><button id="sR" aria-label="ডানে">▶</button></div>
+  </div>
+</div>
+
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { firebaseConfig, ADMIN_EMAILS } from "/js/firebase-config.js";
+import { attachGameVideos } from "/js/videos.js";
+
+const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
+attachGameVideos(cb => onSnapshot(doc(db, 'config', 'videos'), d => cb(d.exists() ? d.data() : {}), () => {}));
+const $ = id => document.getElementById(id);
+const bn = n => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const rnd = (a, b) => a + Math.random() * (b - a);
+const store = { get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+const GAME = 'carrom';
+
+/* ================= শব্দ ================= */
+let sndOn = store.get('kh-sfx', true), ac = null, lastClick = 0;
+function audio() { if (!ac) { const A = window.AudioContext || window.webkitAudioContext; if (!A) return null; ac = new A(); } if (ac.state === 'suspended') ac.resume(); return ac; }
+function tone(fr, t, d, type, v, to) { const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(fr, t); if (to) o.frequency.exponentialRampToValueAtTime(to, t + d); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .005); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + d + .02); }
+function noise(t, d, v, fr, type) { const n = Math.max(1, Math.floor(ac.sampleRate * d)), b = ac.createBuffer(1, n, ac.sampleRate), x = b.getChannelData(0); for (let i = 0; i < n; i++) x[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2); const s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain(); fl.type = type || 'lowpass'; fl.frequency.value = fr; s.buffer = b; g.gain.value = v; s.connect(fl); fl.connect(g); g.connect(ac.destination); s.start(t); }
+const SFX = {
+  hit(v) { const t = ac.currentTime; if (t - lastClick < .03) return; lastClick = t; v = Math.min(1, v); tone(1800 + Math.random() * 600, t, .05, 'triangle', .05 + v * .35); noise(t, .03, v * .5, 4000, 'highpass'); },
+  wall(v) { const t = ac.currentTime; if (t - lastClick < .03) return; lastClick = t; v = Math.min(1, v); tone(140, t, .12, 'sine', .1 + v * .5, 70); noise(t, .06, v * .4, 600); },
+  shot() { const t = ac.currentTime; tone(900, t, .04, 'square', .15); noise(t, .05, .5, 2500); },
+  pocket() { const t = ac.currentTime; tone(320, t, .25, 'sine', .4, 90); noise(t + .02, .15, .3, 500); tone(140, t + .12, .2, 'sine', .3, 60); },
+  foul() { const t = ac.currentTime; tone(220, t, .3, 'sawtooth', .12, 110); },
+  queen() { const t = ac.currentTime; [659, 784, 988].forEach((f, i) => tone(f, t + i * .09, .25, 'triangle', .25)); },
+  win() { const t = ac.currentTime; [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, t + i * .12, .3, 'triangle', .3)); },
+  lose() { const t = ac.currentTime; [392, 349, 311, 233].forEach((f, i) => tone(f, t + i * .2, .35, 'triangle', .25)); },
+  tick() { const t = ac.currentTime; tone(1200, t, .02, 'square', .04); }
+};
+function sfx(n, v) { if (!sndOn || !audio()) return; try { SFX[n](v); } catch (e) {} }
+$('snd').onclick = () => { sndOn = !sndOn; store.set('kh-sfx', sndOn); $('snd').classList.toggle('off', !sndOn); };
+$('snd').classList.toggle('off', !sndOn);
+
+/* ================= মাপ (সেন্টিমিটার, আসল ক্যারম বোর্ডের মতো) ================= */
+const HALF = 37, RC = 1.59, RS = 2.06, PR = 2.3, BASE_Z = 26.6, BASE_X = 23.5;
+const POCKETS = [[-HALF + 2.2, -HALF + 2.2], [HALF - 2.2, -HALF + 2.2], [-HALF + 2.2, HALF - 2.2], [HALF - 2.2, HALF - 2.2]];
+const MS = 15, MC = 5.5; // ভর (গ্রাম)
+const LV = [
+  { n: 'পাড়ার ছোটভাই', err: 10, smart: .3 },
+  { n: 'ক্লাবের বড়ভাই', err: 5, smart: .65 },
+  { n: 'ক্যারম চাচা', err: 2.2, smart: .95 }
+];
+const COM = {
+  mine: ['টুক! গুটি ঘরে!', 'একদম মাপা শট!', 'আঙুলে জাদু আছে মামা!', 'পকেটে! আরেকটা চাল আপনার!'],
+  queen: ['রানী তুললেন! এবার কভার দেন!', 'লাল গুটি গেল! এখন একটা সাদা ফেলেন!'],
+  cover: ['রানী কভার! পাড়ার ক্যারম কিং!', 'কভার হয়ে গেল! বড় ভাই চুপ!'],
+  qBack: ['কভার হইলো না, রানী মাঝখানে ফিরা গেল!'],
+  foul: ['স্ট্রাইকার পকেটে! ফাউল, একটা গুটি ফেরত!', 'আরে আরে, স্ট্রাইকারই পইড়া গেল!'],
+  miss: ['ধুর! কিছুই হইলো না', 'আঙুলে পাউডার বেশি হইছে মনে হয়!', 'এইটা কি শট নাকি আদর?'],
+  gift: ['ওদের গুটি ফালাইয়া দিলেন! দয়ার সাগর!', 'নিজের পায়ে কুড়াল! কালো গুটি গেল!'],
+  cpuMine: ['বড় ভাই ফালাইলো! চা-টা ঠান্ডা হইয়া যাইতেছে আপনার!', 'দেখছো? এইভাবে খেলতে হয়!', 'টুক! আরেকটা গেল ওদের!'],
+  cpuMiss: ['বড় ভাইয়ের শট মিস! হা হা!', 'আজকে ভাইয়ের আঙুল কাঁপতেছে!'],
+  cpuFoul: ['বড় ভাইয়ের স্ট্রাইকার পকেটে! ফাউল!'],
+  cpuGift: ['ভাই আপনার সাদা গুটি ফালাইয়া দিলো! ধন্যবাদ!']
+};
+
+/* ================= ৩ডি দৃশ্য ================= */
+let renderer = null;
+try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: true }); } catch (e) {}
+const LOW = /Android [4-7]|iPhone OS 1[0-2]_/.test(navigator.userAgent) || (navigator.hardwareConcurrency || 4) <= 2;
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(40, 1, 1, 600);
+scene.background = new THREE.Color('#1a100a');
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, LOW ? 1.25 : 2)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; renderer.shadowMap.enabled = !LOW; renderer.shadowMap.type = THREE.PCFSoftShadowMap; }
+scene.add(new THREE.HemisphereLight('#ffe9c8', '#3a2414', .7));
+const bulb = new THREE.PointLight('#ffd89a', 5200, 260, 1.8); bulb.position.set(-6, 70, 8); bulb.castShadow = true; bulb.shadow.mapSize.set(1024, 1024); bulb.shadow.bias = -.0005; scene.add(bulb);
+const fill = new THREE.DirectionalLight('#cfe0ff', .35); fill.position.set(30, 60, 60); scene.add(fill);
+function ctex(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
+// বোর্ডের উপরিভাগ
+const PX = 1024, cx = v => (v + HALF) / (2 * HALF) * PX;
+const boardTex = ctex(PX, PX, (x, w, h) => {
+  const g = x.createLinearGradient(0, 0, w, h); g.addColorStop(0, '#f4dcaa'); g.addColorStop(1, '#e9c88e'); x.fillStyle = g; x.fillRect(0, 0, w, h);
+  for (let i = 0; i < 220; i++) { x.strokeStyle = `rgba(150,100,50,${Math.random() * .08})`; x.lineWidth = 1 + Math.random() * 2; x.beginPath(); const y0 = Math.random() * h; x.moveTo(0, y0); for (let k = 0; k <= 10; k++) x.lineTo(k * w / 10, y0 + Math.sin(k + i) * 6); x.stroke(); }
+  const s = PX / (2 * HALF);
+  x.strokeStyle = '#1b1210'; x.lineCap = 'round';
+  // বেসলাইন: দুই লাইন, দুই মাথায় লাল বৃত্ত
+  const base = (side, rot) => { x.save(); x.translate(w / 2, h / 2); x.rotate(rot); x.lineWidth = 3; const z = BASE_Z * s, L = BASE_X * s, gap = RS * s;
+    x.beginPath(); x.moveTo(-L, z - gap); x.lineTo(L, z - gap); x.moveTo(-L, z + gap); x.lineTo(L, z + gap); x.stroke();
+    [-L, L].forEach(xx => { x.beginPath(); x.arc(xx, z, gap, 0, 7); x.stroke(); x.fillStyle = '#c0182c'; x.beginPath(); x.arc(xx, z, gap * .72, 0, 7); x.fill(); }); x.restore(); };
+  [0, Math.PI / 2, Math.PI, -Math.PI / 2].forEach(r => base(0, r));
+  // কোণার তীর
+  POCKETS.forEach(([px, pz]) => { const dx = -Math.sign(px), dz = -Math.sign(pz); x.lineWidth = 3; x.beginPath(); x.moveTo(cx(px + dx * 5.5), cx(pz + dz * 5.5)); x.lineTo(cx(px + dx * 17), cx(pz + dz * 17)); x.stroke();
+    x.beginPath(); x.arc(cx(px + dx * 17.7), cx(pz + dz * 17.7), 1.2 * s, 0, 7); x.stroke(); });
+  // মাঝের নকশা
+  x.lineWidth = 3; x.beginPath(); x.arc(w / 2, h / 2, 8.5 * s, 0, 7); x.stroke(); x.lineWidth = 2; x.beginPath(); x.arc(w / 2, h / 2, 1.6 * s, 0, 7); x.stroke();
+  x.save(); x.translate(w / 2, h / 2); for (let i = 0; i < 8; i++) { x.rotate(Math.PI / 4); x.fillStyle = i % 2 ? '#c0182c' : '#1b1210'; x.beginPath(); x.moveTo(0, -2 * s); x.lineTo(1.1 * s, -6 * s); x.lineTo(0, -8.3 * s); x.lineTo(-1.1 * s, -6 * s); x.fill(); } x.restore();
+  // পকেট
+  POCKETS.forEach(([px, pz]) => { const rg = x.createRadialGradient(cx(px), cx(pz), 0, cx(px), cx(pz), PR * s * 1.15); rg.addColorStop(0, '#000'); rg.addColorStop(.8, '#0d0806'); rg.addColorStop(1, 'rgba(60,35,20,.6)'); x.fillStyle = rg; x.beginPath(); x.arc(cx(px), cx(pz), PR * s * 1.15, 0, 7); x.fill(); });
+  // পাউডার
+  for (let i = 0; i < 2600; i++) { x.fillStyle = `rgba(255,255,255,${Math.random() * .22})`; const r = Math.random() * 30 * s, a = Math.random() * 7; x.fillRect(w / 2 + Math.cos(a) * r * (1 + Math.random()), h / 2 + Math.sin(a) * r * (1 + Math.random()), 2, 2); }
+});
+const surf = new THREE.Mesh(new THREE.PlaneGeometry(2 * HALF, 2 * HALF), new THREE.MeshStandardMaterial({ map: boardTex, roughness: .55, metalness: 0 })); surf.rotation.x = -Math.PI / 2; surf.receiveShadow = true; scene.add(surf);
+// ফ্রেম
+const woodTex = ctex(512, 64, (x, w, h) => { x.fillStyle = '#5a2e14'; x.fillRect(0, 0, w, h); for (let i = 0; i < 40; i++) { x.strokeStyle = `rgba(${30 + Math.random() * 40},${12 + Math.random() * 20},5,.5)`; x.lineWidth = 1 + Math.random() * 2; x.beginPath(); const y = Math.random() * h; x.moveTo(0, y); x.bezierCurveTo(w * .3, y + rnd(-6, 6), w * .6, y + rnd(-6, 6), w, y + rnd(-4, 4)); x.stroke(); } });
+const frameM = new THREE.MeshStandardMaterial({ map: woodTex, roughness: .35, metalness: .05 });
+const FW = 5.5, FH = 2.6;
+[[0, -HALF - FW / 2, 2 * HALF + 2 * FW, FW], [0, HALF + FW / 2, 2 * HALF + 2 * FW, FW], [-HALF - FW / 2, 0, FW, 2 * HALF], [HALF + FW / 2, 0, FW, 2 * HALF]].forEach(([x, z, w, l], i) => {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, FH, l), frameM); m.position.set(x, FH / 2 - .4, z); if (i > 1) m.rotation.y = 0; m.castShadow = true; m.receiveShadow = true; scene.add(m);
+});
+const under = new THREE.Mesh(new THREE.BoxGeometry(2 * HALF + 2 * FW, 3, 2 * HALF + 2 * FW), new THREE.MeshStandardMaterial({ color: '#3a1d0c', roughness: .6 })); under.position.y = -1.9; scene.add(under);
+// টেবিল আর ঘর
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshStandardMaterial({ color: '#2a1a10', roughness: .95, map: ctex(256, 256, (x, w, h) => { x.fillStyle = '#3b2a1c'; x.fillRect(0, 0, w, h); for (let i = 0; i < 16; i++) { x.fillStyle = i % 2 ? '#35251a' : '#402e20'; x.fillRect(0, i * 16, w, 15); } }) })); floor.rotation.x = -Math.PI / 2; floor.position.y = -40; floor.material.map.wrapS = floor.material.map.wrapT = THREE.RepeatWrapping; floor.material.map.repeat.set(6, 6); scene.add(floor);
+const legM = new THREE.MeshStandardMaterial({ color: '#2a160a', roughness: .6 });
+[[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => { const l = new THREE.Mesh(new THREE.BoxGeometry(4, 37, 4), legM); l.position.set(a * 36, -21.5, b * 36); scene.add(l); });
+// ঝুলন্ত বাল্ব
+const bulbMesh = new THREE.Mesh(new THREE.SphereGeometry(2.2, 16, 12), new THREE.MeshBasicMaterial({ color: '#fff1c4' })); bulbMesh.position.copy(bulb.position); 
+const wire = new THREE.Mesh(new THREE.CylinderGeometry(.15, .15, 60, 4), new THREE.MeshBasicMaterial({ color: '#111' })); wire.position.set(bulb.position.x, bulb.position.y + 31, bulb.position.z); 
+const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: ctex(128, 128, (x, w, h) => { const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(255,230,160,.9)'); g.addColorStop(1, 'rgba(255,200,100,0)'); x.fillStyle = g; x.fillRect(0, 0, w, h); }), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); glow.scale.set(26, 26, 1); 
+
+// গুটির টেক্সচার (খাঁজকাটা উপরিভাগ)
+function coinTop(c1, c2, ring) { return ctex(128, 128, (x, w, h) => { const g = x.createRadialGradient(54, 50, 4, 64, 64, 64); g.addColorStop(0, c1); g.addColorStop(1, c2); x.fillStyle = g; x.fillRect(0, 0, w, h); x.strokeStyle = ring; [44, 30, 16].forEach((r, i) => { x.lineWidth = 3 - i * .6; x.beginPath(); x.arc(64, 64, r, 0, 7); x.stroke(); }); }); }
+const coinGeo = new THREE.CylinderGeometry(RC, RC, .9, 36), strikerGeo = new THREE.CylinderGeometry(RS, RS, 1.1, 40);
+const MAT = {
+  w: [new THREE.MeshStandardMaterial({ color: '#efe0bd', roughness: .35 }), new THREE.MeshStandardMaterial({ map: coinTop('#fffaf0', '#e6d2a6', 'rgba(150,110,60,.45)'), roughness: .3 }), new THREE.MeshStandardMaterial({ color: '#d9c9a0' })],
+  b: [new THREE.MeshStandardMaterial({ color: '#2a1a12', roughness: .35 }), new THREE.MeshStandardMaterial({ map: coinTop('#5a4032', '#1f140d', 'rgba(255,220,180,.25)'), roughness: .3 }), new THREE.MeshStandardMaterial({ color: '#1a100a' })],
+  q: [new THREE.MeshStandardMaterial({ color: '#c0142c', roughness: .3 }), new THREE.MeshStandardMaterial({ map: coinTop('#ff5068', '#b0102a', 'rgba(255,230,200,.45)'), roughness: .25 }), new THREE.MeshStandardMaterial({ color: '#900' })],
+  s: [new THREE.MeshStandardMaterial({ color: '#dfe7f2', roughness: .2 }), new THREE.MeshStandardMaterial({ map: ctex(128, 128, (x, w, h) => { const g = x.createRadialGradient(54, 50, 4, 64, 64, 64); g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#cfdbea'); x.fillStyle = g; x.fillRect(0, 0, w, h); x.strokeStyle = '#2f6fd6'; x.lineWidth = 9; x.beginPath(); x.arc(64, 64, 48, 0, 7); x.stroke(); x.fillStyle = '#2f6fd6'; x.beginPath(); for (let k = 0; k < 10; k++) { const a = k * Math.PI / 5 - Math.PI / 2, r = k % 2 ? 9 : 22; x.lineTo(64 + Math.cos(a) * r, 64 + Math.sin(a) * r); } x.fill(); }), roughness: .2 }), new THREE.MeshStandardMaterial({ color: '#b8c6d8' })]
+};
+function mkPiece(kind) { const m = new THREE.Mesh(kind === 's' ? strikerGeo : coinGeo, MAT[kind]); m.castShadow = true; m.receiveShadow = true; scene.add(m); return m; }
+
+// লক্ষ্যের রেখা
+const aimMat = new THREE.LineDashedMaterial({ color: '#ffffff', dashSize: 1.2, gapSize: .8, transparent: true, opacity: .85 });
+const aimGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]);
+const aimLine = new THREE.Line(aimGeo, aimMat); aimLine.visible = false; scene.add(aimLine);
+const aim2 = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), new THREE.LineBasicMaterial({ color: '#ffd23f', transparent: true, opacity: .9 })); aim2.visible = false; scene.add(aim2);
+const ghost = new THREE.Mesh(new THREE.RingGeometry(RS - .3, RS, 32), new THREE.MeshBasicMaterial({ color: '#fff', transparent: true, opacity: .6, side: THREE.DoubleSide })); ghost.rotation.x = -Math.PI / 2; ghost.visible = false; scene.add(ghost);
+const powerRing = new THREE.Mesh(new THREE.RingGeometry(RS + .4, RS + 1.1, 40, 1, 0, .01), new THREE.MeshBasicMaterial({ color: '#ffd23f', side: THREE.DoubleSide, transparent: true })); powerRing.rotation.x = -Math.PI / 2; powerRing.visible = false; scene.add(powerRing);
+const badRing = new THREE.Mesh(new THREE.RingGeometry(RS + .2, RS + .7, 32), new THREE.MeshBasicMaterial({ color: '#ff3b3b', side: THREE.DoubleSide })); badRing.rotation.x = -Math.PI / 2; badRing.visible = false; scene.add(badRing);
+
+/* ================= খেলার অবস্থা ================= */
+let S = null, lv = 1, W = 0, H = 0, last = 0;
+function freeSpot(x, z, r) { for (let k = 0; k < 400; k++) { const a = k * 2.4, d = k === 0 ? 0 : 1 + Math.sqrt(k) * 1.4, px = x + Math.cos(a) * d, pz = z + Math.sin(a) * d; if (S.pcs.every(p => p.in === false || p.kind === 's' || Math.hypot(p.x - px, p.z - pz) > RC + r + .05)) return [px, pz]; } return [x, z]; }
+function newGame() {
+  if (S) S.pcs.forEach(p => scene.remove(p.m));
+  S = { pcs: [], turn: 'me', phase: 'place', got: { me: 0, op: 0 }, queen: null, qPend: null, shot: null, t: 0, over: false, shots: 0, fouls: 0, streak: 0, bestStreak: 0 };
+  const add = (kind, x, z) => { const p = { kind, x, z, vx: 0, vz: 0, r: kind === 's' ? RS : RC, mass: kind === 's' ? MS : MC, in: true, m: mkPiece(kind), drop: 0 }; p.m.position.set(x, kind === 's' ? .55 : .45, z); S.pcs.push(p); return p; };
+  add('q', 0, 0);
+  for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + Math.PI / 6; add(i % 2 ? 'b' : 'w', Math.cos(a) * 3.2, Math.sin(a) * 3.2); }
+  for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6, r = i % 2 ? 6.2 : 6.4; add(i % 2 ? 'w' : 'b', Math.cos(a) * r, Math.sin(a) * r); }
+  S.st = add('s', 0, BASE_Z);
+}
+const own = t => t === 'me' ? 'w' : 'b';
+const left = k => S.pcs.filter(p => p.kind === k && p.in).length;
+function hud() {
+  $('sMe').textContent = bn(9 - left('w')) + '/৯'; $('sOp').textContent = bn(9 - left('b')) + '/৯';
+  $('qMe').textContent = S.queen === 'me' ? '👑' : S.qPend === 'me' ? '(রানী?)' : ''; $('qOp').textContent = S.queen === 'op' ? '👑' : S.qPend === 'op' ? '(রানী?)' : '';
+  $('pMe').classList.toggle('on', S.turn === 'me'); $('pOp').classList.toggle('on', S.turn === 'op');
+  $('opName').firstChild.textContent = LV[lv].n + ' (কালো) ';
+}
+function shout(text, col) { const e = $('say'); e.textContent = text; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(shout.t); shout.t = setTimeout(() => e.hidden = true, 1300); }
+function com(k) { $('com').textContent = '🎙️ ' + pick(COM[k]); }
+
+/* ---------- স্ট্রাইকার বসানো ---------- */
+const stValid = () => S.pcs.every(p => !p.in || p.kind === 's' || Math.hypot(p.x - S.st.x, p.z - S.st.z) > RC + RS + .05);
+function placeStriker(frac) {
+  const z = S.turn === 'me' ? BASE_Z : -BASE_Z; S.st.x = frac * BASE_X; S.st.z = z; S.st.vx = S.st.vz = 0; S.st.in = true; S.st.drop = 0; S.st.m.visible = true; S.st.m.scale.setScalar(1);
+  S.st.m.position.set(S.st.x, .55, S.st.z); badRing.visible = S.turn === 'me' && !stValid(); badRing.position.set(S.st.x, .08, S.st.z);
+}
+$('pos').addEventListener('input', () => { if (S && S.turn === 'me' && S.phase === 'place') { placeStriker($('pos').value / 100); sfx('tick'); } });
+const nudge = d => { if (!S || S.turn !== 'me' || S.phase !== 'place') return; $('pos').value = Math.max(-100, Math.min(100, +$('pos').value + d)); placeStriker($('pos').value / 100); sfx('tick'); };
+let hold = null; [['sL', -2], ['sR', 2]].forEach(([id, d]) => { const b = $(id); b.addEventListener('pointerdown', e => { e.preventDefault(); nudge(d * 2); clearInterval(hold); hold = setInterval(() => nudge(d), 40); }); ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, () => clearInterval(hold))); });
+
+/* ---------- লক্ষ্য ও শট ---------- */
+const ray = new THREE.Raycaster(), plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -.5), tmp = new THREE.Vector3();
+function boardPt(e) { const r = $('cv').getBoundingClientRect(); ray.setFromCamera({ x: (e.clientX - r.left) / r.width * 2 - 1, y: -(e.clientY - r.top) / r.height * 2 + 1 }, cam); return ray.ray.intersectPlane(plane, tmp) ? { x: tmp.x, z: tmp.z } : null; }
+let drag = null;
+function aimFrom(dx, dz) { const L = Math.hypot(dx, dz); if (L < .5) return null; let ux = dx / L, uz = dz / L; if (S.turn === 'me' && uz > .15) { uz = .15; const n = Math.hypot(ux, uz); ux /= n; uz /= n; } return { ux, uz, pw: Math.min(1, L / 22) }; }
+// রশ্মি ধরে প্রথম ধাক্কা কোথায় লাগবে
+function trace(x, z, ux, uz, r) {
+  let best = { t: 200, p: null };
+  for (const p of S.pcs) { if (!p.in || p.kind === 's') continue; const rr = r + p.r, fx = p.x - x, fz = p.z - z, b = fx * ux + fz * uz, c = fx * fx + fz * fz - rr * rr; if (b <= 0) continue; const disc = b * b - c; if (disc < 0) continue; const t = b - Math.sqrt(disc); if (t > 0 && t < best.t) best = { t, p }; }
+  const lim = HALF - r; [[ux, lim - x], [-ux, lim + x], [uz, lim - z], [-uz, lim + z]].forEach(([u, d]) => { if (u > 1e-4) { const t = d / u; if (t < best.t) best = { t, p: null, wall: true }; } });
+  return best;
+}
+function drawAim(a) {
+  if (!a) { aimLine.visible = aim2.visible = ghost.visible = powerRing.visible = false; return; }
+  const s = S.st, h = trace(s.x, s.z, a.ux, a.uz, RS), ex = s.x + a.ux * h.t, ez = s.z + a.uz * h.t;
+  const pts = [new THREE.Vector3(s.x, .6, s.z), new THREE.Vector3(ex, .6, ez)];
+  if (h.wall) { const lim = HALF - RS; let rx = a.ux, rz = a.uz; if (Math.abs(Math.abs(ex) - lim) < .05) rx = -rx; else rz = -rz; const t2 = Math.min(18, trace(ex, ez, rx, rz, RS).t); pts.push(new THREE.Vector3(ex + rx * t2, .6, ez + rz * t2)); } else pts.push(pts[1].clone());
+  aimLine.geometry.setFromPoints(pts); aimLine.computeLineDistances(); aimLine.visible = true;
+  ghost.visible = !!h.p; if (h.p) { ghost.position.set(ex, .62, ez); const nx = h.p.x - ex, nz = h.p.z - ez, nl = Math.hypot(nx, nz); aim2.geometry.setFromPoints([new THREE.Vector3(h.p.x, .62, h.p.z), new THREE.Vector3(h.p.x + nx / nl * 9 * a.pw + nx / nl * 3, .62, h.p.z + nz / nl * 9 * a.pw + nz / nl * 3)]); aim2.visible = true; } else aim2.visible = false;
+  powerRing.visible = true; powerRing.position.set(s.x, .65, s.z); powerRing.geometry.dispose(); powerRing.geometry = new THREE.RingGeometry(RS + .4, RS + 1.1, 40, 1, Math.PI / 2, Math.max(.01, a.pw * Math.PI * 2)); powerRing.material.color.setHSL(.15 - a.pw * .15, 1, .55);
+}
+$('stage').addEventListener('pointerdown', e => {
+  if (e.target.closest('.over') || !S || S.over || S.turn !== 'me' || S.phase !== 'place') return;
+  if (!stValid()) { $('hint').textContent = '❗ স্ট্রাইকার গুটির উপরে, একটু সরিয়ে বসান'; return; }
+  const p = boardPt(e); if (!p) return; drag = { x: p.x, z: p.z, a: null }; audio(); try { $('stage').setPointerCapture(e.pointerId); } catch (er) {}
+});
+$('stage').addEventListener('pointermove', e => { if (!drag) return; const p = boardPt(e); if (!p) return; drag.a = aimFrom(drag.x - p.x, drag.z - p.z); drawAim(drag.a); $('hint').textContent = drag.a ? 'জোর: ' + bn(Math.round(drag.a.pw * 100)) + '% · ছাড়লেই শট' : 'পেছনে টানুন'; });
+$('stage').addEventListener('pointerup', () => { if (!drag) return; const a = drag.a; drag = null; drawAim(null); if (a && a.pw > .06) shoot(a.ux, a.uz, a.pw); else $('hint').textContent = 'আরেকটু বেশি টানুন, তারপর ছাড়ুন'; });
+$('stage').addEventListener('pointercancel', () => { drag = null; drawAim(null); });
+function shoot(ux, uz, pw) {
+  const v = 30 + pw * 230; S.st.vx = ux * v; S.st.vz = uz * v; S.phase = 'move'; S.shot = { pocketed: [], foul: false }; S.shots += S.turn === 'me' ? 1 : 0;
+  badRing.visible = false; $('pos').disabled = true; $('hint').textContent = ''; sfx('shot');
+}
+
+/* ---------- ফিজিক্স ---------- */
+function physics(dt) {
+  const P = S.pcs.filter(p => p.in);
+  for (const p of P) { const sp = Math.hypot(p.vx, p.vz); if (sp > 0) { const ns = Math.max(0, sp - (38 + sp * .55) * dt); p.vx *= ns / sp; p.vz *= ns / sp; } p.x += p.vx * dt; p.z += p.vz * dt; }
+  for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) {
+    const a = P[i], b = P[j], dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz), rr = a.r + b.r; if (d >= rr || d === 0) continue;
+    const nx = dx / d, nz = dz / d, ov = rr - d, ta = b.mass / (a.mass + b.mass); a.x -= nx * ov * ta; a.z -= nz * ov * ta; b.x += nx * ov * (1 - ta); b.z += nz * ov * (1 - ta);
+    const rv = (b.vx - a.vx) * nx + (b.vz - a.vz) * nz; if (rv >= 0) continue; const e = .92, jj = -(1 + e) * rv / (1 / a.mass + 1 / b.mass);
+    a.vx -= jj / a.mass * nx; a.vz -= jj / a.mass * nz; b.vx += jj / b.mass * nx; b.vz += jj / b.mass * nz; if (-rv > 8) sfx('hit', -rv / 160);
+  }
+  for (const p of P) {
+    for (const [px, pz] of POCKETS) if (Math.hypot(p.x - px, p.z - pz) < PR) { p.in = false; p.drop = .001; p.px = px; p.pz = pz; p.vx = p.vz = 0; S.shot.pocketed.push(p); sfx('pocket'); break; }
+    if (!p.in) continue; const lim = HALF - p.r;
+    if (p.x < -lim) { p.x = -lim; if (p.vx < 0) { if (-p.vx > 10) sfx('wall', -p.vx / 200); p.vx = -p.vx * .72; } } if (p.x > lim) { p.x = lim; if (p.vx > 0) { if (p.vx > 10) sfx('wall', p.vx / 200); p.vx = -p.vx * .72; } }
+    if (p.z < -lim) { p.z = -lim; if (p.vz < 0) { if (-p.vz > 10) sfx('wall', -p.vz / 200); p.vz = -p.vz * .72; } } if (p.z > lim) { p.z = lim; if (p.vz > 0) { if (p.vz > 10) sfx('wall', p.vz / 200); p.vz = -p.vz * .72; } }
+  }
+}
+const moving = () => S.pcs.some(p => p.in && Math.hypot(p.vx, p.vz) > .6);
+
+/* ---------- নিয়ম ---------- */
+function respawn(p) { const [x, z] = freeSpot(0, 0, RC); p.in = true; p.drop = 0; p.x = x; p.z = z; p.vx = p.vz = 0; p.m.visible = true; p.m.scale.setScalar(1); p.m.position.set(x, .45, z); }
+function resolve() {
+  const t = S.turn, o = t === 'me' ? 'op' : 'me', mk = own(t), ok = own(o), pk = S.shot.pocketed;
+  const mine = pk.filter(p => p.kind === mk), theirs = pk.filter(p => p.kind === ok), q = pk.find(p => p.kind === 'q'), foul = pk.some(p => p.kind === 's');
+  let cont = false, said = false;
+  if (foul) {
+    S.fouls += t === 'me' ? 1 : 0; sfx('foul'); shout('ফাউল!', '#ff7070'); com(t === 'me' ? 'foul' : 'cpuFoul'); said = true;
+    mine.forEach(respawn); if (q) respawn(q); if (S.qPend === t) { const qq = S.pcs.find(p => p.kind === 'q'); if (!qq.in) respawn(qq); S.qPend = null; }
+    const back = S.pcs.find(p => p.kind === mk && !p.in); if (back) respawn(back);
+    S.streak = 0;
+  } else {
+    if (q) { if (mine.length) { S.queen = t; S.qPend = null; sfx('queen'); shout('রানী কভার! 👑', '#ff8a9a'); com('cover'); said = true; } else { S.qPend = t; sfx('queen'); shout('রানী!', '#ff8a9a'); com('queen'); said = true; } cont = true; }
+    else if (S.qPend === t) { if (mine.length) { S.queen = t; S.qPend = null; sfx('queen'); shout('রানী কভার! 👑', '#ff8a9a'); com('cover'); said = true; } else { respawn(S.pcs.find(p => p.kind === 'q')); S.qPend = null; com('qBack'); said = true; } }
+    if (mine.length) { cont = true; if (!said) { shout(t === 'me' ? 'টুক! ✔' : 'ওদের গুটি গেল', t === 'me' ? '#9dffb0' : '#ffc27a'); com(t === 'me' ? 'mine' : 'cpuMine'); said = true; } if (t === 'me') { S.streak += mine.length; S.bestStreak = Math.max(S.bestStreak, S.streak); } }
+    else if (t === 'me') S.streak = 0;
+    if (theirs.length && !said) { com(t === 'me' ? 'gift' : 'cpuGift'); said = true; }
+    if (!said) com(t === 'me' ? 'miss' : 'cpuMiss');
+    // রানী বোর্ডে থাকতে শেষ গুটি ফেলা যাবে না
+    const qOn = S.pcs.find(p => p.kind === 'q').in || S.qPend;
+    for (const k of ['w', 'b']) if (left(k) === 0 && qOn && !S.queen) { const c = S.pcs.find(p => p.kind === k && !p.in); respawn(c); if (k === mk) cont = false; $('com').textContent = '🎙️ আগে রানী তুলতে হবে! শেষ গুটি ফেরত গেল।'; }
+  }
+  hud();
+  if (left('w') === 0 || left('b') === 0) return endGame(left('w') === 0);
+  if (!cont) S.turn = o;
+  startTurn();
+}
+function startTurn() {
+  S.phase = S.turn === 'me' ? 'place' : 'think'; hud();
+  if (S.turn === 'me') { $('pos').disabled = false; $('pos').value = 0; placeStriker(0); if (!stValid()) { for (const f of [.3, -.3, .6, -.6, .9, -.9]) { $('pos').value = f * 100; placeStriker(f); if (stValid()) break; } } $('hint').textContent = 'আপনার চাল · স্ট্রাইকার বসান, বোর্ডে টেনে ছাড়ুন'; }
+  else { $('pos').disabled = true; $('hint').textContent = LV[lv].n + ' ভাবতেছে…'; S.st.m.visible = true; placeStriker(0); S.cpu = cpuPlan(); S.thinkT = rnd(.9, 1.6); }
+}
+
+/* ---------- কম্পিউটার ---------- */
+function clear(x1, z1, x2, z2, rad, skip) { const dx = x2 - x1, dz = z2 - z1, L = Math.hypot(dx, dz) || 1; for (const p of S.pcs) { if (!p.in || p.kind === 's' || skip.includes(p)) continue; const t = Math.max(0, Math.min(1, ((p.x - x1) * dx + (p.z - z1) * dz) / (L * L))); if (Math.hypot(x1 + dx * t - p.x, z1 + dz * t - p.z) < rad + p.r) return false; } return true; }
+function cpuPlan() {
+  const z = -BASE_Z, L = LV[lv], mk = 'b', targets = S.pcs.filter(p => p.in && (p.kind === mk || (p.kind === 'q' && !S.queen && left(mk) < 9)));
+  if (S.qPend === 'op') targets.splice(0, targets.length, ...S.pcs.filter(p => p.in && p.kind === mk));
+  let best = null;
+  for (const c of targets) for (const [px, pz] of POCKETS) {
+    const dx = px - c.x, dz = pz - c.z, d2 = Math.hypot(dx, dz), ux = dx / d2, uz = dz / d2, gx = c.x - ux * (RC + RS), gz = c.z - uz * (RC + RS);
+    if (!clear(c.x, c.z, px, pz, RC, [c])) continue;
+    for (let i = -10; i <= 10; i++) {
+      const sx = i / 10 * BASE_X; if (!S.pcs.every(p => !p.in || p.kind === 's' || Math.hypot(p.x - sx, p.z - z) > RC + RS + .1)) continue;
+      const vx = gx - sx, vz = gz - z, d1 = Math.hypot(vx, vz); if (vz <= 0 && d1 > 2) continue;
+      const cut = Math.acos(Math.max(-1, Math.min(1, (vx * ux + vz * uz) / d1))); if (cut > 1.25) continue;
+      if (!clear(sx, z, gx, gz, RS, [c])) continue;
+      const sc = cut * 30 + d1 * .25 + d2 * .35 + (c.kind === 'q' ? -6 : 0) + Math.random() * (1 - L.smart) * 40;
+      if (!best || sc < best.sc) best = { sc, sx, ux: vx / d1, uz: vz / d1, pw: Math.min(1, (14 + d1 * .55 + d2 * 1.15 / Math.max(.35, Math.cos(cut))) / 72) };
+    }
+  }
+  if (!best) { // কিছু না পেলে জোরে ভিড়ের দিকে
+    const tg = pick(S.pcs.filter(p => p.in && p.kind !== 's')) || { x: 0, z: 0 }; const sx = Math.max(-BASE_X, Math.min(BASE_X, tg.x + rnd(-6, 6))); const vx = tg.x - sx, vz = tg.z - z, d = Math.hypot(vx, vz) || 1; best = { sx, ux: vx / d, uz: vz / d, pw: rnd(.55, .85) };
+  }
+  const er = (Math.random() - .5) * 2 * L.err * Math.PI / 180, cs = Math.cos(er), sn = Math.sin(er); best = { ...best, ux: best.ux * cs - best.uz * sn, uz: best.ux * sn + best.uz * cs, pw: Math.min(1, best.pw * rnd(1 - L.err * .015, 1 + L.err * .02)) };
+  return best;
+}
+
+/* ---------- লুপ ---------- */
+function frame(dt) {
+  if (S.phase === 'move') { const n = 8; for (let i = 0; i < n; i++) physics(dt / n); if (!moving()) { S.pcs.forEach(p => { p.vx = p.vz = 0; }); S.phase = 'settle'; S.settleT = .45; } }
+  else if (S.phase === 'settle') { S.settleT -= dt; if (S.settleT <= 0) resolve(); }
+  else if (S.phase === 'think') { // স্ট্রাইকার ধীরে জায়গামতো, তারপর শট
+    S.thinkT -= dt; const tx = S.cpu.sx; S.st.x += (tx - S.st.x) * Math.min(1, dt * 4); S.st.z = -BASE_Z; S.st.m.position.set(S.st.x, .55, S.st.z);
+    if (S.thinkT < .5) drawAim({ ux: S.cpu.ux, uz: S.cpu.uz, pw: S.cpu.pw * Math.min(1, (.5 - S.thinkT) * 3) });
+    if (S.thinkT <= 0) { drawAim(null); S.st.x = tx; shoot(S.cpu.ux, S.cpu.uz, S.cpu.pw); }
+  }
+  for (const p of S.pcs) {
+    if (p.in) { p.m.position.x = p.x; p.m.position.z = p.z; const sp = Math.hypot(p.vx, p.vz); if (sp > .5) p.m.rotation.y += sp * .002; }
+    else if (p.drop > 0 && p.drop < 1) { p.drop = Math.min(1, p.drop + dt * 3); p.m.position.set(p.x + (p.px - p.x) * p.drop, (p.kind === 's' ? .55 : .45) - p.drop * 2.5, p.z + (p.pz - p.z) * p.drop); p.m.scale.setScalar(1 - p.drop * .5); if (p.drop >= 1) p.m.visible = false; }
+  }
+}
+function fit() {
+  const mine = !S || S.turn === 'me' || true; const tilt = W / H < .75 ? .5 : .6;
+  const dir = new THREE.Vector3(0, Math.cos(tilt), Math.sin(tilt));
+  cam.aspect = W / H; cam.fov = 40; cam.updateProjectionMatrix();
+  const corners = [[-HALF - FW, -HALF - FW], [HALF + FW, -HALF - FW], [-HALF - FW, HALF + FW], [HALF + FW, HALF + FW]].map(([x, z]) => new THREE.Vector3(x, 1, z));
+  let lo = 40, hi = 600;
+  for (let i = 0; i < 30; i++) { const d = (lo + hi) / 2; cam.position.copy(dir).multiplyScalar(d); cam.position.z += 2; cam.lookAt(0, 0, 2); cam.updateMatrixWorld(); const okk = corners.every(c => { const v = c.clone().project(cam); return Math.abs(v.x) < 1.07 && v.y < .86 && v.y > -.92; }); if (okk) hi = d; else lo = d; }
+  cam.position.copy(dir).multiplyScalar(hi); cam.position.z += 2; cam.lookAt(0, 0, 2);
+}
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); fit(); }
+addEventListener('resize', resize);
+function loop(ts) { const dt = Math.min(.04, (ts - last) / 1000 || 0); last = ts; if (S && !S.over) frame(dt); if (renderer) renderer.render(scene, cam); requestAnimationFrame(loop); }
+
+function endGame(meWon) {
+  S.over = true; S.phase = 'end'; $('pos').disabled = true; drawAim(null);
+  const mine = 9 - left('w'), oppLeft = left('b'), sc = (meWon ? 300 + oppLeft * 30 : 0) + mine * 25 + (S.queen === 'me' ? 100 : 0) + S.bestStreak * 10 - S.fouls * 10 + lv * (meWon ? 100 : 0);
+  const score = Math.max(10, sc);
+  $('endT').textContent = meWon ? 'আপনি জিতছেন! 🏆' : 'হেরে গেলেন';
+  $('endTitle').textContent = meWon ? (lv === 2 ? 'পাড়ার ক্যারম সম্রাট' : 'ক্লাবঘরের চ্যাম্পিয়ন') : mine >= 6 ? 'জোর লড়াকু' : 'চায়ের বিল আপনার';
+  $('endLine').textContent = meWon ? pick(['চা-সিঙারা আজকে ফ্রি! ' + LV[lv].n + ' মুখ লুকাইতেছে!', 'ক্লাবঘরে আজ থেকে আপনার নামে বোর্ড!']) : pick([LV[lv].n + ' হাসতেছে, চায়ের বিলটা দিয়া দেন!', 'আঙুলে আরেকটু পাউডার দিয়া আবার আসেন!']);
+  $('eS').textContent = bn(score); $('eG').textContent = bn(mine) + '/৯'; $('eQ').textContent = S.queen === 'me' ? '👑' : S.queen === 'op' ? 'ওদের' : '-';
+  const best = store.get('kh-carrom-best', 0); if (score > best) store.set('kh-carrom-best', score);
+  $('eBest').textContent = 'আপনার সেরা: ' + bn(Math.max(best, score)) + (S.bestStreak > 1 ? ' · এক টানে সর্বোচ্চ ' + bn(S.bestStreak) + 'টা' : '');
+  $('eTip').textContent = (window.KHViral && KHViral.tipText && KHViral.tipText('carrom')) || pick(TIPS);
+  setTimeout(() => { $('endO').hidden = false; sfx(meWon ? 'win' : 'lose'); if (meWon && window.KHViral) KHViral.confetti(); }, 700);
+  saveScore(score); S.lastScore = score;
+}
+const TIPS = ['জানেন কি? ক্যারম খেলায় কোণ (অ্যাঙ্গেল) বোঝা লাগে, যা জ্যামিতির প্রতিফলনের নিয়মের মতো: আপতন কোণ = প্রতিফলন কোণ।', 'জানেন কি? ক্যারম ভারত উপমহাদেশে জন্ম নেওয়া খেলা, আর এর আন্তর্জাতিক ফেডারেশন আছে ১৯৮৮ সাল থেকে।', 'জানেন কি? স্ট্রাইকার গুটির চেয়ে প্রায় তিনগুণ ভারী, তাই সোজা ধাক্কায় গুটি অনেক দূর যায়।'];
+function start(level) {
+  audio(); lv = level; store.set('kh-carrom-lv', lv); newGame(); hud(); ['startO', 'endO'].forEach(id => $(id).hidden = true);
+  $('com').textContent = '🎙️ খেলা শুরু! ' + LV[lv].n + ' বলতেছে: "আগে আপনি মারেন, মেহমান!"'; startTurn();
+}
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = () => start(+b.dataset.lv));
+$('againBtn').onclick = () => start(lv); $('lvBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `ক্যারমে ${LV[lv].n}-এর সাথে খেলে ${bn((S && S.lastScore) || 0)} পয়েন্ট পাইলাম! 🎯 পারলে হারাও: ${location.origin}/games/carrom/`; try { navigator.clipboard.writeText(t).then(() => { $('shareBtn').textContent = 'কপি হয়েছে ✓'; setTimeout(() => $('shareBtn').textContent = 'কপি করে শেয়ার', 2000); }, () => {}); } catch (e) {} };
+
+lv = store.get('kh-carrom-lv', 1); newGame(); S.over = true; hud(); resize();
+if (renderer) renderer.compile(scene, cam);
+last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+
+/* ================= লগইন, স্কোর, মেরামত ================= */
+let user = null, me = null, gameSt = 'live', siteMaint = false;
+function gate() {
+  const admin = user && ADMIN_EMAILS.includes(user.email), off = !admin && (gameSt === 'maint' || gameSt === 'hidden' || siteMaint);
+  if (off) { $('gateT').textContent = 'ক্লাবঘর আজ বন্ধ!'; $('gateP').textContent = 'বোর্ডে নতুন পাউডার দেওয়া হইতেছে, একটু পরে আসেন।'; $('gateA').textContent = 'হাবে ফিরে যান'; }
+  else if (user && me && me.banned) { $('gateT').textContent = 'একাউন্ট বন্ধ'; $('gateP').textContent = 'হাবের যোগাযোগ পাতায় অ্যাডমিনকে লিখুন।'; $('gateA').textContent = 'হাবে ফিরে যান'; }
+  else if (user && !me) { $('gateT').textContent = 'আগে ইউজারনেম'; $('gateP').textContent = 'হাবে গিয়ে ইউজারনেম বেছে নিন, তারপর খেলুন।'; $('gateA').textContent = 'হাবে যান'; }
+  $('gate').hidden = !(!user || !me || me.banned || off);
+}
+onAuthStateChanged(auth, u => {
+  user = u; if (!u) { me = null; gate(); return; }
+  onSnapshot(doc(db, 'users', u.uid), s => { me = s.exists() ? s.data() : null; gate(); }, () => { me = null; gate(); });
+  getDoc(doc(db, 'scores', GAME, 'players', u.uid)).then(d => { if (d.exists() && d.data().score > store.get('kh-carrom-best', 0)) store.set('kh-carrom-best', d.data().score); drawBest(); }).catch(() => {});
+});
+onSnapshot(doc(db, 'config', 'games'), d => { gameSt = ((d.exists() && d.data().status) || {})['ক্যারম'] || 'live'; if (gameSt === 'soon') gameSt = 'live'; gate(); }, () => {});
+onSnapshot(doc(db, 'config', 'site'), d => { siteMaint = !!(d.exists() && d.data().maintenance); gate(); }, () => {});
+function drawBest() { const b = store.get('kh-carrom-best', 0); if (renderer) $('bestTxt').textContent = b ? 'আপনার সেরা স্কোর: ' + bn(b) : ''; }
+drawBest();
+let top = [];
+function drawLB() { const h = top.length ? '<h3>ক্লাবঘরের সেরা খেলোয়াড়</h3>' + top.map((r, i) => `<div class="${user && r.id === user.uid ? 'me' : ''}"><em>${bn(i + 1)}</em><span>${esc(r.name)}</span><b>${bn(r.score)}</b></div>`).join('') : ''; $('lb1').innerHTML = h; $('lb2').innerHTML = h; }
+onSnapshot(query(collection(db, 'scores', GAME, 'players'), orderBy('score', 'desc'), limit(10)), s => { top = (s.docs || []).map(d => ({ id: d.id, ...d.data() })); drawLB(); }, () => {});
+async function saveScore(sc) {
+  if (!user || !me || sc <= 0) return;
+  try { const ref = doc(db, 'scores', GAME, 'players', user.uid), d = await getDoc(ref); if (d.exists() && d.data().score >= sc) return; await setDoc(ref, { score: Math.min(100000, Math.round(sc)), name: me.name, username: me.username, at: serverTimestamp() }); } catch (e) {}
+}
+const MY_C = ['ভাই, আজকে কিন্তু রানী আমার!', 'আঙুলে পাউডার লাগাইছি, এবার দেখেন!', 'হারলে চা-সিঙারা আপনার!', 'বোর্ডে ঠিকমতো পাউডার দেন তো!'];
+const OP_C = ['ছোট মানুষ, আগে খেলা শিখো!', 'রানী তুলতে পারবা না, লিখে রাখো!', 'আমি বিশ বছর ধরে এই বোর্ডে খেলি!', 'চায়ের অর্ডার দিয়া রাখো, হারতেছো!'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY_C, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP_C), 'M3', '🎯 ' + LV[lv].n, true), 2600); } });
+window.KHCarrom = { get S() { return S; }, shoot: (ux, uz, pw) => shoot(ux, uz, pw), place: f => placeStriker(f), start, cpuPlan: () => cpuPlan() };
+</script>
+<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
+</body></html>

@@ -1,6 +1,6 @@
 // সব মজার ডায়লগ খুঁজে api/_voice-lines.js বানায়। ডায়লগ বদলালে আবার চালান: node tools/build-voice-lines.mjs
 import { readFileSync, writeFileSync } from 'node:fs';
-const files = ['js/fun.js', 'js/viral.js', 'js/ludo-engine.js', 'js/online.js', 'index.html', 'games/ludo/index.html', 'games/mosha/index.html', 'games/jam/index.html', 'games/bazar/index.html', 'games/argbra/index.html'];
+const files = ['js/fun.js', 'js/viral.js', 'js/ludo-engine.js', 'js/online.js', 'index.html', 'games/ludo/index.html', 'games/mosha/index.html', 'games/jam/index.html', 'games/bazar/index.html', 'games/argbra/index.html', 'games/carrom/index.html'];
 const BN = /[ঀ-৿]/, lines = new Set();
 const lit = /(['"])((?:(?!\1)[^\\\n]|\\.)*?)\1/g;
 for (const f of files) {
