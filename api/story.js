@@ -98,17 +98,19 @@ async function cron(req, db) {
   if (sec && req.headers.authorization !== 'Bearer ' + sec && !req.query.manual) throw new HttpErr(401, 'অনুমতি নেই');
   const c = await cfgRef(db).get(), cfg = c.exists ? c.data() : {};
   if (cfg.auto === false) return { skipped: 'অটো-লেখা বন্ধ' };
-  if (Date.now() - (cfg.lastCron || 0) < 20 * 3600e3) return { skipped: 'আজকের লেখা আগেই হয়ে গেছে' };
+  const empty = !(await col(db).limit(1).get()).docs.length; // একটাও লেখা না থাকলে অপেক্ষা ছাড়াই চেষ্টা
+  if (!empty && Date.now() - (cfg.lastCron || 0) < 20 * 3600e3) return { skipped: 'আজকের লেখা আগেই হয়ে গেছে' };
   await cfgRef(db).set({ lastCron: Date.now() }, { merge: true });
-  const n = Math.max(1, Math.min(4, cfg.perDay || 2)), made = [];
+  const n = Math.max(1, Math.min(4, cfg.perDay || 2)), made = [], errors = [];
   let ri = cfg.rot || 0;
   for (let i = 0; i < n; i++) {
     // প্রতিদিন উপন্যাসের একটা পর্ব, বাকিগুলো ঘুরে ঘুরে
     const type = i === 0 ? 'uponnas' : ROTATE[ri++ % ROTATE.length];
-    try { made.push((await generate(db, type, '')).title); } catch (e) { console.error('cron gen', type, e.message); }
+    try { made.push((await generate(db, type, '')).title); } catch (e) { console.error('cron gen', type, e.message); errors.push(e.message); break; }
   }
-  await cfgRef(db).set({ rot: ri, lastCron: Date.now() }, { merge: true });
-  return { made };
+  // একটাও না হলে আজকের পালা খরচ হবে না, আবার চেষ্টা করা যাবে
+  await cfgRef(db).set({ rot: ri, lastCron: made.length ? Date.now() : (cfg.lastCron || 0) }, { merge: true });
+  return errors.length ? { made, errors } : { made };
 }
 
 /* ---------- AI দিয়ে লেখা ---------- */
@@ -128,16 +130,23 @@ async function gemini(prompt) {
       responseSchema: { type: 'OBJECT', properties: { title: { type: 'STRING' }, summary: { type: 'STRING' }, body: { type: 'STRING' } }, required: ['title', 'summary', 'body'] }
     }
   };
-  // চাবি থাকলে চাবি দিয়ে; না থাকলে বা চাবি না চললে (নতুন AQ. চাবিতে মাঝে মাঝে হয়) সার্ভারের নিজের service account দিয়ে
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, payload = JSON.stringify(body);
+  // তিনটা পথে চেষ্টা: (১) চাবি থাকলে চাবি দিয়ে, (২) সার্ভারের service account দিয়ে Gemini API, (৩) একই দিয়ে Vertex AI
+  const payload = JSON.stringify(body), errs = [];
+  const pid = (() => { try { return JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}').project_id; } catch (e) { return null; } })();
+  const ways = [];
+  if (key) ways.push(['চাবি', `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, { 'x-goog-api-key': key }]);
+  ways.push(['gemini-sa', `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, null]);
+  if (pid) ways.push(['vertex', `https://aiplatform.googleapis.com/v1/projects/${pid}/locations/global/publishers/google/models/${MODEL}:generateContent`, null]);
   let r = null;
-  if (key) r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body: payload });
-  if (!r || r.status === 401 || r.status === 403) {
-    if (r) console.error('gemini key', r.status, (await r.text()).slice(0, 200));
-    const tok = await saToken();
-    r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok }, body: payload });
+  for (const [name, url, hd] of ways) {
+    let h = hd; if (!h) { try { h = { Authorization: 'Bearer ' + await saToken() }; } catch (e) { errs.push(name + ': ' + e.message); continue; } }
+    const x = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...h }, body: payload });
+    if (x.ok) { r = x; break; }
+    const t = (await x.text()).replace(/\s+/g, ' ').slice(0, 220); console.error('gemini', name, x.status, t);
+    errs.push(name + ' ' + x.status + ': ' + t);
+    if (x.status === 429) break;
   }
-  if (!r.ok) { const t = (await r.text()).slice(0, 300); console.error('gemini', r.status, t); throw new HttpErr(502, r.status === 429 ? 'AI-এর আজকের সীমা শেষ, কাল আবার চেষ্টা করুন' : r.status === 403 ? 'AI অনুমতি পায়নি (403): Google Cloud-এ khelaghor প্রজেক্টে "Generative Language API" চালু আছে কিনা দেখুন' : 'AI থেকে লেখা আনা যায়নি (' + r.status + ')'); }
+  if (!r) throw new HttpErr(502, 'AI থেকে লেখা আনা যায়নি। ' + errs.join(' || '));
   const j = await r.json(), txt = (((j.candidates || [])[0] || {}).content || {}).parts?.map(p => p.text || '').join('') || '';
   let out; try { out = JSON.parse(txt); } catch (e) { throw new HttpErr(502, 'AI-এর উত্তর বোঝা যায়নি, আবার চেষ্টা করুন'); }
   return out;
