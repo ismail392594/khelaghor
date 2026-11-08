@@ -157,6 +157,7 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAILS } from "/js/firebase-config.js";
 import { attachGameVideos } from "/js/videos.js";
+import { makeHuman } from "/js/kh-human.js";
 
 const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
 attachGameVideos(cb => onSnapshot(doc(db, 'config', 'videos'), d => cb(d.exists() ? d.data() : {}), () => {}));
@@ -263,16 +264,10 @@ const crowds = [];
 const tea = new THREE.Group(); box(tea, 2, 1, 1, 0, .5, 0, M('#7a5236')); box(tea, 2.2, .1, 1.3, 0, 2, 0, M('#c0392b'), false); const sg = new THREE.Mesh(new THREE.PlaneGeometry(1.8, .4), new THREE.MeshBasicMaterial({ map: ctex(256, 56, (x, w, h) => { x.fillStyle = '#ffd23f'; x.fillRect(0, 0, w, h); x.fillStyle = '#1d1640'; x.font = "800 34px 'Baloo Da 2',sans-serif"; x.textAlign = 'center'; x.fillText('মামার টং', w / 2, 40); }) })); sg.position.set(0, 2.3, .66); tea.add(sg); tea.position.set(-4.3, 0, 3); tea.rotation.y = .6; scene.add(tea);
 // খেলোয়াড় (কিপার ও শুটার)
 const PC = {};
-function getP(team, role) { const k = team + role; const p = PC[k] || (PC[k] = mkPlayer(team)); scene.add(p.g); p.g.position.set(0, 0, 0); p.g.rotation.set(0, 0, 0); p.body.position.set(0, 0, 0); [p.legL, p.legR, p.armL, p.armR].forEach(m => m.rotation.set(0, 0, 0)); return p; }
-function mkPlayer(team) {
-  const T = TEAMS[team], g = new THREE.Group(), body = new THREE.Group(); g.add(body);
-  const shirt = new THREE.MeshStandardMaterial({ roughness: .7, map: ctex(64, 64, (x, w, h) => { x.fillStyle = T.c1; x.fillRect(0, 0, w, h); if (team === 'arg') { x.fillStyle = '#fff'; for (let i = 0; i < 4; i++) x.fillRect(4 + i * 16, 0, 8, h); } else { x.fillStyle = T.c2; x.fillRect(0, 0, w, 8); } x.fillStyle = team === 'arg' ? '#1d2b4f' : '#009c3b'; x.font = '800 26px sans-serif'; x.textAlign = 'center'; x.fillText('10', w / 2, 44); }) });
-  box(body, .5, .6, .28, 0, 1.25, 0, shirt); box(body, .5, .3, .3, 0, .82, 0, M(T.shorts));
-  const legL = box(body, .17, .7, .18, -.13, .35, 0, M('#e9c9a5')), legR = box(body, .17, .7, .18, .13, .35, 0, M('#e9c9a5'));
-  const armL = box(body, .14, .55, .14, -.33, 1.25, 0, shirt), armR = box(body, .14, .55, .14, .33, 1.25, 0, shirt);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(.17, 14, 10), M('#c68642')); head.position.y = 1.72; head.castShadow = true; body.add(head);
-  const hair = new THREE.Mesh(new THREE.SphereGeometry(.18, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), M('#1b1b1b')); hair.position.y = 1.75; body.add(hair);
-  return { g, body, legL, legR, armL, armR };
+function getP(team, role) { const k = team + role; const p = PC[k] || (PC[k] = mkPlayer(team)); scene.add(p.g); p.g.position.set(0, 0, 0); p.g.rotation.set(0, role === 's' ? Math.PI : 0, 0); p.body.position.set(0, 0, 0); p.h.snap({ run: 0, cheer: 0, wide: 0, crouch: role === 'k' ? .35 : 0 }); return p; }
+function mkPlayer(team) { // হাড়সহ মসৃণ খেলোয়াড়, দলের জার্সিতে
+  const T = TEAMS[team], h = makeHuman(THREE, { skin: team === 'arg' ? '#b58467' : '#83563d', shirt: T.c1, shorts: T.shorts, trim: team === 'arg' ? '#ffffff' : '#009c3b', number: team === 'arg' ? 10 : 9, hairStyle: team === 'arg' ? 1 : 0 });
+  return { g: h.root, body: h.body, h };
 }
 // বল: সাদা-কালো ছক
 const ballTex = ctex(256, 128, (x, w, h) => { x.fillStyle = '#fafafa'; x.fillRect(0, 0, w, h); x.fillStyle = '#1b1b1b'; for (let i = 0; i < 12; i++) { const cx = (i % 6) * w / 6 + (i < 6 ? 20 : 40), cy = i < 6 ? h * .3 : h * .72; x.beginPath(); for (let k = 0; k < 5; k++) { const a = k * 1.2566 - 1.57; x.lineTo(cx + Math.cos(a) * 14, cy + Math.sin(a) * 14); } x.fill(); } });
@@ -367,7 +362,7 @@ document.querySelectorAll('[data-k]').forEach(b => b.addEventListener('pointerdo
 
 /* ================= চলা ও আঁকা ================= */
 const ease = k => 1 - Math.pow(1 - k, 3);
-function poseRun(p, t, k) { const s = Math.sin(t * 14) * k; p.legL.rotation.x = s * .8; p.legR.rotation.x = -s * .8; p.armL.rotation.x = -s * .6; p.armR.rotation.x = s * .6; }
+function poseRun(p, t, k) { p.h.set({ run: k }); p.spd = k * 4; }
 function step(dt) {
   S.t += dt;
   flags.forEach(f => { const a = f.f.geometry.attributes.position, b = f.base; for (let i = 0; i < a.count; i++) { const x = b[i * 3]; a.array[i * 3 + 2] = b[i * 3 + 2] + Math.sin(x * 2.6 - S.t * 6 + f.ph) * .12 * x; } a.needsUpdate = true; });
@@ -386,7 +381,7 @@ function step(dt) {
     ball.position.lerpVectors(S.from, S.to, ease(k)); ball.position.y = S.from.y + (S.to.y - S.from.y) * k + Math.sin(k * Math.PI) * .4; ball.rotation.x -= dt * 25; ball.rotation.y += dt * 8;
     // কিপারের লাফ (আমার শটে কম্পিউটার, ওদের শটে আমি)
     const dir = S.mine ? S.dive : Math.round(S.kDive || 0);
-    if (S.mine || S.kDive) { S.kT += dt; const kk = Math.min(1, S.kT / .38); keeper.g.position.x = dir * 1.3 * ease(kk); keeper.g.rotation.z = -dir * 1.1 * ease(kk); keeper.g.position.y = dir ? Math.sin(kk * Math.PI) * .3 : Math.sin(kk * Math.PI) * .45; keeper.armL.rotation.z = -2.6 * kk; keeper.armR.rotation.z = 2.6 * kk; }
+    if (S.mine || S.kDive) { S.kT += dt; const kk = Math.min(1, S.kT / .38); keeper.g.position.x = dir * 1.3 * ease(kk); keeper.g.rotation.z = -dir * 1.1 * ease(kk); keeper.g.position.y = dir ? Math.sin(kk * Math.PI) * .3 : Math.sin(kk * Math.PI) * .45; keeper.h.set({ cheer: 1, wide: .4 }); }
     if (k >= 1) {
       const bx = S.to.x, by = S.to.y, inGoal = Math.abs(bx) < GW / 2 - .1 && by < GH - .05, onPost = !inGoal && Math.abs(bx) < GW / 2 + .2 && by < GH + .2;
       const kx = keeper.g.position.x, reach = (S.mine ? true : !!S.kDive) && Math.abs(bx - kx) < .85 && by < 1.9 && !(Math.abs(bx) > 1.25 && by > 1.45);
@@ -411,7 +406,7 @@ function view() {
   const mine = S && S.mine; const tz = mine ? 4.6 : 4, ty = mine ? 2.2 : 1.9;
   cam.position.lerp(new THREE.Vector3(0, ty, tz), .08); cam.lookAt(0, 1, GOAL_Z + 1);
 }
-function loop(ts) { const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; if (S && !S.over) step(dt); else if (S) { S.t += dt; flags.forEach(f => { const a = f.f.geometry.attributes.position, b = f.base; for (let i = 0; i < a.count; i++) { const x = b[i * 3]; a.array[i * 3 + 2] = b[i * 3 + 2] + Math.sin(x * 2.6 - S.t * 6 + f.ph) * .12 * x; } a.needsUpdate = true; }); } view(); if (renderer) renderer.render(scene, cam); raf = requestAnimationFrame(loop); }
+function loop(ts) { const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; Object.values(PC).forEach(p => { if (p.g.parent) { p.h.look = ball.position; p.h.update(dt, p.spd || 0); } }); if (S && !S.over) step(dt); else if (S) { S.t += dt; flags.forEach(f => { const a = f.f.geometry.attributes.position, b = f.base; for (let i = 0; i < a.count; i++) { const x = b[i * 3]; a.array[i * 3 + 2] = b[i * 3 + 2] + Math.sin(x * 2.6 - S.t * 6 + f.ph) * .12 * x; } a.needsUpdate = true; }); } view(); if (renderer) renderer.render(scene, cam); raf = requestAnimationFrame(loop); }
 $('shareBtn').onclick = () => { const t = `পাড়ার পেনাল্টিতে ${TEAMS[my].n} হয়ে খেললাম, ${bn((S && S.lastScore) || 0)} পয়েন্ট! ⚽ তুমি কোন দল? ${location.origin}/games/argbra/`; try { navigator.clipboard.writeText(t).then(() => { $('shareBtn').textContent = 'কপি হয়েছে ✓'; setTimeout(() => $('shareBtn').textContent = 'কপি করে শেয়ার', 2000); }, () => {}); } catch (e) {} };
 // শুরুর পর্দার পেছনে দৃশ্য
 resize(); S = newGame(); S.over = true; my = store.get('kh-argbra-team', 'arg'); op = my === 'arg' ? 'bra' : 'arg'; setTeams(); keeper = getP(op, 'k'); keeper.g.position.set(0, 0, GOAL_Z + .4); ball.position.copy(SPOT); cam.position.set(0, 2.2, 4.6);
