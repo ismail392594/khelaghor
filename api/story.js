@@ -61,7 +61,7 @@ export default async function handler(req, res) {
     const b = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
     if (b.action === 'gen') { const type = TYPES[b.type] ? b.type : 'golpo'; const out = await generate(db, type, String(b.topic || '').slice(0, 120)); return res.status(200).json({ ok: true, ...out }); }
     if (b.action === 'cfg') { await cfgRef(db).set({ auto: !!b.auto, perDay: Math.max(1, Math.min(4, +b.perDay || 2)) }, { merge: true }); return res.status(200).json({ ok: true }); }
-    if (b.action === 'adminList') { const s = await col(db).orderBy('at', 'desc').limit(80).get(); const c = await cfgRef(db).get(); return res.status(200).json({ ok: true, cfg: c.exists ? c.data() : {}, key: !!process.env.GEMINI_API_KEY, cronKey: !!process.env.CRON_SECRET, items: s.docs.map(d => brief(d)) }); }
+    if (b.action === 'adminList') { const s = await col(db).orderBy('at', 'desc').limit(80).get(); const c = await cfgRef(db).get(); return res.status(200).json({ ok: true, cfg: c.exists ? c.data() : {}, key: !!(process.env.GEMINI_API_KEY || process.env.FIREBASE_SERVICE_ACCOUNT), cronKey: !!process.env.CRON_SECRET, items: s.docs.map(d => brief(d)) }); }
     const id = String(b.id || ''); if (!/^[A-Za-z0-9]{10,40}$/.test(id)) throw new HttpErr(400, 'ভুল আইডি');
     if (b.action === 'hide' || b.action === 'show') { await col(db).doc(id).update({ on: b.action === 'show' }); return res.status(200).json({ ok: true }); }
     if (b.action === 'del') { await col(db).doc(id).delete(); return res.status(200).json({ ok: true }); }
@@ -108,9 +108,13 @@ async function cron(req, db) {
 }
 
 /* ---------- AI দিয়ে লেখা ---------- */
+let saCred = null;
+async function saToken() {
+  if (!saCred) { const raw = process.env.FIREBASE_SERVICE_ACCOUNT; if (!raw) throw new HttpErr(503, 'AI চালু হয়নি'); saCred = cert(JSON.parse(raw)); }
+  return (await saCred.getAccessToken()).access_token;
+}
 async function gemini(prompt) {
   const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new HttpErr(503, 'GEMINI_API_KEY এখনো Vercel-এ বসানো হয়নি');
   const body = {
     systemInstruction: { parts: [{ text: SYS }] },
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -120,8 +124,16 @@ async function gemini(prompt) {
       responseSchema: { type: 'OBJECT', properties: { title: { type: 'STRING' }, summary: { type: 'STRING' }, body: { type: 'STRING' } }, required: ['title', 'summary', 'body'] }
     }
   };
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body: JSON.stringify(body) });
-  if (!r.ok) { const t = (await r.text()).slice(0, 300); console.error('gemini', r.status, t); throw new HttpErr(502, r.status === 429 ? 'AI-এর আজকের ফ্রি সীমা শেষ, কাল আবার চেষ্টা করুন' : 'AI থেকে লেখা আনা যায়নি (' + r.status + ')'); }
+  // চাবি থাকলে চাবি দিয়ে; না থাকলে বা চাবি না চললে (নতুন AQ. চাবিতে মাঝে মাঝে হয়) সার্ভারের নিজের service account দিয়ে
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, payload = JSON.stringify(body);
+  let r = null;
+  if (key) r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body: payload });
+  if (!r || r.status === 401 || r.status === 403) {
+    if (r) console.error('gemini key', r.status, (await r.text()).slice(0, 200));
+    const tok = await saToken();
+    r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok }, body: payload });
+  }
+  if (!r.ok) { const t = (await r.text()).slice(0, 300); console.error('gemini', r.status, t); throw new HttpErr(502, r.status === 429 ? 'AI-এর আজকের সীমা শেষ, কাল আবার চেষ্টা করুন' : r.status === 403 ? 'AI অনুমতি পায়নি (403): Google Cloud-এ khelaghor প্রজেক্টে "Generative Language API" চালু আছে কিনা দেখুন' : 'AI থেকে লেখা আনা যায়নি (' + r.status + ')'); }
   const j = await r.json(), txt = (((j.candidates || [])[0] || {}).content || {}).parts?.map(p => p.text || '').join('') || '';
   let out; try { out = JSON.parse(txt); } catch (e) { throw new HttpErr(502, 'AI-এর উত্তর বোঝা যায়নি, আবার চেষ্টা করুন'); }
   return out;
