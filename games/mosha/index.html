@@ -181,16 +181,21 @@ const synth = window.speechSynthesis; let bnVoice = null, voiceOn = store.get('k
 function findVoice() { if (!synth) return null; const v = synth.getVoices(); bnVoice = v.find(x => /^bn[-_]BD/i.test(x.lang)) || v.find(x => /^bn/i.test(x.lang)) || null; return bnVoice; }
 if (synth) { findVoice(); synth.onvoiceschanged = findVoice; }
 let lastSay = 0;
-function say(t, force) {
+function say(t, force, who, byUser) {
   if (!voiceOn) return;
   if (!force && performance.now() - lastSay < 2500) return;
   lastSay = performance.now();
-  if (window.KHVoice) { window.KHVoice.say(t, force); return; }
+  if (window.KHVoice) { window.KHVoice.say(t, force, who, byUser); return; }
+  if (!byUser) return;
   if (!synth || (!bnVoice && !findVoice())) return;
   if (force) synth.cancel(); else if (synth.speaking) return;
   const u = new SpeechSynthesisUtterance(t); u.voice = bnVoice; u.lang = bnVoice.lang; u.rate = 1.15; u.pitch = 1 + Math.random() * .5; synth.speak(u);
 }
 $('snd').onclick = () => { sndOn = !sndOn; store.set('kh-sfx', sndOn); $('snd').classList.toggle('off', !sndOn); if (!sndOn) setBuzz(0); };
+// "💬 কথা বলুন": আপনি বললে মশাও জবাব দেয়
+const MY_M = ['ওরে মশা, আজকে তোর শেষ দিন!', 'কয়েল কই? কয়েল আনো!', 'এত রক্ত খাস কেন রে?', 'মশারি টানাই নাই, ভুল হইছে!', 'আরেকটা মারলেই রেকর্ড!', 'ঘুমাইতে দে ভাই, কাল অফিস!', 'কানের কাছে গান গাস কেন?', 'তোর পুরা গুষ্টি আজকে শেষ!'];
+const MOSQ = ['ভনভন! তোর রক্ত মিষ্টি!', 'কয়েল দিয়া কিছু হইব না!', 'আমি ডেঙ্গুর মামা, ভয় পাস না?', 'মশারি না টানাইলে আমরা আসমুই!'];
+if (window.KHViral) KHViral.chat({ lines: MY_M, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(MOSQ), 'F1', '🦟 মশা বলল', true), 2600); } });
 $('snd').classList.toggle('off', !sndOn);
 
 const L = {

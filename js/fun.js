@@ -191,7 +191,7 @@
   }
   if (synth) { findVoice(); synth.onvoiceschanged = findVoice; }
   function speak(text, who, byUser) {
-    if (!voiceOn || !unlocked) return;
+    if ((!voiceOn && !byUser) || !unlocked) return;
     if (window.KHVoice) { window.KHVoice.say(text, true, who, byUser); return; }
     if (!byUser) return;
     if (!synth || (!bnVoice && !findVoice())) {
@@ -233,8 +233,8 @@
     sb.setAttribute('aria-label', musicOn ? 'গান বন্ধ করুন' : 'গান চালু করুন');
     bar.classList.toggle('on', playing);
     sn.hidden = !playing;
-    sv.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4" fill="currentColor"/><path d="M2 20c0-4 3-6 7-6s7 2 7 6z" fill="currentColor"/>' + (voiceOn ? '<path d="M18 7a5 5 0 0 1 0 7M20.5 4.5a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' : '<path d="M17 8l5 6M22 8l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>') + '</svg>';
-    sv.setAttribute('aria-label', voiceOn ? 'ডায়লগের ভয়েস বন্ধ করুন' : 'ডায়লগের ভয়েস চালু করুন');
+    sv.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4" fill="currentColor"/><path d="M2 20c0-4 3-6 7-6s7 2 7 6z" fill="currentColor"/>' + (voiceOn ? '<path d="M18 7a5 5 0 0 1 0 7M20.5 4.5a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' : '<path d="M17 8l5 6M22 8l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>') + '</svg><span>' + (voiceOn ? 'অটো ডায়লগ চালু' : 'অটো ডায়লগ বন্ধ') + '</span>';
+    sv.setAttribute('aria-label', voiceOn ? 'অটো ডায়লগ ভয়েস বন্ধ করুন' : 'অটো ডায়লগ ভয়েস চালু করুন (নিজে থেকে কথা বলবে)');
     sv.classList.toggle('off', !voiceOn);
   }
   sb.onclick = e => {

@@ -145,6 +145,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
       <div class="qc" id="qc"></div>
       <div class="acts" id="offers"></div>
       <div class="custom"><input id="myOffer" inputmode="numeric" placeholder="নিজের দাম বলুন, যেমন ৯০" aria-label="নিজের দাম"><button class="btn" id="myOfferBtn">বলুন</button></div>
+      <div id="chatHost" style="display:flex;justify-content:center"></div>
       <button class="btn chk" id="chkBtn">⚖️ পরখ করুন<small>পাল্লায় ওজন আর জিনিস টাটকা কিনা দেখি · ২ মিনিট</small></button>
       <div class="row2"><button class="btn alt" id="otherBtn">অন্য দোকানে যান<small>৫ মিনিট লাগবে</small></button><button class="btn skipb" id="skipBtn">এটা বাদ দিন<small>আম্মা রাগ করবে</small></button></div>
     </div>
@@ -243,7 +244,7 @@ const SFX = {
 };
 function sfx(n) { if (!sndOn || !audio()) return; try { SFX[n](); } catch (e) {} }
 let voiceOn = store.get('kh-voice', true);
-function say(t, force, who) { if (voiceOn && window.KHVoice) window.KHVoice.say(t, force, who); }
+function say(t, force, who, byUser) { if (voiceOn && window.KHVoice) window.KHVoice.say(t, force, who, byUser); }
 const vv = v => v.kind === 'scarf' ? 'F1' : v.kind === 'beard' ? 'M3' : 'M1'; // দোকানদারের গলা
 $('snd').onclick = () => { sndOn = !sndOn; store.set('kh-sfx', sndOn); $('snd').classList.toggle('off', !sndOn); };
 $('snd').classList.toggle('off', !sndOn);
@@ -425,6 +426,13 @@ function buy() {
   if (next >= 0) { S.sel = next; render(); setTimeout(() => { const nv = S.items[next].vendors[S.items[next].vi]; say(nv.say, false, vv(nv)); }, 400); }
   else { render(); setTimeout(endDay, 700); }
 }
+// "💬 কথা বলুন": আপনি বললে দোকানদার জবাব দেয়
+const MY_B = ['মামা, একটু কম রাখেন!', 'এত দাম কেন? সোনা বেচেন নাকি?', 'আমি নিয়মিত কাস্টমার, মনে আছে?', 'ওজনে কম দিবেন না কিন্তু!', 'টাটকা তো? বাসি দিলে আম্মা মারবে!', 'পাশের দোকানে আরো কম!', 'ভাংতি আছে তো?', 'আজকে বাজার এত গরম কেন?'];
+const V_REPLY = ['কম রাখলে আমার সংসার চলবে কেমনে মামা?', 'হাত দিয়া দেখেন, এক নম্বর মাল!', 'পাশের দোকানে যান, ওরা পচা দিবে!', 'আপনার জন্যই তো সবচেয়ে ভালোটা রাখছি!', 'বাজারে আগুন মামা, আমার কী দোষ?'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY_B, onSay: t => {
+  if (!S || !cur) return; KHViral.pop(t, 'M2', '💬 আপনি বললেন', true);
+  const v = cur.vendors[cur.vi]; setTimeout(() => { if (cur.state !== 'todo') return; v.say = pick(V_REPLY); render(); say(v.say, true, vv(v), true); }, 2300);
+} });
 $('chkBtn').onclick = () => {
   const it = cur, v = it.vendors[it.vi]; if (it.state !== 'todo' || v.checked || S.time >= CLOSE) return;
   audio(); spend(2); v.checked = true;

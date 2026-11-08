@@ -50,14 +50,39 @@ const TIPS = {
   ludo: ['জানেন কি? লুডু ভারতের প্রাচীন খেলা "পাচিসি" থেকে এসেছে, শত শত বছরের পুরনো।', 'জানেন কি? ছক্কায় ৬ ওঠার সম্ভাবনা প্রতি চালে ৬ ভাগের ১ ভাগ, তাই ধৈর্য ধরলেই আসবে!', 'জানেন কি? খেলায় হারজিত থাকবেই, বন্ধুর সাথে হাসিমুখে খেলাটাই আসল জয়।']
 };
 let box = null, hideT = 0;
-function pop(text, who, title) {
+function pop(text, who, title, byUser) {
   const L = window.KH_DLG || []; if (!text) { const d = L[Math.floor(Math.random() * L.length)]; if (!d) return; text = d[0]; }
   if (!box) { box = document.createElement('div'); box.className = 'khViral'; box.setAttribute('role', 'status'); document.body.appendChild(box);
     const st = document.createElement('style'); st.textContent = '.khViral{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;max-width:min(92vw,420px);background:#fff;color:#1d1640;border-radius:18px;padding:10px 14px;font:700 .95rem "Noto Sans Bengali",sans-serif;line-height:1.4;box-shadow:0 10px 26px rgba(0,0,0,.4);pointer-events:none;opacity:0;transition:opacity .25s,transform .25s}.khViral.on{opacity:1;transform:translateX(-50%) translateY(-6px)}.khViral small{display:block;color:#7a70b8;font-size:.7rem;margin-bottom:2px}'; document.head.appendChild(st); }
   box.innerHTML = '<small></small>'; box.querySelector('small').textContent = title || '😂 ভাইরাল ডায়লগ'; box.appendChild(document.createTextNode(text));
   box.classList.add('on'); clearTimeout(hideT); hideT = setTimeout(() => box.classList.remove('on'), Math.max(3500, text.length * 90));
-  try { if (window.KHVoice && localStorage.getItem('kh-voice') !== 'false') window.KHVoice.say(text, true, who); } catch (e) { window.KHVoice && window.KHVoice.say(text, true, who); }
+  if (window.KHVoice) window.KHVoice.say(text, true, who, byUser);
 }
 function tip(game) { const t = TIPS[game] || []; return t[Math.floor(Math.random() * t.length)] || ''; }
-window.KHViral = { pop, tip, TIPS };
+// "💬 কথা বলুন": খেলোয়াড় চাপলেই শুধু কথা হয়। opts: { lines, who, host (বোতাম কোথায় বসবে, না দিলে নিচে বামে ভাসমান), onSay(text) }
+function chat(opts) {
+  if (!document.getElementById('khChatCss')) { const st = document.createElement('style'); st.id = 'khChatCss'; st.textContent = '.khChatBtn{border:0;border-radius:999px;padding:8px 14px;font:800 .9rem "Baloo Da 2","Noto Sans Bengali",sans-serif;background:#fff;color:#1d1640;box-shadow:0 4px 0 rgba(0,0,0,.25);cursor:pointer;white-space:nowrap}.khChatBtn.float{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:25}.khChatPanel{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(120px + env(safe-area-inset-bottom,0px));z-index:40;width:min(94vw,440px);max-height:50vh;overflow:auto;background:rgba(20,16,48,.96);border-radius:20px;padding:12px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;box-shadow:0 14px 34px rgba(0,0,0,.5)}.khChatPanel b{width:100%;text-align:center;color:#fff;font:800 .95rem "Baloo Da 2",sans-serif}.khChatPanel button{border:0;border-radius:14px;padding:8px 11px;font:700 .86rem "Noto Sans Bengali",sans-serif;background:#fff;color:#1d1640;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.25)}.khChatPanel button.v{background:#ffd23f}.khChatPanel button.x{background:rgba(255,255,255,.15);color:#fff}'; document.head.appendChild(st); }
+  const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'khChatBtn' + (opts.host ? '' : ' float'); btn.innerHTML = opts.label || '💬 কথা বলুন';
+  (opts.host || document.body).appendChild(btn);
+  let panel = null, lastAt = 0;
+  const close = () => { if (panel) { panel.remove(); panel = null; } };
+  btn.addEventListener('pointerdown', e => e.stopPropagation());
+  btn.onclick = e => {
+    e.stopPropagation(); if (panel) return close();
+    panel = document.createElement('div'); panel.className = 'khChatPanel';
+    panel.innerHTML = '<b>কী বলবেন?</b>' + opts.lines.map((l, i) => `<button type="button" data-i="${i}"></button>`).join('') + '<button type="button" class="v" data-v="1">🎲 ভাইরাল ডায়লগ</button><button type="button" class="x" data-x="1">✕ বন্ধ</button>';
+    panel.querySelectorAll('[data-i]').forEach(b => b.textContent = opts.lines[+b.dataset.i]);
+    panel.addEventListener('pointerdown', ev => ev.stopPropagation());
+    panel.onclick = ev => {
+      ev.stopPropagation(); const b = ev.target.closest('button'); if (!b) return; if (b.dataset.x) return close();
+      if (Date.now() - lastAt < 1500) return; lastAt = Date.now();
+      const L = window.KH_DLG || [], text = b.dataset.v ? (L[Math.floor(Math.random() * L.length)] || [''])[0] : opts.lines[+b.dataset.i];
+      close(); if (!text) return;
+      if (opts.onSay) opts.onSay(text); else pop(text, opts.who, '💬 আপনি বললেন', true);
+    };
+    document.body.appendChild(panel);
+  };
+  return { btn, close };
+}
+window.KHViral = { pop, tip, TIPS, chat };
 })();

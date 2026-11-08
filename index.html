@@ -424,6 +424,7 @@ label.f input:focus{outline:none;border-color:#6d5cff}
       <small id="dTag"></small>
       <div class="acts">
         <button class="gbtn" id="dNext">আরেকটা</button>
+        <button class="gbtn" id="dHear">🔊 শুনুন</button>
         <button class="gbtn gold" id="dCopy">কপি করে শেয়ার</button>
       </div>
       <label class="adult"><input type="checkbox" id="adultChk"> বড়দের মজা (১৮+) চালু করুন</label>
@@ -671,6 +672,7 @@ function nextDlg(){
   $('dCount').textContent=bn(L.length)+'টি ডায়লগ';
 }
 $('dNext').onclick=()=>{nextDlg();window.KH&&window.KH.speak&&window.KH.speak($('dText').textContent,null,true)};
+$('dHear').onclick=()=>window.KH&&window.KH.speak&&window.KH.speak($('dText').textContent,null,true);
 $('dCopy').onclick=()=>copyText('"'+$('dText').textContent+'"\n— খেলাঘর '+$('dTag').textContent);
 $('adultChk').onchange=e=>{
   if(e.target.checked&&!ls.get('kh-18',false)){

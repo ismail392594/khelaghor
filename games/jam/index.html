@@ -48,6 +48,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .crow{display:flex;gap:6px}
 .crow.sm button{width:auto;height:36px;padding:0 12px;flex-direction:row;gap:5px;font-size:1rem;border-radius:12px}
 .crow.sm button small{margin:0}
+#chatHost .khChatBtn{height:36px;padding:0 12px;border-radius:12px;background:rgba(255,255,255,.14);color:#fff;box-shadow:inset 0 -3px 0 rgba(0,0,0,.25),inset 0 0 0 2px rgba(255,255,255,.18);font-size:1rem;display:flex;align-items:center;gap:5px}
 .map{position:absolute;left:max(10px,env(safe-area-inset-left,0px));top:8px;width:112px;height:112px;z-index:2;pointer-events:none;filter:drop-shadow(0 4px 10px rgba(0,0,0,.4))}
 .nav{position:absolute;left:50%;transform:translateX(-50%);top:40px;z-index:2;display:flex;align-items:center;gap:8px;background:rgba(15,107,58,.92);border-radius:14px;padding:4px 12px 4px 8px;font-weight:700;font-size:.85rem;white-space:nowrap;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.35)}
 .nav b{font-size:1.5rem;line-height:1}
@@ -138,7 +139,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
     <button class="turn l" id="tL" hidden aria-label="মোড়ে বামে ঘুরুন">↰<small>বামে ঘুরুন</small></button>
     <button class="turn r" id="tR" hidden aria-label="মোড়ে ডানে ঘুরুন">↱<small>ডানে ঘুরুন</small></button>
     <div class="sub" id="sub" hidden></div>
-    <div class="ctrl" id="ctrl" hidden><div class="crow sm"><button id="hornBtn" aria-label="হর্ন">📢<small>হর্ন</small></button><button id="bombBtn" aria-label="শব্দ বোমা">💣<small>বোমা</small></button><button id="camBtn" aria-label="ক্যামেরা বদলান">🎥<small>ক্যামেরা</small></button></div><div class="crow"><button id="lBtn" aria-label="বামে">◀<small>বামে</small></button><button id="bBtn" class="brake" aria-label="ব্রেক (চেপে ধরুন)">▼<small>ব্রেক</small></button><button id="gBtn" class="gas" aria-label="স্পিড বাড়ান (চেপে ধরুন)">▲<small>গ্যাস</small></button><button id="rBtn" aria-label="ডানে">▶<small>ডানে</small></button></div></div>
+    <div class="ctrl" id="ctrl" hidden><div class="crow sm"><button id="hornBtn" aria-label="হর্ন">📢<small>হর্ন</small></button><button id="bombBtn" aria-label="শব্দ বোমা">💣<small>বোমা</small></button><button id="camBtn" aria-label="ক্যামেরা বদলান">🎥<small>ক্যামেরা</small></button><span id="chatHost"></span></div><div class="crow"><button id="lBtn" aria-label="বামে">◀<small>বামে</small></button><button id="bBtn" class="brake" aria-label="ব্রেক (চেপে ধরুন)">▼<small>ব্রেক</small></button><button id="gBtn" class="gas" aria-label="স্পিড বাড়ান (চেপে ধরুন)">▲<small>গ্যাস</small></button><button id="rBtn" aria-label="ডানে">▶<small>ডানে</small></button></div></div>
 
     <div class="over" id="startO">
       <div class="card">
@@ -275,7 +276,7 @@ const SFX = {
 function sfx(n) { if (!sndOn || !audio()) return; try { SFX[n](); } catch (e) {} }
 function engine(speed) { if (!ac || !engG) return; const v = speed / 18, t = ac.currentTime, f = 30 + v * 3.4; engG.gain.setTargetAtTime(sndOn && speed > 0 ? .085 : 0, t, .2); eng.frequency.setTargetAtTime(f, t, .12); engF.e2.frequency.setTargetAtTime(f / 2, t, .12); engF.lfo.frequency.setTargetAtTime(5 + v * .8, t, .12); engF.ef.frequency.setTargetAtTime(320 + v * 45, t, .2); }
 let voiceOn = store.get('kh-voice', true), lastSay = 0;
-function say(t, force, who) { if (!voiceOn || !window.KHVoice || demo) return; if (!force && performance.now() - lastSay < 2800) return; lastSay = performance.now(); window.KHVoice.say(t, force, who); }
+function say(t, force, who, byUser) { if (!voiceOn || !window.KHVoice || demo) return; if (!force && performance.now() - lastSay < 2800) return; lastSay = performance.now(); window.KHVoice.say(t, force, who, byUser); }
 $('snd').onclick = () => { sndOn = !sndOn; store.set('kh-sfx', sndOn); $('snd').classList.toggle('off', !sndOn); if (!sndOn) { engine(0); ambience(false); } };
 $('snd').classList.toggle('off', !sndOn);
 
@@ -857,16 +858,17 @@ const ROLES = {
   car: { n: 'প্রাইভেট কারের ড্রাইভার', v: 'M1', h: 2, l: ['স্যারের গাড়ি, সাইড দাও!', 'গাড়িতে দাগ পড়লে বিল তুমি দিবা!'], horn: ['হর্ন দিও না, স্যার ঘুমাইতেছেন!'] },
   truck: { n: 'ট্রাক ড্রাইভার', v: 'M3', h: 3.8, l: ['মায়ের দোয়া আছে, কিছু হইব না!', 'ট্রাকের সামনে আইসা বীরত্ব দেখাইও না!'], horn: ['হর্ন দিয়া ট্রাক সরাইবা? হা হা!'] },
   ped: { n: 'পথচারী খালা', v: 'F2', h: 2.3, l: ['চোখ নাই? মানুষ দেখো না?', 'ফুটপাতে দোকান, তাই রাস্তায় হাঁটি!', 'আস্তে চালাও বাবা, মায়ের দোয়া নাও!'] },
+  me: { n: 'আপনি', v: 'M2', h: 2.3, l: [] },
   police: { n: 'ট্রাফিক পুলিশ', v: 'M3', h: 2.4, l: ['ওই থাম! কাগজ দেখাও!', 'লাইসেন্স কই?', 'লাল বাতি দেখস না?'] }
 };
 const roleOf = o => ({ bus: 'helper', truck: 'truck', car: 'car', cng: 'cng', rick: 'rick' })[o.kind];
 let talkObj = null, talkT = 0, talkH = 2;
-function talk(obj, role, line) {
+function talk(obj, role, line, byUser) {
   if (demo || !obj) return; const R = ROLES[role]; if (!R) return; line = line || pick(R.l);
   talkObj = obj; talkH = R.h; talkT = Math.max(2.6, line.length * .085);
   $('talk').innerHTML = `<small>${R.n}</small>`; $('talk').appendChild(document.createTextNode(line)); $('talk').hidden = false;
   $('sub').innerHTML = `<b>${R.n}:</b> `; $('sub').appendChild(document.createTextNode(line)); $('sub').hidden = false;
-  say(line, true, R.v);
+  say(line, true, R.v, byUser);
 }
 const _wp = new THREE.Vector3();
 function talkView(dt) {
@@ -889,15 +891,23 @@ function honk() {
   if (!running || demo || !S) return; audio(); sfx('horn');
   const ahead = S.obs.filter(o => !o.static && o.lane === S.p.lane && o.z < 0 && o.z > -30).sort((a, b) => b.z - a.z)[0];
   if (ahead) {
-    talk(ahead.g, roleOf(ahead), pick(ROLES[roleOf(ahead)].horn));
+    talk(ahead.g, roleOf(ahead), pick(ROLES[roleOf(ahead)].horn), true);
     if ((ahead.kind === 'rick' || ahead.kind === 'cng' || ahead.kind === 'car') && Math.random() < .55) { const nl = [ahead.lane - 1, ahead.lane + 1].filter(l => l >= 0 && l <= 2 && !laneBusy(l, ahead.z - ahead.len - 3, ahead.z + ahead.len + 3)); if (nl.length) ahead.lane = pick(nl); }
   }
 }
 function bombGame() {
   if (!running || demo || !S) return; audio(); sfx('boom'); S.shake = .3;
-  const b = pick(GBOMBS); fc('💣 ' + b[0], '#ffb627', 24); say(b[0], true, b[1]);
-  setTimeout(() => { if (S && !S.over) { const o = S.obs.find(q => !q.static && q.z < 0 && q.z > -25); if (o) talk(o.g, roleOf(o), pick(['এইটা কী ফাটাইলা!', 'আল্লাহ গো, বোমা নাকি!', 'ভয় পাইছি মামা!'])); } }, 1600);
+  const b = pick(GBOMBS); fc('💣 ' + b[0], '#ffb627', 24); say(b[0], true, b[1], true);
+  setTimeout(() => { if (S && !S.over) { const o = S.obs.find(q => !q.static && q.z < 0 && q.z > -25); if (o) talk(o.g, roleOf(o), pick(['এইটা কী ফাটাইলা!', 'আল্লাহ গো, বোমা নাকি!', 'ভয় পাইছি মামা!']), true); } }, 1600);
 }
+// খেলোয়াড়ের "💬 কথা বলুন": আপনি বললে কাছের চালক জবাব দেয়
+const MYLINES = ['ভাই, একটু সাইড দেন!', 'মামা আস্তে চালান!', 'অফিসে লেট হইতেছে, জায়গা দেন!', 'এইটা রাস্তা না পার্কিং?', 'হেলমেট পরছি, নিয়ম মানি!', 'সিগন্যাল ছাড়েন, সিগন্যাল!', 'এই জ্যাম কবে শেষ হবে?', 'ভাই হর্ন বাজাইয়া লাভ নাই!'];
+const REPLY = { helper: ['জায়গা নাই মামা, পিছে উঠেন!', 'আরে বাস তো আগে যাইবোই!'], rick: ['যাইতেছি তো মামা, প্যাডেল তো মারতেছি!', 'আপনেও তো রিকশার রাস্তায়!'], cng: ['আমার কী দোষ, সামনে জ্যাম!', 'মিটার নাই, মেজাজও নাই!'], car: ['স্যারের গাড়ি, আপনি সাইড দেন!'], truck: ['ট্রাক বড়, রাস্তা ছোট, কী করমু!'] };
+function myTalk(text) {
+  if (!running || demo || !S) return; talk(bike, 'me', text, true);
+  setTimeout(() => { if (!S || S.over) return; const o = S.obs.filter(q => !q.static && q.z < 2 && q.z > -30).sort((a, b) => b.z - a.z)[0]; if (o) talk(o.g, roleOf(o), pick(REPLY[roleOf(o)] || ROLES[roleOf(o)].l), true); }, 2200);
+}
+if (window.KHViral) KHViral.chat({ lines: MYLINES, host: $('chatHost'), label: '💬<small style="margin:0">কথা</small>', onSay: myTalk });
 let camMode = 0; const CAMS = ['পেছন থেকে', 'উপর থেকে', 'চালকের চোখে'];
 function camNext() { camMode = (camMode + 1) % 3; if (S && !demo) fc('🎥 ' + CAMS[camMode], '#fff', 18); rider.visible = camMode !== 2; }
 
