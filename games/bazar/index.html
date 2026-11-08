@@ -108,6 +108,17 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
 .lb em{font-style:normal;color:var(--muted);font-weight:700}
 .lb b{font-variant-numeric:tabular-nums}
 .small{font-size:.75rem!important}
+.shout{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.25);border-radius:12px;padding:6px 10px;font-size:.88rem;font-weight:600;color:#ffe9a8;min-height:36px;overflow:hidden}
+.shout span{animation:slide .45s ease-out}
+@keyframes slide{from{transform:translateX(30px);opacity:0}}
+.btn.chk{grid-column:1/-1;background:#ccfbf1;box-shadow:0 4px 0 #5eead4}
+.qc{display:flex;flex-direction:column;gap:4px;font-size:.85rem;font-weight:600}
+.qc:empty{display:none}
+.qc div{display:flex;gap:8px;align-items:center;border-radius:10px;padding:6px 10px;background:#f3f4f6;color:#374151}
+.qc .good{background:#dcfce7;color:#166534}.qc .mid{background:#fef9c3;color:#854d0e}.qc .badq{background:#fee2e2;color:#991b1b}
+.sum .warn{background:#ffedd5;color:#9a3412}
+.scale{display:flex;align-items:flex-end;justify-content:center;gap:2px;height:44px}
+.scale svg{width:120px;height:44px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head><body>
@@ -122,6 +133,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
 <main class="wrap" id="game" hidden>
   <div class="day"><h2 id="dayT">দিন ১: বৃহস্পতিবার</h2><span id="dayS">বাজার বন্ধ ১০টায়</span></div>
   <div id="eventBox"></div>
+  <div class="shout" aria-live="off"><span id="shout">📣 আসেন আসেন, দেইখা যান!</span></div>
   <div class="list" id="list"></div>
   <section class="stall" id="stall">
     <div class="stallTop"></div>
@@ -129,12 +141,14 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
       <div class="vendor"><span id="vFace"></span><div class="bubble" id="vBubble"><small id="vName"></small><span id="vSay"></span></div></div>
       <div class="price"><span class="nm" id="pName"></span><span class="tk" id="pTk"></span></div>
       <div class="patience" id="pat"></div>
+      <div class="qc" id="qc"></div>
       <div class="acts" id="offers"></div>
       <div class="custom"><input id="myOffer" inputmode="numeric" placeholder="নিজের দাম বলুন, যেমন ৯০" aria-label="নিজের দাম"><button class="btn" id="myOfferBtn">বলুন</button></div>
+      <button class="btn chk" id="chkBtn">⚖️ পরখ করুন<small>পাল্লায় ওজন আর জিনিস টাটকা কিনা দেখি · ২ মিনিট</small></button>
       <div class="row2"><button class="btn alt" id="otherBtn">অন্য দোকানে যান<small>৫ মিনিট লাগবে</small></button><button class="btn skipb" id="skipBtn">এটা বাদ দিন<small>আম্মা রাগ করবে</small></button></div>
     </div>
   </section>
-  <p class="hint">দরদাম করলে দাম কমে, কিন্তু দোকানদারের ধৈর্য (হলুদ বিন্দু) শেষ হলে রেগে যাবে। প্রতিটা কথায় ৪ মিনিট যায়।</p>
+  <p class="hint">দরদাম করলে দাম কমে, কিন্তু দোকানদারের ধৈর্য (হলুদ বিন্দু) শেষ হলে রেগে যাবে। প্রতিটা কথায় ৪ মিনিট যায়। কেনার আগে পরখ করুন: পাল্লায় ওজন কম কিনা, জিনিস টাটকা কিনা!</p>
 </main>
 
 <div class="over" id="startO">
@@ -142,7 +156,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
     <h1>বাজার দর <span>চ্যালেঞ্জ</span></h1>
     <p class="story">আম্মা হাতে ৫০০ টাকা আর একটা ফর্দ দিয়ে বললেন, "সব আনবি, টাকা যেন বাঁচে!" তিন দিনের বাজার, দাম প্রতিদিন বাড়ছে। পারবেন?</p>
     <div class="mom"><span id="momFace1"></span><div class="bubble"><small>আম্মা</small>দরদাম না করে কিনলে খবর আছে! আর পেঁয়াজ আনতে ভুলবি না।</div></div>
-    <p>ফর্দের জিনিসে চাপ দিন, দোকানদারের সাথে দরদাম করুন, তারপর কিনুন। সব জিনিস কিনলে আর টাকা বাঁচালে বেশি পয়েন্ট। বাজার সকাল ১০টায় বন্ধ!</p>
+    <p>ফর্দের জিনিসে চাপ দিন, দরদাম করুন, <b>পরখ করুন</b> (ওজনে কম দিচ্ছে কিনা, মাছ-সবজি টাটকা কিনা), তারপর কিনুন। পচা জিনিস বা ওজনে কম নিয়ে গেলে আম্মা ধরবেন! শেষে রিকশা ভাড়াও দরদাম করতে হবে। বাজার সকাল ১০টায় বন্ধ!</p>
     <p class="small" id="bestTxt"></p>
     <button class="gbtn" id="startBtn">বাজারে যাই!</button>
     <div class="lb" id="lb1"></div>
@@ -156,6 +170,16 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
     <div class="mom"><span id="momFace2"></span><div class="bubble" id="momSay"><small>আম্মা</small><span></span></div></div>
     <div class="stats"><div><b id="dItems">০</b><span>জিনিস কেনা</span></div><div><b id="dSaved">০</b><span>টাকা বাঁচলো</span></div><div><b id="dScore">০</b><span>আজকের পয়েন্ট</span></div></div>
     <button class="gbtn" id="nextDayBtn">পরের দিন</button>
+  </div>
+</div>
+
+<div class="over" id="rickO" hidden>
+  <div class="card">
+    <h2>বাড়ি ফেরা 🚲</h2>
+    <p class="story" id="rkInfo"></p>
+    <div class="mom"><span id="rkFace"></span><div class="bubble" id="rkBubble"><small>রিকশাওয়ালা মামা</small><span id="rkSay"></span></div></div>
+    <div class="acts" id="rkActs"></div>
+    <button class="btn skipb" id="walkBtn">হেঁটেই যাই<small id="walkHint">টাকা বাঁচবে</small></button>
   </div>
 </div>
 
@@ -216,7 +240,8 @@ const SFX = {
 };
 function sfx(n) { if (!sndOn || !audio()) return; try { SFX[n](); } catch (e) {} }
 let voiceOn = store.get('kh-voice', true);
-function say(t, force) { if (voiceOn && window.KHVoice) window.KHVoice.say(t, force); }
+function say(t, force, who) { if (voiceOn && window.KHVoice) window.KHVoice.say(t, force, who); }
+const vv = v => v.kind === 'scarf' ? 'F1' : v.kind === 'beard' ? 'M3' : 'M1'; // দোকানদারের গলা
 $('snd').onclick = () => { sndOn = !sndOn; store.set('kh-sfx', sndOn); $('snd').classList.toggle('off', !sndOn); };
 $('snd').classList.toggle('off', !sndOn);
 
@@ -240,7 +265,10 @@ const V = {
   grumble: ['এই দামে দিলাম, কাউরে বইলেন না!', 'আজকে লস খাইলাম, আপনারে মনে রাখমু!'],
   mad: ['ধুর মিয়া, অন্য দোকান দেখেন!', 'এই দামে আমার দোকানে আসবেন না!', 'বাজারের দাম জানেন? যান যান!'],
   madAgain: ['আবার আসছেন? আগের দামই, এক পয়সাও কম না!'],
-  bought: ['ব্যাগে ভরলাম!', 'কেনা শেষ!']
+  bought: ['ব্যাগে ভরলাম!', 'কেনা শেষ!'],
+  caught: ['ভুল হইছে মামা, ঠিক ওজনে দিতেছি, পাঁচ টাকা কম রাখেন।', 'পাল্লাটা একটু নষ্ট মামা, এই নেন ঠিক কইরা দিলাম।'],
+  stale: ['এইগুলা একটু নরম, কম দামে নিয়া যান!', 'আচ্ছা মামা, এইটার দাম কমাইয়া দিলাম।'],
+  fresh: ['দেখছেন? আমার মাল একদম টাটকা!', 'হাত দিয়া দেখেন, এক নম্বর মাল!']
 };
 const EVENTS = [
   { t: 'পেঁয়াজের দাম হঠাৎ বাড়লো! সিন্ডিকেট!', id: 'onion', m: 1.5 },
@@ -253,6 +281,9 @@ const MOM = {
   great: ['আম্মা: এত কম টাকায় এত বাজার? তুই তো জিনিয়াস!', 'আম্মা: আজকে তোর জন্য স্পেশাল রান্না!'],
   ok: ['আম্মা: মোটামুটি হইছে, কালকে আরো দরদাম করবি।', 'আম্মা: ঠিক আছে, কিন্তু আরো টাকা বাঁচানো যাইতো।'],
   missing: ['আম্মা: সব আনিস নাই? তরকারি রাঁধবো কী দিয়ে?', 'আম্মা: ফর্দ দিলাম কেন তাহলে? কালকে আবার যাবি!'],
+  stale: ['আম্মা: এই মাছ তো পচা! দেইখা কিনবি না?', 'আম্মা: পচা জিনিস আনছিস কেন? টাকা জলে গেল!'],
+  short: ['আম্মা: এক কেজি বলে এইটা? ওজনে কম দিছে! পাল্লা দেখস নাই?'],
+  broken: ['আম্মা: ডিম ভাঙা কেন? হাইটা আসছিস নাকি?'],
   broke: ['আম্মা: সব টাকা শেষ? তোর বাবারে বলতেছি!', 'আম্মা: টাকা উড়াইছিস! কাল থেকে বাজার আমি করবো।']
 };
 const TITLES = [[0, 'নতুন খরিদ্দার'], [600, 'দরদামের ছাত্র'], [1100, 'বাজারের নিয়মিত মুখ'], [1600, 'দরদাম মাস্টার'], [2100, 'বাজার সম্রাট'], [2600, 'দোকানদারের আতঙ্ক']];
@@ -280,10 +311,10 @@ function newDay() {
     const sum = list.reduce((s, it) => s + it.p, 0) * infl;
     if (sum > 430 && sum < 545 && list.some(it => it.id === 'onion' || k > 150)) break;
   }
-  S.money = BUDGET; S.time = OPEN; S.event = null;
+  S.money = BUDGET; S.time = OPEN; S.event = null; S.rideDone = false; S.walked = false; S.fare = 0; S.toffee = 0;
   S.items = list.map(it => {
     const base = it.p * infl;
-    return { ...it, base, state: 'todo', paid: 0, vendors: [0, 1].map(() => mkVendor(base)), vi: 0 };
+    return { ...it, base, state: 'todo', paid: 0, vendors: [0, 1].map(() => mkVendor(base, it.id)), vi: 0 };
   });
   // মাঝে মাঝে বাজারে কিছু ঘটে
   if (Math.random() < .75) {
@@ -292,10 +323,25 @@ function newDay() {
   }
   S.sel = 0;
 }
-function mkVendor(base) {
+// পাল্লায় মেপে বিক্রি হয় এমন জিনিস, আর প্যাকেটের জিনিস
+const LOOSE = new Set(['rice', 'dal', 'onion', 'potato', 'chili', 'fish', 'chicken', 'garlic', 'tomato']);
+const PACK = new Set(['oil', 'salt', 'sugar']);
+function mkVendor(base, id) {
   const [nm, col, kind] = pick(VENDORS);
-  const ask = r5(base * rnd(1.18, 1.45)), floor = r5(base * rnd(.82, .97));
-  return { nm, col, kind, ask, start: ask, floor: Math.min(floor, ask - 5), pat: 2 + Math.floor(Math.random() * 3), patMax: 0, mad: false, say: pick(V.greet), mood: 'neutral' };
+  const r = Math.random(), qual = r < .22 ? 'stale' : r < .55 ? 'ok' : 'fresh';
+  const cheat = LOOSE.has(id) && Math.random() < .3;
+  const q = qual === 'stale' ? .9 : 1;
+  const ask = r5(base * rnd(1.18, 1.45) * q), floor = r5(base * rnd(.82, .97) * q);
+  return { nm, col, kind, ask, start: ask, floor: Math.min(floor, ask - 5), pat: 2 + Math.floor(Math.random() * 3), patMax: 0, mad: false, say: pick(V.greet), mood: 'neutral', qual, cheat, short: cheat ? pick([10, 15, 20]) : 0, checked: false };
+}
+function qDesc(id, q) {
+  const T = id === 'fish' ? ['কানকো টকটকে লাল, চোখ চকচকে, একদম তাজা!', 'চোখ একটু ঘোলা, গতকালের মাছ', 'কানকো কালো, গন্ধ আসতেছে! ফরমালিন মনে হয় 🤢']
+    : id === 'chicken' ? ['মাংস গোলাপি, টাটকা', 'চলবে, তবে একটু নরম', 'রং ফ্যাকাশে, গন্ধ আসতেছে! 🤢']
+    : id === 'egg' ? ['সব ডিম ঠিক আছে, খোসা শক্ত', 'একটা ডিম একটু ময়লা', 'দুইটা ডিম ফাটা! 🥚💥']
+    : id === 'rice' || id === 'dal' ? ['পরিষ্কার, কাঁকর নাই', 'অল্প কাঁকর আছে, বেছে নিতে হবে', 'পোকা আর কাঁকর ভরা! 🐛']
+    : PACK.has(id) ? ['মেয়াদ ঠিক আছে, প্যাকেট সিল করা', 'মেয়াদ সামনের মাসে শেষ', 'মেয়াদ গত মাসেই শেষ! ❌']
+    : ['টাটকা, শক্ত আর চকচকে', 'মোটামুটি, দুই-একটা নরম', 'পচা ধরছে, নরম আর দাগ! 🤢'];
+  return T[q === 'fresh' ? 0 : q === 'ok' ? 1 : 2];
 }
 const fmtT = m => bn(Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0'));
 
@@ -325,11 +371,14 @@ function render() {
     offers.map(o => `<button class="btn" data-o="${o}" ${done || closed || v.mad ? 'disabled' : ''}>৳${bn(o)}<small>বলে দেখি</small></button>`).join('');
   $('myOfferBtn').disabled = $('myOffer').disabled = done || closed || v.mad;
   $('otherBtn').disabled = done || closed;
+  $('chkBtn').disabled = done || closed || v.checked;
+  $('qc').innerHTML = !v.checked || done ? '' : `<div class="${v.qual === 'fresh' ? 'good' : v.qual === 'ok' ? 'mid' : 'badq'}">🔍 ${qDesc(it.id, v.qual)}</div>` +
+    (LOOSE.has(it.id) ? (v.fixed ? '<div class="good">⚖️ ধরা খেয়ে এখন ঠিক ওজনে দিচ্ছে</div>' : v.cheat ? `<div class="badq">⚖️ পাল্লায় ${bn(v.short)}% কম! বাটখারায় চালাকি 😠</div>` : '<div class="good">⚖️ ওজন ঠিক আছে</div>') : '');
   $('skipBtn').disabled = done || closed;
   $('buyBtn').onclick = buy;
   document.querySelectorAll('[data-o]').forEach(b => b.onclick = () => offer(+b.dataset.o));
 }
-$('list').onclick = e => { const b = e.target.closest('[data-i]'); if (!b) return; S.sel = +b.dataset.i; sfx('talk'); render(); const v = S.items[S.sel].vendors[S.items[S.sel].vi]; if (S.items[S.sel].state === 'todo') say(v.say); };
+$('list').onclick = e => { const b = e.target.closest('[data-i]'); if (!b) return; S.sel = +b.dataset.i; sfx('talk'); render(); const v = S.items[S.sel].vendors[S.items[S.sel].vi]; if (S.items[S.sel].state === 'todo') say(v.say, false, vv(v)); };
 
 /* ================= কাজ ================= */
 function spend(min) {
@@ -350,52 +399,101 @@ function offer(o) {
   if (o >= v.ask) { v.ask = o; buy(); return; }
   if (o >= v.floor) {
     v.ask = r5(o); v.mood = 'happy'; v.say = o < v.floor * 1.04 ? pick(V.grumble) : pick(V.accept);
-    sfx('yes'); say(v.say, true); render(); return;
+    sfx('yes'); say(v.say, true, vv(v)); render(); return;
   }
   v.pat--;
-  if (v.pat <= 0) { v.mad = true; v.mood = 'mad'; v.ask = r5(v.ask * 1.05); v.say = pick(V.mad); sfx('no'); say(v.say, true); render(); return; }
+  if (v.pat <= 0) { v.mad = true; v.mood = 'mad'; v.ask = r5(v.ask * 1.05); v.say = pick(V.mad); sfx('no'); say(v.say, true, vv(v)); render(); return; }
   const tooLow = o < v.floor * .7;
   v.ask = r5(Math.max(v.floor + 5, v.ask - (v.ask - o) * (tooLow ? rnd(.1, .2) : rnd(.3, .55))));
   v.mood = tooLow ? 'mad' : 'neutral';
   v.say = tooLow ? 'এই দামে তো কিনাও পাই না! ' + pick(V.counter) : pick(V.counter);
-  sfx('talk'); say(v.say, true); render();
+  sfx('talk'); say(v.say, true, vv(v)); render();
 }
 $('myOfferBtn').onclick = () => { const o = parseInt(en($('myOffer').value), 10); $('myOffer').value = ''; if (o > 0) offer(o); };
 $('myOffer').addEventListener('keydown', e => { if (e.key === 'Enter') $('myOfferBtn').click(); });
 function buy() {
   const it = cur, v = it.vendors[it.vi];
   if (it.state !== 'todo' || S.money < v.ask || S.time >= CLOSE) return;
-  S.money -= v.ask; it.paid = v.ask; it.state = 'done'; v.mood = 'happy';
+  let pay = v.ask;
+  if (v.ask % 10 === 5 && S.money >= v.ask + 5 && Math.random() < .35) { pay = v.ask + 5; S.toffee = (S.toffee || 0) + 1; setTimeout(() => say('ভাংতি নাই মামা, পাঁচ টাকার চকলেট নেন!', true, vv(v)), 300); } // ভাংতির বদলে চকলেট
+  S.money -= pay; it.paid = pay; it.state = 'done'; v.mood = 'happy'; it.qual = v.qual; it.short = v.cheat ? v.short : 0; it.checked = v.checked;
   sfx('cash'); spend(5);
   const next = S.items.findIndex(x => x.state === 'todo');
-  if (next >= 0) { S.sel = next; render(); setTimeout(() => say(S.items[next].vendors[S.items[next].vi].say), 400); }
+  if (next >= 0) { S.sel = next; render(); setTimeout(() => { const nv = S.items[next].vendors[S.items[next].vi]; say(nv.say, false, vv(nv)); }, 400); }
   else { render(); setTimeout(endDay, 700); }
 }
+$('chkBtn').onclick = () => {
+  const it = cur, v = it.vendors[it.vi]; if (it.state !== 'todo' || v.checked || S.time >= CLOSE) return;
+  audio(); spend(2); v.checked = true;
+  if (LOOSE.has(it.id) && v.cheat) { v.cheat = false; v.fixed = true; v.ask = r5(v.ask * .95); v.floor = Math.min(v.floor, v.ask - 5); v.mood = 'neutral'; v.say = pick(V.caught); sfx('no'); S.caught = (S.caught || 0) + 1; }
+  else if (v.qual === 'stale') { v.ask = r5(v.ask * .8); v.floor = Math.min(r5(v.floor * .8), v.ask - 5); v.say = pick(V.stale); sfx('no'); }
+  else if (v.qual === 'fresh') { v.mood = 'happy'; v.say = pick(V.fresh); sfx('yes'); }
+  else { v.say = 'চলবে মামা, এর চেয়ে ভালো আজকে পাইবেন না।'; sfx('talk'); }
+  say(v.say, true, vv(v)); render();
+};
 $('otherBtn').onclick = () => {
   const it = cur; if (it.state !== 'todo') return;
   spend(5);
-  if (it.vendors.length < 3 && it.vi === it.vendors.length - 1) it.vendors.push(mkVendor(it.base * (S.event && [].concat(S.event.id).includes(it.id) ? S.event.m : 1)));
+  if (it.vendors.length < 3 && it.vi === it.vendors.length - 1) it.vendors.push(mkVendor(it.base * (S.event && [].concat(S.event.id).includes(it.id) ? S.event.m : 1), it.id));
   it.vi = (it.vi + 1) % it.vendors.length;
   const v = it.vendors[it.vi]; if (v.mad) v.say = pick(V.madAgain);
-  sfx('talk'); render(); say(v.say);
+  sfx('talk'); render(); say(v.say, false, vv(v));
 };
 $('skipBtn').onclick = () => { const it = cur; if (it.state !== 'todo') return; it.state = 'skip'; spend(1); const next = S.items.findIndex(x => x.state === 'todo'); if (next >= 0) { S.sel = next; render(); } else { render(); setTimeout(endDay, 500); } };
 
+/* বাড়ি ফেরা: রিকশা ভাড়া দরদাম */
+let RK = null;
 function endDay() {
+  if (!$('dayO').hidden || !$('rickO').hidden || !S.items) return;
+  const n = S.items.filter(i => i.state === 'done').length;
+  if (!n || S.rideDone) return finishDay();
+  const ask = pick([40, 50, 60]) + (n >= 4 ? 10 : 0);
+  RK = { ask, start: ask, floor: r5(ask * rnd(.55, .75)), pat: 2, mad: false };
+  $('rkFace').innerHTML = face('#0ea5e9', 'cap', 'neutral');
+  $('rkInfo').textContent = 'ব্যাগ ভর্তি ' + bn(n) + 'টা জিনিস, বাসা দেড় কিলো দূরে। হাতে আছে ৳' + bn(S.money) + '।';
+  const egg = S.items.some(i => i.state === 'done' && (i.id === 'egg' || i.id === 'tomato'));
+  $('walkHint').textContent = egg ? 'ভারী ব্যাগ, ডিম/টমেটো ভাঙতে পারে!' : 'টাকা বাঁচবে, তবে কষ্ট!';
+  rkSay(pick(['কই যাইবেন মামা? ' + bn(ask) + ' টাকা দিয়েন!', 'উঠেন মামা, ' + bn(ask) + ' টাকা, এক দাম!']), 'neutral');
+  $('rickO').hidden = false; $('game').hidden = true; sfx('talk');
+}
+function rkSay(t, mood) { $('rkSay').textContent = t; $('rkFace').innerHTML = face('#0ea5e9', 'cap', mood); $('rkBubble').className = 'bubble ' + (mood === 'mad' ? 'mad' : mood === 'happy' ? 'happy' : ''); say(t, true, 'M3'); rkBtns(); }
+function rkBtns() {
+  const offs = RK.mad ? [] : [.7, .5].map(f => r5(RK.ask * f)).filter(o => o < RK.ask);
+  $('rkActs').innerHTML = `<button class="btn buy" data-rk="${RK.ask}" ${S.money < RK.ask ? 'disabled' : ''}>রাজি ৳${bn(RK.ask)}</button>` + offs.map(o => `<button class="btn" data-rk="${o}" data-off="1" ${S.money < o ? 'disabled' : ''}>৳${bn(o)}<small>বলে দেখি</small></button>`).join('');
+}
+$('rkActs').onclick = e => {
+  const b = e.target.closest('[data-rk]'); if (!b || !RK) return; const o = +b.dataset.rk;
+  if (!b.dataset.off || o >= RK.floor) { if (b.dataset.off) { rkSay(pick(['আচ্ছা উঠেন, আপনার জন্য কম নিলাম!', 'ঠিক আছে মামা, চলেন!']), 'happy'); } ride(o); return; }
+  RK.pat--; if (RK.pat <= 0) { RK.mad = true; RK.ask = r5(RK.ask * 1.1); rkSay(pick(['এই দামে যামু না, হাইটা যান!', 'ধুর মিয়া, অন্য রিকশা দেখেন!']), 'mad'); return; }
+  RK.ask = r5(Math.max(RK.floor + 5, RK.ask - (RK.ask - o) * rnd(.3, .5))); rkSay(pick(['এত কমে হয় না, রোদের মধ্যে প্যাডেল মারি!', 'শেষ দাম ' + bn(RK.ask) + ' টাকা মামা!']), 'neutral');
+};
+function ride(fare) { S.money -= fare; S.fare = fare; S.rideDone = true; sfx('cash'); setTimeout(() => { $('rickO').hidden = true; finishDay(); }, 900); }
+$('walkBtn').onclick = () => {
+  if (!RK) return; S.fare = 0; S.rideDone = true; S.walked = true;
+  const fragile = S.items.filter(i => i.state === 'done' && (i.id === 'egg' || i.id === 'tomato'));
+  if (fragile.length && Math.random() < .5) { const f = pick(fragile); f.broken = true; say('ধপাস! ব্যাগ ছিঁড়ে ' + f.nm + ' পড়ে গেল!', true, 'M2'); }
+  $('rickO').hidden = true; finishDay();
+};
+function finishDay() {
   if (!$('dayO').hidden || !S.items) return;
   const bought = S.items.filter(i => i.state === 'done'), missing = S.items.filter(i => i.state !== 'done');
   const saved = S.money, fair = bought.reduce((s, i) => s + i.base, 0), haggled = Math.max(0, Math.round(fair - bought.reduce((s, i) => s + i.paid, 0)));
-  const score = Math.max(0, bought.length * 100 + saved * 2 + haggled - missing.length * 80);
+  const bad = bought.filter(i => i.qual === 'stale'), shortI = bought.filter(i => i.short), broken = bought.filter(i => i.broken), wise = bought.filter(i => i.checked && i.qual === 'fresh' && !i.short);
+  const score = Math.max(0, bought.length * 100 + saved * 2 + haggled - missing.length * 80 - bad.length * 60 - shortI.length * 35 - broken.length * 40 + wise.length * 10);
   S.total += score; S.savedTotal += saved; S.boughtTotal += bought.length;
   $('dEndT').textContent = DAYS[S.day] + 'ের বাজার শেষ';
-  $('dSum').innerHTML = S.items.map(i => `<div class="${i.state === 'done' ? '' : 'miss'}"><span>${i.ic} ${i.nm}</span><span>${i.state === 'done' ? '৳' + bn(i.paid) : 'আনা হয়নি'}</span></div>`).join('');
-  const mood = missing.length ? (saved < 30 ? 'broke' : 'missing') : saved >= 60 ? 'great' : 'ok';
+  const tag = i => i.broken ? ' · ভেঙে গেছে!' : i.qual === 'stale' ? ' · পচা!' : i.short ? ' · ওজনে ' + bn(i.short) + '% কম' : i.checked && i.qual === 'fresh' ? ' · টাটকা ✓' : '';
+  $('dSum').innerHTML = S.items.map(i => `<div class="${i.state !== 'done' ? 'miss' : i.broken || i.qual === 'stale' || i.short ? 'warn' : ''}"><span>${i.ic} ${i.nm}</span><span>${i.state === 'done' ? '৳' + bn(i.paid) + tag(i) : 'আনা হয়নি'}</span></div>`).join('') +
+    `<div><span>🚲 ${S.walked ? 'হেঁটে বাসায়' : 'রিকশা ভাড়া'}</span><span>${S.walked ? '৳০' : '৳' + bn(S.fare || 0)}</span></div>` + (S.toffee ? `<div><span>🍬 ভাংতির বদলে চকলেট</span><span>${bn(S.toffee)}টা</span></div>` : '');
+  let mood = missing.length ? (saved < 30 ? 'broke' : 'missing') : saved >= 60 ? 'great' : 'ok';
+  if (!missing.length && (bad.length || shortI.length || broken.length)) mood = broken.length ? 'broken' : bad.length ? 'stale' : 'short';
   const line = pick(MOM[mood]);
   $('momFace2').innerHTML = momFace(mood === 'great' ? 'happy' : mood === 'ok' ? 'neutral' : 'mad');
+  $('game').hidden = false;
   $('momSay').querySelector('span').textContent = line.replace('আম্মা: ', '');
   $('dItems').textContent = bn(bought.length) + '/' + bn(S.items.length); $('dSaved').textContent = '৳' + bn(saved); $('dScore').textContent = bn(score);
   $('nextDayBtn').textContent = S.day < DAYS.length - 1 ? 'পরের দিন: ' + DAYS[S.day + 1] : 'ফলাফল দেখুন';
-  $('dayO').hidden = false; sfx(mood === 'great' || mood === 'ok' ? 'win' : 'sad'); say(line, true);
+  $('dayO').hidden = false; sfx(mood === 'great' || mood === 'ok' ? 'win' : 'sad'); say(line, true, 'F2');
 }
 $('nextDayBtn').onclick = () => {
   $('dayO').hidden = true;
@@ -419,7 +517,14 @@ $('shareBtn').onclick = () => {
   const t = `বাজার দর চ্যালেঞ্জে ৫০০ টাকায় তিন দিনের বাজার করে ${bn(S.total)} পয়েন্ট! আমি এখন "${$('endTitle').textContent}" 🛒\nতুমি পারবা? ${location.origin}/games/bazar/`;
   try { navigator.clipboard.writeText(t).then(() => { $('shareBtn').textContent = 'কপি হয়েছে ✓'; setTimeout(() => $('shareBtn').textContent = 'কপি করে শেয়ার', 2000); }, () => {}); } catch (e) {}
 };
-function start() { audio(); S = newGame(); newDay(); ['startO', 'endO', 'dayO'].forEach(id => $(id).hidden = true); $('game').hidden = false; render(); window.scrollTo(0, 0); say('বাজারে আসছি! আজকে টাকা বাঁচাইতেই হবে!', true); }
+function start() { audio(); S = newGame(); newDay(); ['startO', 'endO', 'dayO', 'rickO'].forEach(id => $(id).hidden = true); $('game').hidden = false; render(); window.scrollTo(0, 0); say('বাজারে আসছি! আজকে টাকা বাঁচাইতেই হবে!', true); }
+/* বাজারের হাঁকডাক */
+const SHOUT = ['আসেন আসেন, দেইখা যান!', 'এক দাম! এক দাম!', 'বেছে নেন, বাইছা নেন!', 'মাল শেষ, মাল শেষ! শেষ দাম!', 'টাটকা মাল, সকালে আনছি!', 'আপা, এদিকে আসেন, সস্তায় দিমু!'];
+setInterval(() => {
+  if (!S || !S.items || $('game').hidden || document.hidden) return;
+  const it = pick(S.items), t = Math.random() < .55 ? `${it.nm} নেন ${it.nm}! ${bn(r5(it.base * rnd(1.05, 1.3)))} টাকা!` : pick(SHOUT);
+  $('shout').textContent = '📣 ' + t; $('shout').style.animation = 'none'; void $('shout').offsetWidth; $('shout').style.animation = '';
+}, 4200);
 $('startBtn').onclick = start; $('againBtn').onclick = start;
 
 /* ================= লগইন, স্কোর, মেরামত ================= */

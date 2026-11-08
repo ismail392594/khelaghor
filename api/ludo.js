@@ -7,7 +7,7 @@ import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { randomInt } from 'node:crypto';
-import { newGame, act, payouts, LudoError } from '../js/ludo-engine.js';
+import { newGame, act, payouts, LudoError, QUICK } from '../js/ludo-engine.js';
 
 const CPU_ENTRY = 100;
 const ENTRIES = [100, 500, 1000];
@@ -51,6 +51,7 @@ async function route(db, uid, b) {
     case 'cpu': return startCpu(db, uid);
     case 'quick': return quick(db, uid, +b.size === 4 ? 4 : 2, ENTRIES.includes(+b.entry) ? +b.entry : 100);
     case 'room': return startRoom(db, uid, String(b.roomId || ''), ENTRIES.includes(+b.entry) ? +b.entry : 100);
+    case 'chat': return chat(db, uid, String(b.matchId || ''), +b.i);
     case 'roll': case 'move': case 'tick': case 'leave':
       return play(db, uid, String(b.matchId || ''), { type: b.action, t: +b.t });
     default: throw new HttpErr(400, 'অজানা কাজ');
@@ -58,6 +59,20 @@ async function route(db, uid, b) {
 }
 
 const userRef = (db, uid) => db.collection('users').doc(uid);
+/* দ্রুত কথা: শুধু তালিকার লাইন, ৩ সেকেন্ডে একবার */
+async function chat(db, uid, matchId, i) {
+  if (!/^[A-Za-z0-9]{10,40}$/.test(matchId) || !(i >= 0 && i < QUICK.length && Number.isInteger(i))) throw new HttpErr(400, 'ভুল অনুরোধ');
+  return db.runTransaction(async tx => {
+    const ref = db.collection('matches').doc(matchId), s = await tx.get(ref);
+    if (!s.exists) throw new HttpErr(404, 'খেলা খুঁজে পাওয়া যায়নি');
+    const m = s.data(), p = (m.players || []).findIndex(pl => pl.uid === uid);
+    if (p < 0 || m.status !== 'playing') throw new HttpErr(403, 'এখন কথা পাঠানো যাবে না');
+    const now = Date.now(), last = (m.chat && m.chat.p === p && m.chat.at) || 0;
+    if (now - last < 3000) throw new HttpErr(429, 'একটু থামেন, পরে বলেন');
+    tx.update(ref, { chat: { p, i, at: now, n: ((m.chat && m.chat.n) || 0) + 1 } });
+    return {};
+  });
+}
 function profileOf(snap) {
   if (!snap.exists) throw new HttpErr(403, 'আগে ইউজারনেম বেছে নিন');
   const u = snap.data();

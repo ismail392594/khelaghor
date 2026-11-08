@@ -16,6 +16,8 @@ export const HOME = 56;                         // ০-৫০ বাইরের
 export const TURN_MS = 30000;
 export const AFK_LIMIT = 3;
 export const COLOR_NAMES = ['লাল', 'সবুজ', 'হলুদ', 'নীল'];
+// খেলার মাঝে দ্রুত কথা (সার্ভার শুধু এই তালিকার নম্বর নেয়, তাই কেউ খারাপ কথা পাঠাতে পারে না)
+export const QUICK = ['ঘরে যা বাবা!', 'ছক্কা দে আল্লাহ!', 'কপাল খারাপ ভাই!', 'এইবার তোরে কাটমু!', 'জলদি চাল দেন মামা!', 'ভালো খেলছেন! 👍', 'হাহা, ধরা খাইলা!', 'চা খাইয়া আসি, খেলা চালাও', 'আমার গুটি ছুঁইবা না!', 'আজকে আমিই জিতমু!'];
 
 export class LudoError extends Error { constructor(code, msg) { super(msg || code); this.code = code; } }
 

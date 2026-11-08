@@ -36,7 +36,7 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:
 canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .pw{position:absolute;left:50%;transform:translateX(-50%);top:8px;display:flex;gap:6px;z-index:2;pointer-events:none;white-space:nowrap}
 .pw span{background:rgba(0,0,0,.5);border-radius:999px;padding:2px 10px;font-size:.78rem;font-weight:700}
-.ctrl{position:absolute;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;align-items:center;gap:6px;padding:6px;border-radius:26px;background:rgba(10,8,30,.45);backdrop-filter:blur(4px);box-shadow:0 6px 18px rgba(0,0,0,.35);z-index:2;touch-action:none}
+.ctrl{position:absolute;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px;border-radius:26px;background:rgba(10,8,30,.45);backdrop-filter:blur(4px);box-shadow:0 6px 18px rgba(0,0,0,.35);z-index:2;touch-action:none}
 .ctrl button{width:62px;height:62px;border-radius:18px;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:1.5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;cursor:pointer;box-shadow:inset 0 -3px 0 rgba(0,0,0,.25),inset 0 0 0 2px rgba(255,255,255,.18);line-height:1;-webkit-tap-highlight-color:transparent}
 .ctrl button small{font:800 .66rem var(--display);margin-top:2px}
 .ctrl button.on,.ctrl button:active{transform:translateY(2px);box-shadow:inset 0 0 0 2px rgba(255,255,255,.4)}
@@ -45,6 +45,26 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .ctrl .gas.on{box-shadow:0 0 0 4px rgba(34,197,94,.45)}
 .ctrl .brake.on{box-shadow:0 0 0 4px rgba(239,79,95,.45)}
 @media (max-width:340px){.ctrl button{width:54px;height:54px}}
+.crow{display:flex;gap:6px}
+.crow.sm button{width:auto;height:36px;padding:0 12px;flex-direction:row;gap:5px;font-size:1rem;border-radius:12px}
+.crow.sm button small{margin:0}
+.map{position:absolute;left:max(10px,env(safe-area-inset-left,0px));top:8px;width:112px;height:112px;z-index:2;pointer-events:none;filter:drop-shadow(0 4px 10px rgba(0,0,0,.4))}
+.nav{position:absolute;left:50%;transform:translateX(-50%);top:40px;z-index:2;display:flex;align-items:center;gap:8px;background:rgba(15,107,58,.92);border-radius:14px;padding:4px 12px 4px 8px;font-weight:700;font-size:.85rem;white-space:nowrap;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.nav b{font-size:1.5rem;line-height:1}
+.nav.hot{background:rgba(214,40,57,.95);animation:navPulse .6s ease-in-out infinite alternate}
+@keyframes navPulse{to{transform:translateX(-50%) scale(1.06)}}
+.street{position:absolute;left:50%;top:26%;transform:translateX(-50%);z-index:2;background:rgba(0,0,0,.6);border-radius:12px;padding:6px 14px;font:800 1.2rem var(--display);white-space:nowrap;pointer-events:none;animation:pop .4s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{from{transform:translateX(-50%) scale(.6);opacity:0}}
+.news{position:absolute;left:0;right:0;top:128px;z-index:2;display:flex;align-items:stretch;background:#fff;color:#111;font-size:.8rem;font-weight:700;pointer-events:none;box-shadow:0 4px 10px rgba(0,0,0,.3);overflow:hidden}
+.news b{background:#c8102e;color:#fff;padding:5px 8px;white-space:nowrap;font-size:.72rem;display:flex;align-items:center}
+.news span{padding:5px 8px;min-width:0}
+.news.in{animation:newsIn 5s ease forwards}
+@keyframes newsIn{0%{transform:translateY(-120%)}8%,90%{transform:none}100%{transform:translateY(-120%)}}
+.talk{position:absolute;z-index:3;transform:translate(-50%,-100%);background:#fff;color:#1d1640;border-radius:14px 14px 14px 4px;padding:6px 10px;font-weight:700;font-size:.82rem;max-width:200px;width:max-content;box-shadow:0 6px 14px rgba(0,0,0,.35);pointer-events:none;line-height:1.3}
+.talk small{display:block;color:#7a70b8;font-size:.66rem}
+.talk::after{content:"";position:absolute;left:12px;bottom:-7px;border:7px solid transparent;border-top-color:#fff;border-bottom:0}
+.sub{position:absolute;left:50%;transform:translateX(-50%);bottom:178px;z-index:2;max-width:92%;background:rgba(0,0,0,.62);border-radius:10px;padding:5px 12px;font-size:.84rem;text-align:center;pointer-events:none}
+.sub b{color:#ffd23f}
 
 .over{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:16px;background:rgba(14,12,30,.74);backdrop-filter:blur(2px)}
 .card{width:100%;max-width:380px;background:linear-gradient(180deg,#2c2752,#1e1a3b);border:1px solid var(--line);border-radius:24px;padding:20px 18px;display:flex;flex-direction:column;gap:12px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5);max-height:100%;overflow:auto}
@@ -103,7 +123,13 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
     <div class="fx" id="fx"></div>
     <div class="pw" id="pw"></div>
     <div class="spd" id="spd" hidden></div>
-    <div class="ctrl" id="ctrl" hidden><button id="lBtn" aria-label="বামে">◀<small>বামে</small></button><button id="bBtn" class="brake" aria-label="ব্রেক (চেপে ধরুন)">▼<small>ব্রেক</small></button><button id="gBtn" class="gas" aria-label="স্পিড বাড়ান (চেপে ধরুন)">▲<small>গ্যাস</small></button><button id="rBtn" aria-label="ডানে">▶<small>ডানে</small></button></div>
+    <canvas class="map" id="map" width="224" height="224" hidden aria-label="শহরের ম্যাপ: বাসা থেকে অফিস"></canvas>
+    <div class="nav" id="nav" hidden></div>
+    <div class="street" id="street" hidden></div>
+    <div class="news" id="news" hidden><b>ঢাকা টুডে ব্রেকিং</b><span id="newsT"></span></div>
+    <div class="talk" id="talk" hidden></div>
+    <div class="sub" id="sub" hidden></div>
+    <div class="ctrl" id="ctrl" hidden><div class="crow sm"><button id="hornBtn" aria-label="হর্ন">📢<small>হর্ন</small></button><button id="bombBtn" aria-label="শব্দ বোমা">💣<small>বোমা</small></button><button id="camBtn" aria-label="ক্যামেরা বদলান">🎥<small>ক্যামেরা</small></button></div><div class="crow"><button id="lBtn" aria-label="বামে">◀<small>বামে</small></button><button id="bBtn" class="brake" aria-label="ব্রেক (চেপে ধরুন)">▼<small>ব্রেক</small></button><button id="gBtn" class="gas" aria-label="স্পিড বাড়ান (চেপে ধরুন)">▲<small>গ্যাস</small></button><button id="rBtn" aria-label="ডানে">▶<small>ডানে</small></button></div></div>
 
     <div class="over" id="startO">
       <div class="card">
@@ -115,7 +141,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
           <div><i>☕</i><b>চা</b>জোরে ছুট</div>
           <div><i>⛑️</i><b>হেলমেট</b>+১ জীবন</div>
         </div>
-        <p>বামে-ডানে সোয়াইপ করুন বা স্ক্রিনের দুই পাশে চাপুন। <b>গ্যাস</b> চেপে ধরলে স্পিড বাড়ে। লাল বাতিতে <b>ব্রেক</b> চেপে ধরুন, নইলে পুলিশ মামলা দেবে! স্পিড ব্রেকারেও আস্তে চালান, রাস্তা পার হওয়া মানুষ দেখে চালান। ৩টা হেলমেট শেষ বা ৯টা বাজলে খেলা শেষ।</p>
+        <p><b>মিশন: বাসা 🏠 থেকে অফিস 🏢!</b> বাম কোণার ম্যাপে হলুদ দাগ ধরে চালান। মোড়ের আগে রাস্তায় তীর আঁকা: বাম লেনে থাকলে বামে ঘুরবেন, মাঝে থাকলে সোজা, ডান লেনে ডানে। বামে-ডানে সোয়াইপ করুন বা স্ক্রিনের দুই পাশে চাপুন। <b>গ্যাস</b> চেপে ধরলে স্পিড বাড়ে। লাল বাতিতে <b>ব্রেক</b> চেপে ধরুন, নইলে পুলিশ মামলা দেবে! স্পিড ব্রেকারেও আস্তে চালান, রাস্তা পার হওয়া মানুষ দেখে চালান। ৩টা হেলমেট শেষ বা ৯টা বাজলে খেলা শেষ।</p>
         <p class="small no3d" id="no3d" hidden>আপনার ফোন বা ব্রাউজারে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।</p>
         <p class="small" id="bestTxt"></p>
         <button class="gbtn" id="startBtn">চলেন অফিসে!</button>
@@ -234,8 +260,17 @@ const L = {
   crashTruck: ['ট্রাকের পেছনে লেখা মায়ের দোয়া, তাও ধাক্কা খাইলাম!', 'ট্রাক মামা, একটু সাইড দেন!'],
   crashCar: ['প্রাইভেট কার! মালিক নামতেছে, পালান!', 'গাড়িতে দাগ পড়ছে, এখন বিল দেন!'],
   cut: ['আরে সিএনজি মামা, সিগন্যাল দিয়া ঢুকেন!', 'হঠাৎ লেন বদলায় কেন?'],
+  wrong: ['ভুল রাস্তা! নতুন রাস্তা খোঁজা হচ্ছে।', 'উল্টা দিকে আসছেন! ম্যাপ দেখেন!'],
   stuck: ['জ্যাম আর জ্যাম! এর চেয়ে হাঁইটা গেলে আগে যাইতাম!', 'ঢাকার জ্যাম, জীবন শেষ!', 'এই জ্যামে বিয়া কইরা বাচ্চার স্কুল শেষ!']
 };
+const NEWS = {
+  crash: ['অফিসগামী বাইকারের সাথে ধাক্কা, চালক বললেন "আমি তো দেখি নাই"', 'রাস্তায় নতুন গর্ত, নাম দেওয়া হলো "বাইকারের ফাঁদ"', 'ধাক্কার পর দুই পক্ষ রাস্তায় বসে চা খাচ্ছেন, জ্যাম আরো লম্বা'],
+  fine: ['লাল বাতি না মানায় বাইকারের মামলা, পুলিশ বললেন "নিয়ম সবার জন্য"', 'সিগন্যালে মামলা খেয়ে বাইকার বললেন, "বাতিটা একটু বেশি লাল ছিল"'],
+  wrong: ['ভুল মোড় নিয়ে বাইকার পৌঁছালেন অচেনা গলিতে, ম্যাপও কনফিউজড', 'বাসা থেকে অফিস: শর্টকাট নিতে গিয়ে রাস্তা হলো দ্বিগুণ'],
+  office: ['আজ এক কর্মী সময়মতো অফিসে পৌঁছেছেন, বিশেষজ্ঞরা অবাক!', 'জ্যাম হারিয়ে অফিসে বাইকার, বস খুশিতে চা খাওয়ালেন'],
+  late: ['আবারো জ্যামে আটকে অফিসে লেট, বস বললেন "কাল থেকে রাতেই চলে আসবা"']
+};
+const GBOMBS = [['ধুর মিয়া! সাইড দেন!', 'M1'], ['ওরে বলদ! এটাও পারলি না?', 'M3'], ['হায় হায়! এইটা কী করলি!', 'F2'], ['আগে চা খাওয়াও, তারপর কথা!', 'M1'], ['চুপ! একদম চুপ! কোনো কথা না!', 'M3']];
 const TITLES = [[0, 'জ্যামের শিকার'], [300, 'নতুন বাইকার'], [800, 'গলির রাজা'], [1500, 'জ্যাম বিশেষজ্ঞ'], [2500, 'ঢাকার রাস্তার বস'], [4000, 'রাইড শেয়ার কিং']];
 const BOSS = {
   early: ['বস: বাহ! আজকে আগে আসছো? চা খাও।', 'বস: সময়মতো এসেছ, তোমাকে দেখে অন্যরা শিখুক।'],
@@ -575,7 +610,7 @@ function mkSignal() {
   const cop = person(st, 0, .3, 0, '#f5f5f0', { cap: '#1f2b46' }); cop.rotation.y = .4;
   box(cop, .52, .4, .2, 0, 1.15, .02, M('#c6ff1a', { emissive: '#7fbf00', emissiveIntensity: .25 }), false); // রিফ্লেক্টিভ জ্যাকেট
   const arm = new THREE.Group(); arm.position.set(.28, 1.4, 0); cop.add(arm); box(arm, .12, .6, .12, 0, .3, 0, M('#f5f5f0'), false); sph(arm, .07, 0, .62, 0, M('#ffffff'));
-  scene.add(g); return { g, lamps, halo, arm };
+  scene.add(g); return { g, lamps, halo, arm, cop };
 }
 const bumpTex = ctex(128, 16, (x, w, h) => { for (let i = 0; i < 8; i++) { x.fillStyle = i % 2 ? '#1b1b1b' : '#f2c230'; x.fillRect(i * 16, 0, 16, h); } });
 const bumpM = new THREE.MeshStandardMaterial({ map: bumpTex, roughness: .8 }); bumpTex.wrapS = THREE.RepeatWrapping; bumpTex.repeat.set(5, 1);
@@ -622,6 +657,185 @@ bike.traverse(o => { if (o.isMesh && o !== shieldBubble) o.castShadow = true; })
 /* ================= খেলা ================= */
 let S = null, raf = 0, last = 0, running = false, demo = true;
 let W = 0, H = 0;
+/* ================= শহরের ম্যাপ: বাসা থেকে অফিস ================= */
+const GN = 5, BLOCK = 170, JW = ROAD_HALF + WALK; // মোড়ের অর্ধেক চওড়া
+const ST_H = ['মিরপুর রোড', 'পান্থপথ', 'গ্রিন রোড', 'এলিফ্যান্ট রোড', 'কাকরাইল রোড'];
+const ST_V = ['সাত মসজিদ রোড', 'সোনারগাঁও রোড', 'কাজী নজরুল ইসলাম এভিনিউ', 'শাহবাগ রোড', 'মতিঝিল সার্কুলার রোড'];
+const DIRS = [[0, -1], [1, 0], [0, 1], [-1, 0]]; // উত্তর, পূর্ব, দক্ষিণ, পশ্চিম
+const inGrid = (x, y) => x >= 0 && y >= 0 && x < GN && y < GN;
+const streetName = (n, dir) => dir % 2 === 0 ? ST_V[n.x] : ST_H[n.y];
+const crossName = (n, dir) => dir % 2 === 0 ? ST_H[n.y] : ST_V[n.x];
+function pathLen(from, to) {
+  const k = n => n.x + ',' + n.y, seen = { [k(from)]: 0 }, q = [from];
+  while (q.length) { const n = q.shift(); if (n.x === to.x && n.y === to.y) return seen[k(n)]; for (const [dx, dy] of DIRS) { const m = { x: n.x + dx, y: n.y + dy }; if (inGrid(m.x, m.y) && !(k(m) in seen)) { seen[k(m)] = seen[k(n)] + 1; q.push(m); } } }
+  return 99;
+}
+function newCity() {
+  const home = { x: Math.floor(Math.random() * GN), y: GN - 1 };
+  let office; do { office = { x: Math.floor(Math.random() * GN), y: Math.floor(Math.random() * 2) }; } while (Math.abs(office.x - home.x) + Math.abs(office.y - home.y) < 5);
+  return { home, office, node: { ...home }, dir: 0, segLeft: BLOCK * .55, trail: [{ ...home }] };
+}
+const nextNode = C => ({ x: C.node.x + DIRS[C.dir][0], y: C.node.y + DIRS[C.dir][1] });
+function allowed(C) { const n = nextNode(C), o = {}; [-1, 0, 1].forEach(t => { const d = (C.dir + t + 4) % 4; o[t] = inGrid(n.x + DIRS[d][0], n.y + DIRS[d][1]); }); return o; }
+function advice(C) {
+  const n = nextNode(C); if (n.x === C.office.x && n.y === C.office.y) return 'office';
+  const al = allowed(C); let best = null, bl = 1e9;
+  [0, -1, 1].forEach(t => { if (!al[t]) return; const d = (C.dir + t + 4) % 4, m = { x: n.x + DIRS[d][0], y: n.y + DIRS[d][1] }, l = pathLen(m, C.office); if (l < bl) { bl = l; best = t; } });
+  return best;
+}
+// কোন লেনে থাকলে কোন দিকে যাবে
+function laneTurn(C, l) { const a = allowed(C); if (l === 0) return a[-1] ? -1 : a[0] ? 0 : 1; if (l === 2) return a[1] ? 1 : a[0] ? 0 : -1; return a[0] ? 0 : a[-1] ? -1 : 1; }
+const arrowC = {};
+function arrowMat(t, hot) {
+  const k = t + (hot ? 'h' : ''); if (arrowC[k]) return arrowC[k];
+  const tx = ctex(128, 256, (x, w, h) => {
+    x.clearRect(0, 0, w, h); x.fillStyle = hot ? '#ffd23f' : 'rgba(245,245,240,.92)'; x.save(); x.translate(w / 2, h * .62);
+    x.fillRect(-10, 0, 20, h * .36);
+    if (t === 0) { x.beginPath(); x.moveTo(-34, 0); x.lineTo(0, -h * .5); x.lineTo(34, 0); x.fill(); x.fillRect(-10, -6, 20, 10); }
+    else { x.fillRect(-10, -70, 20, 70); x.fillRect(t > 0 ? -10 : -36, -80, 46, 20); x.beginPath(); x.moveTo(t * 34, -104); x.lineTo(t * 64, -70); x.lineTo(t * 34, -36); x.closePath(); x.fill(); }
+    x.restore();
+  });
+  return (arrowC[k] = new THREE.MeshBasicMaterial({ map: tx, transparent: true, depthWrite: false }));
+}
+const crossTex = roadTex.clone(); crossTex.needsUpdate = true; crossTex.center.set(.5, .5); crossTex.rotation = Math.PI / 2; crossTex.repeat.set(1, 40 / TILE);
+const crossMat = new THREE.MeshStandardMaterial({ map: crossTex, roughness: .92 });
+const signBoardC = {};
+function streetSign(txt) {
+  if (signBoardC[txt]) return signBoardC[txt];
+  const t = ctex(512, 128, (x, w, h) => { x.fillStyle = '#0f6b3a'; x.fillRect(0, 0, w, h); x.strokeStyle = '#fff'; x.lineWidth = 6; x.strokeRect(8, 8, w - 16, h - 16); x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'middle'; let fs = 54; x.font = `800 ${fs}px ${FONT}`; while (x.measureText(txt).width > w - 40 && fs > 26) { fs -= 3; x.font = `800 ${fs}px ${FONT}`; } x.fillText(txt, w / 2, h / 2 + 4); });
+  return (signBoardC[txt] = new THREE.MeshStandardMaterial({ map: t, roughness: .5, emissive: '#fff', emissiveMap: t, emissiveIntensity: .2, side: THREE.DoubleSide }));
+}
+const officeSignTex = ctex(1024, 192, (x, w, h) => { x.fillStyle = '#1d1640'; x.fillRect(0, 0, w, h); x.fillStyle = '#ffd23f'; x.font = `800 92px ${FONT}`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('🏢 আপনার অফিস', w / 2, h / 2 + 8); });
+function mkJunction(C) {
+  const g = new THREE.Group(), al = allowed(C), adv = advice(C), n = nextNode(C), isOffice = adv === 'office';
+  [-1, 1].forEach(s => { if (!al[s]) return; const m = new THREE.Mesh(new THREE.PlaneGeometry(40, ROAD_HALF * 2), crossMat); m.rotation.x = -Math.PI / 2; m.position.set(s * (ROAD_HALF + 20), .235, 0); m.receiveShadow = true; g.add(m);
+    const zb = new THREE.Mesh(new THREE.PlaneGeometry(3, ROAD_HALF * 2 - .4), new THREE.MeshStandardMaterial({ map: zebraTex, transparent: true })); zb.rotation.x = -Math.PI / 2; zb.rotation.z = Math.PI / 2; zb.position.set(s * (ROAD_HALF + 3.5), .24, 0); g.add(zb); });
+  // লেনের তীর
+  [0, 1, 2].forEach(l => { const t = laneTurn(C, l), hot = !isOffice && t === adv; [24, 44].forEach(dz => { const a = new THREE.Mesh(PLANE, arrowMat(t, hot)); a.scale.set(1.3, 2.6, 1); a.rotation.x = -Math.PI / 2; a.position.set(LX(l), .03, dz); g.add(a); }); });
+  // রাস্তার নামের সবুজ বোর্ড
+  const cn = crossName(n, C.dir), sp = new THREE.Group(); sp.position.set(ROAD_HALF + .9, 0, JW + 4); g.add(sp);
+  cyl(sp, .08, 5.2, 0, 2.6, 0, M('#6b7280', { metalness: .5 }));
+  const lbl = (al[-1] ? '⬅ ' : '') + cn + (al[1] ? ' ➡' : '');
+  plane(sp, 3.2, .8, -1.4, 4.7, 0, streetSign(lbl));
+  if (!al[0]) { // সামনে রাস্তা শেষ (তে-মাথা)
+    const wb = mkWallBlock(); wb.position.z = -JW - 6; g.add(wb);
+  }
+  if (isOffice) { const ob = new THREE.Group(); box(ob, 10, 24, 9, 0, 12, 0, new THREE.MeshStandardMaterial({ color: '#c9d6e3', roughness: .3, metalness: .4 })); for (let i = 0; i < 7; i++) box(ob, 10.05, .5, 9.05, 0, 3 + i * 3, 0, glassM, false); plane(ob, 8, 1.5, 0, 5, -4.56, new THREE.MeshBasicMaterial({ map: officeSignTex }), Math.PI); plane(ob, 8, 1.5, -5.06, 5, 0, new THREE.MeshBasicMaterial({ map: officeSignTex }), -Math.PI / 2); ob.position.set(ROAD_HALF + WALK + 7, 0, -JW - 6); g.add(ob); }
+  g.position.z = -C.segLeft; scene.add(g);
+  const J = { g, z: -C.segLeft, al, adv, n, announced: false, wantSignal: !isOffice && Math.random() < .7, gap: { '-1': al[-1], '1': al[1] }, dead: !al[0] };
+  clearGap(J);
+  return J;
+}
+function mkWallBlock() { const g = new THREE.Group(); const f = facade(26, 6, pick(WALLS)); const m = new THREE.Mesh(BOX, [M('#bfb3a0'), M('#bfb3a0'), M('#7a7268'), M('#bfb3a0'), new THREE.MeshStandardMaterial({ map: f, roughness: .9 }), M('#bfb3a0')]); m.scale.set(26, 18, 8); m.position.y = 9; g.add(m); const [nm, col] = pick(SHOPS); plane(g, 14, 3, 0, 3.4, 4.05, signMat(nm, col)); return g; }
+function gapHit(z0, z1, side) { return S && S.juncs.some(J => J.gap[side] && z1 > J.z - JW - .6 && z0 < J.z + JW + .6); }
+function clearGap(J) { builds.forEach(b => { const s = b.userData.side, z1 = b.position.z + b.userData.len / 2, z0 = b.position.z - b.userData.len / 2; if (J.gap[s] && z1 > J.z - JW - .6 && z0 < J.z + JW + .6) b.position.z = 1000; }); }
+function relayout() { [-1, 1].forEach(side => { let z = BEHIND + 4; builds.filter(b => b.userData.side === side).forEach(b => { const gap = Math.random() < .12 ? rnd(3, 6) : rnd(.1, .6); b.position.z = z - b.userData.len / 2; z -= b.userData.len + gap; }); }); poles.forEach((pl, i) => pl.position.z = BEHIND + 20 - i * POLE_GAP); }
+function turnStreet(t) {
+  // নতুন রাস্তায় ঢুকলাম: আগের রাস্তার সব সরিয়ে নতুন করে সাজাই
+  [...S.obs, ...S.items, ...S.peds, ...S.bumps, ...S.cross].forEach(o => o.g && scene.remove(o.g));
+  S.obs = []; S.items = []; S.peds = []; S.bumps = []; S.cross = [];
+  if (S.signal) { scene.remove(S.signal.m.g); S.signal = null; }
+  S.juncs.forEach(J => scene.remove(J.g)); S.juncs = [];
+  relayout(); if (bridge) bridge.position.z = -400;
+  S.turnFx = { a: t * Math.PI / 2, t: 0 };
+  for (let z = -40; z > FAR; z -= 20) spawnObs(z);
+}
+function passJunction() {
+  const C = S.city, J = S.juncs.find(j => !j.done); if (J) J.done = true;
+  const t = laneTurn(C, S.p.lane), adv = J ? J.adv : null;
+  C.node = nextNode(C); C.trail.push({ ...C.node });
+  if (C.node.x === C.office.x && C.node.y === C.office.y) { if (demo) { S.city = newCity(); S.juncs.forEach(j => scene.remove(j.g)); S.juncs = [mkJunction(S.city)]; return; } endGame('office'); return; }
+  C.dir = (C.dir + t + 4) % 4; C.segLeft = BLOCK;
+  if (t !== 0) { sfx('swoosh'); turnStreet(t); }
+  S.juncs.push(mkJunction(C));
+  if (!demo) {
+    showStreet(streetName(C.node, C.dir));
+    if (adv !== null && adv !== 'office' && t !== adv) { say(pick(L.wrong), true, 'F1'); news('wrong'); S.wrongs = (S.wrongs || 0) + 1; }
+    else if (adv !== null) { S.coins += 2; fc('ঠিক রাস্তা! +২', '#7be0a8', 20); }
+  }
+}
+let streetT = 0;
+function showStreet(n) { $('street').textContent = '📍 ' + n; $('street').hidden = false; streetT = 3; }
+let newsT = 0;
+function news(kind) { if (demo) return; $('newsT').textContent = pick(NEWS[kind]); $('news').hidden = false; $('news').classList.remove('in'); void $('news').offsetWidth; $('news').classList.add('in'); newsT = 5; }
+// ছোট ম্যাপ
+const mapC = $('map'), mg = mapC.getContext('2d');
+function drawMap() {
+  const C = S.city, W2 = mapC.width, pad = 22, cell = (W2 - pad * 2) / (GN - 1), P = (x, y) => [pad + x * cell, pad + y * cell];
+  mg.clearRect(0, 0, W2, W2); mg.fillStyle = 'rgba(20,18,40,.82)'; mg.beginPath(); mg.roundRect ? mg.roundRect(0, 0, W2, W2, 26) : mg.rect(0, 0, W2, W2); mg.fill();
+  mg.strokeStyle = 'rgba(255,255,255,.28)'; mg.lineWidth = 7; mg.lineCap = 'round';
+  for (let i = 0; i < GN; i++) { mg.beginPath(); mg.moveTo(...P(i, 0)); mg.lineTo(...P(i, GN - 1)); mg.stroke(); mg.beginPath(); mg.moveTo(...P(0, i)); mg.lineTo(...P(GN - 1, i)); mg.stroke(); }
+  // সবচেয়ে ছোট রাস্তা
+  const n = nextNode(C), pr = 1 - C.segLeft / BLOCK, me = [C.node.x + DIRS[C.dir][0] * pr, C.node.y + DIRS[C.dir][1] * pr];
+  const route = [me, [n.x, n.y]]; let cur = n, guard = 0;
+  while ((cur.x !== C.office.x || cur.y !== C.office.y) && guard++ < 20) { let bestM = null, bl = 1e9; for (const [dx, dy] of DIRS) { const m = { x: cur.x + dx, y: cur.y + dy }; if (!inGrid(m.x, m.y)) continue; const l = pathLen(m, C.office); if (l < bl) { bl = l; bestM = m; } } cur = bestM; route.push([cur.x, cur.y]); }
+  mg.strokeStyle = '#ffd23f'; mg.lineWidth = 6; mg.setLineDash([10, 8]); mg.beginPath(); route.forEach((q, i) => i ? mg.lineTo(...P(...q)) : mg.moveTo(...P(...q))); mg.stroke(); mg.setLineDash([]);
+  mg.font = '30px sans-serif'; mg.textAlign = 'center'; mg.textBaseline = 'middle';
+  mg.fillText('🏠', ...P(C.home.x, C.home.y)); mg.fillText('🏢', ...P(C.office.x, C.office.y));
+  const [px, py] = P(...me); mg.save(); mg.translate(px, py); mg.rotate(C.dir * Math.PI / 2);
+  mg.fillStyle = '#ef4f5f'; mg.strokeStyle = '#fff'; mg.lineWidth = 4; mg.beginPath(); mg.moveTo(0, -16); mg.lineTo(11, 12); mg.lineTo(0, 6); mg.lineTo(-11, 12); mg.closePath(); mg.fill(); mg.stroke(); mg.restore();
+}
+function navUpdate() {
+  const C = S.city, J = S.juncs.find(j => !j.done); if (!J) return;
+  const dist = Math.max(0, Math.round(C.segLeft / 10) * 10), adv = J.adv;
+  const ic = adv === 'office' ? '🏢' : adv === -1 ? '⬅' : adv === 1 ? '➡' : '⬆';
+  const lane = adv === 'office' ? '' : adv === -1 ? ' · বাম লেন' : adv === 1 ? ' · ডান লেন' : ' · মাঝের লেন';
+  $('nav').innerHTML = `<b>${ic}</b><span>${bn(dist)} মি${lane}</span>`;
+  $('nav').classList.toggle('hot', C.segLeft < 80 && adv !== 'office' && laneTurn(C, S.p.lane) !== adv);
+  if (!J.announced && C.segLeft < 110) { J.announced = true; say(adv === 'office' ? 'সামনেই আপনার অফিস!' : adv === -1 ? 'সামনের মোড়ে বামে যান' : adv === 1 ? 'সামনের মোড়ে ডানে যান' : 'সামনের মোড়ে সোজা যান', true, 'F1'); }
+}
+
+/* ================= রাস্তার মানুষের কথা (মাথার উপর বুদবুদ + নিচে সাবটাইটেল) ================= */
+const ROLES = {
+  helper: { n: 'বাসের হেল্পার', v: 'M2', h: 3.6, l: ['এই গুলিস্তান! গুলিস্তান! খালি গাড়ি!', 'ওস্তাদ বামে প্যাচান! বামে!', 'আস্তে, লেডিস আছে!', 'ভাড়া দেন, ভাড়া দেন!', 'পিছে জায়গা আছে, উইঠা পড়েন!'], horn: ['হর্ন দিয়া লাভ নাই মামা, বাস নড়বে না!', 'বাস তো উড়তে পারে না!'] },
+  rick: { n: 'রিকশাওয়ালা মামা', v: 'M3', h: 2.3, l: ['মামা যাইবেন? নিউমার্কেট এক দাম আশি!', 'ভাই, রিকশারও তো রাস্তা আছে!', 'প্যাডেল মারতে মারতে জীবন শেষ!'], horn: ['আস্তে মামা, যাইতেছি তো!', 'এত হর্ন দেন ক্যান? কান ফাটবো!'] },
+  cng: { n: 'সিএনজি মামা', v: 'M1', h: 2.3, l: ['মিটারে যামু না, দুইশো দিলে চলেন!', 'আমি আগে আইছি, আমার রাস্তা!', 'গ্যাস নাই, তাও চলতেছি!'], horn: ['ওই মিয়া, হর্ন দেন কেন?', 'হর্নে কি জ্যাম ছুটবো?'] },
+  car: { n: 'প্রাইভেট কারের ড্রাইভার', v: 'M1', h: 2, l: ['স্যারের গাড়ি, সাইড দাও!', 'গাড়িতে দাগ পড়লে বিল তুমি দিবা!'], horn: ['হর্ন দিও না, স্যার ঘুমাইতেছেন!'] },
+  truck: { n: 'ট্রাক ড্রাইভার', v: 'M3', h: 3.8, l: ['মায়ের দোয়া আছে, কিছু হইব না!', 'ট্রাকের সামনে আইসা বীরত্ব দেখাইও না!'], horn: ['হর্ন দিয়া ট্রাক সরাইবা? হা হা!'] },
+  ped: { n: 'পথচারী খালা', v: 'F2', h: 2.3, l: ['চোখ নাই? মানুষ দেখো না?', 'ফুটপাতে দোকান, তাই রাস্তায় হাঁটি!', 'আস্তে চালাও বাবা, মায়ের দোয়া নাও!'] },
+  police: { n: 'ট্রাফিক পুলিশ', v: 'M3', h: 2.4, l: ['ওই থাম! কাগজ দেখাও!', 'লাইসেন্স কই?', 'লাল বাতি দেখস না?'] }
+};
+const roleOf = o => ({ bus: 'helper', truck: 'truck', car: 'car', cng: 'cng', rick: 'rick' })[o.kind];
+let talkObj = null, talkT = 0, talkH = 2;
+function talk(obj, role, line) {
+  if (demo || !obj) return; const R = ROLES[role]; if (!R) return; line = line || pick(R.l);
+  talkObj = obj; talkH = R.h; talkT = Math.max(2.6, line.length * .085);
+  $('talk').innerHTML = `<small>${R.n}</small>`; $('talk').appendChild(document.createTextNode(line)); $('talk').hidden = false;
+  $('sub').innerHTML = `<b>${R.n}:</b> `; $('sub').appendChild(document.createTextNode(line)); $('sub').hidden = false;
+  say(line, true, R.v);
+}
+const _wp = new THREE.Vector3();
+function talkView(dt) {
+  if (talkT <= 0) return; talkT -= dt;
+  if (talkT <= 0 || !talkObj || !talkObj.parent) { $('talk').hidden = true; $('sub').hidden = true; talkT = 0; return; }
+  talkObj.getWorldPosition(_wp); _wp.y += talkH; _wp.project(cam);
+  const on = _wp.z < 1 && Math.abs(_wp.x) < 1.1 && Math.abs(_wp.y) < 1.1;
+  $('talk').style.visibility = on ? 'visible' : 'hidden';
+  if (on) { $('talk').style.left = Math.max(70, Math.min(W - 70, (_wp.x * .5 + .5) * W)) + 'px'; $('talk').style.top = Math.max(60, (-_wp.y * .5 + .5) * H) + 'px'; }
+}
+function ambientTalk() {
+  const near = S.obs.filter(o => !o.static && o.z < -6 && o.z > -38);
+  const ped = S.peds.find(pd => pd.z < -4 && pd.z > -30);
+  if (ped && Math.random() < .35) return talk(ped.g, 'ped');
+  if (near.length) { const o = pick(near); talk(o.g, roleOf(o)); }
+}
+function honk() {
+  if (!running || demo || !S) return; audio(); sfx('horn');
+  const ahead = S.obs.filter(o => !o.static && o.lane === S.p.lane && o.z < 0 && o.z > -30).sort((a, b) => b.z - a.z)[0];
+  if (ahead) {
+    talk(ahead.g, roleOf(ahead), pick(ROLES[roleOf(ahead)].horn));
+    if ((ahead.kind === 'rick' || ahead.kind === 'cng' || ahead.kind === 'car') && Math.random() < .55) { const nl = [ahead.lane - 1, ahead.lane + 1].filter(l => l >= 0 && l <= 2 && !laneBusy(l, ahead.z - ahead.len - 3, ahead.z + ahead.len + 3)); if (nl.length) ahead.lane = pick(nl); }
+  }
+}
+function bombGame() {
+  if (!running || demo || !S) return; audio(); sfx('boom'); S.shake = .3;
+  const b = pick(GBOMBS); fc('💣 ' + b[0], '#ffb627', 24); say(b[0], true, b[1]);
+  setTimeout(() => { if (S && !S.over) { const o = S.obs.find(q => !q.static && q.z < 0 && q.z > -25); if (o) talk(o.g, roleOf(o), pick(['এইটা কী ফাটাইলা!', 'আল্লাহ গো, বোমা নাকি!', 'ভয় পাইছি মামা!'])); } }, 1600);
+}
+let camMode = 0; const CAMS = ['পেছন থেকে', 'উপর থেকে', 'চালকের চোখে'];
+function camNext() { camMode = (camMode + 1) % 3; if (S && !demo) fc('🎥 ' + CAMS[camMode], '#fff', 18); rider.visible = camMode !== 2; }
+
+
 function resize() {
   const r = $('stage').getBoundingClientRect(); W = Math.max(1, r.width); H = Math.max(1, r.height);
   if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.updateProjectionMatrix();
@@ -629,15 +843,17 @@ function resize() {
 addEventListener('resize', resize);
 function clearDyn() {
   if (!S) return;
-  [...S.obs, ...S.items.map(i => ({ g: i.g })), ...S.peds, ...S.bumps].forEach(o => o.g && scene.remove(o.g));
+  [...S.obs, ...S.items.map(i => ({ g: i.g })), ...S.peds, ...S.bumps, ...(S.cross || [])].forEach(o => o.g && scene.remove(o.g));
   if (S.signal) scene.remove(S.signal.m.g);
+  (S.juncs || []).forEach(J => scene.remove(J.g));
 }
 function newGame() {
   clearDyn();
-  return { t: 0, dist: 0, speed: 0, base: 13, coins: 0, score: 0, lives: 3, clock: 0, over: false,
+  const N = { t: 0, dist: 0, speed: 0, base: 13, coins: 0, score: 0, lives: 3, clock: 0, over: false,
     p: { lane: 1, x: 0, tilt: 0, hit: 0, slow: 0, boost: 0, shield: 0, brake: false },
     obs: [], items: [], peds: [], bumps: [], spawnT: .2, itemT: 2.5, coinRun: 0, lastHorn: 0, warned: false, nextKm: 1,
-    signal: null, nextSignal: 420, nextBump: 260, pedT: 6, rain: 0, nextRain: rnd(35, 55), fines: 0, shake: 0, flash: 0, stuckT: 0, lastStuck: -20, nextBridge: 650 };
+    signal: null, nextSignal: 420, nextBump: 260, pedT: 6, rain: 0, nextRain: rnd(35, 55), fines: 0, shake: 0, flash: 0, stuckT: 0, lastStuck: -20, nextBridge: 650, city: newCity(), juncs: [], cross: [], crossT: 0, talkCD: 5, turnFx: null, wrongs: 0 };
+  S = N; relayout(); N.juncs.push(mkJunction(N.city)); return N;
 }
 const CLOCK_SEC = 150; // ৮টা থেকে ৯টা = আড়াই মিনিট খেলা
 function fmtClock() { const m = Math.min(60, Math.floor(S.clock / CLOCK_SEC * 60)); return bn(m === 60 ? '৯:০০' : '৮:' + String(m).padStart(2, '0')); }
@@ -665,7 +881,8 @@ function spawnObs(z0) {
   let r = Math.random() * kinds.reduce((s, k) => s + k[1], 0), kind = 'cng';
   for (const [k, w] of kinds) { if ((r -= w) < 0) { kind = k; break; } }
   const o = ({ bus: mkBus, truck: mkTruck, car: mkCar, cng: mkCng, rick: mkRick, hole: mkHole, water: mkWater })[kind]();
-  const Z = z0 !== undefined ? z0 : FAR;
+  let Z = z0 !== undefined ? z0 : FAR;
+  const DJ = S.juncs && S.juncs.find(j => !j.done && j.dead); if (DJ && Z < DJ.z + 14) { Z = DJ.z + 14 + o.len; if (Z > -40) return; }
   const lanes = [0, 1, 2].filter(l => !laneBusy(l, Z - o.len / 2 - 8, Z + o.len / 2 + 8));
   const blocked = [0, 1, 2].filter(l => laneBusy(l, Z - 28, Z + 28)).length;
   if (!lanes.length || blocked >= 2) return;
@@ -689,11 +906,13 @@ function move(dir) {
   if (nl !== S.p.lane) { S.p.lane = nl; sfx('swoosh'); }
 }
 function crash(o) {
-  const p = S.p;
+  const p = S.p; (S.crashLog = S.crashLog || []).push(o.kind + (o.dir ? '-x' : ''));
   if (p.shield > 0) { p.shield = 0; fc('ঢাল বাঁচালো!', '#36d1c4', 22); sfx('helmet'); p.hit = 1.2; return; }
   S.lives--; p.hit = 1.6; S.shake = .5; S.flash = 1; sfx('crash'); if (navigator.vibrate) try { navigator.vibrate(140); } catch (e) {}
   fc(o.kind === 'hole' ? 'গর্ত!' : 'ধাক্কা!', '#ff6b7a', 28);
   say(pick(o.kind === 'bus' ? L.crashBus : o.kind === 'cng' ? L.crashCng : o.kind === 'rick' ? L.crashRick : o.kind === 'truck' ? L.crashTruck : o.kind === 'car' ? L.crashCar : L.crashHole), true, 'M2');
+  if (o.g && roleOf(o)) setTimeout(() => S && !S.over && talk(o.g, roleOf(o)), 900);
+  news('crash');
   if (S.lives <= 0) endGame('crash');
 }
 function step(dt) {
@@ -715,9 +934,9 @@ function step(dt) {
   curbs.forEach(([c, s]) => { c.material.map.offset.x += (s < 0 ? d : -d) / 2; });
   let minZ = { '-1': Infinity, '1': Infinity };
   builds.forEach(b => { b.position.z += d; const s = b.userData.side; minZ[s] = Math.min(minZ[s], b.position.z - b.userData.len / 2); });
-  builds.forEach(b => { if (b.position.z - b.userData.len / 2 > BEHIND + 6) { const s = b.userData.side; const gap = Math.random() < .12 ? rnd(3, 6) : rnd(.1, .6); b.position.z = minZ[s] - gap - b.userData.len / 2; minZ[s] = b.position.z - b.userData.len / 2; } });
-  poles.forEach(pl => { pl.position.z += d; if (pl.position.z > BEHIND + 30) pl.position.z -= poles.length * POLE_GAP; });
-  if (bridge) { bridge.position.z += d; if (bridge.position.z > BEHIND + 10 && S.dist > S.nextBridge) { bridge.position.z = FAR - 40; S.nextBridge = S.dist + rnd(700, 1100); } }
+  builds.forEach(b => { if (b.position.z - b.userData.len / 2 > BEHIND + 6) { const s = b.userData.side, L2 = b.userData.len; const gap = Math.random() < .12 ? rnd(3, 6) : rnd(.1, .6); let front = minZ[s] - gap; for (const J of S.juncs) if (J.gap[s] && front - L2 < J.z + JW + .6 && front > J.z - JW - .6) front = J.z - JW - .6; b.position.z = front - L2 / 2; minZ[s] = front - L2; } });
+  poles.forEach(pl => { pl.position.z += d; if (pl.position.z > BEHIND + 30) pl.position.z -= poles.length * POLE_GAP; pl.visible = !S.juncs.some(J => J.gap[-1] && Math.abs(J.z - pl.position.z) < JW + 2); });
+  if (bridge) { bridge.position.z += d; if (bridge.position.z > BEHIND + 10 && S.dist > S.nextBridge && !S.juncs.some(J => Math.abs(J.z - (FAR - 40)) < 30)) { bridge.position.z = FAR - 40; S.nextBridge = S.dist + rnd(700, 1100); } }
   p.x += (LX(p.lane) - p.x) * Math.min(1, dt * 9);
   // নতুন গাড়ি ও জিনিস
   S.spawnT -= dt; if (S.spawnT <= 0) { spawnObs(); S.spawnT = rnd(.6, 1.15) * (1 - Math.min(.3, S.dist / 8000)) * (14 / Math.max(8, S.speed + 4)); }
@@ -746,7 +965,19 @@ function step(dt) {
   S.items = S.items.filter(it => { const k = it.z < BEHIND && !it.got; if (!k) scene.remove(it.g); return k; });
   smokes.forEach(sm => { if (sm.life <= 0) return; sm.life -= dt * .6; sm.s.position.z += d * .5; sm.s.position.y += dt * .8; sm.s.scale.setScalar(.5 + (1 - sm.life) * 2.5); sm.s.material.opacity = sm.life * .45; if (sm.life <= 0) sm.s.visible = false; });
   // সিগন্যাল
-  if (!S.signal && S.dist >= S.nextSignal) { const m = mkSignal(); S.signal = { z: FAR + 10, state: 'red', green: rnd(3, 5), seen: false, passed: false, m }; S.nextSignal += rnd(650, 1000); }
+  // মোড়
+  S.city.segLeft -= d;
+  S.juncs.forEach(J => { J.z += d; J.g.position.z = J.z; });
+  S.juncs = S.juncs.filter(J => { const k = J.z < BEHIND + 30; if (!k) scene.remove(J.g); return k; });
+  const NJ = S.juncs.find(j => !j.done);
+  if (NJ && NJ.dead) S.obs = S.obs.filter(o => { const k = o.z > NJ.z + 3; if (!k) scene.remove(o.g); return k; }); // তে-মাথায় সামনের গাড়ি পাশে চলে যায়
+  if (NJ && !S.signal && NJ.wantSignal && !NJ.sig && NJ.z > -150) { NJ.sig = true; const m = mkSignal(); S.signal = { z: NJ.z + JW + 1.6, state: 'red', green: rnd(3, 5.5), seen: false, passed: false, m, J: NJ }; m.g.position.z = S.signal.z; }
+  if (S.city.segLeft <= 0) { passJunction(); if (S.over) return; }
+  // আড়াআড়ি গাড়ি (লাল বাতিতে পাশের রাস্তা দিয়ে)
+  const SG = S.signal;
+  if (SG && SG.state === 'red' && SG.green > 2.2 && SG.z > -110 && SG.z < 2) { S.crossT -= dt; if (S.crossT <= 0) { S.crossT = rnd(1.2, 2.2); const sides = [-1, 1].filter(sd => SG.J.gap[sd]); if (sides.length) { const sd = pick(sides), o = pick([mkCar, mkCng, mkBus, mkRick])(); o.dir = -sd; o.x = sd * 26; o.zo = sd < 0 ? 1.8 : -1.8; o.v = o.kind === 'rick' ? 3.5 : rnd(8, 11); o.g.rotation.y = o.dir > 0 ? -Math.PI / 2 : Math.PI / 2; o.jz = SG.J; scene.add(o.g); S.cross.push(o); } } }
+  S.cross.forEach(o => { o.x += o.dir * o.v * (SG && SG.state === 'red' ? 1 : 1.8) * dt; o.g.position.set(o.x, 0, o.jz.z + o.zo); });
+  S.cross = S.cross.filter(o => { const k = Math.abs(o.x) < 50 && o.jz.z < BEHIND; if (!k) scene.remove(o.g); return k; });
   if (S.signal) {
     const s2 = S.signal; s2.z += d; s2.m.g.position.z = s2.z;
     if (s2.z > -95 && s2.state === 'red') { s2.green -= dt; if (s2.green <= 0) { s2.state = 'yellow'; s2.yt = .9; } }
@@ -758,14 +989,14 @@ function step(dt) {
     if (!s2.passed && s2.z >= -.9) {
       s2.passed = true;
       if (!demo) {
-        if (s2.state !== 'green') { const fine = Math.min(S.coins, 10); S.coins -= fine; S.fines++; sfx('whistle'); fc('মামলা! −' + bn(fine) + ' কয়েন', '#ef4444', 24); say(pick(L.fine), true, 'M3'); }
+        if (s2.state !== 'green') { const fine = Math.min(S.coins, 10); S.coins -= fine; S.fines++; sfx('whistle'); fc('মামলা! −' + bn(fine) + ' কয়েন', '#ef4444', 24); talk(s2.m.cop, 'police'); news('fine'); }
         else { S.coins += 3; fc('নিয়ম মেনে পার! +৩', '#22c55e', 20); }
       }
     }
     if (s2.z > BEHIND + 4) { scene.remove(s2.m.g); S.signal = null; }
   }
   // স্পিড ব্রেকার
-  if (S.dist >= S.nextBump) { if (!S.signal || S.signal.z > -40) { const g = mkBump(); S.bumps.push({ z: FAR + 20, g, done: false }); } S.nextBump += rnd(380, 650); }
+  if (S.dist >= S.nextBump) { if ((!S.signal || S.signal.z > -40) && !S.juncs.some(J => Math.abs(J.z - (FAR + 20)) < 25)) { const g = mkBump(); S.bumps.push({ z: FAR + 20, g, done: false }); } S.nextBump += rnd(380, 650); }
   S.bumps.forEach(b => {
     b.z += d; b.g.position.z = b.z;
     if (!b.done && b.z >= 0) { b.done = true; if (demo) return;
@@ -780,7 +1011,7 @@ function step(dt) {
     pd.g.position.set(pd.x, .22 * (Math.abs(pd.x) > ROAD_HALF ? 1 : 0), pd.z); pd.umb.visible = S.rain > 0;
     const sw = Math.sin(S.t * 8 + pd.seed) * .5; pd.p.userData.lL.rotation.x = sw; pd.p.userData.lR.rotation.x = -sw;
     if (!demo && !pd.hit && Math.abs(pd.x - p.x) < .6 && Math.abs(pd.z) < 1) { pd.hit = true; pd.vx *= 2.4;
-      if (p.hit <= 0) { p.hit = 1.3; S.speed *= .3; S.coins = Math.max(0, S.coins - 5); sfx('brake'); fc('সাবধানে! −৫ কয়েন', '#ff9f9f', 20); say(pick(L.ped), true, pick(['F1', 'M1'])); } }
+      if (p.hit <= 0) { p.hit = 1.3; S.speed *= .3; S.coins = Math.max(0, S.coins - 5); sfx('brake'); fc('সাবধানে! −৫ কয়েন', '#ff9f9f', 20); talk(pd.g, 'ped'); } }
   });
   S.peds = S.peds.filter(pd => { const k = pd.z < BEHIND && Math.abs(pd.x) < ROAD_HALF + 3; if (!k) scene.remove(pd.g); return k; });
   // বৃষ্টি
@@ -793,6 +1024,13 @@ function step(dt) {
     // জ্যামে আটকা
     const redNear = S.signal && S.signal.state !== 'green' && S.signal.z < 0 && S.signal.z > -40;
     if (S.speed < 2 && !redNear) { S.stuckT += dt; if (S.stuckT > 2.5 && S.t - S.lastStuck > 12) { S.lastStuck = S.t; say(pick(L.stuck), false, pick(['M1', 'M3'])); fc('জ্যামে আটকা!', '#ffb627', 22); } } else S.stuckT = 0;
+    // আড়াআড়ি গাড়ির সাথে ধাক্কা
+    for (const o of S.cross) { if (o.done || p.hit > 0) continue; const cz = o.jz.z + o.zo; if (Math.abs(o.x) < ROAD_HALF + 1 && Math.abs(cz) < o.w / 2 + .7 && Math.abs(o.x - p.x) < o.len / 2 + .35) { o.done = true; S.speed = 0; crash(o); talk(o.g, roleOf(o), 'লাল বাতিতে ঢুকলা কেন? চোখে দেখো না?'); if (S.over) return; } }
+    // রাস্তার মানুষের কথা
+    S.talkCD -= dt; if (S.talkCD <= 0 && talkT <= 0) { S.talkCD = rnd(5, 9); ambientTalk(); }
+    if (streetT > 0) { streetT -= dt; if (streetT <= 0) $('street').hidden = true; }
+    if (newsT > 0) { newsT -= dt; if (newsT <= 0) $('news').hidden = true; }
+    navUpdate(); if (Math.floor(S.t * 10) % 2 === 0) drawMap();
     // ধাক্কা
     for (const o of S.obs) {
       if (o.done) continue;
@@ -823,7 +1061,7 @@ function addPed(z, zebra) {
   S.peds.push(pd);
 }
 // আবহাওয়া, ক্যামেরা, বাইক আঁকা
-const _top = new THREE.Color(), _bot = new THREE.Color();
+const _top = new THREE.Color(), _bot = new THREE.Color(), _cp = new THREE.Vector3(), _ct = new THREE.Vector3(), _Y = new THREE.Vector3(0, 1, 0); let camX = 0;
 function view(dt) {
   const p = S.p, wet = Math.min(1, Math.max(0, S.rain > 0 ? 1 : 0));
   S.wet = (S.wet || 0) + (wet - (S.wet || 0)) * Math.min(1, dt * .8);
@@ -850,8 +1088,14 @@ function view(dt) {
   const fov = (portrait ? 70 : 58) + (p.boost > 0 ? 8 : 0) + Math.min(6, S.speed * .18);
   cam.fov += (fov - cam.fov) * Math.min(1, dt * 3); cam.updateProjectionMatrix();
   const sh = S.shake * .35;
-  cam.position.x += (p.x * .72 - cam.position.x) * Math.min(1, dt * 6); cam.position.y = cy + rnd(-sh, sh); cam.position.z = cz + rnd(-sh, sh);
-  cam.lookAt(p.x * .55, .9, -14);
+  let ya = 0; if (S.turnFx) { S.turnFx.t += dt; const k2 = Math.min(1, S.turnFx.t / .9); ya = S.turnFx.a * Math.pow(1 - k2, 2); if (k2 >= 1) S.turnFx = null; }
+  bike.rotation.y = ya * .5;
+  let ox, oy, oz, tx, ty, tz;
+  if (camMode === 2) { ox = p.x; oy = 1.85; oz = .1; tx = p.x; ty = 1.4; tz = -20; }
+  else { camX += (p.x * .72 - camX) * Math.min(1, dt * 6); ox = camX; oy = cy + (camMode === 1 ? 4 : 0); oz = cz + (camMode === 1 ? 3 : 0); tx = p.x * .55; ty = .9; tz = -14; }
+  _cp.set(ox - p.x, oy + rnd(-sh, sh), oz + rnd(-sh, sh)).applyAxisAngle(_Y, ya); cam.position.set(p.x + _cp.x, _cp.y, _cp.z);
+  _ct.set(tx - p.x, ty, tz).applyAxisAngle(_Y, ya); cam.lookAt(p.x + _ct.x, _ct.y, _ct.z);
+  talkView(dt);
   sky.position.copy(cam.position);
   sun.position.set(cam.position.x - 10, 20, 6); sun.target.position.set(cam.position.x, 0, -10);
   $('flash').style.opacity = Math.max(S.flash * .5, p.hit > 1.1 && !demo ? (p.hit - 1.1) * .9 : 0);
@@ -875,6 +1119,7 @@ $('stage').addEventListener('pointerup', e => {
   else if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) move(dx > 0 ? 1 : -1);
   else { const r = $('stage').getBoundingClientRect(); move(e.clientX - r.left < r.width / 2 ? -1 : 1); }
 });
+$('hornBtn').addEventListener('pointerdown', e => { e.preventDefault(); honk(); }); $('bombBtn').addEventListener('pointerdown', e => { e.preventDefault(); bombGame(); }); $('camBtn').addEventListener('pointerdown', e => { e.preventDefault(); camNext(); });
 $('lBtn').addEventListener('pointerdown', e => { e.preventDefault(); move(-1); }); $('rBtn').addEventListener('pointerdown', e => { e.preventDefault(); move(1); });
 function gas(on) { if (!S || !running || demo) return; S.p.gas = on; $('gBtn').classList.toggle('on', on); if (on) sfx('rev'); }
 $('gBtn').addEventListener('pointerdown', e => { e.preventDefault(); gas(true); });
@@ -883,17 +1128,18 @@ function brake(on) { if (!S || !running || demo) return; if (on && !S.p.brake) s
 $('bBtn').addEventListener('pointerdown', e => { e.preventDefault(); brake(true); });
 ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => $('bBtn').addEventListener(ev, () => brake(false)));
 addEventListener('keyup', e => { if (e.key === 'ArrowDown' || e.key === ' ') brake(false); if (e.key === 'ArrowUp' || e.key === 'w') gas(false); });
-addEventListener('keydown', e => { if (e.repeat) return; if (e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); brake(true); return; } if (e.key === 'ArrowUp' || e.key === 'w') { e.preventDefault(); gas(true); return; } if (e.key === 'ArrowLeft' || e.key === 'a') move(-1); else if (e.key === 'ArrowRight' || e.key === 'd') move(1); else if (e.key === 'Escape' || e.key === 'p') running ? pause() : resume(); });
+addEventListener('keydown', e => { if (e.repeat) return; if (e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); brake(true); return; } if (e.key === 'ArrowUp' || e.key === 'w') { e.preventDefault(); gas(true); return; } if (e.key === 'ArrowLeft' || e.key === 'a') move(-1); else if (e.key === 'ArrowRight' || e.key === 'd') move(1); else if (e.key === 'Escape' || e.key === 'p') running ? pause() : resume(); else if (e.key === 'h') honk(); else if (e.key === 'b') bombGame(); else if (e.key === 'c') camNext(); });
 
 /* ================= শুরু, থামা, শেষ ================= */
 function start() {
   if (!renderer) return;
   audio(); resize(); S = newGame(); demo = false; hud(); $('fx').innerHTML = '';
-  ['startO', 'endO', 'pauseO'].forEach(id => $(id).hidden = true); $('ctrl').hidden = false; $('spd').hidden = false;
+  ['startO', 'endO', 'pauseO'].forEach(id => $(id).hidden = true); $('ctrl').hidden = false; $('spd').hidden = false; $('map').hidden = false; $('nav').hidden = false; drawMap(); showStreet(streetName(S.city.node, S.city.dir));
   // শুরুতেই সামনে কিছু গাড়ি, তবে কাছে না
   for (let z = -60; z > FAR; z -= 22) spawnObs(z);
   running = true; last = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
   say(pick(L.start), true, 'M2');
+  setTimeout(() => S && !S.over && !demo && say('অফিসের রাস্তা ম্যাপে হলুদ দাগে দেখানো আছে', false, 'F1'), 3200);
 }
 function pause() { if (!running || !S || S.over || demo) return; running = false; engine(0); $('pauseO').hidden = false; }
 function resume() { if (!S || S.over || $('pauseO').hidden) return; $('pauseO').hidden = true; running = true; last = performance.now(); raf = requestAnimationFrame(loop); }
@@ -905,19 +1151,20 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) { pau
 
 let best = store.get('kh-jam-best', 0);
 function endGame(why) {
-  if (S.over) return; S.over = true; running = false; engine(0); $('ctrl').hidden = true; $('spd').hidden = true; S.p.brake = false;
-  const reached = why === 'time' && S.lives > 0;
-  if (reached) S.score += 200; // সময়মতো টিকে থাকার বোনাস
+  if (S.over) return; S.over = true; running = false; engine(0); ['ctrl', 'spd', 'map', 'nav', 'talk', 'sub', 'street'].forEach(id => $(id).hidden = true); talkT = 0; S.p.brake = false;
+  const reached = why === 'office', left = Math.max(0, Math.round(CLOCK_SEC - S.clock));
+  if (reached) S.score += 300 + left * 4; // অফিসে পৌঁছানোর বোনাস
+  news(reached ? 'office' : why === 'time' ? 'late' : 'crash');
   const sc = S.score, title = TITLES.filter(t => sc >= t[0]).pop()[1], newBest = sc > best;
   if (newBest) { best = sc; store.set('kh-jam-best', best); }
   sfx(reached ? 'win' : 'over');
-  $('endT').textContent = newBest && sc > 0 ? 'নতুন রেকর্ড! 🎉' : reached ? 'অফিস পৌঁছাইছেন!' : 'অ্যাক্সিডেন্ট!';
+  $('endT').textContent = newBest && sc > 0 ? 'নতুন রেকর্ড! 🎉' : reached ? 'অফিস পৌঁছাইছেন! 🏢' : why === 'time' ? '৯টা বেজে গেছে, লেট!' : why === 'quit' ? 'বাসায় ফিরলেন' : 'অ্যাক্সিডেন্ট!';
   $('endTitle').textContent = title;
   const km = (S.dist / 1000).toFixed(1);
-  const bl = reached ? (km >= 2.5 ? pick(BOSS.early) : pick(BOSS.late)) : pick(BOSS.crash);
+  const bl = reached ? (left >= 20 ? pick(BOSS.early) : pick(BOSS.late)) : why === 'time' ? pick(BOSS.late) : pick(BOSS.crash);
   $('bossLine').innerHTML = '<b>' + bl.replace(':', ':</b>');
   $('eS').textContent = bn(sc); $('eD').textContent = bn(km); $('eC').textContent = bn(S.coins);
-  $('eBest').textContent = 'আপনার সেরা: ' + bn(best) + (reached ? ' · সময়মতো পৌঁছানোর বোনাস +২০০' : '') + (S.fines ? ' · মামলা খেয়েছেন ' + bn(S.fines) + ' বার 🚨' : ' · একটাও মামলা নেই! 👮');
+  $('eBest').textContent = 'আপনার সেরা: ' + bn(best) + (reached ? ' · অফিস বোনাস +' + bn(300 + left * 4) + ' (' + bn(left) + ' সেকেন্ড আগে)' : '') + (S.wrongs ? ' · ভুল মোড় ' + bn(S.wrongs) + 'টা' : '') + (S.fines ? ' · মামলা খেয়েছেন ' + bn(S.fines) + ' বার 🚨' : ' · একটাও মামলা নেই! 👮');
   $('endO').hidden = false;
   say(reached ? pick(L.office) : pick(L.over), true, 'M2');
   setTimeout(() => say(bl, false, 'M3'), 2600);
