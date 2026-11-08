@@ -90,6 +90,12 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--cyan);outline-offse
 .hero{transform:perspective(900px) rotateX(var(--hx,0deg)) rotateY(var(--hy,0deg));transition:transform .25s ease}
 @keyframes mini3d{0%,100%{transform:perspective(500px) rotate(8deg) rotateY(-14deg) translateY(0)}50%{transform:perspective(500px) rotate(4deg) rotateY(16deg) translateY(-6px)}}
 @media (prefers-reduced-motion:reduce){.tile,.hero,.mini{transform:none!important;animation:none!important}.tile.pre{opacity:1}}
+.tile.shot{background:linear-gradient(180deg,rgba(10,8,30,.05) 0%,rgba(10,8,30,.25) 45%,rgba(10,8,30,.92) 100%),var(--shot) center 32%/cover,linear-gradient(135deg,var(--a),var(--b))!important;min-height:230px;justify-content:flex-end;padding-top:120px;box-shadow:0 6px 0 rgba(0,0,0,.25),0 0 0 2px rgba(255,255,255,.18) inset}
+.tile.shot .logo{display:none}
+.tile.shot .ds{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tile.shot b{text-shadow:0 2px 6px rgba(0,0,0,.6)}
+.tile.shot::before{content:"▶";position:absolute;left:50%;top:30%;transform:translate(-50%,-50%);width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.9);color:#1d1640;font-size:1.3rem;box-shadow:0 6px 18px rgba(0,0,0,.4);transition:transform .2s}
+.tile.shot:hover::before{transform:translate(-50%,-50%) scale(1.1)}
 .tile::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.12);pointer-events:none}
 .tile .logo{width:64px;height:64px;border-radius:18px;background:rgba(0,0,0,.16);display:grid;place-items:center;box-shadow:inset 0 2px 0 rgba(255,255,255,.2);flex:none}
 .tile .logo svg{width:46px;height:46px;overflow:visible}
@@ -642,6 +648,8 @@ function drawGrid(){
     const [a,b]=PAL[i%PAL.length];
     const el=document.createElement('button');
     el.className='tile '+(st==='live'?'live':st==='maint'?'maint':'soon');el.style.setProperty('--a',a);el.style.setProperty('--b',b);
+    const SHOT={'লুডু':'ludo','মশা মারো':'mosha','ঢাকা জ্যাম রানার':'jam','বাজার দর চ্যালেঞ্জ':'bazar'}[name];
+    if(SHOT&&url){el.classList.add('shot');el.style.setProperty('--shot',`url(/icons/shots/${SHOT}.png)`)}
     el.onclick=()=>window.KH.tapGame?window.KH.tapGame(name,st==='live'?url:null,st):(st==='live'?openModes(name,url):toast(SOON[i%SOON.length]));
     const inf=(window.GAME_INFO||{})[name]||['',''];
     const lbl=st==='live'?'খেলুন':st==='maint'?'মেরামত চলছে':'শিগগিরই';
