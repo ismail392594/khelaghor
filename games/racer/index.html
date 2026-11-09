@@ -1913,4 +1913,6 @@ if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY_H, onSay: t =>
 window.KHRacer = { dbg: { bend(x, y) { BEND.value.set(x, y); bendTo.set(x, y); bendLeft = 1e9; }, place(bz, cz) { bazaar.position.z = S.z + bz; culvert.position.z = S.z + cz; } }, dbgAudio: () => ({ state: ac && ac.state, eng: !!eng, master: master && master.gain.value, out: eng && eng.out.gain.value, road: eng && eng.road.g.gain.value }), get S() { return S; }, setRide, WX, BRIDGES, _scene: scene, _r: renderer, get ready() { return ready; }, start, keys, carSize, get tier() { return tier.name; }, get fleet() { return fleet; }, addTyped(type, x, dz, v) { const c = spawnCar(S, true); if (c && fleet[type]) { const F = fleet[type]; Object.assign(c, { type, kind: F.conf.kind, hl: F.size.z / 2, hw: Math.min(F.size.x, F.conf.w + .25) / 2, x, tx: x, z: S.z + dz, v, want: v, chT: 99 }); } return !!c; }, addCar(dx, dz, v) { const c = spawnCar(S, true); if (c) { c.x = c.tx = S.x + dx; c.z = S.z + dz; c.v = c.want = v; c.chT = 99; } return !!c; }, tick: n => { for (let i = 0; i < n; i++) if (S && S.started && !S.over) step(1 / 60); } };
 </script>
 <script src="/js/update.js"></script>
+<script src="/js/catalog.js"></script>
+<script src="/js/more-games.js"></script>
 </body></html>

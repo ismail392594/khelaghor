@@ -510,4 +510,6 @@ if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY_S, onSay: t =>
 window.KHSholo = { get B() { return B; }, get turn() { return turn; }, get over() { return over; }, get busy() { return busy; }, start, allMoves: () => allMoves(B, turn), play: async m => { let at = m.from; for (let k = 0; k < m.path.length; k++) { const r = await doStep(at, { to: m.path[k], cap: m.caps.length ? m.caps[k] : -1 }); at = m.path[k]; if (r === 'done') return; } endTurn(); }, cpuMove: () => cpuMove(B, turn) };
 </script>
 <script src="/js/update.js"></script>
+<script src="/js/catalog.js"></script>
+<script src="/js/more-games.js"></script>
 </body></html>

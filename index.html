@@ -521,6 +521,7 @@ body::before{background:var(--deep)}
       </div>
     </section>
     <div class="recent" id="recentBox" hidden><div class="sec"><h2>আবার খেলুন</h2></div><div class="rrow" id="recentRow"></div></div>
+    <div id="hubPlus"></div>
     <div class="sec"><h2>সব গেম</h2><span id="count"></span></div>
     <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><input id="gSearch" type="search" placeholder="গেম খুঁজুন… যেমন লুডু, মশা" aria-label="গেম খুঁজুন"></label>
     <div class="chips" id="chips">
@@ -813,7 +814,7 @@ function drawGrid(){
   const qq=(($('gSearch')||{}).value||'').trim();
   // বাস্তবসম্মত হাই-গ্রাফিক্স গেম সবার উপরে (নতুন এমন গেম এলে HI তালিকায় যোগ করুন); নম্বর আগের মতোই থাকে
   const HI=['হাইওয়ে রাজা','লোডশেডিং সারভাইভাল','ঢাকা জ্যাম রানার'],hiRank=n=>{const k=HI.indexOf(n);return k<0?99:k};
-  const list=GAMES.map((x,i)=>[x[0],x[1],x[2]||null,i]).sort((a,b)=>hiRank(a[0])-hiRank(b[0])||a[3]-b[3]).filter(x=>(filter==='all'||x[1]===filter||(filter==='live'&&x[2]))&&(!qq||x[0].includes(qq)||String(x[3]+1)===qq.replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭৮৯'.indexOf(d))));
+  const list=GAMES.map((x,i)=>[x[0],x[1],x[2]||null,i]).sort((a,b)=>hiRank(a[0])-hiRank(b[0])||a[3]-b[3]).filter(x=>(filter==='all'||x[1]===filter||(filter==='live'&&x[2]))&&(!(window.KH&&window.KH.mood)||window.KH.mood.includes(x[0]))&&(!qq||x[0].includes(qq)||String(x[3]+1)===qq.replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭৮৯'.indexOf(d))));
   const GS=(window.KH&&window.KH.gameStatus)||{};
   let shown=0,soonN=0;
   list.forEach(([name,cat,url,i])=>{
@@ -832,8 +833,9 @@ function drawGrid(){
     const inf=(window.GAME_INFO||{})[name]||['',''];
     const lbl=st==='live'?'খেলুন':st==='maint'?'মেরামত চলছে':'শিগগিরই';
     el.innerHTML=`${el.classList.contains('shot')?'<span class="pic" aria-hidden="true"></span>':''}<span class="no">#${bn(i+1)}</span><span class="logo" aria-hidden="true"><svg viewBox="0 0 48 48">${inf[1]}</svg></span><b>${name}</b><span class="ds">${inf[0]}</span><span class="meta">${PL[name]?`<span class="pp">${PL[name]} জন</span>`:'<span class="pp">১ জন</span>'}<span class="st">${lbl}</span></span>`;
-    g.appendChild(el);
+    el.dataset.name=name;g.appendChild(el);
   });
+  if(window.KH&&window.KH.afterGrid)window.KH.afterGrid();
   if(!shown)g.innerHTML='<p class="empty-g">এই নামে কোনো গেম পাওয়া যায়নি 😅</p>';
   $('count').textContent=bn(shown)+'টি গেম'+(soonN?` · আরো ${bn(soonN)}টি আসছে`:'');
 }
@@ -1063,6 +1065,8 @@ setCoins(coins);drawGrid();drawDaily();nextDlg();setProfile(profile);
 <script src="/js/howto.js"></script>
 <script type="module" src="/js/stories.js"></script>
 <script src="/js/fun.js"></script>
+<script src="/js/catalog.js"></script>
+<script src="/js/hub-plus.js"></script>
 <script type="module" src="/js/online.js"></script>
 <script type="module" src="/live/home.js"></script>
 </body></html>
