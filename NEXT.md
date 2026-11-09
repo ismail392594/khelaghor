@@ -36,3 +36,16 @@ index.html GAMES-এ url, SHOT ম্যাপ + icons/shots/*.png, lbTabs চ�
 - ✅ নতুন: বিয়েবাড়ির বিরিয়ানি যুদ্ধ (/games/biryani/)
 - পরের ভাইরাল গেম: লোডশেডিং সারভাইভাল, লোকাল বাস রেষারেষি (বাস্তবধর্মী মডেল লাগবে → নেটওয়ার্ক), ঈদের টিকিট, মেট্রো রাশ, ফুচকা মাস্টার
 - নিয়ম: নাম+এক লাইন শুনেই হাসি/ক্লিক না আসলে গেম বানানো হবে না
+
+## ৮. বাস্তবসম্মত গ্রাফিক্সের হ্যান্ডঅফ (২০২৬-১১-০৯)
+- মালিক চান একদম বাস্তবসম্মত গাড়ি, মানুষ, আসবাব। কার্টুন বা AI-এর মতো দেখালে চলবে না। প্রথম কাজ: বাস্তবসম্মত রেসিং গেম। পরিকল্পনা হলো "Traffic Racer" ধাঁচের হাইওয়ে রেস: পেছন থেকে ক্যামেরা, ট্রাফিকের ফাঁক দিয়ে চালানো, near-miss বোনাস, বাংলা ধারাভাষ্য।
+- নেটওয়ার্ক চালু হয়েছে (Default environment)। CC0 অ্যাসেট পাওয়া যাবে polyhaven.com (মডেল, টেক্সচার, HDRI), ambientcg.com আর kenney.nl থেকে।
+- GitHub থেকে যা পাওয়া যায় (লাইসেন্স দেখা হয়েছে):
+  - KhronosGroup/glTF-Sample-Assets, CC-BY 4.0, সাইটে ক্রেডিট দিতে হবে:
+    - CarConcept (১২MB, ১.৬ লাখ ভার্টেক্স; Interior* আর Engine নোড বাদ দিয়ে, টেক্সচার ছোট করে হালকা করতে হবে)
+    - SheenWoodLeatherSofa, GlamVelvetSofa, ChairDamaskPurplegold
+    - CommercialRefrigerator, AnisotropyBarnLamp, TrafficCone
+  - mrdoob/three.js examples/textures/equirectangular/*.hdr: Poly Haven-এর CC0 HDRI, যেমন pedestrian_overpass_1k.hdr আর venice_sunset_1k.hdr।
+  - Ferrari মডেল আর Mixamo-র মানুষ (Soldier, Michelle) ব্যবহার করা যাবে না, লাইসেন্স অনিশ্চিত।
+- three r160-এর GLTFLoader, RGBELoader, BufferGeometryUtils আর SkeletonUtils এখনো /js/vendor/addons-এ কপি হয়নি। কপি করার সময় `from 'three'` বদলে `'/js/vendor/three.module.min.js'` করতে হবে।
+- অর্ধেক হয়ে থাকা কাজ: "লোডশেডিং সারভাইভাল" (games/loadshed/) ফোল্ডার খালি, ডিজাইন ঠিক করা আছে কিন্তু কোড লেখা হয়নি। বাস্তব আসবাবের মডেল দিয়ে এটা নতুন করে করা যাবে।
