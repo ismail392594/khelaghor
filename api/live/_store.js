@@ -37,8 +37,10 @@ export async function fb() {
 export const _setFb = x => { _fb = x; }; // শুধু পরীক্ষার জন্য
 
 // মালিকের সিদ্ধান্ত (৯ নভেম্বর): Sportmonks চালু থাকলে CricketData বন্ধ (ধীর)। আবার চালু করতে Vercel-এ LIVE_USE_CRICKETDATA=1
-const useCd = () => !!process.env.CRICKET_API_KEY && (!hasSm() || process.env.LIVE_USE_CRICKETDATA === '1');
-const has = () => ({ c: useCd(), f: !!process.env.FOOTBALL_API_KEY, s: hasSm() });
+// Sportmonks ৩০ মিনিটের বেশি ত্রুটি দিলে (যেমন ট্রায়াল শেষ, টাকা না দেওয়া) নিজে থেকেই CricketData আবার চালু
+const smDown = (doc, now = Date.now()) => !!(doc && doc.s && doc.s.err && now - (doc.s.at || doc.s.errSince || 0) > 30 * 60e3);
+const useCd = (doc = null, now = Date.now()) => !!process.env.CRICKET_API_KEY && (!hasSm() || process.env.LIVE_USE_CRICKETDATA === '1' || smDown(doc, now));
+const has = (doc = null, now = Date.now()) => ({ c: useCd(doc, now), f: !!process.env.FOOTBALL_API_KEY, s: hasSm() });
 const utcDay = t => new Date(t).toISOString().slice(0, 10);
 const dhakaDay = t => new Date(t + 6 * HOUR).toISOString().slice(0, 10);
 
@@ -65,7 +67,7 @@ export async function getFeed(now = Date.now()) {
   const { db } = F;
   const ref = db.doc('liveCache/feed');
   let doc = (await ref.get()).data() || {};
-  const due = plan(doc, H, now);
+  const due = plan(doc, has(doc, now), now);
   if (due.any) doc = await refresh(F, doc, due, now) || doc;
   return { at: now, matches: compose(doc, now).concat(demo), demo: !!demo.length };
 }
@@ -160,8 +162,8 @@ async function refresh(F, doc, due, now) {
       f.live = r.data.map(fbSummary); f.at = now; f.liveOk = now;
     }));
     if (due.sLive) jobs.push(smCall('livescores', { include: LIST_INC }).then(r => {
-      if (r.ok) { sm.live = (r.data || []).map(x => { try { return smSummary(x); } catch (e) { return null; } }).filter(Boolean); sm.at = now; sm.err = null; }
-      else sm.err = r.err;
+      if (r.ok) { sm.live = (r.data || []).map(x => { try { return smSummary(x); } catch (e) { return null; } }).filter(Boolean); sm.at = now; sm.err = null; sm.errSince = null; }
+      else { sm.err = r.err; sm.errSince = sm.errSince || now; }
     }));
     if (due.sFx) jobs.push((async () => {
       const d0 = new Date(now - DAY).toISOString().slice(0, 10), d1 = new Date(now + 7 * DAY).toISOString().slice(0, 10);
@@ -204,7 +206,7 @@ async function refresh(F, doc, due, now) {
 
 // ক্যাশ থেকে দেখানোর তালিকা: লাইভ সব, আসন্ন ৪ দিন, শেষ ৩৬ ঘণ্টা
 function compose(doc, now) {
-  const c = useCd() ? (doc.c || {}) : {}, f = doc.f || {};
+  const c = useCd(doc, now) ? (doc.c || {}) : {}, f = doc.f || {};
   const map = new Map();
   for (const m of c.up || []) map.set(m.id, m);
   for (const m of c.list || []) map.set(m.id, m);
@@ -488,7 +490,7 @@ export async function diag(q = '', now = Date.now()) {
   const c = d.c || {}, f = d.f || {};
   const cnt = l => (l || []).reduce((a, m) => (a[m.state] = (a[m.state] || 0) + 1, a), {});
   return {
-    keys: has(), v: d.v,
+    keys: has(d), v: d.v,
     cricket: { src: c.src, rawRows: c.raw, err: c.err || null, listAt: c.at ? new Date(c.at).toISOString() : null, upAt: c.upAt ? new Date(c.upAt).toISOString() : null,
       list: cnt(c.list), up: cnt(c.up), left: d.cq,
       sample: (c.list || []).filter(m => !q || (m.a.name + ' ' + m.b.name + ' ' + m.tour).toLowerCase().includes(String(q).toLowerCase())).slice(0, 20)
