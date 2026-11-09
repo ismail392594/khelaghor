@@ -69,7 +69,8 @@ export async function getFeed(now = Date.now()) {
 function plan(doc, H, now) {
   const c = doc.c || {}, f = doc.f || {};
   const cRem = remOf(doc.cq, now), fRem = remOf(doc.fq, now);
-  const cLive = (c.list || []).some(m => m.state === 'live');
+  // চলছে, অথবা শুরুর সময় পার হয়েছে কিন্তু API এখনো শুরু বলেনি: তাহলে ঘন ঘন আনি
+  const cLive = [...(c.list || []), ...(c.up || [])].some(m => (m.state === 'live' && !m.pause) || (m.state === 'upcoming' && m.start <= now && m.start > now - 3 * HOUR));
   const fAll = [...(f.day || []), ...(f.live || [])];
   const fLive = fAll.some(m => m.state === 'live' || (m.state === 'upcoming' && m.start <= now + MIN && m.start > now - 3 * HOUR));
   const stale = doc.v !== CACHE_V;

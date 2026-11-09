@@ -58,7 +58,7 @@ function when(t) {
   return `${day} ${per} ${bn(h % 12 || 12)}:${bn(pad(d.getMinutes()))}`;
 }
 function cdText(ms) {
-  if (ms <= 0) return 'শুরু হচ্ছে…';
+  if (ms <= 0) return 'এখনই, স্কোর আসছে…';
   const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
   if (d >= 1) return `${bn(d)} দিন ${bn(h)} ঘণ্টা`;
   return bn(`${pad(h)}:${pad(m)}:${pad(s % 60)}`);
@@ -248,6 +248,7 @@ function renderDetail(m, det, votes) {
   let st;
   if (paused(m)) st = `<div class="hst">⏸ ${esc(m.status)}</div>`;
   else if (m.state === 'live') st = `<div class="hst hot">${m.sport === 'football' ? esc(m.status) + (m.min ? ` · ${bn(m.min)}'` : '') : esc(m.status)}</div>`;
+  else if (m.state === 'upcoming' && m.start <= Date.now()) st = `<div class="hst hot">⏳ খেলা শুরুর সময় হয়ে গেছে (${when(m.start)})</div><div class="hsub">স্কোর কয়েক মিনিটের মধ্যে চলে আসবে, পাতা নিজে থেকেই আপডেট হবে</div>`;
   else if (m.state === 'upcoming') st = `<div class="hst">খেলা শুরু ${when(m.start)}</div><div class="hcd" data-hcd="${m.start}">${hcd(m.start)}</div>`;
   else st = `<div class="hst">${esc(m.status)}</div>`;
   const sub = [m.label, m.toss, m.venue].filter(Boolean).map(esc).join(' · ');
@@ -624,7 +625,10 @@ setInterval(() => {
   const now = Date.now();
   let started = false;
   document.querySelectorAll('[data-cd]').forEach(el => { const ms = +el.dataset.cd - now; el.textContent = cdText(ms); if (ms <= 0) started = true; });
-  document.querySelectorAll('[data-hcd]').forEach(el => { el.innerHTML = hcd(+el.dataset.hcd); });
+  document.querySelectorAll('[data-hcd]').forEach(el => {
+    if (+el.dataset.hcd <= now && S.open) { const d = S.det, m = d ? d.m : S.feed.matches.find(x => x.id === S.open); if (m) renderDetail(m, d ? d.det : null, d ? d.votes : null); return; }
+    el.innerHTML = hcd(+el.dataset.hcd);
+  });
   if (started && !loadFeed.pending) { loadFeed.pending = true; setTimeout(() => { loadFeed.pending = false; loadFeed(); }, 20000); }
 }, 1000);
 // প্রতি ৩০ সেকেন্ডে নতুন স্কোর (পাতা খোলা থাকলে)
