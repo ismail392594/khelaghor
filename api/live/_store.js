@@ -215,11 +215,17 @@ function compose(doc, now) {
   for (const m of sm.live || []) smMap.set(m.id, m);
   if (smMap.size) {
     const keyOf = m => [normTeam(m.a.name), normTeam(m.b.name)].sort().join('|');
-    const smKeys = [...smMap.values()].map(m => [keyOf(m), m.start]);
-    for (const [id, m] of map) {
+    // খেলা কতটা এগিয়েছে: শেষ হলে সবচেয়ে বেশি, নইলে মোট কত বল হয়েছে
+    const balls = o => { const n = Number(o) || 0; const f = Math.floor(n); return f * 6 + Math.round((n - f) * 10); };
+    const prog = m => (m.state === 'done' ? 1e6 : 0) + (m.state === 'live' ? 1 : 0) + (m.inns || []).reduce((t, i) => t + balls(i.o) + (i.w || 0) * 0.01 + (i.r || 0) * 1e-4, 0);
+    for (const [id, m] of [...map]) {
       if (id[0] !== 'c') continue;
       const k = keyOf(m);
-      if (smKeys.some(([sk, st]) => sk === k && Math.abs(st - m.start) < 8 * HOUR)) map.delete(id);
+      const twin = [...smMap.values()].find(x => keyOf(x) === k && Math.abs(x.start - m.start) < 8 * HOUR);
+      if (!twin) continue;
+      map.delete(id);
+      // একই ম্যাচ দুই উৎসে: id থাকে Sportmonks-এর (ভোট যেন না হারায়), স্কোর নেওয়া হয় যেটা বেশি এগিয়ে
+      if (prog(m) > prog(twin)) smMap.set(twin.id, { ...twin, state: m.state, a: { ...twin.a, inn: m.a.inn }, b: { ...twin.b, inn: m.b.inn }, inns: m.inns, status: m.status, raw: m.raw, pause: m.pause, result: m.result ?? twin.result, via: 'c' });
     }
     for (const [id, m] of smMap) map.set(id, m);
   }
