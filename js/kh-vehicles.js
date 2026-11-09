@@ -10,7 +10,7 @@ export const FLEET = {
   hilux:      { name: 'হাইলাক্স পিকআপ', len: 5.3, flip: false, kind: 'car', tail: .95, w: 1.85 },
   bus_hino:   { name: 'হিনো বাস', len: 11.5, flip: true, kind: 'bus', tail: 1.1, w: 2.5 },
   bus_coach:  { name: 'দূরপাল্লার কোচ', len: 12, flip: true, kind: 'bus', tail: 1.1, w: 2.5 },
-  bus_mini:   { name: 'লোকাল মিনিবাস', len: 7.2, flip: false, kind: 'bus', tail: 1, w: 2.2 },
+  bus_mini:   { name: 'লোকাল মিনিবাস', len: 7.2, flip: true, kind: 'bus', tail: 1, w: 2.2 },
   truck_al:   { name: 'অশোক লেল্যান্ড ট্রাক', len: 7.2, flip: true, kind: 'truck', tail: .95, w: 2.35 },
   truck_tata: { name: 'টাটা ট্রাক', len: 7.6, flip: true, kind: 'truck', tail: .95, w: 2.35 },
   cng:        { name: 'সিএনজি', len: 2.65, flip: false, kind: 'cng', tail: .55, w: 1.3 },
@@ -63,8 +63,9 @@ async function loadOne(THREE, loader, key, base, glass) {
     const geo = mergeGeometries(G.geos, false); if (!geo) continue; geo.computeBoundingSphere();
     let mat;
     if (gk === 'glass') mat = glass;
-    else if (gk === 'solid') mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: Math.min(.9, solidR / solidN), metalness: Math.min(.6, solidM / solidN), envMapIntensity: 1.1 });
-    else { mat = G.mat.clone(); mat.side = THREE.FrontSide; mat.vertexColors = false; if (conf.tint && mat.color) mat.color.set(conf.tint); if (mat.transparent && mat.opacity > .95) { mat.transparent = false; mat.alphaTest = mat.alphaTest || .5; } }
+    else if (gk === 'solid') mat = new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, roughness: Math.min(.9, solidR / solidN), metalness: Math.min(.6, solidM / solidN), envMapIntensity: 1.1 });
+    // অনেক মডেলের পেছনের প্যানেল এক-পাশি, তাই দুই পাশ আঁকা
+    else { mat = G.mat.clone(); mat.side = THREE.DoubleSide; mat.vertexColors = false; if (conf.tint && mat.color) mat.color.set(conf.tint); if (mat.transparent && mat.opacity > .95) { mat.transparent = false; mat.alphaTest = mat.alphaTest || .5; } }
     parts.push({ geo, mat, glass: gk === 'glass' });
   }
   return { key, conf, parts, size: s };
