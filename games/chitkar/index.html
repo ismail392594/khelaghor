@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>চিৎকার করো না · খেলাঘর</title>
+<meta name="description" content="শশশ! বাবু দোলনায় ঘুমাচ্ছে। ফোন, টিভি, কলিংবেল, কাক, ফেরিওয়ালা, প্রেশার কুকার: সব শব্দ দ্রুত থামান। চাইলে মাইক চালু করুন; আপনি জোরে কথা বললেও বাবু জেগে যাবে!">
+<link rel="canonical" href="https://khelaghorbd.online/games/chitkar/">
+<meta property="og:title" content="চিৎকার করো না · খেলাঘর">
+<meta property="og:description" content="শশশ! বাবু ঘুমাচ্ছে। ২ মিনিট শান্ত রাখতে পারবেন?">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/chitkar.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/chitkar.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+:root{--accent:#f472b6}
+.meters{position:absolute;left:10px;right:10px;top:10px;z-index:3;display:flex;flex-direction:column;gap:5px;pointer-events:none}
+.mrow{display:flex;align-items:center;gap:8px;background:rgba(5,8,18,.6);border-radius:10px;padding:4px 8px;font-size:.74rem;font-weight:700}
+.mrow .b{flex:1;height:9px;background:rgba(255,255,255,.12);border-radius:5px;overflow:hidden}.mrow .b i{display:block;height:100%;width:100%}
+.mrow span{white-space:nowrap;min-width:86px}
+.tags{position:absolute;inset:0;z-index:3;pointer-events:none}
+.tg{position:absolute;transform:translate(-50%,-100%);background:#dc2626;color:#fff;border-radius:12px;padding:5px 9px;font:800 .78rem var(--body);white-space:nowrap;pointer-events:auto;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.5);animation:shk .3s infinite alternate}
+.tg small{display:block;font-weight:600;font-size:.64rem;opacity:.9}
+@keyframes shk{to{transform:translate(-50%,-100%) rotate(2deg) scale(1.06)}}
+.ab{border:0;border-radius:14px;padding:8px 10px;font:800 .78rem var(--body);color:#fff;background:#1f2937;box-shadow:0 4px 0 rgba(0,0,0,.4);cursor:pointer}
+.ab.mic.on{background:#be185d}
+.rock{background:radial-gradient(circle at 40% 30%,#f9a8d4,#db2777 60%,#831843)}
+.micv{position:absolute;right:10px;top:72px;z-index:3;width:12px;height:70px;background:rgba(255,255,255,.12);border-radius:6px;overflow:hidden;pointer-events:none}.micv i{position:absolute;left:0;right:0;bottom:0;background:#f472b6;height:0}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="time">২:০০</b><small>আম্মু ফিরবেন</small></div>
+    <div class="stat r"><b id="cries">💗💗💗</b><small>বাবুর ধৈর্য</small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas class="cv" id="cv"></canvas>
+    <div class="meters" id="meters" hidden>
+      <div class="mrow"><span>😴 বাবুর ঘুম</span><div class="b"><i id="sleepB" style="background:#f472b6"></i></div></div>
+      <div class="mrow"><span>🔊 ঘরের শব্দ</span><div class="b"><i id="noiseB" style="background:#ef4444;width:0"></i></div></div>
+    </div>
+    <div class="micv" id="micv" hidden><i id="micI"></i></div>
+    <div class="tags" id="tags"></div>
+    <div class="say" id="say" hidden></div>
+    <div class="chost" id="chatHost"></div>
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>চিৎকার করো না</h1>
+        <p class="story">আম্মু বাজারে গেছেন: "বাবুকে অনেক কষ্টে ঘুম পাড়িয়েছি, খবরদার জাগাবি না!" দুপুরবেলা, অথচ চারপাশে যত শব্দ: ফোন, ভাইয়ার টিভি, কলিংবেল, কাক, ফেরিওয়ালা, রান্নাঘরে প্রেশার কুকার…</p>
+        <div class="rules">
+          <div>🔴 কোনো কিছু শব্দ করলে তার উপর <b>লাল লেখা</b> আসবে। চাপুন, শব্দ থামবে। যত দেরি, তত বাবুর ঘুম ভাঙবে।</div>
+          <div>🤱 বাবু নড়াচড়া করলে <b>দোলা দাও</b> চেপে ধরুন, ঘুম আবার গাঢ় হবে। ৩ বার কেঁদে উঠলে খেলা শেষ।</div>
+          <div>🎤 চাইলে <b>মাইক চালু</b> করুন: আপনি জোরে কথা বললে বা চিৎকার করলেও বাবু জেগে যাবে! (মাইকের শব্দ কোথাও পাঠানো হয় না।)</div>
+        </div>
+        <div class="lvl">
+          <button data-lv="0">শান্ত দুপুর<small>সহজ</small></button>
+          <button data-lv="1">শুক্রবার<small>সবাই বাসায়</small></button>
+          <button data-lv="2">বিয়েবাড়ির পাশে<small>মহা হট্টগোল</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">খাট, টেবিল, আলমারি, পাখা, ঘড়ি, জগ, মেঝে, দেয়াল: Poly Haven (CC0)। দোলনা, টিভি, কাক খেলাঘরের নিজের বানানো।</p>
+      </div>
+    </div>
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">খেলা শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eFix">০</b><span>শব্দ থামানো</span></div><div><b id="eT">০</b><span>সময়</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার বাবু সামলাই</button><button class="gbtn ghost" id="menuBtn">দিন বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">🤫</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+  <div class="ctl"><button class="ab mic" id="micB">🎤 মাইক চালু</button><div class="hint" id="hint">দিন বেছে শুরু করুন</div><button class="bigb rock" id="rockB" hidden><span>🤱</span>দোলা দাও</button></div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { GLTFLoader } from "/js/vendor/addons/GLTFLoader.js";
+import { MeshoptDecoder } from "/js/vendor/addons/meshopt_decoder.module.js";
+import { TIERS, detectTier } from "/js/kh-quality.js";
+import { gameShell, sound, bn, pick, rnd, clamp } from "/js/kh-shell.js";
+
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'chitkar', name: 'চিৎকার করো না', lbTitle: 'সেরা বাবু সামলানো', offMsg: 'বাবু এখন জেগে খেলছে! পরে আসেন।' });
+const SND = sound(SH);
+const TIER = TIERS[detectTier()], LOW = TIER.id <= 1;
+let renderer = null; try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' }); } catch (e) {}
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(62, 1, .03, 60);
+scene.background = new THREE.Color('#cfe3f2');
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.shadowMap.enabled = !LOW; renderer.shadowMap.type = THREE.PCFSoftShadowMap; }
+const ANISO = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1, texL = new THREE.TextureLoader(), A = '/games/loadshed/assets/';
+const tex = (u, srgb, rx, ry) => { const t = texL.load(u); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; t.repeat.set(rx, ry); return t; };
+const ctex = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; };
+const M = (c, o) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: .85 }, o || {}));
+const box = (w, h, d, m, x, y, z, p) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); b.castShadow = !LOW; b.receiveShadow = true; (p || scene).add(b); return b; };
+
+/* ---------- দুপুরের শোবার ঘর ---------- */
+const RW = 4.4, RD = 3.8, RH = 3;
+{ const f = new THREE.Mesh(new THREE.PlaneGeometry(RW, RD), new THREE.MeshStandardMaterial({ map: tex(A + 'floor_diff.jpg', true, 3, 2.5), normalMap: tex(A + 'floor_nor.jpg', false, 3, 2.5), roughness: .7 })); f.rotation.x = -Math.PI / 2; f.receiveShadow = true; scene.add(f); }
+const wallM = new THREE.MeshStandardMaterial({ map: tex('/games/jam/assets/plaster_diff.jpg', true, 2, 1.5), normalMap: tex('/games/jam/assets/plaster_nor.jpg', false, 2, 1.5), color: '#f1e3c8', roughness: .95 });
+{ const c = new THREE.Mesh(new THREE.PlaneGeometry(RW, RD), M('#f3efe6')); c.rotation.x = Math.PI / 2; c.position.y = RH; scene.add(c); }
+const winW = 1.4, winH = 1.25, winY = 1.6, winX = .1;
+function holeWall(w, h, hx, hy, hw, hh) { const s = new THREE.Shape(); s.moveTo(-w / 2, 0); s.lineTo(w / 2, 0); s.lineTo(w / 2, h); s.lineTo(-w / 2, h); s.lineTo(-w / 2, 0); const p = new THREE.Path(); p.moveTo(hx - hw / 2, hy - hh / 2); p.lineTo(hx + hw / 2, hy - hh / 2); p.lineTo(hx + hw / 2, hy + hh / 2); p.lineTo(hx - hw / 2, hy + hh / 2); s.holes.push(p); const g = new THREE.ShapeGeometry(s); const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, (uv.getX(i) + w / 2) / w, uv.getY(i) / h); return g; }
+{ const b = new THREE.Mesh(holeWall(RW, RH, winX, winY, winW, winH), wallM); b.position.z = -RD / 2; b.receiveShadow = true; scene.add(b); }
+{ const l = new THREE.Mesh(holeWall(RD, RH, -.9, 1.05, 1.0, 2.1), wallM); l.rotation.y = Math.PI / 2; l.position.set(-RW / 2, 0, 0); scene.add(l); }
+{ const r = new THREE.Mesh(holeWall(RD, RH, .9, 1.05, .95, 2.1), wallM); r.rotation.y = -Math.PI / 2; r.position.set(RW / 2, 0, 0); scene.add(r); }
+{ const f = new THREE.Mesh(new THREE.PlaneGeometry(RW, RH), wallM); f.rotation.y = Math.PI; f.position.set(0, RH / 2, RD / 2); scene.add(f); }
+// জানালার বাইরে: রোদ, পাশের দালান, গাছ
+const outT = ctex(1024, 512, (x) => { const g = x.createLinearGradient(0, 0, 0, 512); g.addColorStop(0, '#9cc9ef'); g.addColorStop(1, '#e8f1f8'); x.fillStyle = g; x.fillRect(0, 0, 1024, 512); x.fillStyle = '#e9dcc3'; x.fillRect(560, 120, 380, 392); x.fillStyle = '#8fa3b0'; for (let y = 160; y < 500; y += 70) for (let xx = 590; xx < 900; xx += 80) x.fillRect(xx, y, 40, 44); x.fillStyle = '#3f7a3a'; for (let i = 0; i < 30; i++) { x.beginPath(); x.arc(rnd(0, 520), rnd(220, 470), rnd(40, 90), 0, 7); x.fill(); } x.fillStyle = '#2b2d31'; x.fillRect(0, 300, 1024, 4); });
+{ const o = new THREE.Mesh(new THREE.PlaneGeometry(8, 4), new THREE.MeshBasicMaterial({ map: outT, toneMapped: false })); o.position.set(winX, 1.9, -RD / 2 - 1.8); scene.add(o);
+  const fm = M('#e8e3d6', { roughness: .6 }), gm = M('#2b2d31', { roughness: .4, metalness: .6 }); for (const [w, h, x, y] of [[winW + .12, .08, 0, winH / 2 + .02], [winW + .12, .1, 0, -winH / 2 - .03], [.08, winH, -winW / 2 - .02, 0], [.08, winH, winW / 2 + .02, 0]]) box(w, h, .2, fm, winX + x, winY + y, -RD / 2);
+  for (let i = 1; i < 8; i++) { const b = new THREE.Mesh(new THREE.CylinderGeometry(.008, .008, winH, 6), gm); b.position.set(winX - winW / 2 + i * winW / 8, winY, -RD / 2 + .02); scene.add(b); } }
+// জানালার কপাট (বন্ধ করা যায়)
+const shutters = []; { const sm = M('#2f6b4f', { roughness: .6 }); for (const sd of [-1, 1]) { const piv = new THREE.Group(); piv.position.set(winX + sd * winW / 2, winY, -RD / 2 + .1); const p = box(winW / 2, winH, .03, sm, -sd * winW / 4, 0, 0, piv); piv.rotation.y = sd * 1.4; piv.userData.sd = sd; scene.add(piv); shutters.push(piv); } }
+// আলো: জানালা দিয়ে রোদ
+scene.add(new THREE.HemisphereLight('#fff6e8', '#6b5a48', .9));
+const sun = new THREE.DirectionalLight('#fff1d6', 2.4); sun.position.set(winX + .8, 4, -RD / 2 - 3); sun.target.position.set(-.2, 0, .2); sun.castShadow = !LOW; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: .5, far: 12 }); scene.add(sun, sun.target);
+{ const p = new THREE.PointLight('#fff4e0', 2, 7, 1.6); p.position.set(0, 2.6, .5); scene.add(p); }
+// দোলনা: কাঠের দোলনা, মশারি, ভেতরে কাঁথায় মোড়ানো বাবু
+const cradle = new THREE.Group(); cradle.position.set(-.35, 0, -.35); scene.add(cradle);
+const swing = new THREE.Group(); swing.position.y = .95; cradle.add(swing);
+{ const wood = M('#8b5a2b', { roughness: .55 }); for (const sx of [-.6, .6]) { box(.06, 1.1, .06, wood, sx, .55, -.32, cradle); box(.06, 1.1, .06, wood, sx, .55, .32, cradle); box(.06, .06, .7, wood, sx, 1.08, 0, cradle); box(.06, .06, .7, wood, sx, .03, 0, cradle); }
+  const bed = new THREE.Group(); bed.position.y = -.55; swing.add(bed); box(.95, .05, .5, wood, 0, 0, 0, bed); for (const sz of [-.25, .25]) box(.95, .18, .03, wood, 0, .1, sz, bed); for (const sx of [-.475, .475]) box(.03, .22, .5, wood, sx, .12, 0, bed);
+  for (const [x, z] of [[-.45, -.22], [-.45, .22], [.45, -.22], [.45, .22]]) { const r = new THREE.Mesh(new THREE.CylinderGeometry(.006, .006, .55, 4), M('#a37a4a')); r.position.set(x, .27, z); bed.add(r); }
+  const mat = new THREE.Mesh(new THREE.BoxGeometry(.88, .06, .44), M('#f3c6d4', { roughness: .95 })); mat.position.y = .05; bed.add(mat);
+  const kanthaT = ctex(256, 256, (x, w, h) => { x.fillStyle = '#c2410c'; x.fillRect(0, 0, w, h); x.strokeStyle = '#fde68a'; x.lineWidth = 2; for (let i = 0; i < 26; i++) { x.beginPath(); x.moveTo(0, i * 10); for (let k = 0; k < w; k += 8) x.lineTo(k, i * 10 + (k / 8 % 2) * 3); x.stroke(); } x.fillStyle = '#1e3a8a'; for (let i = 0; i < 20; i++) { x.beginPath(); x.arc(rnd(0, w), rnd(0, h), rnd(6, 14), 0, 7); x.fill(); } });
+  const baby = new THREE.Mesh(new THREE.CapsuleGeometry(.09, .22, 6, 14), new THREE.MeshStandardMaterial({ map: kanthaT, roughness: .95 })); baby.rotation.z = Math.PI / 2; baby.position.set(.05, .14, 0); baby.scale.set(1, 1, .8); bed.add(baby);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(.075, 18, 14), M('#d9a07a', { roughness: .7 })); head.position.set(-.27, .15, 0); bed.add(head); const cap = new THREE.Mesh(new THREE.SphereGeometry(.078, 18, 14, 0, Math.PI * 2, 0, Math.PI / 2.1), M('#fbcfe8')); cap.position.copy(head.position); cap.rotation.z = .5; bed.add(cap);
+  const net = new THREE.Mesh(new THREE.BoxGeometry(1.1, .75, .66), new THREE.MeshStandardMaterial({ color: '#ffffff', transparent: true, opacity: .16, depthWrite: false, side: THREE.DoubleSide })); net.position.set(0, .5, 0); bed.add(net); }
+// টিভি (আলমারির উপর), ফোন (টেবিলে), দরজা, কাক, রান্নাঘরের দরজা
+const tvT = ctex(256, 160, () => {}), tvC = tvT.image;
+function drawTv(on, t) { const x = tvC.getContext('2d'); if (!on) { x.fillStyle = '#0b0b0d'; x.fillRect(0, 0, 256, 160); tvT.needsUpdate = true; return; } x.fillStyle = `hsl(${(t * 40) % 360},70%,45%)`; x.fillRect(0, 0, 256, 160); x.fillStyle = '#facc15'; x.beginPath(); x.arc(80 + Math.sin(t * 3) * 40, 90, 30, 0, 7); x.fill(); x.fillStyle = '#fff'; x.font = "800 26px 'Noto Sans Bengali',sans-serif"; x.fillText('কার্টুন!!', 130, 50); tvT.needsUpdate = true; }
+const tv = new THREE.Group(); tv.position.set(1.55, .98, -1.45); tv.rotation.y = -.55; scene.add(tv);
+{ box(.82, .5, .06, M('#111', { roughness: .3 }), 0, .27, 0, tv); const s = new THREE.Mesh(new THREE.PlaneGeometry(.76, .44), new THREE.MeshBasicMaterial({ map: tvT, toneMapped: false })); s.position.set(0, .27, .031); tv.add(s); box(.2, .02, .12, M('#222'), 0, .01, 0, tv); drawTv(false); }
+const phoneT = ctex(128, 256, () => {}), phoneC = phoneT.image;
+function drawPhone(on) { const x = phoneC.getContext('2d'); x.fillStyle = on ? '#16a34a' : '#000'; x.fillRect(0, 0, 128, 256); if (on) { x.fillStyle = '#fff'; x.font = "700 22px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.fillText('খালা', 64, 110); x.fillText('কল করছে', 64, 140); } phoneT.needsUpdate = true; }
+drawPhone(false);
+const phone = new THREE.Mesh(new THREE.BoxGeometry(.075, .008, .155), [M('#111'), M('#111'), new THREE.MeshStandardMaterial({ map: phoneT, emissive: '#fff', emissiveMap: phoneT, emissiveIntensity: .9, roughness: .2 }), M('#111'), M('#111'), M('#111')]);
+const door = new THREE.Group(); door.position.set(RW / 2 - .02, 0, .9 - .47); scene.add(door); box(.05, 2.08, .94, M('#6b4226', { roughness: .55 }), 0, 1.04, .47, door); { const h = new THREE.Mesh(new THREE.SphereGeometry(.035, 10, 8), M('#c9a227', { metalness: .8, roughness: .3 })); h.position.set(-.05, 1.0, .85); door.add(h); }
+const kitchen = new THREE.Group(); kitchen.position.set(-RW / 2 - .6, 0, .9); scene.add(kitchen);
+{ const km = M('#e7e2d6', { roughness: .8 }); const kb = new THREE.Mesh(new THREE.BoxGeometry(1.8, RH, 2.2), [km, km, km, M('#b8b0a0'), km, km].map(m => { const c = m.clone(); c.side = THREE.BackSide; return c; })); kb.position.set(-RW / 2 - .9, RH / 2, .9); scene.add(kb); const kl = new THREE.PointLight('#fff1d6', 1.4, 4, 1.5); kl.position.set(-RW / 2 - .9, 2.4, .9); scene.add(kl); }
+{ box(1, .9, .6, M('#9ca3af'), 0, .45, 0, kitchen); const cooker = new THREE.Mesh(new THREE.CylinderGeometry(.13, .12, .2, 20), M('#d1d5db', { metalness: .85, roughness: .25 })); cooker.position.set(.1, 1.0, 0); kitchen.add(cooker); const wh = new THREE.Mesh(new THREE.CylinderGeometry(.02, .02, .06, 8), M('#111')); wh.position.set(.1, 1.13, 0); kitchen.add(wh); }
+const crow = new THREE.Group(); { const bm = M('#141414', { roughness: .6 }), gm = M('#4b5563', { roughness: .6 }); const b = new THREE.Mesh(new THREE.SphereGeometry(.08, 14, 10), bm); b.scale.set(1.4, 1, 1); crow.add(b); const n = new THREE.Mesh(new THREE.SphereGeometry(.06, 12, 10), gm); n.position.set(.1, .06, 0); crow.add(n); const h = new THREE.Mesh(new THREE.SphereGeometry(.05, 12, 10), bm); h.position.set(.15, .1, 0); crow.add(h); const bk = new THREE.Mesh(new THREE.ConeGeometry(.018, .08, 8), M('#222')); bk.rotation.z = -Math.PI / 2; bk.position.set(.22, .1, 0); crow.add(bk); const t = new THREE.Mesh(new THREE.BoxGeometry(.12, .015, .06), bm); t.position.set(-.14, -.01, 0); t.rotation.z = .3; crow.add(t); }
+crow.position.set(winX + .3, winY - winH / 2 + .05, -RD / 2 - .02); crow.rotation.y = -Math.PI / 2 - .4; crow.visible = false; scene.add(crow);
+// আসল আসবাব (Poly Haven)
+let fanBlades = null, TTOP = .76, clockHands = null;
+(async () => { const L = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder); const get = k => L.loadAsync(A + k + '.glb');
+  const put = (g, x, y, z, ry) => { const o = g.scene; o.position.set(x, y, z); o.rotation.y = ry || 0; o.traverse(m => { if (m.isMesh) { m.castShadow = !LOW; m.receiveShadow = true; } }); scene.add(o); return o; };
+  try { const [tbl, cab, fan, jug, clk] = await Promise.all(['table', 'cabinet', 'fan', 'jug', 'clock'].map(get));
+    put(tbl, -1.5, 0, -1.25, 0); const tb = new THREE.Box3().setFromObject(tbl.scene); TTOP = tb.max.y; put(jug, -1.25, TTOP, -1.35, .2);
+    put(cab, 1.55, 0, -1.45, -.55); const cb = new THREE.Box3().setFromObject(cab.scene); tv.position.y = cb.max.y;
+    put(fan, 0, 0, 0); { const b = new THREE.Box3().setFromObject(fan.scene); fan.scene.position.y = RH - b.max.y; } fanBlades = fan.scene.getObjectByName('ceiling_fan_blades');
+    put(clk, -1.0, 2.3, -RD / 2 + .02, 0); clockHands = { h: clk.scene.getObjectByName('wall_clock_hours_hand'), m: clk.scene.getObjectByName('wall_clock_minute_hand') };
+  } catch (e) { console.warn(e); }
+  phone.position.set(-1.65, TTOP + .005, -1.1); phone.rotation.y = .4; scene.add(phone); window.KHG.ready = true; })();
+
+/* ---------- শব্দের উৎস ---------- */
+const SRC = {
+  phone: { n: '📞 খালার ফোন!', s: 'চেপে সাইলেন্ট করুন', loud: 9, pos: () => phone.position.clone().add(new THREE.Vector3(0, .15, 0)), taps: 1 },
+  tv: { n: '📺 ভাইয়া টিভি ছেড়েছে!', s: '৩ বার চেপে আওয়াজ কমান', loud: 11, pos: () => tv.position.clone().add(new THREE.Vector3(0, .65, 0)), taps: 3 },
+  bell: { n: '🔔 কলিংবেল!', s: 'চেপে দরজা খুলে "শশশ!"', loud: 13, pos: () => new THREE.Vector3(RW / 2 - .1, 1.9, .9), taps: 1 },
+  crow: { n: '🐦‍⬛ কাক কা-কা করছে!', s: '২ বার চেপে তাড়ান', loud: 8, pos: () => crow.position.clone().add(new THREE.Vector3(0, .3, .2)), taps: 2 },
+  hawker: { n: '🗣️ ফেরিওয়ালা: "শিল পাটা ধার!"', s: 'চেপে জানালা বন্ধ', loud: 10, pos: () => new THREE.Vector3(winX, winY + .8, -RD / 2 + .1), taps: 1 },
+  cooker: { n: '🍲 প্রেশার কুকারের সিটি!', s: '২ বার চেপে চুলা বন্ধ', loud: 15, pos: () => new THREE.Vector3(-RW / 2 + .05, 1.6, .9), taps: 2 },
+  mosq: { n: '🦟 মশা বাবুর কানে!', s: 'চেপে মশা তাড়ান', loud: 6, pos: () => cradle.position.clone().add(new THREE.Vector3(0, 1.15, 0)), taps: 1 }
+};
+const ACT = {};
+const SFX = {
+  phone(t) { if (Math.floor(t * 2.5) % 3 < 2) SND.tone(1320 + (Math.floor(t * 20) % 2) * 220, .05, 'square', .05); },
+  tv(t) { SND.noise(.12, .07, 600 + Math.sin(t * 7) * 300, 'bandpass'); if (Math.random() < .3) SND.tone(rnd(300, 600), .1, 'triangle', .05); },
+  bell() { SND.tone(880, .45, 'sine', .2); SND.tone(698, .6, 'sine', .2, 0, .45); },
+  crow() { SND.tone(900, .22, 'sawtooth', .07, 600); SND.noise(.2, .08, 1500, 'bandpass'); },
+  hawker() { SND.tone(rnd(220, 300), .35, 'sawtooth', .04, rnd(180, 260)); },
+  cooker() { SND.tone(2100, .35, 'sine', .07, 2300); },
+  mosq() { SND.tone(620, .15, 'sawtooth', .015, 660); },
+  fix() { SND.tone(660, .08, 'triangle', .1); },
+  cry() { for (let i = 0; i < 4; i++) SND.tone(520, .32, 'sawtooth', .07, 420, i * .4); },
+  coo() { SND.tone(300, .25, 'sine', .04, 250); }
+};
+const LV = [{ n: 'শান্ত দুপুর', gap: [6, 9], kinds: ['phone', 'crow', 'mosq', 'bell', 'hawker'], rate: .8 }, { n: 'শুক্রবার', gap: [4, 7], kinds: ['phone', 'crow', 'mosq', 'bell', 'hawker', 'tv', 'cooker'], rate: 1 }, { n: 'বিয়েবাড়ির পাশে', gap: [2.6, 5], kinds: ['phone', 'crow', 'mosq', 'bell', 'hawker', 'tv', 'cooker'], rate: 1.25 }];
+const DUR = 120;
+let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0;
+function newGame() { S = { over: false, started: false, t: 0, sleep: 100, cries: 0, fixes: 0, next: 3, rock: false, crying: 0, mic: 0, micPen: 0, fastFix: 0 }; for (const k in ACT) clearSrc(k, true); hud(); }
+function say(t, col, ms) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, ms || 1300); }
+function pop(t, cls) { const e = document.createElement('div'); e.className = 'pop ' + (cls || ''); e.textContent = t; $('stage').appendChild(e); setTimeout(() => e.remove(), 1100); }
+function talk(t, who, v) { if (window.KHViral) KHViral.pop(t, v || 'F2', who); }
+function hud() { const left = Math.max(0, DUR - S.t); $('time').textContent = bn(Math.floor(left / 60)) + ':' + bn(String(Math.floor(left % 60)).padStart(2, '0')); $('cries').textContent = '💗'.repeat(3 - S.cries) + '💔'.repeat(S.cries); $('sleepB').style.width = S.sleep + '%'; $('sleepB').style.background = S.sleep < 30 ? '#ef4444' : S.sleep < 60 ? '#f59e0b' : '#f472b6'; }
+function spawnSrc() { const L = LV[lv]; const free = L.kinds.filter(k => !ACT[k] && !(k === 'hawker' && S.shut > 0)); if (!free.length) return; const k = pick(free), d = SRC[k];
+  const el = document.createElement('div'); el.className = 'tg'; el.innerHTML = `${d.n}<small>${d.s}</small>`; el.onpointerdown = e => { e.stopPropagation(); tapSrc(k); }; $('tags').appendChild(el);
+  ACT[k] = { el, left: d.taps, t: 0, sT: 0 }; if (k === 'phone') drawPhone(true); if (k === 'tv') S.tvOn = true; if (k === 'crow') crow.visible = true; if (k === 'bell') SFX.bell();
+  if (k === 'tv') talk('ভাইয়া: কার্টুন দেখমু! জোরে দিমু!', '👦 ভাইয়া', 'M1'); if (k === 'bell') talk('কলিংবেল: টিং টং! (কুরিয়ার আসছে)', '🚪 দরজায়', 'M3'); }
+function clearSrc(k, quiet) { const a = ACT[k]; if (!a) return; a.el.remove(); delete ACT[k]; if (k === 'phone') drawPhone(false); if (k === 'tv') { S && (S.tvOn = false); drawTv(false); } if (k === 'crow') S && (S.crowFly = 1); if (k === 'hawker' && S) S.shut = 12; if (k === 'bell' && S && !quiet) S.doorT = 1.6; if (!quiet && S) { S.fixes++; SFX.fix(); if (a.t < 2) { S.fastFix++; pop('দ্রুত থামালেন! +', 'good'); } } }
+function tapSrc(k) { const a = ACT[k]; if (!a || !S || S.over) return; a.left--; SFX.fix(); if (a.left <= 0) clearSrc(k); else pop(`আরেকবার! (${bn(a.left)})`, 'good'); }
+function step(dt) {
+  const L = LV[lv]; S.t += dt; if (S.t >= DUR) return endGame(true);
+  if ((S.next -= dt) <= 0) { S.next = rnd(...L.gap); spawnSrc(); }
+  let noise = 0; for (const k in ACT) { const a = ACT[k], d = SRC[k]; a.t += dt; noise += d.loud * Math.min(1, .5 + a.t * .25); if ((a.sT -= dt) <= 0) { a.sT = k === 'phone' ? .1 : k === 'tv' ? .15 : k === 'crow' ? 1.1 : k === 'hawker' ? 1.4 : k === 'cooker' ? .6 : k === 'mosq' ? .2 : 9; if (SFX[k]) SFX[k](S.t); } }
+  if (S.mic > .25) { noise += (S.mic - .25) * 60; if ((S.micPen += dt) > .4) { S.micPen = 0; say('শশশ! আপনি জোরে কথা বলছেন! 🤫', '#f9a8d4'); } }
+  S.noise = noise; $('noiseB').style.width = clamp(noise / 30 * 100, 0, 100) + '%';
+  if (S.crying > 0) { S.crying -= dt * (S.rock ? 1.6 : .5); if (Math.random() < dt * 1.2) SFX.cry(); if (S.crying <= 0) { S.sleep = 55; say('বাবু আবার ঘুমিয়েছে… 😮‍💨', '#86efac'); } }
+  else { S.sleep = clamp(S.sleep - noise * dt * .55 * L.rate + (S.rock ? 9 : 1.2) * dt, 0, 100);
+    if (S.sleep < 35 && Math.random() < dt * .8) SFX.coo();
+    if (S.sleep <= 0) { S.cries++; S.crying = 4; SFX.cry(); say('ওয়াঁ ওয়াঁ! বাবু জেগে গেছে! 😭 দোলা দাও!', '#fca5a5', 2000); talk(pick(['আম্মু (ফোনে): বাবু কাঁদে ক্যান?! কী করলি!', 'পাশের বাসার আন্টি: বাবু কাঁদে কেন, দোলা দাও!']), '📞 আম্মু', 'F2'); if (S.cries >= 3) return endGame(false); } }
+  if (S.shut > 0) S.shut -= dt;
+  hud();
+}
+const TIPS = ['জানেন কি? নবজাতক দিনে ১৪-১৭ ঘণ্টা ঘুমায়; হঠাৎ জোরে শব্দে তাদের ঘুম ভেঙে যায়।', 'জানেন কি? ঢাকায় শব্দদূষণ প্রায়ই সহনীয় মাত্রার (দিনে ৫৫ ডেসিবেল) চেয়ে অনেক বেশি থাকে।', 'জানেন কি? আস্তে কথা বলা আর হর্ন কম বাজানো মানে অসুস্থ, বয়স্ক আর শিশুদের প্রতি সম্মান।', 'জানেন কি? প্রেশার কুকারের সিটি প্রায় ৯০ ডেসিবেল, যা খুব কাছ থেকে কানে ক্ষতি করতে পারে।'];
+function endGame(won) {
+  if (S.over) return; S.over = true; for (const k in ACT) clearSrc(k, true); $('meters').hidden = true; $('rockB').hidden = true; $('hint').hidden = false; $('hint').textContent = won ? 'আম্মু ফিরে এসেছেন' : 'বাবু জেগে গেছে';
+  const sc = Math.max(0, Math.round(S.t * 3 + S.fixes * 20 + S.fastFix * 10 + (won ? 300 - S.cries * 80 : 0) + (S.micOn ? 100 : 0)));
+  $('endT').textContent = won ? (S.cries ? 'আম্মু ফিরলেন, বাবু ঘুমিয়েই আছে 😮‍💨' : 'একবারও জাগেনি! সেরা ভাই/বোন 👑') : 'বাবু জেগে কান্না শুরু! 😭';
+  $('endTitle').textContent = won && !S.cries ? 'শব্দ নিয়ন্ত্রণের রাজা' : won ? 'দায়িত্বশীল' : 'আম্মুর বকা খাবেন';
+  $('endLine').textContent = `${bn(S.fixes)}টা শব্দ থামিয়েছেন, ${bn(S.fastFix)}টা খুব দ্রুত। বাবু ${bn(S.cries)} বার কেঁদেছে।${S.micOn ? ' মাইক চালু রেখে খেলেছেন (+১০০)!' : ''}`;
+  $('eS').textContent = bn(sc); $('eFix').textContent = bn(S.fixes); $('eT').textContent = bn(Math.floor(S.t)) + ' সে'; $('eTip').textContent = pick(TIPS);
+  if (won) talk('আম্মু: বাহ! বাবু এখনো ঘুমাচ্ছে? তোর জন্য আইসক্রিম আনছি!', '👩 আম্মু', 'F2'); setTimeout(() => { $('endO').hidden = false; if (won && !S.cries && window.KHViral) KHViral.confetti(); }, 800); SH.saveScore(sc); lastScore = sc;
+}
+/* ---------- মাইক (ঐচ্ছিক) ---------- */
+let micAn = null, micBuf = null;
+$('micB').onclick = async () => { if (micAn) { micAn = null; $('micB').classList.remove('on'); $('micB').textContent = '🎤 মাইক চালু'; $('micv').hidden = true; if (S) S.micOn = false; return; }
+  try { const st = await navigator.mediaDevices.getUserMedia({ audio: true }); const ac = new (window.AudioContext || window.webkitAudioContext)(); const src = ac.createMediaStreamSource(st); micAn = ac.createAnalyser(); micAn.fftSize = 512; src.connect(micAn); micBuf = new Float32Array(micAn.fftSize); $('micB').classList.add('on'); $('micB').textContent = '🎤 মাইক চালু ✓'; $('micv').hidden = false; if (S) S.micOn = true; say('মাইক চালু! আস্তে কথা বলুন 🤫', '#f9a8d4'); }
+  catch (e) { say('মাইক চালু হলো না; মাইক ছাড়াই খেলুন', '#fde047'); } };
+function readMic() { if (!micAn || !S) return; micAn.getFloatTimeDomainData(micBuf); let s = 0; for (let i = 0; i < micBuf.length; i++) s += micBuf[i] * micBuf[i]; const rms = Math.sqrt(s / micBuf.length); S.mic = clamp(rms * 6, 0, 1); $('micI').style.height = (S.mic * 100) + '%'; }
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 70 : 56; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+const v3 = new THREE.Vector3();
+function loop(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  readMic();
+  if (S && S.started && !S.over) step(dt);
+  const rockA = S && (S.rock || S.crying > 0) ? .22 : .05; swing.rotation.x = Math.sin(T0 * (S && S.rock ? 2.6 : 1.4)) * rockA;
+  if (S && S.tvOn) drawTv(true, T0);
+  if (fanBlades) fanBlades.rotation.y -= dt * 12;
+  if (clockHands && clockHands.m) { const m = 13 * 60 + (S ? S.t / 2 : 0); clockHands.m.rotation.z = -(m % 60) / 60 * Math.PI * 2; clockHands.h.rotation.z = -((m / 60) % 12) / 12 * Math.PI * 2; }
+  if (ACT.crow) { crow.position.y = winY - winH / 2 + .05 + Math.abs(Math.sin(T0 * 6)) * .02; } else if (S && S.crowFly) { S.crowFly += dt; crow.position.x += dt * 2; crow.position.y += dt * 1.5; if (S.crowFly > 2) { S.crowFly = 0; crow.visible = false; crow.position.set(winX + .3, winY - winH / 2 + .05, -RD / 2 - .02); } }
+  const shut = S && S.shut > 0; shutters.forEach(p => p.rotation.y += ((shut ? 0 : p.userData.sd * 1.4) - p.rotation.y) * Math.min(1, dt * 5));
+  door.rotation.y += ((S && S.doorT > 0 ? -1 : 0) - door.rotation.y) * Math.min(1, dt * 4);
+  if (S && S.doorT > 0) S.doorT -= dt;
+  const port = W / H < .8;
+  if (S && S.started) { cam.position.set(port ? .55 : .9, port ? 2.35 : 2.05, port ? 2.05 : 1.75); cam.lookAt(-.2, .75, -.75); }
+  else { const a = T0 * .07; cam.position.set(Math.sin(a) * .8 + .5, 2.0, 1.7); cam.lookAt(-.35, .8, -.4); }
+  for (const k in ACT) { const a = ACT[k]; v3.copy(SRC[k].pos()).project(cam); a.el.style.left = clamp((v3.x + 1) / 2 * W, 70, W - 70) + 'px'; a.el.style.top = clamp((1 - v3.y) / 2 * H, 110, H - 30) + 'px'; }
+  if (renderer) renderer.render(scene, cam);
+  requestAnimationFrame(loop);
+}
+const _clear = clearSrc;
+function start(level) { lv = level; newGame(); S.started = true; S.micOn = !!micAn; ['startO', 'endO'].forEach(i => $(i).hidden = true); $('meters').hidden = false; $('rockB').hidden = false; $('hint').hidden = true; SND.ac; hud(); talk('আম্মু: বাবুকে দেখিস, আমি এক ঘণ্টায় আসছি। খবরদার জাগাবি না!', '👩 আম্মু', 'F2'); }
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = e => { e.stopPropagation(); start(+b.dataset.lv); });
+{ const b = $('rockB'); const on = e => { e.preventDefault(); if (S) S.rock = true; }, off = () => { if (S) S.rock = false; }; b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off); }
+addEventListener('keydown', e => { if (e.key === ' ' && S) S.rock = true; }); addEventListener('keyup', e => { if (e.key === ' ' && S) S.rock = false; });
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `চিৎকার করো না: বাবুকে ঘুম পাড়িয়ে রেখে ${bn(lastScore)} পয়েন্ট! 🤫 আপনি পারবেন? ${location.origin}/games/chitkar/`; try { navigator.clipboard.writeText(t).then(() => pop('কপি হয়েছে, শেয়ার করুন!', 'good')); } catch (e) {} };
+newGame(); resize(); last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+const MY = ['শশশ! আস্তে!', 'ভাইয়া, টিভি কমাও!', 'কে? একটু পরে আসেন', 'ঘুমা বাবু, ঘুমা'], OP = ['আচ্ছা আচ্ছা, আস্তে বলছি', 'সরি সরি!', 'ঠিক আছে, পরে আসবো', 'উঁ উঁ… (বাবু ঘুমের মধ্যে)'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY, onSay: t => { KHViral.pop(t, 'M1', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP), 'F1', '🏠 বাসায়', true), 1500); } });
+window.KHG = { get S() { return S; }, start, tapSrc, ACT, ready: false };
+</script>
+<script src="/js/update.js"></script>
+</body></html>
