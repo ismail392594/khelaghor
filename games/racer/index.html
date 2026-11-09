@@ -297,7 +297,7 @@ const KMH = 3.6;
 
 /* ================= শব্দ: ইঞ্জিন, টায়ার-রাস্তা, বাতাস, পাশ কাটানো গাড়ি, হর্ন, ধাক্কা ================= */
 // ল্যাপটপ/ফোনের স্পিকার ১৫০ হার্জের নিচে প্রায় কিছুই বাজায় না, তাই ইঞ্জিনের শব্দ হারমোনিক-ভরা আর মাঝের সুরে রাখা
-let sndOn = store.get('kh-sfx', true), vol = store.get('kh-racer-vol', .8), ac = null, master = null, eng = null;
+let eng_pf = null, sndOn = store.get('kh-sfx', true), vol = store.get('kh-racer-vol', .8), ac = null, master = null, eng = null;
 function audio() {
   if (!ac) {
     const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; ac = new C();
@@ -315,14 +315,28 @@ function loopNoise(type, fr, q) { const s = ac.createBufferSource(); s.buffer = 
 const ENG_PROF = {
   sport: { h: [1, .7, .6, 1.6, .45, .4, .3], lfo: .25, knock: 0, base: 1 },
   car: { h: [1, .5, .25, .5, .15, .08], lfo: .1, knock: 0, base: .9 },
-  diesel: { h: [1, .9, .8, .7, .55, .5, .45, .4, .3], lfo: .38, knock: .22, base: .8 },
+  diesel: { h: [1, .9, .8, .7, .55, .5, .45, .4, .3], lfo: .38, knock: .22, base: .8, pulse: true },
   cng: { h: [1, .2, .8, .1, .6, .1, .4], lfo: .62, knock: .12, base: 1.15 },
   moto: { h: [1, .9, .85, .7, .6, .5, .45, .3], lfo: .3, knock: 0, base: 1.1 }
 };
+// ডিজেলের আসল ধকধক: ৬ সিলিন্ডারের প্রতিটা বিস্ফোরণ আলাদা ধাক্কা (নিচু গুম + ছোট খটখট), একটু এলোমেলো তাল।
+// এক টুকরো বানিয়ে বারবার বাজে; গতি বাড়লে দ্রুত বাজে (তাল আর সুর দুটোই বাড়ে, আসল ইঞ্জিনের মতো)
+let DB = null;
+function dieselBuf() {
+  if (DB) return DB; const sr = ac.sampleRate, dur = 1.6, n = Math.floor(sr * dur), b = ac.createBuffer(1, n, sr), x = b.getChannelData(0);
+  let t = 0, k = 0, peak = 0;
+  while (t < dur - .04) {
+    const i0 = Math.floor(t * sr), len = Math.floor(sr * .045), amp = (.72 + Math.random() * .28) * (k % 6 === 4 ? .8 : 1), fb = 62 + Math.random() * 14;
+    for (let i = 0; i < len && i0 + i < n; i++) { const tt = i / sr; x[i0 + i] += amp * (Math.exp(-tt * 75) * Math.sin(2 * Math.PI * fb * tt) * .85 + (Math.random() * 2 - 1) * Math.exp(-tt * 380) * .45 + (Math.random() * 2 - 1) * Math.exp(-tt * 2200) * .18); }
+    t += (1 / 30) * (1 + (Math.random() - .5) * .05); k++;
+  }
+  let lp = 0; for (let i = 0; i < n; i++) { lp += (x[i] - lp) * .35; x[i] = lp; peak = Math.max(peak, Math.abs(lp)); } for (let i = 0; i < n; i++) x[i] *= .9 / peak;
+  return (DB = b);
+}
 function engineOn() {
   if (!audio()) return; const prof = (R && R.snd) || 'sport';
   if (eng && eng.prof === prof) return;
-  if (eng) { try { [eng.o1, eng.o2, eng.sub, eng.lfo, eng.tw].forEach(o => o.stop()); eng.out.disconnect(); eng.road.g.disconnect(); eng.wind.g.disconnect(); eng.skid.g.disconnect(); eng.tg.disconnect(); if (eng.kn) eng.kn.g.disconnect(); } catch (e) {} eng = null; }
+  if (eng) { try { [eng.o1, eng.o2, eng.sub, eng.lfo, eng.tw].concat(eng.ps ? [eng.ps] : []).forEach(o => o.stop()); eng.out.disconnect(); eng.road.g.disconnect(); eng.chat.g.disconnect(); eng.wind.g.disconnect(); eng.skid.g.disconnect(); eng.tg.disconnect(); if (eng.kn) eng.kn.g.disconnect(); } catch (e) {} eng = null; }
   // ইঞ্জিন: ৪ সিলিন্ডারের মতো হারমোনিক সহ PeriodicWave, হালকা ডিসটরশন, তারপর ফিল্টার
   const P = ENG_PROF[prof], re = new Float32Array(24), im = new Float32Array(24); for (let h = 1; h < 24; h++) im[h] = (P.h[h - 1] ?? (h % 2 ? 1 : .7) / Math.pow(h, .75) * .5);
   const wave = ac.createPeriodicWave(re, im);
@@ -337,11 +351,15 @@ function engineOn() {
   o1.connect(pre); o2.connect(g2); g2.connect(pre); sub.connect(gs); gs.connect(pre); pre.connect(shaper); shaper.connect(lp); lp.connect(pk); pk.connect(am); am.connect(out); out.connect(master);
   // টার্বো/নাইট্রোর শিস
   const tw = ac.createOscillator(), tg = ac.createGain(); tw.type = 'sine'; tw.frequency.value = 2400; tg.gain.value = 0; tw.connect(tg); tg.connect(master);
-  const road = loopNoise('lowpass', 380, .7), wind = loopNoise('bandpass', 1100, .4), skid = loopNoise('bandpass', 2300, 7);
+  const road = loopNoise('lowpass', 380, .7), wind = loopNoise('bandpass', 1100, .4), skid = loopNoise('bandpass', 2300, 7), chat = loopNoise('bandpass', 650, 1.4); // chat: বাসের ভেতরে যাত্রীদের গুনগুন
   // ডিজেলের খটখট: ব্যান্ডপাস নয়েজ, ইঞ্জিনের তালে ওঠানামা
   let kn = null; if (P.knock) { kn = loopNoise('bandpass', 1900, 2.5); const kl = ac.createGain(); kl.gain.value = P.knock; lfo.connect(kl); kl.connect(kn.g.gain); }
+  let ps = null; if (P.pulse) { // ডিজেল: ধকধকের টুকরো বেশি, সুর কম; নিচু ফিল্টার দিয়ে ভারী গর্জন
+    ps = ac.createBufferSource(); ps.buffer = dieselBuf(); ps.loop = true; const pf = ac.createBiquadFilter(); pf.type = 'lowpass'; pf.frequency.value = 700; pf.Q.value = .7;
+    const pg = ac.createGain(); pg.gain.value = 1.1; ps.connect(pf); pf.connect(pg); pg.connect(am); pre.gain.value = .22; ps.start(); eng_pf = pf;
+  }
   [o1, o2, sub, lfo, tw].forEach(o => o.start());
-  eng = { o1, o2, sub, lfo, lp, out, tg, tw, road, wind, skid, kn, prof, P, gear: 0 };
+  eng = { o1, o2, sub, lfo, lp, out, tg, tw, road, wind, skid, kn, prof, P, gear: 0, ps, pf: eng_pf, chat };
 }
 const GEARS = [0, 45, 80, 115, 150, 190, 400];
 function engineUpdate(v, thr, skidAmt, nitro) {
@@ -351,18 +369,24 @@ function engineUpdate(v, thr, skidAmt, nitro) {
   const rpm = clamp((k - GEARS[g]) / (GEARS[g + 1] - GEARS[g]), 0, 1), f = (70 + rpm * 120 + g * 8 + thr * 6) * (R ? R.pitch : 1) * eng.P.base; // ~৭০-২২০ হার্জ মূল সুর
   eng.o1.frequency.setTargetAtTime(f, t, .04); eng.o2.frequency.setTargetAtTime(f * 1.503, t, .04); eng.sub.frequency.setTargetAtTime(f / 2, t, .04); eng.lfo.frequency.setTargetAtTime(f / 4, t, .04);
   eng.lp.frequency.setTargetAtTime(900 + rpm * 2600 + thr * 800, t, .06);
+  if (eng.ps) { eng.ps.playbackRate.setTargetAtTime(clamp(f / 58, .75, 3.6), t, .05); eng.pf.frequency.setTargetAtTime(420 + rpm * 900 + thr * 700, t, .08); eng.tw.frequency.setTargetAtTime(3200 + rpm * 2600, t, .1); eng.tg.gain.setTargetAtTime(nitro ? .035 : thr * rpm * .006, t, .2); } // টার্বোর হালকা শিস
   eng.out.gain.setTargetAtTime(.32 + rpm * .12 + thr * .1, t, .08);
-  eng.tg.gain.setTargetAtTime(nitro ? .035 : 0, t, .15); eng.tw.frequency.setTargetAtTime(1800 + rpm * 1500, t, .1);
+  if (!eng.ps) { eng.tg.gain.setTargetAtTime(nitro ? .035 : 0, t, .15); eng.tw.frequency.setTargetAtTime(1800 + rpm * 1500, t, .1); }
   eng.road.g.gain.setTargetAtTime(Math.min(.5, k / 200 * .5), t, .2); eng.road.f.frequency.setTargetAtTime(250 + k * 2, t, .2);
   eng.wind.g.gain.setTargetAtTime(Math.min(.35, (k / 220) ** 2 * .35), t, .25);
   eng.skid.g.gain.setTargetAtTime(skidAmt * .42, t, .04); eng.skid.f.frequency.setTargetAtTime(1900 + Math.sin(t * 23) * 260 + skidAmt * 500, t, .02); // টায়ারের চিৎকার
   if (eng.kn) eng.kn.g.gain.setTargetAtTime(sndOn ? .05 + thr * .06 : 0, t, .1);
+  // বাসের ভেতরে: যাত্রীদের কথাবার্তার গুনগুন আর ঝাঁকুনিতে জানালা-সিটের খটখট
+  const inside = cabin && (CFG.cam === 'cabin' || CFG.cam === 'cockpit') && S && S.started && !S.cine && (S.paxList || []).length;
+  eng.chat.g.gain.setTargetAtTime(inside ? .05 + Math.sin(t * .7) * .015 + Math.sin(t * 2.3) * .01 : 0, t, .3); eng.chat.f.frequency.setTargetAtTime(560 + Math.sin(t * 1.7) * 160, t, .2);
+  if (inside && k > 15 && Math.random() < k / 3000) noise(t, .04, .1 + Math.random() * .12, 2600 + Math.random() * 2000, 'bandpass', 0, 4);
 }
-function engineQuiet() { if (eng) { const t = ac.currentTime; [eng.out.gain, eng.road.g.gain, eng.wind.g.gain, eng.skid.g.gain, eng.tg.gain].concat(eng.kn ? [eng.kn.g.gain] : []).forEach(g => g.setTargetAtTime(0, t, .25)); } }
+function engineQuiet() { if (eng) { const t = ac.currentTime; [eng.out.gain, eng.road.g.gain, eng.wind.g.gain, eng.skid.g.gain, eng.tg.gain, eng.chat.g.gain].concat(eng.kn ? [eng.kn.g.gain] : []).forEach(g => g.setTargetAtTime(0, t, .25)); } }
 const SFX = {
   horn() { // গাড়ি অনুযায়ী হর্ন: বাস-ট্রাকে ভারী এয়ার হর্ন, সিএনজিতে পিপ
     const t = ac.currentTime, f = ac.createBiquadFilter(), snd = (R && R.snd) || 'car'; f.type = 'lowpass'; f.frequency.value = snd === 'diesel' ? 1500 : 2400; f.connect(master);
-    if (snd === 'diesel') { tone(277, t, .9, 'sawtooth', .3, 0, f); tone(349, t, .9, 'sawtooth', .26, 0, f); tone(415, t, .9, 'sawtooth', .18, 0, f); }
+    if (snd === 'diesel' && /^bus/.test(rideKey)) { for (let i = 0; i < 4; i++) { const hi = i % 2 === 0, st = t + i * .2; tone(hi ? 622 : 494, st, .19, 'sawtooth', .22, 0, f); tone(hi ? 933 : 740, st, .19, 'square', .07, 0, f); } } // বাংলাদেশি বাসের "পা-পো" হর্ন
+    else if (snd === 'diesel') { tone(277, t, .9, 'sawtooth', .3, 0, f); tone(349, t, .9, 'sawtooth', .26, 0, f); tone(415, t, .9, 'sawtooth', .18, 0, f); }
     else if (snd === 'cng') { tone(740, t, .18, 'square', .14, 0, f); tone(740, t + .24, .2, 'square', .14, 0, f); }
     else if (snd === 'moto') tone(620, t, .35, 'square', .14, 0, f);
     else { tone(415, t, .5, 'sawtooth', .22, 0, f); tone(523, t, .5, 'sawtooth', .18, 0, f); } },
