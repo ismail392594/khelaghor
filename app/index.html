@@ -175,6 +175,7 @@ $('copy').onclick = () => {
   try { navigator.clipboard.writeText(t).then(() => { $('copy').textContent = 'কপি হয়েছে ✓'; setTimeout(() => $('copy').textContent = 'কপি', 2000); }, sel); } catch (e) { sel(); }
   function sel() { const r = document.createRange(); r.selectNodeContents($('link')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
 };
-if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+/* service worker: js/update.js */
 </script>
+<script src="/js/update.js"></script>
 </body></html>

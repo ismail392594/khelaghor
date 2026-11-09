@@ -509,5 +509,5 @@ const OP_S = ['আগে তো একটা কাট, তারপর বড�
 if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY_S, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); if (mode !== 'two') setTimeout(() => KHViral.pop(pick(OP_S), 'M3', '🪔 ' + LV[lv].n, true), 2600); } });
 window.KHSholo = { get B() { return B; }, get turn() { return turn; }, get over() { return over; }, get busy() { return busy; }, start, allMoves: () => allMoves(B, turn), play: async m => { let at = m.from; for (let k = 0; k < m.path.length; k++) { const r = await doStep(at, { to: m.path[k], cap: m.caps.length ? m.caps[k] : -1 }); at = m.path[k]; if (r === 'done') return; } endTurn(); }, cpuMove: () => cpuMove(B, turn) };
 </script>
-<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
+<script src="/js/update.js"></script>
 </body></html>

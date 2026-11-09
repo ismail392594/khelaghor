@@ -415,5 +415,5 @@ if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY_D, onSay: t =>
 window.KHChess = { get g() { return g; }, get over() { return over; }, get busy() { return busy; }, start, setSide: s => { meSide = s; }, scr: n => { const s = 'abcdefgh'.indexOf(n[0]) + 1 + (10 - +n[1]) * 10, [x, z] = pos3(s), v = new THREE.Vector3(x, 0, z).project(cam), r = $('cv').getBoundingClientRect(); return [r.left + (v.x + 1) / 2 * r.width, r.top + (1 - v.y) / 2 * r.height]; }, play: async () => { const m = C.bestMove(g, 1, 80, seen); if (m) await doMove(m); } };
 
 </script>
-<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
+<script src="/js/update.js"></script>
 </body></html>

@@ -627,7 +627,8 @@ $('setForm').onsubmit=async e=>{
   addEventListener('beforeinstallprompt', e => { e.preventDefault(); dp = e; if (!sa) document.getElementById('appI').hidden = false; });
   addEventListener('appinstalled', () => { document.getElementById('appI').hidden = true; });
   document.getElementById('appI').onclick = async () => { if (!dp) return; dp.prompt(); await dp.userChoice; dp = null; document.getElementById('appI').hidden = true; };
-  if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+  /* service worker: js/update.js */
 }
 </script>
+<script src="/js/update.js"></script>
 </body></html>

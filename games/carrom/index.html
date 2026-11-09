@@ -690,5 +690,5 @@ function onlineEnd(win) {
 document.querySelectorAll('[data-on]').forEach(b => b.onclick = () => { location.href = '/#newroom-carrom-' + b.dataset.on; });
 window.KHCarrom = { get S() { return S; }, get CFG() { return CFG; }, shoot: (ux, uz, pw) => shoot(ux, uz, pw), place: f => placeStriker(f), start, cpuPlan: () => cpuPlan() };
 </script>
-<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
+<script src="/js/update.js"></script>
 </body></html>

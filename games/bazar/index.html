@@ -608,5 +608,5 @@ async function saveScore(sc) {
   try { const ref = doc(db, 'scores', GAME, 'players', user.uid), d = await getDoc(ref); if (d.exists() && d.data().score >= sc) return; await setDoc(ref, { score: sc, name: me.name, username: me.username, at: serverTimestamp() }); } catch (e) {}
 }
 </script>
-<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
+<script src="/js/update.js"></script>
 </body></html>

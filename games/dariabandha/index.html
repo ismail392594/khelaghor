@@ -500,5 +500,5 @@ if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY_H, onSay: t =>
 window.KHDaria = { get S() { return S; }, tick: n => { for (let i = 0; i < n; i++) if (S && !S.over && S.phase !== 'swap') { step(1 / 60); sideline(1 / 60); } else if (S && S.phase === 'swap' && !S.over) { setupHalf(); } }, start, doDash, joy: (dx, dy) => { S.joy = dx === null ? null : { dx, dy, id: -1 }; }, LINES };
 
 </script>
-<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
+<script src="/js/update.js"></script>
 </body></html>
