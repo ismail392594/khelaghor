@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>পটকা পাহারা · খেলাঘর</title>
+<meta name="description" content="উৎসবের রাতে পাড়ার পাহারাদার আপনি! হাসপাতাল, খড়ের গাদা, গ্যাসের দোকান বা ঘুমন্ত মানুষের পাশে কেউ পটকা জ্বালালে থামান, নিরাপদ মাঠে পাঠান। মাঠের আতশবাজি আনন্দে ফুটতে দিন!">
+<link rel="canonical" href="https://khelaghorbd.online/games/potka/">
+<meta property="og:title" content="পটকা পাহারা · খেলাঘর">
+<meta property="og:description" content="আনন্দ হোক, বিপদ না! পাড়াকে নিরাপদ রাখতে পারবেন?">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/potka.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/potka.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+:root{--accent:#f97316}
+.tags{position:absolute;inset:0;z-index:3;pointer-events:none}
+.tk{position:absolute;transform:translate(-50%,-100%);pointer-events:auto;cursor:pointer;border-radius:12px;padding:4px 8px;font:800 .74rem var(--body);white-space:nowrap;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.6);background:#7c2d12;color:#fff;border:2px solid #fdba74}
+.tk small{display:block;font-weight:600;font-size:.62rem;opacity:.9}
+.tk .f{height:5px;background:rgba(255,255,255,.2);border-radius:3px;margin-top:3px;overflow:hidden}.tk .f i{display:block;height:100%;background:#facc15}
+.zl{position:absolute;transform:translate(-50%,-100%);pointer-events:none;font:700 .66rem var(--body);background:rgba(0,0,0,.55);border-radius:8px;padding:2px 6px;white-space:nowrap;color:#e5e7eb}
+.zl.safe{background:rgba(20,83,45,.8)}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="sc">০</b><small>পয়েন্ট · <span id="lives">🛡️🛡️🛡️</span></small></div>
+    <div class="stat r"><b id="time">২:০০</b><small>রাত শেষ হতে</small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas class="cv" id="cv"></canvas>
+    <div class="tags" id="tags"></div>
+    <div class="say" id="say" hidden></div>
+    <div class="chost" id="chatHost"></div>
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>পটকা পাহারা</h1>
+        <p class="story">উৎসবের রাত, পাড়া জুড়ে আলো। ছেলেমেয়েরা পটকা আর আতশবাজি নিয়ে বেরিয়েছে। আপনি পাড়ার স্বেচ্ছাসেবক: আনন্দ চলুক, কিন্তু কেউ যেন আহত না হয়, আগুন না লাগে!</p>
+        <div class="rules">
+          <div>🧨 কেউ পটকা জ্বালালে মাথার উপর <b>কমলা লেখা</b> আর সলতের দাগ। দেখুন সে কোথায় দাঁড়িয়ে।</div>
+          <div>🏥 হাসপাতাল, 🌾 খড়ের গাদা, ⛽ গ্যাসের দোকান, 😴 ঘুমন্ত মানুষ, 🐕 কুকুরের পাশে হলে <b>চেপে থামান</b>; সে মাঠে চলে যাবে।</div>
+          <div>🎆 <b>সবুজ "নিরাপদ মাঠে"</b> থাকলে থামাবেন না! ফুটতে দিন, আকাশে আতশবাজি। ভুল করে থামালে পয়েন্ট কাটবে।</div>
+        </div>
+        <div class="lvl">
+          <button data-lv="0">শবে বরাতের রাত<small>অল্প পটকা</small></button>
+          <button data-lv="1">বিজয় দিবস<small>ভিড়</small></button>
+          <button data-lv="2">নতুন বছরের রাত<small>মহা হৈচৈ</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">মানুষ: Renderpeople (<a href="/games/racer/assets/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। মাটি, দেয়াল: Poly Haven (CC0)। আতশবাজি আর পাড়া খেলাঘরের নিজের বানানো।</p>
+      </div>
+    </div>
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">রাত শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eStop">০</b><span>বিপদ থামানো</span></div><div><b id="eFun">০</b><span>নিরাপদ আতশবাজি</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার পাহারা</button><button class="gbtn ghost" id="menuBtn">রাত বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">🧨</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+  <div class="ctl"><div class="hint" id="hint">রাত বেছে পাহারা শুরু করুন</div></div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { GLTFLoader } from "/js/vendor/addons/GLTFLoader.js";
+import { MeshoptDecoder } from "/js/vendor/addons/meshopt_decoder.module.js";
+import { clone as cloneSkinned } from "/js/vendor/addons/SkeletonUtils.js";
+import { TIERS, detectTier } from "/js/kh-quality.js";
+import { loadPeople } from "/js/kh-people.js";
+import { gameShell, sound, bn, pick, rnd, clamp } from "/js/kh-shell.js";
+
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'potka', name: 'পটকা পাহারা', lbTitle: 'সেরা পাড়া-পাহারাদার', offMsg: 'আজ পাড়ায় সব শান্ত, পাহারার দরকার নেই! পরে আসেন।' });
+const SND = sound(SH);
+const TIER = TIERS[detectTier()], LOW = TIER.id <= 1;
+let renderer = null; try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' }); } catch (e) {}
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(50, 1, .1, 300);
+scene.background = new THREE.Color('#060913');
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; }
+const ANISO = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1, texL = new THREE.TextureLoader(), KA = '/games/kanamachi/assets/', JA = '/games/jam/assets/';
+const tex = (u, srgb, rx, ry) => { const t = texL.load(u); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; t.repeat.set(rx, ry ?? rx); return t; };
+const cvTex = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; };
+const M = o => new THREE.MeshStandardMaterial(o);
+const box = (w, h, d, m, x, y, z) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); scene.add(b); return b; };
+
+/* ---------- রাতের পাড়া ---------- */
+scene.fog = new THREE.Fog('#0b1020', 30, 90);
+scene.add(new THREE.HemisphereLight('#7f90c0', '#3a3026', 1.1));
+{ const m = new THREE.DirectionalLight('#9fb4e8', .5); m.position.set(-10, 20, 10); scene.add(m); }
+{ const g = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), M({ map: tex(KA + 'ground_diff.jpg', true, 16), normalMap: tex(KA + 'ground_nor.jpg', false, 16), color: '#8f8577', roughness: 1 })); g.rotation.x = -Math.PI / 2; scene.add(g); }
+{ const r = new THREE.Mesh(new THREE.PlaneGeometry(6, 60), M({ color: '#2f2f33', roughness: .95 })); r.rotation.x = -Math.PI / 2; r.position.set(0, .01, 0); scene.add(r); const r2 = r.clone(); r2.rotation.z = Math.PI / 2; r2.position.set(0, .012, -2); scene.add(r2); }
+const plaster = ['plaster_diff.jpg', 'plaster_nor.jpg'].map((f, i) => tex(JA + f, i === 0, 2, 2));
+const signTex = (t, col) => cvTex(512, 112, (x) => { x.fillStyle = col; x.fillRect(0, 0, 512, 112); x.fillStyle = '#fff'; x.font = "800 56px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(t, 256, 60); });
+function house(x, z, w, h, d, col, winLit = .5) { const m = M({ map: plaster[0], normalMap: plaster[1], color: col, roughness: .95 }); const b = box(w, h, d, m, x, h / 2, z); const wm = new THREE.MeshBasicMaterial({ color: '#ffd889' }), dm = M({ color: '#1e2533' }); for (let fy = 1.4; fy < h - .5; fy += 2.8) for (let fx = -w / 2 + 1; fx < w / 2 - .5; fx += 1.8) { const win = new THREE.Mesh(new THREE.PlaneGeometry(.8, 1.1), Math.random() < winLit ? wm : dm); const front = z > 0 ? -1 : 1; win.position.set(x + fx, fy, z + front * (d / 2 + .01)); if (front < 0) win.rotation.y = Math.PI; scene.add(win); } return b; }
+// বিপদের জায়গা আর নিরাপদ মাঠ
+const ZONES = [
+  { k: 'hosp', n: '🏥 হাসপাতাল', x: -8, z: -7, danger: true, why: 'হাসপাতালের রোগীরা চমকে উঠবে!' },
+  { k: 'hay', n: '🌾 খড়ের গাদা', x: 8, z: -6.5, danger: true, why: 'খড়ে আগুন লেগে যাবে!' },
+  { k: 'gas', n: '⛽ গ্যাসের দোকান', x: -8, z: 4.5, danger: true, why: 'গ্যাস সিলিন্ডারের পাশে আগুন, মারাত্মক!' },
+  { k: 'sleep', n: '😴 নানুর ঘর', x: 8, z: 4.5, danger: true, why: 'অসুস্থ নানু ঘুমাচ্ছেন!' },
+  { k: 'dog', n: '🐕 কুকুরের ছানা', x: -3.6, z: -10.5, danger: true, why: 'কুকুরগুলো ভয়ে পালাবে, কষ্ট পাবে!' },
+  { k: 'field', n: '🎆 নিরাপদ মাঠ', x: 0, z: 12, danger: false, why: '' }];
+house(-10, -9.5, 7, 9, 5, '#e5e7eb', .7); { const s = new THREE.Mesh(new THREE.PlaneGeometry(4, .9), new THREE.MeshBasicMaterial({ map: signTex('+ পাড়া হাসপাতাল', '#b91c1c') })); s.position.set(-10, 6, -6.98); scene.add(s); }
+house(10, -9.5, 6, 7, 5, '#d9c7a8', .4);
+house(-10, 7.5, 6, 6, 5, '#c9d6cf', .5); { const s = new THREE.Mesh(new THREE.PlaneGeometry(4, .9), new THREE.MeshBasicMaterial({ map: signTex('জনতা গ্যাস ঘর', '#1d4ed8') })); s.rotation.y = Math.PI; s.position.set(-10, 3.2, 4.98); scene.add(s); for (let i = 0; i < 5; i++) { const c = new THREE.Mesh(new THREE.CylinderGeometry(.16, .16, .6, 16), M({ color: i % 2 ? '#b91c1c' : '#1d4ed8', roughness: .5 })); c.position.set(-11.5 + i * .5, .3, 4.6); scene.add(c); } }
+house(10, 7.5, 6, 6, 5, '#e3c9b8', .15);
+for (const [x, z] of [[-17, -2], [17, -2], [-17, 12], [17, 12]]) house(x, z, 6, rnd(6, 11), 6, pick(['#d4cfc4', '#efe3cf', '#cdbfae']), .5);
+{ const hay = new THREE.Mesh(new THREE.ConeGeometry(1.6, 2.2, 14), M({ map: cvTex(128, 128, (x) => { x.fillStyle = '#b4903e'; x.fillRect(0, 0, 128, 128); for (let i = 0; i < 600; i++) { x.strokeStyle = `rgba(${rnd(150, 220)},${rnd(110, 170)},50,.6)`; x.beginPath(); const a = rnd(0, 128), b = rnd(0, 128); x.moveTo(a, b); x.lineTo(a + rnd(-10, 10), b + 14); x.stroke(); } }), roughness: 1 })); hay.position.set(9, 1.1, -5.5); scene.add(hay); }
+// কুকুরের ছানা (সাধারণ আকৃতি, মাটিতে শুয়ে)
+for (let i = 0; i < 3; i++) { const g = new THREE.Group(); const b = new THREE.Mesh(new THREE.SphereGeometry(.22, 12, 10), M({ color: pick(['#a16207', '#78350f', '#e7e5e4']), roughness: .9 })); b.scale.set(1.5, .7, 1); g.add(b); const h = new THREE.Mesh(new THREE.SphereGeometry(.13, 12, 10), b.material); h.position.set(.3, .05, 0); g.add(h); g.position.set(-4.4 + i * .6, .15, -10.6 + (i % 2) * .3); g.rotation.y = rnd(0, 3); scene.add(g); }
+// নিরাপদ মাঠ: সবুজ ঘাস, মরিচবাতি, ব্যানার, বালতি পানি
+{ const f = new THREE.Mesh(new THREE.CircleGeometry(6, 32), M({ map: tex('/games/racer/assets/grass_diff.jpg', true, 6), color: '#6aa35a', roughness: 1 })); f.rotation.x = -Math.PI / 2; f.position.set(0, .02, 13); scene.add(f);
+  const ban = new THREE.Mesh(new THREE.PlaneGeometry(6, 1), new THREE.MeshBasicMaterial({ map: signTex('নিরাপদ আতশবাজির মাঠ', '#15803d'), side: THREE.DoubleSide })); ban.position.set(0, 3.4, 18.5); scene.add(ban); for (const x of [-3, 3]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, 3.6, 8), M({ color: '#b89a5e' })); p.position.set(x, 1.8, 18.5); scene.add(p); }
+  const bk = new THREE.Mesh(new THREE.CylinderGeometry(.25, .2, .4, 16), M({ color: '#2563eb', roughness: .5 })); bk.position.set(2.5, .2, 10.5); scene.add(bk); const bl = new THREE.PointLight('#fff2c8', 10, 14, 1.4); bl.position.set(0, 3, 13); scene.add(bl); }
+// রাস্তার বাতি
+for (const [x, z] of [[-3.6, -3], [3.6, 3], [-3.6, 9], [3.6, -12]]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(.06, .08, 5, 8), M({ color: '#4b5563' })); p.position.set(x, 2.5, z); scene.add(p); const l = new THREE.PointLight('#ffd9a0', 16, 18, 1.4); l.position.set(x, 4.8, z); scene.add(l); const b = new THREE.Mesh(new THREE.SphereGeometry(.15, 10, 8), new THREE.MeshBasicMaterial({ color: '#ffe8b8' })); b.position.copy(l.position); scene.add(b); }
+// আতশবাজি আর বিস্ফোরণের কণা
+const PN = 900, pG = new THREE.BufferGeometry(), pP = new Float32Array(PN * 3), pC = new Float32Array(PN * 3); pG.setAttribute('position', new THREE.BufferAttribute(pP, 3)); pG.setAttribute('color', new THREE.BufferAttribute(pC, 3));
+const dotT = cvTex(32, 32, (x) => { const g = x.createRadialGradient(16, 16, 1, 16, 16, 16); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.4, 'rgba(255,255,255,.7)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 32, 32); });
+const parts = new THREE.Points(pG, new THREE.PointsMaterial({ size: .35, map: dotT, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); parts.frustumCulled = false; scene.add(parts);
+const PD = []; for (let i = 0; i < PN; i++) PD.push({ x: 0, y: -50, z: 0, vx: 0, vy: 0, vz: 0, t: 0, c: new THREE.Color() });
+function burst(x, y, z, n, sp, cols, life = 1.6) { for (let k = 0; k < n; k++) { const p = PD.find(q => q.t <= 0); if (!p) break; const th = rnd(0, 6.283), ph = Math.acos(rnd(-1, 1)), s = sp * rnd(.6, 1); p.x = x; p.y = y; p.z = z; p.vx = Math.sin(ph) * Math.cos(th) * s; p.vy = Math.cos(ph) * s; p.vz = Math.sin(ph) * Math.sin(th) * s; p.t = life * rnd(.7, 1); p.c.set(pick(cols)); } }
+const flash = new THREE.PointLight('#ffb347', 0, 14, 1.5); scene.add(flash);
+const FIRES = [];
+function fire(x, z) { const f = new THREE.Mesh(new THREE.ConeGeometry(.5, 1.4, 10, 1, true), new THREE.MeshBasicMaterial({ color: '#ff7a1a', transparent: true, opacity: .85, blending: THREE.AdditiveBlending, depthWrite: false })); f.position.set(x, .7, z); scene.add(f); const l = new THREE.PointLight('#ff7a1a', 4, 6, 1.5); l.position.set(x, 1.2, z); scene.add(l); FIRES.push({ f, l, t: 5 }); }
+// বাচ্চারা (আসল মানুষ, ছোট মাপে)
+let KIDS = [];
+loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned).then(P => { for (let i = 0; i < 8; i++) { const h = P.make(i, { scale: rnd(.82, .9), shadow: false }); h.root.visible = false; scene.add(h.root); KIDS.push({ h, busy: false }); } window.KHG.ready = true; }).catch(() => { window.KHG.ready = true; });
+// জায়গার নাম (সবসময় দেখা যায়)
+const ZL = ZONES.map(z => { const e = document.createElement('div'); e.className = 'zl' + (z.danger ? '' : ' safe'); e.textContent = z.n; $('tags').appendChild(e); return e; });
+
+/* ---------- খেলা ---------- */
+const SFX = { fuse() { SND.noise(.4, .08, 6000, 'highpass'); }, bang(v = 1) { SND.noise(.35, .7 * v, 900, 'lowpass'); SND.noise(.15, .5 * v, 3000, 'highpass'); SND.tone(70, .3, 'sine', .3 * v, 40); }, whistle() { SND.tone(900, .7, 'sine', .06, 2400); }, stop() { SND.tone(660, .1, 'triangle', .15); SND.tone(880, .12, 'triangle', .15, 0, .1); }, bad() { SND.tone(200, .35, 'sawtooth', .12, 120); }, siren() { for (let i = 0; i < 3; i++) SND.tone(700, .35, 'sine', .06, 1000, i * .4); }, dog() { SND.tone(500, .12, 'square', .06, 350); SND.tone(520, .12, 'square', .06, 360, .2); } };
+const LV = [{ n: 'শবে বরাতের রাত', gap: [3.2, 5], fuse: 4.4, danger: .55 }, { n: 'বিজয় দিবস', gap: [2.2, 3.6], fuse: 3.8, danger: .6 }, { n: 'নতুন বছরের রাত', gap: [1.4, 2.6], fuse: 3.2, danger: .65 }];
+const DUR = 120;
+let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0;
+function newGame() { KIDS.forEach(k => { k.busy = false; k.h.root.visible = false; if (k.el) k.el.remove(); k.el = null; }); S = { over: false, started: false, t: 0, score: 0, lives: 3, stops: 0, fun: 0, wrong: 0, bursts: 0, next: 1.5 }; hud(); }
+function say(t, col, ms) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, ms || 1300); }
+function pop(t, cls) { const e = document.createElement('div'); e.className = 'pop ' + (cls || ''); e.textContent = t; $('stage').appendChild(e); setTimeout(() => e.remove(), 1100); }
+function talk(t, who, v) { if (window.KHViral) KHViral.pop(t, v || 'M1', who); }
+function hud() { const left = Math.max(0, DUR - S.t); $('time').textContent = bn(Math.floor(left / 60)) + ':' + bn(String(Math.floor(left % 60)).padStart(2, '0')); $('sc').textContent = bn(Math.max(0, S.score)); $('lives').textContent = '🛡️'.repeat(S.lives) + '🔥'.repeat(3 - S.lives); }
+function spawn() { const k = KIDS.find(q => !q.busy); if (!k) return; const L = LV[lv]; const z = Math.random() < L.danger ? pick(ZONES.filter(q => q.danger)) : ZONES[5]; k.busy = true; k.zone = z; k.phase = 'walk'; k.tx = z.x + rnd(-1.2, 1.2); k.tz = z.z + (z.danger ? (z.z > 0 ? -1.6 : 1.6) : rnd(-2, 2)); const e = pick([[-3, 22], [3, -22], [-22, -2], [22, -2]]); k.x = e[0]; k.z = e[1]; k.h.root.visible = true; }
+function light(k) { k.phase = 'fuse'; k.fuse = LV[lv].fuse; const el = document.createElement('div'); el.className = 'tk'; el.innerHTML = `🧨 পটকা জ্বালাচ্ছে!<small>${k.zone.n}</small><div class="f"><i></i></div>`; el.onpointerdown = e => { e.stopPropagation(); tap(k); }; $('tags').appendChild(el); k.el = el; SFX.fuse(); }
+function tap(k) { if (!S || S.over || k.phase !== 'fuse') return; k.el.remove(); k.el = null;
+  if (k.zone.danger) { S.stops++; S.score += 100 + Math.round(k.fuse * 15); SFX.stop(); pop('থামালেন! মাঠে পাঠালেন +', 'good'); talk(pick(['আচ্ছা ভাইয়া, মাঠে গিয়ে ফোটাই!', 'স্যরি, খেয়াল করিনি!', 'ঠিক আছে, নিরাপদ জায়গায় যাচ্ছি']), '🧒 পিচ্চি', 'M1'); const f = ZONES[5]; k.zone = f; k.phase = 'walk'; k.tx = f.x + rnd(-2, 2); k.tz = f.z + rnd(-2, 2); }
+  else { S.wrong++; S.score -= 60; SFX.bad(); say('ওরা তো নিরাপদ মাঠেই আছে! 😕', '#fde047'); talk('ভাইয়া, এখানেও ফোটাতে দিবেন না?! 😢', '🧒 পিচ্চি', 'M1'); done(k); } hud(); }
+function done(k) { k.busy = false; k.phase = 'leave'; k.tx = k.x > 0 ? 25 : -25; k.tz = k.z; }
+function blow(k) { if (k.el) { k.el.remove(); k.el = null; } const z = k.zone;
+  if (z.danger) { S.lives--; S.score -= 80; SFX.bang(1); flash.position.set(k.x, 2, k.z); flash.intensity = 30; burst(k.x, .8, k.z, 60, 4, ['#ffb347', '#ff6b1a', '#fff1a8'], .8); say(z.why, '#fca5a5', 2000);
+    if (z.k === 'hay' || z.k === 'gas') { fire(z.x, z.z + (z.z > 0 ? -1 : 1)); SFX.siren(); } if (z.k === 'dog') SFX.dog(); if (z.k === 'hosp') talk('নার্স: হাসপাতালের সামনে পটকা! রোগীরা ভয় পাচ্ছে!', '👩‍⚕️ নার্স', 'F2'); if (z.k === 'sleep') talk('নানু: কী হইলো! বুক ধড়ফড় করতেছে…', '👵 নানু', 'F2');
+    if (S.lives <= 0) { hud(); return endGame(); } }
+  else { S.fun++; S.score += 60; SFX.whistle(); setTimeout(() => { SFX.bang(.6); burst(k.x + rnd(-1, 1), rnd(9, 14), k.z + rnd(-1, 1), LOW ? 70 : 120, rnd(4, 6), pick([['#f43f5e', '#fb7185', '#fff'], ['#22c55e', '#86efac', '#fff'], ['#3b82f6', '#93c5fd', '#fde047'], ['#f59e0b', '#fde047', '#fff'], ['#a855f7', '#e9d5ff', '#fff']]), 1.8); }, 650); pop('🎆 নিরাপদ আনন্দ!', 'good'); }
+  done(k); hud(); }
+function step(dt) { const L = LV[lv]; S.t += dt; if (S.t >= DUR) return endGame(true); if ((S.next -= dt) <= 0) { S.next = rnd(...L.gap); spawn(); }
+  for (const k of KIDS) { if (!k.h.root.visible) continue; if (k.phase === 'walk' || k.phase === 'leave') { const dx = k.tx - k.x, dz = k.tz - k.z, d = Math.hypot(dx, dz); if (d > .15) { const sp = k.phase === 'walk' ? 3.4 : 3; k.x += dx / d * Math.min(d, sp * dt); k.z += dz / d * Math.min(d, sp * dt); k.h.root.rotation.y = Math.atan2(dx, dz); k.h.update(dt, 1, 1.4); } else if (k.phase === 'walk') light(k); else { k.h.root.visible = false; k.phase = 'idle'; } }
+    else if (k.phase === 'fuse') { k.fuse -= dt; k.h.update(dt, 0, 1); if (k.el) k.el.querySelector('i').style.width = (k.fuse / L.fuse * 100) + '%'; if (Math.random() < dt * 6) burst(k.x + .3, .35, k.z + .3, 2, .8, ['#fde047', '#fff'], .3); if (k.fuse <= 0) blow(k); }
+    k.h.root.position.set(k.x, 0, k.z); }
+  hud(); }
+const TIPS = ['জানেন কি? পটকা বা আতশবাজি সবসময় খোলা জায়গায়, বড়দের সাথে, হাতের কাছে বালতি ভরা পানি রেখে ফোটাতে হয়।', 'জানেন কি? জোরালো পটকার শব্দে হার্টের রোগী, শিশু আর পশুপাখি খুব ভয় পায়; অনেক পাখি রাতে দিক হারিয়ে মারা যায়।', 'জানেন কি? ফানুস উড়ে গিয়ে বিদ্যুতের তারে বা ঘরের চালে পড়ে আগুন লাগার ঘটনা ঘটে।', 'জানেন কি? জ্বলে না ওঠা পটকা আবার জ্বালাতে কাছে যাবেন না; দেরিতে ফেটে হাত-মুখ পুড়তে পারে।'];
+function endGame(survived) { if (S.over) return; S.over = true; KIDS.forEach(k => { if (k.el) { k.el.remove(); k.el = null; } }); $('hint').hidden = false; $('hint').textContent = 'রাত শেষ';
+  const sc = Math.max(0, Math.round(S.score + (survived ? 200 + S.lives * 80 : 0)));
+  $('endT').textContent = survived ? (S.lives === 3 ? 'একটাও বিপদ ঘটেনি! পাড়া নিরাপদ 🛡️' : 'রাত পার হলো, পাড়া মোটামুটি নিরাপদ') : 'তিনটা দুর্ঘটনা! পাহারা ব্যর্থ 🔥';
+  $('endTitle').textContent = survived && S.lives === 3 && !S.wrong ? 'পাড়ার সেরা পাহারাদার 👑' : S.wrong >= 3 ? 'আনন্দের শত্রু 😅' : survived ? 'সচেতন স্বেচ্ছাসেবক' : 'আরো সজাগ থাকতে হবে';
+  $('endLine').textContent = `${LV[lv].n}: ${bn(S.stops)} বার বিপদের জায়গা থেকে পটকা সরিয়েছেন, মাঠে ${bn(S.fun)}টা নিরাপদ আতশবাজি ফুটেছে। ভুল করে থামিয়েছেন ${bn(S.wrong)} বার।`;
+  $('eS').textContent = bn(sc); $('eStop').textContent = bn(S.stops); $('eFun').textContent = bn(S.fun); $('eTip').textContent = pick(TIPS);
+  setTimeout(() => { $('endO').hidden = false; if (survived && S.lives === 3 && window.KHViral) KHViral.confetti(); }, 900); SH.saveScore(sc); lastScore = sc; }
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 64 : 46; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+const v3 = new THREE.Vector3();
+function loop(ts) { const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  if (S && S.started && !S.over) step(dt);
+  for (let i = 0; i < PN; i++) { const p = PD[i]; if (p.t > 0) { p.t -= dt; p.vy -= 3 * dt; p.vx *= .985; p.vz *= .985; p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt; } const k = i * 3; pP[k] = p.x; pP[k + 1] = p.t > 0 ? p.y : -50; pP[k + 2] = p.z; const f = clamp(p.t, 0, 1); pC[k] = p.c.r * f; pC[k + 1] = p.c.g * f; pC[k + 2] = p.c.b * f; } pG.attributes.position.needsUpdate = true; pG.attributes.color.needsUpdate = true;
+  flash.intensity = Math.max(0, flash.intensity - dt * 60);
+  for (let i = FIRES.length - 1; i >= 0; i--) { const f = FIRES[i]; f.t -= dt; f.f.scale.set(1 + Math.sin(T0 * 20) * .1, 1 + Math.sin(T0 * 13) * .2, 1); f.l.intensity = 3 + Math.random() * 2; if (f.t <= 0) { scene.remove(f.f); scene.remove(f.l); FIRES.splice(i, 1); } }
+  if (!S || !S.started || (S && !S.over && Math.random() < dt * .15)) { if (Math.random() < dt * .8) burst(rnd(-6, 6), rnd(9, 14), rnd(8, 16), 80, 5, pick([['#f43f5e', '#fff'], ['#22c55e', '#fde047'], ['#3b82f6', '#fff']]), 1.6); }
+  const port = W / H < .8; cam.position.set(0, port ? 25 : 17, port ? 19 : 17); cam.lookAt(0, 0, port ? 1.5 : 1.5);
+  ZONES.forEach((z, i) => { v3.set(z.x, z.danger ? 2.6 : 1.2, z.z).project(cam); ZL[i].style.left = (v3.x + 1) / 2 * W + 'px'; ZL[i].style.top = (1 - v3.y) / 2 * H + 'px'; });
+  for (const k of KIDS) if (k.el) { v3.set(k.x, 2.2, k.z).project(cam); k.el.style.left = clamp((v3.x + 1) / 2 * W, 70, W - 70) + 'px'; k.el.style.top = clamp((1 - v3.y) / 2 * H, 60, H - 10) + 'px'; }
+  if (renderer) renderer.render(scene, cam); requestAnimationFrame(loop); }
+function start(level) { lv = level; newGame(); S.started = true; ['startO', 'endO'].forEach(i => $(i).hidden = true); $('hint').textContent = 'বিপদের জায়গায় পটকা = থামান · মাঠে = ফুটতে দিন'; SND.ac; hud(); talk('পাড়ার সভাপতি: আজ রাতে পাড়াটা দেখে রেখো বাবা, আনন্দ হোক, বিপদ না!', '👴 সভাপতি', 'M3'); }
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = e => { e.stopPropagation(); start(+b.dataset.lv); });
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `পটকা পাহারায় ${bn(lastScore)} পয়েন্ট! 🧨 আনন্দ হোক, বিপদ না। আপনি পাড়াকে নিরাপদ রাখতে পারবেন? ${location.origin}/games/potka/`; try { navigator.clipboard.writeText(t).then(() => pop('কপি হয়েছে, শেয়ার করুন!', 'good')); } catch (e) {} };
+newGame(); resize(); last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+const MY = ['এই! এখানে না, মাঠে যাও!', 'বালতিতে পানি রাখো', 'হাসপাতালের সামনে না', 'বড়দের সাথে ফোটাও'], OP = ['আচ্ছা ভাইয়া!', 'একটাই তো!', 'মাঠে অনেক ভিড়!', 'আতশবাজি দেখবেন?'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP), 'M1', '🧒 পিচ্চি', true), 1500); } });
+window.KHG = { get S() { return S; }, start, tap, get KIDS() { return KIDS; }, ready: false, fw() { for (let i = 0; i < 4; i++) burst(rnd(-7, 7), rnd(8, 12), rnd(-4, 12), 120, 5, pick([['#f43f5e', '#fb7185', '#fff'], ['#22c55e', '#86efac', '#fff'], ['#3b82f6', '#93c5fd', '#fde047'], ['#f59e0b', '#fde047', '#fff']]), 2.2); } };
+</script>
+<script src="/js/update.js"></script>
+</body></html>
