@@ -10,8 +10,9 @@
 // GET  /api/live?f=match&id=c_xxx  → এক ম্যাচের বিস্তারিত + ভোটের গোনা
 // GET  /api/live?f=board           → লিডারবোর্ড
 // GET  /api/live?f=me              → (লগইন) আমার পয়েন্ট আর ভোট
+// GET  /api/live?f=diag            → ডাটা ঠিকমতো আসছে কিনা দেখার ছোট রিপোর্ট (কোনো key দেখায় না)
 // POST /api/live?f=vote {id,pick}  → (লগইন) "কে জিতবে?" ভোট
-import { getFeed, getMatch, vote, me, board, HttpErr, POINTS } from './_store.js';
+import { getFeed, getMatch, vote, me, board, diag, HttpErr, POINTS } from './_store.js';
 
 const cache = (res, s, swr) => res.setHeader('Cache-Control', s ? `public, max-age=0, s-maxage=${s}, stale-while-revalidate=${swr}` : 'no-store');
 
@@ -36,6 +37,7 @@ export default async function handler(req, res) {
       return res.status(200).json(d);
     }
     if (f === 'board') { cache(res, 60, 120); return res.status(200).json(await board()); }
+    if (f === 'diag') { cache(res, 0); return res.status(200).json(await diag(String(q.q || '').slice(0, 40))); }
     if (f === 'me') { cache(res, 0); return res.status(200).json(await me(req)); }
     throw new HttpErr(404, 'পাওয়া যায়নি');
   } catch (e) {

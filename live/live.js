@@ -94,7 +94,9 @@ function renderList() {
   if (!S.filter || (!by[S.filter].length && S.autoFilter)) { S.filter = by.live.length ? 'live' : by.upcoming.length ? 'upcoming' : 'done'; S.autoFilter = true; }
   document.querySelectorAll('.chip[data-f]').forEach(b => b.setAttribute('aria-pressed', b.dataset.f === S.filter));
   document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === S.sport));
-  const list = by[S.filter].slice().sort((x, y) => S.filter === 'done' ? y.start - x.start : (y.intl - x.intl) || (x.start - y.start));
+  const rk = m => (m.rk || (m.intl ? 2 : 1));
+  // বড় দলের খেলা আগে (বাংলাদেশ সবার আগে), তারপর সময় অনুযায়ী
+  const list = by[S.filter].slice().sort((x, y) => (rk(y) - rk(x)) || (S.filter === 'done' ? y.start - x.start : x.start - y.start));
   const demoN = all.filter(m => m.demo).length;
   const note = $('demoNote');
   if (demoN) {

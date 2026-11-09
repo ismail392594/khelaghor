@@ -8,11 +8,12 @@
 //   liveMatch/{id}        এক ম্যাচের বিস্তারিত, স্কোরকার্ড, বাংলা বল-বাই-বল
 //   liveVotes/{id}        "কে জিতবে?" ভোটের গোনা;  liveVotes/{id}/v/{uid} প্রত্যেকের ভোট
 //   livePoints/{uid}      প্রত্যেকের পয়েন্ট (লিডারবোর্ড)
-import { cricCall, cricSummary, cricCard, bbbLines, snapOf, diffLines } from './_cricket.js';
+import { cricCall, cricSummary, cricScoreSummary, cricCard, bbbLines, snapOf, diffLines } from './_cricket.js';
 import { fbCall, fbSummary, fbDetail, leagues } from './_football.js';
 import { demoAll, demoMatch } from './_demo.js';
 
 export const POINTS = 10; // সঠিক অনুমানে কত পয়েন্ট
+const CACHE_V = 3; // ক্যাশের ছাঁচ বদলালে বাড়াতে হয়, তাহলে পুরোনো ক্যাশ ফেলে সব নতুন করে আনে
 const MIN = 60e3, HOUR = 60 * MIN, DAY = 24 * HOUR;
 
 export class HttpErr extends Error { constructor(status, msg) { super(msg); this.status = status; } }
@@ -68,11 +69,12 @@ function plan(doc, H, now) {
   const cLive = (c.list || []).some(m => m.state === 'live');
   const fAll = [...(f.day || []), ...(f.live || [])];
   const fLive = fAll.some(m => m.state === 'live' || (m.state === 'upcoming' && m.start <= now + MIN && m.start > now - 3 * HOUR));
+  const stale = doc.v !== CACHE_V;
   const d = {
-    cList: H.c && now - (c.at || 0) > (cLive ? every(cRem, now, MIN, 0.35) : Math.max(15 * MIN, every(cRem, now, 15 * MIN, 0.1))),
-    cUp: H.c && now - (c.upAt || 0) > Math.max(3 * HOUR, every(cRem, now, 3 * HOUR, 0.05)),
+    cList: H.c && stale || H.c && now - (c.at || 0) > (cLive ? every(cRem, now, MIN, 0.35) : Math.max(15 * MIN, every(cRem, now, 15 * MIN, 0.1))),
+    cUp: H.c && stale || H.c && now - (c.upAt || 0) > Math.max(3 * HOUR, every(cRem, now, 3 * HOUR, 0.05)),
     fLive: H.f && fLive && now - (f.at || 0) > every(fRem, now, MIN, 0.35),
-    fDay: H.f && (now - (f.dayAt || 0) > Math.max(30 * MIN, every(fRem, now, 30 * MIN, 0.1)) || f.dayKey !== dhakaDay(now))
+    fDay: H.f && stale || H.f && (now - (f.dayAt || 0) > Math.max(30 * MIN, every(fRem, now, 30 * MIN, 0.1)) || f.dayKey !== dhakaDay(now))
   };
   d.any = d.cList || d.cUp || d.fLive || d.fDay;
   return d;
@@ -99,14 +101,33 @@ async function refresh(F, doc, due, now) {
   let cq = doc.cq || meta.cq || null, fq = doc.fq || meta.fq || null;
   try {
     const jobs = [];
-    if (due.cList) jobs.push(cricCall('currentMatches', { offset: 0 }).then(r => {
+    // API একবারে ২৫টা ম্যাচ দেয়; বেশি থাকলে পরের পাতাও আনি (বড় দলের খেলা যেন বাদ না পড়ে)
+    const pages = async (path, max) => {
+      const out = []; let ok = false;
+      for (let i = 0; i < max; i++) {
+        const r = await cricCall(path, { offset: i * 25 });
+        cq = qOf(r, now, cq);
+        if (!r.ok) { c.err = r.err; break; }
+        ok = true; out.push(...(r.data || []));
+        if (!r.total || (i + 1) * 25 >= r.total) break;
+      }
+      return ok ? out.map(cricSummary) : null;
+    };
+    // প্রথমে cricScore (এক ডাকেই পৃথিবীর সব ম্যাচ), না চললে currentMatches-এর পাতাগুলো
+    if (due.cList) jobs.push((async () => {
+      const r = await cricCall('cricScore');
       cq = qOf(r, now, cq);
-      if (r.ok) { c.list = (r.data || []).map(cricSummary).slice(0, 60); c.at = now; }
-      else c.err = r.err;
-    }));
-    if (due.cUp) jobs.push(cricCall('matches', { offset: 0 }).then(r => {
-      cq = qOf(r, now, cq);
-      if (r.ok) { c.up = (r.data || []).map(cricSummary).filter(m => m.state === 'upcoming' && m.start > now - HOUR && m.start < now + 5 * DAY).slice(0, 40); c.upAt = now; }
+      let l = null;
+      if (r.ok && Array.isArray(r.data)) {
+        l = r.data.map(x => { try { return cricScoreSummary(x); } catch (e) { return null; } }).filter(Boolean)
+          .filter(m => m.state === 'live' || (m.state === 'upcoming' && m.start < now + 8 * DAY && m.start > now - 12 * HOUR) || (m.state === 'done' && m.start > now - 48 * HOUR));
+        c.src = 'cricScore'; c.raw = r.data.length;
+      } else c.err = 'cricScore: ' + r.err;
+      if (!l || !l.length) { l = await pages('currentMatches', 2); c.src = 'currentMatches'; }
+      if (l) { c.list = l.sort((x, y) => (y.state === 'live') - (x.state === 'live') || (y.rk || 0) - (x.rk || 0)).slice(0, 120); c.at = now; }
+    })());
+    if (due.cUp) jobs.push(pages('matches', 4).then(l => {
+      if (l) { c.up = l.filter(m => m.state === 'upcoming' && m.start > now - HOUR && m.start < now + 8 * DAY).sort((x, y) => (y.rk || 0) - (x.rk || 0) || x.start - y.start).slice(0, 50); c.upAt = now; }
     }));
     const lg = leagues();
     if (due.fDay) {
@@ -132,7 +153,7 @@ async function refresh(F, doc, due, now) {
       }
     }));
     await Promise.all(jobs);
-    const out = { c, f, cq, fq };
+    const out = { v: CACHE_V, c, f, cq, fq };
     await db.doc('liveCache/feed').set(out);
     const metaUp = { until: 0, cq, fq };
     if (now - (meta.settleAt || 0) > 5 * MIN) {
@@ -158,7 +179,7 @@ function compose(doc, now) {
   for (const m of f.live || []) map.set(m.id, m);
   return [...map.values()].filter(m =>
     m.state === 'live' ||
-    (m.state === 'upcoming' && m.start > now - 12 * HOUR && m.start < now + 4 * DAY) ||
+    (m.state === 'upcoming' && m.start > now - 12 * HOUR && m.start < now + 8 * DAY) ||
     (m.state === 'done' && m.start > now - 36 * HOUR));
 }
 
@@ -342,4 +363,21 @@ async function settleOne({ db, FV }, id, result) {
     await b.commit();
     if (q.size < 200) return;
   }
+}
+
+/* ---------- সমস্যা খোঁজার জন্য: কোনো key বা গোপন তথ্য দেখায় না ---------- */
+export async function diag(q = '', now = Date.now()) {
+  const F = await fb();
+  if (!F) return { firebase: false, keys: has() };
+  const d = (await F.db.doc('liveCache/feed').get()).data() || {};
+  const c = d.c || {}, f = d.f || {};
+  const cnt = l => (l || []).reduce((a, m) => (a[m.state] = (a[m.state] || 0) + 1, a), {});
+  return {
+    keys: has(), v: d.v,
+    cricket: { src: c.src, rawRows: c.raw, err: c.err || null, listAt: c.at ? new Date(c.at).toISOString() : null, upAt: c.upAt ? new Date(c.upAt).toISOString() : null,
+      list: cnt(c.list), up: cnt(c.up), left: d.cq,
+      sample: (c.list || []).filter(m => !q || (m.a.name + ' ' + m.b.name + ' ' + m.tour).toLowerCase().includes(String(q).toLowerCase())).slice(0, 20)
+        .map(m => `${m.state} (${m.ms || '-'}) | ${m.a.name} v ${m.b.name} | ${m.tour} | ${new Date(m.start).toISOString().slice(0, 16)} | ${m.raw || ''}`) },
+    football: { err: f.err || null, at: f.at ? new Date(f.at).toISOString() : null, day: cnt(f.day), live: cnt(f.live), left: d.fq }
+  };
 }

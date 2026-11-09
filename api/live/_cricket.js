@@ -1,9 +1,21 @@
 // লাইভ স্কোর: ক্রিকেট (CricketData.org / api.cricapi.com) থেকে আনা ডাটাকে আমাদের নিজস্ব ছাঁচে সাজানো।
 // key থাকে Vercel-এর CRICKET_API_KEY-এ। কোডে কোনো key নেই।
 import { team, isCountry } from './_teams.js';
-import { bnNum, gen, cricStatusBn, cricResult, matchLabel, fmtType, oversToBalls, ballsToOvers, dismissalBn, ord } from './_bn.js';
+import { bnNum, gen, sameTeam, cricStatusBn, cricResult, matchLabel, fmtType, oversToBalls, ballsToOvers, dismissalBn, ord } from './_bn.js';
 
 const BASE = 'https://api.cricapi.com/v1/';
+
+// ICC-র পূর্ণ সদস্য ১২ দেশ: এদের পুরুষ দলের খেলা তালিকায় সবার আগে দেখানো হয়
+const FULL = ['afghanistan', 'australia', 'bangladesh', 'england', 'india', 'ireland', 'new zealand', 'pakistan', 'south africa', 'sri lanka', 'west indies', 'zimbabwe'];
+// rk: ৩ = পূর্ণ সদস্যের পুরুষ দল, ২ = পূর্ণ সদস্যের মহিলা বা অন্য দল, ১ = বাকি সব। বাংলাদেশের খেলা থাকলে +১
+function rankOf(na, nb) {
+  const base = n => String(n || '').toLowerCase().replace(/\s+(women|w|u-?19|under[- ]19|a|xi|emerging)$/i, '');
+  const full = FULL.includes(base(na)) && FULL.includes(base(nb));
+  const plain = n => FULL.includes(String(n || '').toLowerCase());
+  let rk = full ? (plain(na) && plain(nb) ? 3 : 2) : 1;
+  if (/^bangladesh/i.test(na) || /^bangladesh/i.test(nb)) rk += 1;
+  return rk;
+}
 
 // একবার API ডাকা। ফেরত: { ok, data, rem, lim }  (rem = আজ আর কতবার ডাকা যাবে)
 export async function cricCall(path, params = {}) {
@@ -20,7 +32,7 @@ export async function cricCall(path, params = {}) {
     const lim = Number(info.hitsLimit) || null, used = Number(info.hitsToday);
     const rem = lim != null && !isNaN(used) ? Math.max(0, lim - used) : null;
     if (j.status !== 'success') return { ok: false, err: String(j.reason || j.status || r.status), rem, lim };
-    return { ok: true, data: j.data, rem, lim };
+    return { ok: true, data: j.data, rem, lim, total: Number(info.totalRows) || 0 };
   } catch (e) {
     return { ok: false, err: 'net' };
   } finally { clearTimeout(tm); }
@@ -43,9 +55,8 @@ export function cricSummary(m) {
   const a = { ...team(na, intl), inn: innsOf(m.score, na) };
   const b = { ...team(nb, intl), inn: innsOf(m.score, nb) };
   const bnOf = x => {
-    const l = String(x).trim().toLowerCase();
-    if (l === na.toLowerCase()) return a.bn || na;
-    if (l === nb.toLowerCase()) return b.bn || nb;
+    if (sameTeam(x, na)) return a.bn || x;
+    if (sameTeam(x, nb)) return b.bn || x;
     return x;
   };
   const start = gmt(m.dateTimeGMT) || Date.parse(m.date) || 0;
@@ -57,7 +68,7 @@ export function cricSummary(m) {
   const label = matchLabel(parts[1] || '') || fmtType(m.matchType);
   const test = String(m.matchType || '').toLowerCase() === 'test' || /test/i.test(parts[1] || '');
   const out = {
-    id: 'c_' + m.id, sport: 'cricket', state, start, tour, label, test, intl,
+    id: 'c_' + m.id, sport: 'cricket', state, start, tour, label, test, intl, rk: rankOf(na, nb),
     venue: m.venue || '', a, b,
     inns: (m.score || []).map(s => ({ side: String(s.inning || '').toLowerCase().startsWith(na.toLowerCase()) ? 'a' : 'b', r: +s.r || 0, w: +s.w || 0, o: +s.o || 0 })),
     status: cricStatusBn(status, bnOf), raw: status.slice(0, 120)
@@ -175,4 +186,57 @@ export function diffLines(prev, snap, sum) {
   }
   if (Math.floor(snap.b / 6) > Math.floor(prev.b / 6) && snap.b % 6 === 0) out.push({ o: ov, k: 'i', t: `${bnNum(snap.b / 6)} ওভার শেষ। ${tn} ${sc}` });
   return out.reverse();
+}
+
+/* ---------- cricScore: এক ডাকেই সব চলমান, আসন্ন আর শেষ ম্যাচ (হালকা ডাটা) ----------
+   প্রতিটা সারি মোটামুটি এরকম: { id, dateTimeGMT, matchType, status, ms: 'fixture'|'live'|'result',
+   t1: 'Pakistan [PAK]', t2: 'Sri Lanka [SL]', t1s: '250/4 (80)', t2s: '', series }
+   মাঠের নাম ঠিক না মিললে null ফেরত দেয়, তখন পুরোনো currentMatches পদ্ধতি চলে। */
+const tName = s => String(s || '').replace(/\s*\[[^\]]*\]\s*$/, '').trim();
+function parseScore(s) {
+  // "350 & 45/2 (12.3)" বা "217/3 (20)" বা "154 (18.3)"
+  const out = [];
+  for (const part of String(s || '').split('&')) {
+    const m = part.match(/(\d+)(?:\/(\d+))?\s*(d)?/);
+    if (!m) continue;
+    const o = (part.match(/\(([\d.]+)/) || [])[1];
+    out.push({ r: +m[1], w: m[2] != null ? +m[2] : (m[3] ? 9 : 10), o: o ? +o : 0 });
+  }
+  return out;
+}
+export function cricScoreSummary(x) {
+  if (!x || !x.t1 || !x.t2 || !x.id) return null;
+  const na = tName(x.t1), nb = tName(x.t2);
+  const ms = String(x.ms || '').toLowerCase();
+  let state = ms === 'live' ? 'live' : ms === 'result' ? 'done' : 'upcoming';
+  // API অনেক সময় খেলা শুরু হওয়ার পরও কিছুক্ষণ 'fixture' রেখে দেয়: স্কোর বা টসের খবর থাকলে আর সময় পার হলে লাইভ ধরি
+  const st = String(x.status || '');
+  const t0 = Date.parse(/[zZ]$/.test(x.dateTimeGMT || '') ? x.dateTimeGMT : (x.dateTimeGMT || '') + 'Z') || 0;
+  if (state === 'upcoming' && t0 && t0 <= Date.now()) {
+    if (/won|drawn|tied|no result|abandon/i.test(st)) state = 'done';
+    else if (x.t1s || x.t2s || /opt|elected|chose|need|lead|trail|innings|stumps|day \d/i.test(st)) state = 'live';
+  }
+  const ia = parseScore(x.t1s), ib = parseScore(x.t2s);
+  const fake = {
+    id: x.id, name: `${na} vs ${nb}, ${x.matchDesc || ''}, ${x.series || ''}`, series: x.series, matchType: x.matchType,
+    status: x.status, dateTimeGMT: x.dateTimeGMT, teams: [na, nb],
+    matchStarted: state !== 'upcoming', matchEnded: state === 'done',
+    score: [...ia.map((s, i) => ({ inning: `${na} Inning ${i + 1}`, ...s })), ...ib.map((s, i) => ({ inning: `${nb} Inning ${i + 1}`, ...s }))]
+  };
+  const sum = cricSummary(fake);
+  sum.tour = x.series || sum.tour;
+  sum.ms = String(x.ms || '');
+  if (!x.matchDesc) sum.label = fmtType(x.matchType);
+  // কে ব্যাট করছে: যে দলের শেষ ইনিংস এখনো শেষ হয়নি
+  if (state === 'live') {
+    const max = { t20: 20, odi: 50, t10: 10 }[String(x.matchType || '').toLowerCase()] || 999;
+    const open = side => { const l = (side === 'a' ? ia : ib).slice(-1)[0]; return l && l.w < 10 && l.o < max; };
+    const oa = open('a'), ob = open('b');
+    let side = oa && !ob ? 'a' : ob && !oa ? 'b' : ia.length > ib.length ? 'a' : ib.length > ia.length ? 'b' : null;
+    if (side) {
+      const order = [...sum.inns.filter(i => i.side !== side), ...sum.inns.filter(i => i.side === side)];
+      sum.inns = order;
+    } else sum.inns = [];
+  }
+  return sum;
 }
