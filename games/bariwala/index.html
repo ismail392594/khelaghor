@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>বাড়িওয়ালা বনাম ভাড়াটিয়া · খেলাঘর</title>
+<meta name="description" content="ভাড়া বাড়ানো, পানির মোটর, মেহমান, বিদ্যুৎ বিল, অগ্রিম ফেরত! এক বছরের ঝামেলা সামলান। ভাড়াটিয়া বা বাড়িওয়ালা হয়ে বুদ্ধি করে কথা বলুন, টাকা আর সম্পর্ক দুটোই রক্ষা করুন।">
+<link rel="canonical" href="https://khelaghorbd.online/games/bariwala/">
+<meta property="og:title" content="বাড়িওয়ালা বনাম ভাড়াটিয়া · খেলাঘর">
+<meta property="og:description" content="আগামী মাস থেকে ভাড়া বাড়বে! আপনি কী বলবেন?">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/bariwala.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/bariwala.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+:root{--accent:#a3e635}
+.meters{position:absolute;left:10px;right:10px;top:10px;z-index:3;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;pointer-events:none}
+.mt{background:rgba(5,8,18,.65);border-radius:10px;padding:4px 8px;font-size:.7rem;font-weight:700}
+.mt .b{height:7px;background:rgba(255,255,255,.12);border-radius:4px;overflow:hidden;margin-top:3px}.mt .b i{display:block;height:100%;width:50%;transition:width .4s}
+.dlg{position:absolute;left:8px;right:8px;bottom:8px;z-index:4;background:rgba(250,248,240,.97);color:#1c1917;border-radius:16px;padding:12px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.dlg .who{font:800 .8rem var(--body);color:#7c2d12}.dlg .q{font:700 1rem var(--body);margin:4px 0 10px;line-height:1.45}
+.dlg .mon{font-size:.7rem;color:#78716c;float:right}
+.opts{display:grid;gap:7px}.opts button{border:2px solid #d6d3d1;background:#fff;border-radius:12px;padding:10px;text-align:left;font:700 .86rem var(--body);cursor:pointer;color:#1c1917;line-height:1.4}
+.opts button:active{background:#f5f5f4}
+.res{font:700 .88rem var(--body);padding:8px 10px;border-radius:10px;margin-bottom:8px}.res.g{background:#dcfce7;color:#166534}.res.b{background:#fee2e2;color:#991b1b}.res.m{background:#fef9c3;color:#854d0e}
+.nx{display:block;margin:4px auto 0;border:0;border-radius:10px;padding:9px 18px;font:800 .88rem var(--body);background:#1d4ed8;color:#fff;cursor:pointer}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="month">জানুয়ারি</b><small id="role">ভাড়াটিয়া</small></div>
+    <div class="stat r"><b id="sc">০</b><small>পয়েন্ট</small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas class="cv" id="cv"></canvas>
+    <div class="meters" id="meters" hidden><div class="mt">💰 টাকা<div class="b"><i id="mMoney" style="background:#eab308"></i></div></div><div class="mt">🤝 সম্পর্ক<div class="b"><i id="mRel" style="background:#22c55e"></i></div></div><div class="mt">😌 শান্তি<div class="b"><i id="mPeace" style="background:#60a5fa"></i></div></div></div>
+    <div class="dlg" id="dlg" hidden></div>
+    <div class="say" id="say" hidden></div>
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>বাড়িওয়ালা বনাম ভাড়াটিয়া</h1>
+        <p class="story">ঢাকার তিনতলা বাড়ি। মাসে মাসে নতুন ঝামেলা: ভাড়া বাড়ানো, পানির মোটর নষ্ট, মেহমানের নিয়ম, বিদ্যুতের সাব-মিটার, অগ্রিম টাকা ফেরত… দরজায় টোকা পড়লেই বুক ধড়ফড়!</p>
+        <div class="rules">
+          <div>🚪 প্রতি মাসে দরজায় একটা সমস্যা। তিনটা উত্তর থেকে একটা বাছুন।</div>
+          <div>💰 টাকা, 🤝 সম্পর্ক আর 😌 শান্তি: তিনটাই ঠিক রাখতে হবে। শুধু চিৎকার বা শুধু মেনে নেওয়া, কোনোটাই ভালো না।</div>
+          <div>📜 ন্যায্য কথা, লিখিত চুক্তি, রসিদ আর ভদ্র ভাষা: এগুলোই আসল অস্ত্র!</div>
+        </div>
+        <div class="lvl">
+          <button data-lv="0">আমি ভাড়াটিয়া<small>১০ মাস</small></button>
+          <button data-lv="1">আমি বাড়িওয়ালা<small>৮ মাস</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">মানুষ: Renderpeople (<a href="/games/racer/assets/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। আসবাব, মেঝে, দেয়াল: Poly Haven (CC0)। সব ঘটনা আর চরিত্র কাল্পনিক।</p>
+      </div>
+    </div>
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">বছর শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eRel">০</b><span>সম্পর্ক</span></div><div><b id="eMon">০</b><span>টাকা</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার এক বছর</button><button class="gbtn ghost" id="menuBtn">ভূমিকা বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">🏠</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { GLTFLoader } from "/js/vendor/addons/GLTFLoader.js";
+import { MeshoptDecoder } from "/js/vendor/addons/meshopt_decoder.module.js";
+import { clone as cloneSkinned } from "/js/vendor/addons/SkeletonUtils.js";
+import { TIERS, detectTier } from "/js/kh-quality.js";
+import { loadPeople } from "/js/kh-people.js";
+import { gameShell, sound, bn, pick, rnd, clamp, esc } from "/js/kh-shell.js";
+
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'bariwala', name: 'বাড়িওয়ালা বনাম ভাড়াটিয়া', lbTitle: 'সেরা প্রতিবেশী', offMsg: 'বাড়িওয়ালা গ্রামের বাড়ি গেছেন! পরে আসেন।' });
+const SND = sound(SH);
+const TIER = TIERS[detectTier()], LOW = TIER.id <= 1;
+let renderer = null; try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' }); } catch (e) {}
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(60, 1, .05, 60);
+scene.background = new THREE.Color('#1f2228');
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.shadowMap.enabled = !LOW; }
+const ANISO = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1, texL = new THREE.TextureLoader(), A = '/games/loadshed/assets/', JA = '/games/jam/assets/';
+const tex = (u, srgb, rx, ry) => { const t = texL.load(u); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; t.repeat.set(rx, ry); return t; };
+const M = (c, o) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: .85 }, o || {}));
+const box = (w, h, d, m, x, y, z, ry) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); if (ry) b.rotation.y = ry; b.castShadow = !LOW; b.receiveShadow = true; scene.add(b); return b; };
+
+/* ---------- বসার ঘর, সামনে দরজা খোলা, বাইরে সিঁড়ির ল্যান্ডিং ---------- */
+const RW = 4.4, RD = 4, RH = 3;
+{ const f = new THREE.Mesh(new THREE.PlaneGeometry(RW, RD + 3), new THREE.MeshStandardMaterial({ map: tex(A + 'floor_diff.jpg', true, 3, 4), normalMap: tex(A + 'floor_nor.jpg', false, 3, 4), roughness: .7 })); f.rotation.x = -Math.PI / 2; f.position.z = -1.5; f.receiveShadow = true; scene.add(f); }
+const wallM = new THREE.MeshStandardMaterial({ map: tex(JA + 'plaster_diff.jpg', true, 2, 1.5), normalMap: tex(JA + 'plaster_nor.jpg', false, 2, 1.5), color: '#e9e2cf', roughness: .95 });
+{ const s = new THREE.Shape(); s.moveTo(-RW / 2, 0); s.lineTo(RW / 2, 0); s.lineTo(RW / 2, RH); s.lineTo(-RW / 2, RH); s.lineTo(-RW / 2, 0); const p = new THREE.Path(); p.moveTo(-.5, 0); p.lineTo(.5, 0); p.lineTo(.5, 2.1); p.lineTo(-.5, 2.1); s.holes.push(p); const g = new THREE.ShapeGeometry(s); const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, (uv.getX(i) + RW / 2) / RW, uv.getY(i) / RH); const w = new THREE.Mesh(g, wallM); w.position.z = -RD / 2; scene.add(w); }
+for (const [x, ry] of [[-RW / 2, Math.PI / 2], [RW / 2, -Math.PI / 2]]) { const m = new THREE.Mesh(new THREE.PlaneGeometry(RD, RH), wallM); m.rotation.y = ry; m.position.set(x, RH / 2, 0); scene.add(m); }
+{ const c = new THREE.Mesh(new THREE.PlaneGeometry(RW, RD), M('#f3efe6')); c.rotation.x = Math.PI / 2; c.position.y = RH; scene.add(c); }
+// দরজা খোলা (কব্জায় ঘোরানো), বাইরে ল্যান্ডিং
+const doorP = new THREE.Group(); doorP.position.set(-.5, 0, -RD / 2); scene.add(doorP); { const d = new THREE.Mesh(new THREE.BoxGeometry(1, 2.1, .05), M('#6b4226', { roughness: .5 })); d.position.set(.5, 1.05, 0); d.castShadow = true; doorP.add(d); const k = new THREE.Mesh(new THREE.SphereGeometry(.03, 10, 8), M('#c9a227', { metalness: .8, roughness: .3 })); k.position.set(.9, 1.0, .05); doorP.add(k); }
+box(1.2, .08, .1, M('#e8e3d6'), 0, 2.14, -RD / 2);
+{ const lw = new THREE.Mesh(new THREE.PlaneGeometry(4, 3), wallM); lw.position.set(0, 1.5, -RD / 2 - 2.2); scene.add(lw); const sw = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 3), wallM); sw.rotation.y = Math.PI / 2; sw.position.set(-1.6, 1.5, -RD / 2 - 1.1); scene.add(sw); const sw2 = sw.clone(); sw2.rotation.y = -Math.PI / 2; sw2.position.x = 1.6; scene.add(sw2);
+  const lb = new THREE.PointLight('#ffe7c2', 2.5, 5, 1.6); lb.position.set(0, 2.5, -RD / 2 - 1.1); scene.add(lb); }
+scene.add(new THREE.HemisphereLight('#fff4e6', '#4a4036', .8));
+{ const l = new THREE.PointLight('#fff1d8', 4, 8, 1.4); l.position.set(0, 2.6, .3); l.castShadow = !LOW; scene.add(l); }
+// ক্যালেন্ডার (মাস দেখায়)
+const calC = document.createElement('canvas'); calC.width = 256; calC.height = 320; const calT = new THREE.CanvasTexture(calC); calT.colorSpace = THREE.SRGBColorSpace;
+const MONTHS = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+function drawCal(m) { const x = calC.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, 256, 320); x.fillStyle = '#b91c1c'; x.fillRect(0, 0, 256, 70); x.fillStyle = '#fff'; x.font = "800 38px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.fillText(MONTHS[m % 12], 128, 50); x.fillStyle = '#333'; x.font = "600 22px 'Noto Sans Bengali',sans-serif"; for (let i = 0; i < 30; i++) x.fillText(bn(i + 1), 30 + (i % 7) * 33, 110 + Math.floor(i / 7) * 40); x.strokeStyle = '#dc2626'; x.lineWidth = 4; x.beginPath(); x.arc(30 + 4 * 33, 102, 17, 0, 7); x.stroke(); calT.needsUpdate = true; }
+drawCal(0); { const c = new THREE.Mesh(new THREE.PlaneGeometry(.4, .5), M('#fff', { map: calT, roughness: .9 })); c.position.set(1.15, 1.7, -RD / 2 + .01); scene.add(c); }
+(async () => { const L = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder); const get = k => L.loadAsync(A + k + '.glb');
+  const put = (g, x, y, z, ry) => { const o = g.scene; o.position.set(x, y, z); o.rotation.y = ry || 0; o.traverse(m => { if (m.isMesh) { m.castShadow = !LOW; m.receiveShadow = true; } }); scene.add(o); return o; };
+  try { const [shelf, chair, tbl, fan, clk, cab] = await Promise.all(['shelf', 'chair', 'table', 'fan', 'clock', 'cabinet'].map(get)); put(shelf, -RW / 2 + .25, 0, -.4, Math.PI / 2); put(chair, .9, 0, .2, -2.4); put(tbl, 1.3, 0, -.6, -Math.PI / 2); put(cab, -1.5, 0, -RD / 2 + .3, 0); put(fan, 0, 0, 0); { const b = new THREE.Box3().setFromObject(fan.scene); fan.scene.position.y = RH - b.max.y; } put(clk, -1.1, 2.3, -RD / 2 + .02, 0); } catch (e) {} })();
+// দরজায় দাঁড়ানো মানুষ
+let NPC = null, P = null;
+loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned).then(p => { P = p; NPC = P.make(0, { scale: 1, shadow: !LOW }); NPC.root.position.set(0, 0, -RD / 2 - .9); scene.add(NPC.root); window.KHG.ready = true; }).catch(() => { window.KHG.ready = true; });
+function setNpc(i) { if (!P) return; scene.remove(NPC.root); NPC = P.make(i, { scale: 1, shadow: !LOW }); NPC.root.position.set(0, 0, -RD / 2 - .9); scene.add(NPC.root); }
+
+/* ---------- ঘটনা: [প্রশ্ন, বক্তা, [উত্তর, টাকা, সম্পর্ক, শান্তি, ফলাফল, মান g/m/b]...] ---------- */
+const TEN = [
+  ['আগামী মাস থেকে ভাড়া ৩,০০০ টাকা বাড়ছে! সবকিছুর দাম বাড়ছে, বুঝেনই তো।', '👴 বাড়িওয়ালা চাচা', [
+    ['চাচা, চুক্তিতে লেখা আছে ২ বছর ভাড়া একই থাকবে। চুক্তি শেষে আলোচনা করে বাড়ানো যায়।', 0, 2, 5, 'চাচা চুক্তিপত্র দেখে রাজি হলেন: "ঠিক আছে বাবা, পরের বছর দেখবো।"', 'g'],
+    ['এত বাড়ালে আমি কালই বাসা ছেড়ে দিবো! এটা জুলুম!', -5, -20, -15, 'চাচা রেগে গেলেন: "যান, ছাড়েন! ভাড়াটিয়ার অভাব নাই!" শেষে ১,৫০০ বাড়লো।', 'b'],
+    ['আচ্ছা চাচা, যা বলেন।', -25, 5, -5, 'চুপচাপ মেনে নিলেন। প্রতি মাসে ৩,০০০ বেশি যাচ্ছে…', 'm']]],
+  ['পানির মোটর নষ্ট। ঠিক করতে ৮,০০০ টাকা লাগবে, সব ভাড়াটিয়া ভাগ করে দেন।', '👴 বাড়িওয়ালা চাচা', [
+    ['মোটর তো বাড়ির সম্পত্তি, মেরামত আপনার দায়িত্ব। তবে জরুরি, তাই এবার আমি মিস্ত্রি ডেকে দিচ্ছি, টাকা ভাড়া থেকে কেটে নেবেন।', 0, 8, 5, 'চাচা খুশি: "বুদ্ধিমান ছেলে/মেয়ে! আচ্ছা, ভাড়া থেকে কেটো।" দুপুরেই পানি চলে এলো।', 'g'],
+    ['পানি না দিলে ভাড়া দিবো না!', 0, -15, -10, 'দুই দিন পানি ছাড়া! বালতি নিয়ে নিচে লাইন দিলেন।', 'b'],
+    ['ঠিক আছে, আমার ভাগ দিয়ে দিচ্ছি।', -8, 3, 3, 'টাকা গেল, তবে পানি এলো।', 'm']]],
+  ['রাত ১০টার পর কোনো মেহমান আসতে পারবে না! কাল রাতে কে আসছিল?', '👵 বাড়িওয়ালী খালা', [
+    ['খালা, আমার ছোট ভাই গ্রাম থেকে আসছিল, বাস দেরি করছে। পরেরবার আগে আপনাকে জানিয়ে রাখবো।', 0, 10, 5, 'খালা নরম হলেন: "ও আচ্ছা! জানায়া রাখলেই হয়।"', 'g'],
+    ['আমার বাসায় কে আসবে সেটা আমি ঠিক করবো!', 0, -18, -8, 'খালা পুরো বিল্ডিংকে বলে দিলেন আপনি বেয়াদব।', 'b'],
+    ['স্যরি খালা, আর কখনো কেউ আসবে না।', 0, 4, -10, 'ভাইকে এখন হোটেলে রাখতে হবে… মন খারাপ।', 'm']]],
+  ['এই মাসে বেতন দেরিতে হবে, ভাড়া কবে দিবেন? ৫ তারিখ পার হয়ে গেছে!', '👴 বাড়িওয়ালা চাচা', [
+    ['চাচা, অফিসে বেতন দেরি হচ্ছে। এখন অর্ধেক দিচ্ছি, বাকিটা ১৫ তারিখের মধ্যে, কথা দিলাম।', -6, 8, 5, 'চাচা রাজি: "আগে বললে চিন্তা করতাম না।"', 'g'],
+    ['বেতন না পেলে আমি কী করবো? অপেক্ষা করেন!', 0, -15, -8, 'চাচা প্রতিদিন দুবার দরজায় নক করছেন…', 'b'],
+    ['ধার করে পুরোটা এখনই দিচ্ছি।', -12, 4, -8, 'বন্ধুর কাছে ধার করে দিলেন। চাপ বাড়লো।', 'm']]],
+  ['বিদ্যুৎ বিল এবার ৪,২০০ টাকা! আপনার সাব-মিটারে এত উঠছে।', '👴 বাড়িওয়ালা চাচা', [
+    ['চাচা, চলেন একসাথে মিটারের রিডিং দেখি আর আগের মাসের রসিদ মিলাই।', 2, 6, 5, 'মিলিয়ে দেখা গেল সিঁড়ির লাইটের বিল আপনার মিটারে! চাচা ঠিক করে দিলেন।', 'g'],
+    ['এটা চুরি! আমি আর বিল দিবো না!', 0, -15, -8, 'ঝগড়া বাধলো, পাশের ফ্ল্যাট থেকে লোক এলো।', 'b'],
+    ['আচ্ছা, দিয়ে দিচ্ছি।', -8, 2, -3, 'টাকা দিলেন, কিন্তু মনে খটকা রয়ে গেল।', 'm']]],
+  ['ছাদ থেকে পানি চুইয়ে পড়ছে বলছেন? ওটা বর্ষাকালে একটু হয়ই।', '👴 বাড়িওয়ালা চাচা', [
+    ['চাচা, দেয়ালে ছত্রাক হচ্ছে, বাচ্চার কাশি হচ্ছে। এই ছবিগুলো দেখেন; একসাথে মিস্ত্রি ডাকি?', 0, 8, 8, 'চাচা ছবি দেখে বুঝলেন, পরের সপ্তাহে ছাদ ঢালাই হলো।', 'g'],
+    ['এই বাড়ি থাকার যোগ্য না!', 0, -12, -5, 'চাচা মুখ গোমড়া করে চলে গেলেন, কিছুই হলো না।', 'b'],
+    ['নিজের টাকায় ঠিক করে নিচ্ছি।', -10, 4, 4, 'টাকা গেল, কিন্তু অন্তত শুকনো ঘর।', 'm']]],
+  ['ঈদ মোবারক! তোমাদের জন্য একটু সেমাই আর পায়েস আনলাম।', '👵 বাড়িওয়ালী খালা', [
+    ['খালা, ঈদ মোবারক! ভেতরে আসেন, এক কাপ চা খান। আম্মুর বানানো পিঠা নিয়ে যাবেন।', 0, 15, 8, 'খালা খুব খুশি। সম্পর্ক আরো মধুর হলো 💚', 'g'],
+    ['থ্যাংকস। (দরজা বন্ধ)', 0, -5, 0, 'খালা একটু মন খারাপ করে ফিরে গেলেন।', 'b'],
+    ['ধন্যবাদ খালা!', 0, 6, 3, 'ভালো, তবে আরেকটু আন্তরিক হওয়া যেত।', 'm']]],
+  ['শুনলাম দেয়ালে পেরেক মেরেছো? অনুমতি ছাড়া কিছু করবা না!', '👴 বাড়িওয়ালা চাচা', [
+    ['চাচা, একটা ক্যালেন্ডার ঝুলাতে ছোট পেরেক। বাসা ছাড়ার সময় গর্ত ভরে রং করে দিবো, কথা দিলাম।', 0, 6, 4, 'চাচা মাথা নাড়লেন: "আচ্ছা, বড় কিছু করলে জিজ্ঞেস কইরো।"', 'g'],
+    ['ভাড়া দিয়ে থাকি, পেরেকও মারতে পারবো না?', 0, -10, -5, 'চাচা অগ্রিম থেকে টাকা কাটার হুমকি দিলেন।', 'b'],
+    ['স্যরি, পেরেক খুলে ফেলছি।', 0, 3, -2, 'ক্যালেন্ডার এখন টেবিলে পড়ে থাকে।', 'm']]],
+  ['পাশের ফ্ল্যাটের লোক বলছে তোমরা রাতে জোরে টিভি চালাও।', '👵 বাড়িওয়ালী খালা', [
+    ['খালা, খেয়াল করিনি। রাত ১০টার পর আওয়াজ কমিয়ে রাখবো, ওনাদেরও স্যরি বলে আসবো।', 0, 10, 6, 'প্রতিবেশীরাও খুশি। বিল্ডিংয়ে শান্তি!', 'g'],
+    ['ওরা নিজেরাই তো বেশি আওয়াজ করে!', 0, -10, -10, 'দুই ফ্ল্যাটের ঝগড়া এখন বিল্ডিং গ্রুপে!', 'b'],
+    ['ঠিক আছে।', 0, 2, 0, 'চলছে আগের মতোই।', 'm']]],
+  ['বাসা ছাড়বেন? অগ্রিমের ২০,০০০ থেকে রং করার খরচ ১৫,০০০ কাটবো!', '👴 বাড়িওয়ালা চাচা', [
+    ['চাচা, ওঠার সময়ের ছবি আছে, দেয়াল তখনই এমন ছিল। স্বাভাবিক ব্যবহারের ক্ষয় কাটা যায় না; চলেন ন্যায্য হিসাব করি।', 15, 5, 6, 'ছবি দেখে চাচা মানলেন, মাত্র ৩,০০০ কাটলেন। বাকি অগ্রিম ফেরত!', 'g'],
+    ['এক টাকাও কাটতে দিবো না, মামলা করবো!', 0, -20, -15, 'ঝগড়া, হুমকি… শেষে ১০,০০০ কাটা গেল।', 'b'],
+    ['আচ্ছা, কাটেন।', -15, 4, -5, '১৫,০০০ টাকা গেল!', 'm']]]];
+const OWN = [
+  ['চাচা, এই মাসের ভাড়া ১০ তারিখে দিলে হবে? অফিসে বেতন দেরি।', '🧑 ভাড়াটিয়া রাফি', [
+    ['ঠিক আছে, ১০ তারিখের মধ্যে দিও। পরের বার আগে জানিও।', -2, 10, 5, 'রাফি কৃতজ্ঞ, ঠিক ৯ তারিখেই ভাড়া দিলো।', 'g'],
+    ['৫ তারিখের পর একদিনও না! না পারলে বাসা ছাড়ো!', 3, -18, -8, 'রাফি ধার করে দিলো, কিন্তু মনে দাগ রয়ে গেল।', 'b'],
+    ['আচ্ছা, যখন পারো দিও।', -6, 6, -3, 'রাফি দেরি করলো ২০ তারিখ পর্যন্ত। আপনার কিস্তি আটকে গেল।', 'm']]],
+  ['চাচা, পানির মোটর দুই দিন ধরে নষ্ট, বাচ্চারা গোসল করতে পারছে না।', '👩 ভাড়াটিয়া নীলা আপা', [
+    ['আজই মিস্ত্রি ডাকছি। বাড়ির জিনিস, খরচ আমার।', -8, 12, 6, 'বিকেলেই পানি! সব ভাড়াটিয়া খুশি।', 'g'],
+    ['সবাই মিলে টাকা দেন, তারপর ঠিক হবে।', 2, -12, -6, 'ভাড়াটিয়ারা জোট বেঁধে আপনার বিরুদ্ধে!', 'b'],
+    ['কয়েকদিন দেখি, নিজে নিজে ঠিক হতে পারে।', 0, -8, -8, 'তিন দিন পর বাধ্য হয়ে বেশি খরচে ঠিক করলেন।', 'm']]],
+  ['ভাড়া কি এবার বাড়বে চাচা? সব জিনিসের দাম বাড়ছে, আমাদেরও কষ্ট।', '🧑 ভাড়াটিয়া রাফি', [
+    ['চুক্তি শেষ হলে আলোচনা করে সামান্য বাড়াবো, এখনই না।', 0, 10, 5, 'ভাড়াটিয়ারা নিশ্চিন্ত, কেউ বাসা ছাড়ছে না।', 'g'],
+    ['কাল থেকেই ৫,০০০ বেশি!', 10, -20, -10, 'দুই পরিবার নোটিশ দিলো। ফ্ল্যাট খালি থাকবে মাস দুয়েক…', 'b'],
+    ['না, ভাড়া কোনোদিন বাড়বে না।', -6, 8, 0, 'ভালো মানুষ, কিন্তু রক্ষণাবেক্ষণের টাকা কম পড়বে।', 'm']]],
+  ['চাচা, আমার এক বন্ধু কয়েকদিন থাকবে, অসুবিধা আছে?', '🧑 ভাড়াটিয়া রাফি', [
+    ['জানিয়ে রাখার জন্য ধন্যবাদ। দারোয়ানকে নাম আর জাতীয় পরিচয়পত্রের কপিটা দিয়ে রাখো।', 0, 8, 6, 'নিরাপত্তাও থাকলো, সম্পর্কও।', 'g'],
+    ['কোনো ব্যাচেলর এই বাড়িতে ঢুকবে না!', 0, -12, -4, 'রাফি মন খারাপ করলো, অন্য বাসা খুঁজছে।', 'b'],
+    ['যা ইচ্ছা করো।', 0, 3, -4, 'কে আসে কে যায়, দারোয়ানও জানে না…', 'm']]],
+  ['চাচা, বিদ্যুৎ বিল এত বেশি কেন? আমরা তো এসি চালাই না!', '👩 ভাড়াটিয়া নীলা আপা', [
+    ['চলেন একসাথে সাব-মিটার দেখি, রসিদও দেখাচ্ছি।', 0, 10, 5, 'দেখা গেল সিঁড়ির লাইট ভুল করে ওনার মিটারে। ঠিক করে দিলেন, আস্থা বাড়লো।', 'g'],
+    ['বিল যা আসছে দিতেই হবে, প্রশ্ন করবেন না।', 3, -14, -6, 'নীলা আপা বিল্ডিংয়ের সবাইকে জানিয়ে দিলেন।', 'b'],
+    ['এবার অর্ধেক দেন।', -3, 4, 0, 'সমস্যা থেকেই গেল, পরের মাসেও একই ঝামেলা।', 'm']]],
+  ['চাচা, ছাদ থেকে পানি পড়ে দেয়ালে ছত্রাক, বাচ্চার কাশি হচ্ছে।', '👩 ভাড়াটিয়া নীলা আপা', [
+    ['ছবি দেখি… আসলেই খারাপ। এই সপ্তাহেই ছাদ ঠিক করাচ্ছি।', -10, 12, 6, 'বাড়ির দামও বাড়লো, ভাড়াটিয়ারা খুশি।', 'g'],
+    ['বর্ষায় একটু হয়ই, এটা কিছু না।', 0, -12, -6, 'পরের বর্ষায় ছাদের ক্ষতি দ্বিগুণ!', 'b'],
+    ['আপনারা নিজেরা ঠিক করে নিন, ভাড়া থেকে কেটে নিয়েন।', -6, 6, 2, 'কাজ হলো, তবে আপনার নজরদারি ছাড়া।', 'm']]],
+  ['ঈদ মোবারক চাচা! আম্মু আপনার জন্য পিঠা পাঠিয়েছেন।', '🧑 ভাড়াটিয়া রাফি', [
+    ['ঈদ মোবারক বাবা! ভেতরে আসো, সেমাই খেয়ে যাও। আম্মাকে আমার সালাম দিও।', 0, 15, 8, 'রাফি আর আপনার সম্পর্ক এখন পরিবারের মতো 💚', 'g'],
+    ['রেখে যাও। (দরজা বন্ধ)', 0, -6, 0, 'রাফি একটু অবাক হয়ে ফিরে গেল।', 'b'],
+    ['ধন্যবাদ।', 0, 5, 2, 'ভালো, তবে আরেকটু আন্তরিক হওয়া যেত।', 'm']]],
+  ['চাচা, বাসা ছাড়ছি। অগ্রিমের ২০,০০০ টাকা কবে ফেরত পাবো?', '👩 ভাড়াটিয়া নীলা আপা', [
+    ['দেয়াল-দরজা দেখে নিই; স্বাভাবিক ক্ষয়ের জন্য কাটবো না। ভাঙা জানালার কাচের দাম ১,৫০০ কেটে বাকিটা আজই দিচ্ছি।', -2, 12, 8, 'ন্যায্য হিসাব! নীলা আপা বন্ধুদের আপনার বাসার কথা বলবেন।', 'g'],
+    ['রং করার খরচ ১৫,০০০ কাটবো!', 8, -20, -12, 'ঝগড়া, অভিযোগ… সমাজে দুর্নাম।', 'b'],
+    ['পুরোটা দিচ্ছি, কিছু কাটবো না।', -4, 8, 4, 'ভালো মানুষ, কিন্তু ভাঙা কাচ নিজের টাকায় লাগাতে হলো।', 'm']]]];
+const SFX = { knock() { for (let i = 0; i < 3; i++) SND.noise(.08, .5, 300, 'lowpass', i * .22); }, good() { [523, 659, 784].forEach((f, i) => SND.tone(f, .14, 'triangle', .2, 0, i * .08)); }, bad() { SND.tone(200, .35, 'sawtooth', .12, 120); }, meh() { SND.tone(440, .2, 'sine', .1, 400); } };
+let S = null, lv = 0, W = 1, H = 1, last = 0, lastScore = 0;
+function say(t, col, ms) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, ms || 1300); }
+function hud() { $('month').textContent = MONTHS[S.i % 12]; $('role').textContent = lv ? 'বাড়িওয়ালা' : 'ভাড়াটিয়া'; $('sc').textContent = bn(Math.max(0, Math.round(score()))); $('mMoney').style.width = clamp(S.money, 0, 100) + '%'; $('mRel').style.width = clamp(S.rel, 0, 100) + '%'; $('mPeace').style.width = clamp(S.peace, 0, 100) + '%'; }
+const score = () => S.money * 3 + S.rel * 4 + S.peace * 3 + S.good * 40;
+function start(level) { lv = level; const list = lv ? OWN : TEN; S = { list, i: 0, money: 70, rel: 55, peace: 60, good: 0, bad: 0, over: false, door: 0 }; ['startO', 'endO'].forEach(i => $(i).hidden = true); $('meters').hidden = false; SND.ac; hud(); ev(); }
+function ev() { const e = S.list[S.i]; if (!e) return endGame(); drawCal(S.i); S.door = 0; SFX.knock(); setNpc(e[1].includes('খালা') || e[1].includes('আপা') ? 2 : e[1].includes('রাফি') ? 3 : 0);
+  setTimeout(() => { S.door = 1; const d = $('dlg'); d.hidden = false; d.innerHTML = `<span class="mon">${MONTHS[S.i % 12]} · ${bn(S.i + 1)}/${bn(S.list.length)}</span><div class="who">${esc(e[1])}</div><div class="q">"${esc(e[0])}"</div><div class="opts">${[...e[2]].map((o, k) => [o, k]).sort(() => Math.random() - .5).map(([o, k]) => `<button data-k="${k}">${esc(o[0])}</button>`).join('')}</div>`;
+    d.querySelectorAll('[data-k]').forEach(b => b.onclick = () => choose(+b.dataset.k)); }, 700); }
+function choose(k) { const e = S.list[S.i], o = e[2][k]; S.money = clamp(S.money + o[1], 0, 100); S.rel = clamp(S.rel + o[2], 0, 100); S.peace = clamp(S.peace + o[3], 0, 100); if (o[5] === 'g') { S.good++; SFX.good(); } else if (o[5] === 'b') { S.bad++; SFX.bad(); } else SFX.meh();
+  const d = $('dlg'); d.innerHTML = `<div class="res ${o[5]}">${o[5] === 'g' ? '✅' : o[5] === 'b' ? '❌' : '😐'} ${esc(o[4])}</div><div style="font-size:.74rem;color:#57534e">💰 ${o[1] >= 0 ? '+' : ''}${bn(o[1])} · 🤝 ${o[2] >= 0 ? '+' : ''}${bn(o[2])} · 😌 ${o[3] >= 0 ? '+' : ''}${bn(o[3])}</div><button class="nx" id="nx">${S.i + 1 >= S.list.length ? 'বছরের হিসাব ✓' : 'পরের মাস ➡️'}</button>`;
+  $('nx').onclick = () => { S.door = 0; d.hidden = true; S.i++; setTimeout(ev, 450); }; hud(); }
+const TIPS = ['জানেন কি? বাসা ভাড়ার সময় লিখিত চুক্তি করুন: ভাড়া, অগ্রিম, কতদিন, কে কোন মেরামত করবে সব লিখে রাখুন।', 'জানেন কি? ভাড়া দেওয়ার পর রসিদ নিন; পরে ঝামেলা হলে এটাই প্রমাণ।', 'জানেন কি? বাসায় ওঠার দিন দেয়াল, দরজা, জানালার ছবি তুলে রাখলে অগ্রিম ফেরতের সময় তর্ক কম হয়।', 'জানেন কি? ঝগড়ার চেয়ে শান্তভাবে কারণ দেখিয়ে কথা বললে বেশিরভাগ সমস্যার সমাধান হয়।'];
+function endGame() { if (S.over) return; S.over = true; $('dlg').hidden = true; $('meters').hidden = true; const sc = Math.max(0, Math.round(score())), n = S.list.length;
+  $('endT').textContent = S.rel >= 80 ? 'সবাই আপনাকে ভালোবাসে! 🏠💚' : S.rel < 30 ? 'বিল্ডিংয়ে সবাই আপনার উপর বিরক্ত 😬' : 'বছর পার হলো';
+  $('endTitle').textContent = S.good >= n - 1 ? (lv ? 'আদর্শ বাড়িওয়ালা 👑' : 'আদর্শ ভাড়াটিয়া 👑') : S.bad >= 3 ? 'ঝগড়াটে' : S.money < 30 ? 'সব মেনে নেওয়া মানুষ' : 'বুঝদার মানুষ';
+  $('endLine').textContent = `${bn(n)} মাসে ${bn(S.good)} বার বুদ্ধিমান উত্তর, ${bn(S.bad)} বার ঝগড়া। টাকা ${bn(Math.round(S.money))}%, সম্পর্ক ${bn(Math.round(S.rel))}%, শান্তি ${bn(Math.round(S.peace))}%।`;
+  $('eS').textContent = bn(sc); $('eRel').textContent = bn(Math.round(S.rel)) + '%'; $('eMon').textContent = bn(Math.round(S.money)) + '%'; $('eTip').textContent = pick(TIPS);
+  setTimeout(() => { $('endO').hidden = false; if (S.good >= n - 1 && window.KHViral) KHViral.confetti(); }, 300); SH.saveScore(sc); lastScore = sc; }
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 66 : 50; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+function loop(ts) { const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  const open = S && S.door ? 1 : (!S ? .9 : 0); doorP.rotation.y += (open * 1.7 - doorP.rotation.y) * Math.min(1, dt * 4);
+  if (NPC) { NPC.update(dt, 0, 1); NPC.root.visible = doorP.rotation.y > .5; }
+  const port = W / H < .8; cam.position.set(port ? .25 : .5, 1.55, port ? 1.5 : 1.3); cam.lookAt(0, port ? 1.0 : 1.2, -RD / 2 - .6);
+  if (renderer) renderer.render(scene, cam); requestAnimationFrame(loop); }
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = e => { e.stopPropagation(); start(+b.dataset.lv); });
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `বাড়িওয়ালা বনাম ভাড়াটিয়ায় ${bn(lastScore)} পয়েন্ট! 🏠 আপনি ঝামেলা সামলাতে পারবেন? ${location.origin}/games/bariwala/`; try { navigator.clipboard.writeText(t).then(() => say('কপি হয়েছে, শেয়ার করুন!', '#86efac')); } catch (e) {} };
+resize(); last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+window.KHG = { get S() { return S; }, start, choose, ready: false };
+</script>
+<script src="/js/update.js"></script>
+</body></html>
