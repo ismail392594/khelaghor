@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>প্রেডিকশন: কে জিতবে? · খেলাঘর</title>
+<meta name="description" content="ক্রিকেট আর ফুটবলের প্রেডিকশন বাংলায়: কে জিতবে, সঠিক স্কোর, বেশি/কম আর কম্বো। শুধু পয়েন্টের মজার খেলা, সাপ্তাহিক লিডারবোর্ড।">
+<link rel="canonical" href="https://khelaghorbd.online/live/predict/">
+<meta property="og:type" content="website"><meta property="og:site_name" content="খেলাঘর">
+<meta property="og:title" content="প্রেডিকশন: কে জিতবে? · খেলাঘর">
+<meta property="og:description" content="ক্রিকেট আর ফুটবলের লাইভ স্কোর, বাংলায় বল-বাই-বল আর কে জিতবে ভোট।">
+<meta property="og:url" content="https://khelaghorbd.online/live/predict/"><meta property="og:image" content="https://khelaghorbd.online/icons/og.jpg">
+<meta property="og:locale" content="bn_BD"><meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0d1238">
+<link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://flagcdn.com">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="preload" as="fetch" href="/api/live?f=feed" crossorigin>
+<style>
+/* লাইভ স্কোর: গাঢ় নীল খেলার মাঠের রাতের আলো। কার্ডে দুই দল, ডানে স্কোর; লাইভে লাল স্পন্দন। */
+:root{
+  --bg:#0d1238;--bg2:#121a4a;--card:#161f55;--card2:#1c2766;--line:rgba(255,255,255,.08);
+  --ink:#f4f5ff;--dim:#a9b0e0;--faint:#737bb3;--live:#ff3b5c;--gold:#ffc727;--green:#22c55e;--cyan:#38bdf8;--violet:#a78bfa;--orange:#fb923c;
+  --display:'Baloo Da 2','Noto Sans Bengali',system-ui,sans-serif;--body:'Noto Sans Bengali','Hind Siliguri',system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;font-family:var(--body);color:var(--ink);font-size:15px;line-height:1.45;min-height:100vh;
+  background:radial-gradient(700px 300px at 50% -120px,#2a3aa8 0,transparent 75%),var(--bg);
+  padding:0 0 calc(30px + env(safe-area-inset-bottom,0px))}
+button{font-family:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+[hidden]{display:none!important}
+.wrap{max-width:600px;margin:0 auto;padding:0 14px}
+/* উপরের বার */
+.top{position:sticky;top:0;z-index:20;background:rgba(13,18,56,.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.bar{display:flex;align-items:center;gap:10px;height:56px}
+.ib{width:40px;height:40px;border-radius:12px;border:0;background:rgba(255,255,255,.07);display:grid;place-items:center;text-decoration:none;color:var(--ink);flex:none}
+.ib svg{width:22px;height:22px}
+.ttl{flex:1;min-width:0;font-family:var(--display);font-size:1.3rem;font-weight:800;display:flex;align-items:center;gap:8px;line-height:1}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--live);box-shadow:0 0 0 0 rgba(255,59,92,.7);animation:pulse 1.6s infinite;flex:none}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,59,92,.6)}70%{box-shadow:0 0 0 9px rgba(255,59,92,0)}100%{box-shadow:0 0 0 0 rgba(255,59,92,0)}}
+.pts{border:0;border-radius:99px;padding:7px 12px 7px 9px;background:linear-gradient(135deg,#ffd75a,#f2a900);color:#2b1a00;font-weight:800;font-size:.86rem;display:flex;align-items:center;gap:5px;flex:none;box-shadow:0 3px 0 #b07a00}
+.pts svg{width:17px;height:17px}
+/* খেলার ধরন */
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:rgba(255,255,255,.06);padding:4px;border-radius:14px;margin:12px 0 10px}
+.seg button{border:0;background:none;border-radius:10px;padding:8px 4px;font-weight:700;font-size:.92rem;color:var(--dim);display:flex;align-items:center;justify-content:center;gap:6px}
+.seg button[aria-pressed=true]{background:#fff;color:#141a4a;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{border:1px solid var(--line);background:var(--bg2);border-radius:99px;padding:6px 14px;font-weight:700;font-size:.88rem;color:var(--dim);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.chip b{font-weight:800;background:rgba(255,255,255,.1);border-radius:99px;padding:0 7px;font-size:.78rem;color:var(--ink)}
+.chip[aria-pressed=true]{background:var(--ink);color:#141a4a;border-color:var(--ink)}
+.chip[aria-pressed=true] b{background:#141a4a;color:#fff}
+.chip.lv[aria-pressed=true]{background:var(--live);border-color:var(--live);color:#fff}
+.chip.lv[aria-pressed=true] b{background:rgba(0,0,0,.25)}
+/* তালিকা */
+main{padding-top:4px}
+.grp{margin:14px 2px 7px;font-size:.78rem;font-weight:700;color:var(--faint);display:flex;align-items:center;gap:7px;letter-spacing:.01em}
+.grp:first-child{margin-top:4px}
+.grp i{font-style:normal}
+.card{display:block;width:100%;text-align:left;border:1px solid var(--line);background:linear-gradient(180deg,var(--card2),var(--card));border-radius:18px;padding:11px 14px 10px;margin-bottom:10px;box-shadow:0 6px 16px rgba(0,0,0,.18);position:relative;transition:transform .12s}
+.card:active{transform:scale(.985)}
+.card.live{border-color:rgba(255,59,92,.35)}
+.chead{display:flex;align-items:center;gap:8px;font-size:.76rem;color:var(--dim);margin-bottom:6px;min-height:22px}
+.chead .lb{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{border-radius:99px;padding:2px 9px;font-size:.74rem;font-weight:800;display:inline-flex;align-items:center;gap:5px;flex:none;background:rgba(255,255,255,.08);color:var(--dim)}
+.pill.live{background:var(--live);color:#fff}.pill.live::before{content:"";width:6px;height:6px;border-radius:50%;background:#fff;animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.25}}
+.pill.done{background:rgba(34,197,94,.14);color:#7ee2a2}
+.demo{font-size:.68rem;font-weight:800;color:#ffd75a;background:rgba(255,199,39,.12);border-radius:6px;padding:1px 6px;flex:none}
+.tm{display:flex;align-items:center;gap:10px;padding:4px 0}
+.tm .nm{flex:1;min-width:0;font-weight:700;font-size:1.02rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tm.dim{opacity:.55}.tm.dim .nm,.tm.dim .sc{font-weight:600}
+.tm .bat{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--gold);margin-left:6px;vertical-align:middle}
+.sc{font-family:var(--display);font-weight:800;font-size:1.25rem;line-height:1;white-space:nowrap;text-align:right}
+.sc small{font-family:var(--body);font-size:.74rem;color:var(--dim);font-weight:600;margin-left:4px}
+.sc .pen{font-size:.8rem;color:var(--dim)}
+.fl{width:32px;height:22px;border-radius:5px;object-fit:cover;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.15);background:#2a3170}
+.mn{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-size:.72rem;font-weight:800;color:#fff;flex:none;letter-spacing:.02em;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18)}
+.big .fl{width:56px;height:38px;border-radius:8px}.big .mn{width:54px;height:54px;font-size:1.05rem}
+.cfoot{display:flex;align-items:center;gap:8px;border-top:1px dashed var(--line);margin-top:6px;padding-top:7px;font-size:.84rem;color:var(--dim);min-height:28px}
+.cfoot .st{flex:1;min-width:0}
+.cfoot .st.hot{color:#ffd0d8;font-weight:600}
+.cd{font-family:var(--display);font-weight:800;color:var(--ink);letter-spacing:.02em}
+.vt{flex:none;font-size:.74rem;font-weight:800;border-radius:99px;padding:3px 10px;background:rgba(56,189,248,.14);color:#9adcff}
+.vt.mine{background:rgba(34,197,94,.15);color:#86efac}
+.vt.win{background:var(--gold);color:#2b1a00}.vt.lose{background:rgba(255,255,255,.07);color:var(--faint)}
+.empty{text-align:center;padding:40px 16px;color:var(--dim)}
+.empty .em{font-size:2.6rem;display:block;margin-bottom:6px}
+.note{font-size:.8rem;color:#ffe08a;background:rgba(255,199,39,.08);border:1px solid rgba(255,199,39,.2);border-radius:12px;padding:8px 12px;margin:0 0 12px;line-height:1.5}
+.skel{height:118px;border-radius:18px;margin-bottom:10px;background:linear-gradient(90deg,var(--card) 0,var(--card2) 50%,var(--card) 100%);background-size:200% 100%;animation:sk 1.2s infinite}
+@keyframes sk{to{background-position:-200% 0}}
+.foot{text-align:center;color:var(--faint);font-size:.74rem;margin:18px 0 4px;line-height:1.6}
+.foot a{color:var(--dim)}
+/* বিস্তারিত পাতা */
+.pane{position:fixed;inset:0;z-index:40;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;animation:up .22s ease-out;overscroll-behavior:contain}
+@keyframes up{from{transform:translateY(24px);opacity:.4}}
+.hero{background:radial-gradient(500px 220px at 50% 0,#2e3fb8 0,transparent 80%),linear-gradient(180deg,#18216a,var(--bg));padding-bottom:16px}
+.vs{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:8px 0 4px}
+.vs .t{display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;min-width:0}
+.vs .t b{font-size:1rem;line-height:1.25;max-width:100%;overflow-wrap:anywhere}
+.vs .t .s{font-family:var(--display);font-size:1.45rem;font-weight:800;line-height:1}
+.vs .t .s small{display:block;font-family:var(--body);font-size:.74rem;color:var(--dim);font-weight:600;margin-top:3px}
+.vs .mid{text-align:center;font-family:var(--display);font-weight:800}
+.vs .mid .g{font-size:2.3rem;line-height:1;letter-spacing:.04em}
+.vs .mid .v{font-size:.9rem;color:var(--faint)}
+.hst{text-align:center;font-weight:600;margin:10px 0 2px;font-size:.95rem}
+.hst.hot{color:#ffd0d8}
+.hsub{text-align:center;color:var(--dim);font-size:.8rem}
+.hcd{display:flex;justify-content:center;gap:8px;margin:10px 0 2px}
+.hcd div{background:rgba(255,255,255,.08);border-radius:12px;padding:6px 0;width:62px;text-align:center}
+.hcd b{display:block;font-family:var(--display);font-size:1.45rem;line-height:1.05}
+.hcd span{font-size:.68rem;color:var(--dim)}
+.box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:13px 14px;margin:12px 0}
+.box h3{margin:0 0 8px;font-family:var(--display);font-size:1.12rem;display:flex;align-items:center;gap:8px}
+.box h3 span{margin-left:auto;font-family:var(--body);font-size:.76rem;color:var(--gold);font-weight:700}
+.vbtns{display:flex;gap:8px}
+.vbtns button{flex:1;border:1px solid var(--line);background:var(--card2);border-radius:14px;padding:10px 6px;font-weight:700;font-size:.92rem;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
+.vbtns button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vbtns button[aria-pressed=true]{border-color:var(--green);background:rgba(34,197,94,.14)}
+.vbtns button:disabled{cursor:default}.vbtns button:disabled:not([aria-pressed=true]){opacity:.72}
+.vbar{display:flex;height:10px;border-radius:99px;overflow:hidden;margin:12px 0 6px;background:rgba(255,255,255,.06)}
+.vbar i{display:block;height:100%}
+.vleg{display:flex;justify-content:space-between;font-size:.78rem;color:var(--dim);gap:8px}
+.vmsg{font-size:.82rem;color:var(--dim);margin-top:8px;text-align:center}
+.vmsg.ok{color:#86efac}.vmsg.err{color:#fca5a5}
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin:4px 0 0;position:sticky;top:calc(56px + env(safe-area-inset-top,0px));background:var(--bg);z-index:5}
+.tabs button{border:0;background:none;padding:11px 12px;font-weight:700;color:var(--faint);border-bottom:3px solid transparent;font-size:.95rem}
+.tabs button[aria-selected=true]{color:var(--ink);border-color:var(--gold)}
+.over{display:flex;align-items:center;gap:6px;margin:12px 0 4px;flex-wrap:wrap}
+.over small{color:var(--dim);font-size:.78rem;margin-right:4px}
+.bl{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:.8rem;flex:none;background:rgba(255,255,255,.1);color:var(--ink);font-family:var(--display)}
+.bl.k4{background:var(--cyan);color:#062033}.bl.k6{background:var(--violet);color:#1d0b45}.bl.kW{background:var(--live);color:#fff}
+.bl.kx{background:var(--orange);color:#2a1100}.bl.k0{background:rgba(255,255,255,.07);color:var(--dim)}.bl.ki{background:none;box-shadow:inset 0 0 0 1.5px var(--line);color:var(--faint);font-size:.7rem}
+.bl.kG{background:var(--green);color:#052e16}.bl.kY{background:#facc15;color:#3a2a00}.bl.kR{background:var(--live);color:#fff}.bl.kS{background:rgba(56,189,248,.2);color:#9adcff}.bl.kV{background:rgba(167,139,250,.25);color:#ddd2ff}
+.cm{list-style:none;margin:0;padding:0}
+.cm li{display:flex;gap:11px;padding:10px 2px;border-bottom:1px solid var(--line);align-items:flex-start}
+.cm li .o{width:42px;flex:none;text-align:center;color:var(--faint);font-size:.75rem;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:4px}
+.cm li p{margin:4px 0 0;flex:1;font-size:.93rem}
+.cm li.k4 p,.cm li.k6 p,.cm li.kW p,.cm li.kG p{font-weight:700}
+.cm li.ki p{color:var(--dim);font-size:.86rem}
+.cm li.new{animation:hl 2.5s ease-out}
+@keyframes hl{from{background:rgba(255,199,39,.18)}}
+.inn{margin:12px 0}
+.inn summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;background:var(--card2);border-radius:12px;padding:10px 12px;font-weight:700}
+.inn summary::-webkit-details-marker{display:none}
+.inn summary b{font-family:var(--display);font-size:1.1rem}
+table{width:100%;border-collapse:collapse;font-size:.86rem;margin-top:6px}
+th{color:var(--faint);font-weight:600;font-size:.74rem;text-align:right;padding:6px 4px}
+th:first-child,td:first-child{text-align:left}
+td{padding:7px 4px;border-bottom:1px solid var(--line);text-align:right;vertical-align:top}
+td small{display:block;color:var(--faint);font-size:.72rem;line-height:1.3}
+td.r{font-weight:800}
+.ext{font-size:.8rem;color:var(--dim);padding:6px 4px}
+.stat{margin:12px 0}
+.stat .l{display:flex;justify-content:space-between;font-size:.86rem;margin-bottom:5px}
+.stat .l span{color:var(--dim)}
+.stat .b{display:flex;gap:4px;height:8px}
+.stat .b i{border-radius:99px;display:block}
+.stat .b i:first-child{background:var(--cyan)}.stat .b i:last-child{background:var(--gold)}
+/* লিডারবোর্ড শিট */
+.sheet{position:fixed;inset:0;z-index:60;background:rgba(5,8,30,.65);display:flex;align-items:flex-end;justify-content:center}
+.sbox{width:100%;max-width:600px;max-height:88vh;overflow-y:auto;background:var(--bg2);border-radius:24px 24px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));animation:up .22s ease-out;position:relative}
+.sbox h2{margin:2px 0 10px;font-family:var(--display);font-size:1.35rem}
+.xb{position:absolute;right:12px;top:12px}
+.me{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#ffd75a,#f2a900);color:#2b1a00;border-radius:16px;padding:12px 14px}
+.me .n{flex:1;min-width:0}.me .n b{display:block;font-size:1rem}.me .n small{font-size:.78rem;font-weight:600}
+.me .p{font-family:var(--display);font-size:1.8rem;font-weight:800;line-height:1}
+.rules{font-size:.82rem;color:var(--dim);margin:10px 2px;line-height:1.6}
+.lb{list-style:none;margin:0;padding:0}
+.lb li{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line)}
+.lb li .rk{width:28px;text-align:center;font-weight:800;color:var(--faint);font-family:var(--display);font-size:1.05rem}
+.lb li .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.lb li .nm small{display:block;font-size:.72rem;color:var(--faint);font-weight:500}
+.lb li .p{font-family:var(--display);font-weight:800;color:var(--gold)}
+.gbtn{border:0;border-radius:14px;padding:12px 16px;font-weight:800;font-size:1rem;background:#fff;color:#1d1640;display:flex;align-items:center;justify-content:center;gap:9px;width:100%}
+.gbtn svg{width:20px;height:20px}
+.share{border:0;background:rgba(255,255,255,.07);border-radius:12px;padding:8px 12px;font-weight:700;font-size:.86rem;display:inline-flex;align-items:center;gap:6px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#fff;color:#141a4a;border-radius:99px;padding:10px 18px;font-weight:700;font-size:.9rem;z-index:90;box-shadow:0 10px 30px rgba(0,0,0,.4);max-width:92vw;text-align:center}
+/* ===== নতুন সাজ (৯ নভেম্বর): খেলার ভাগ, আরও জমকালো কার্ড, হিসাবের বাক্স, স্কোর আন্দাজ ===== */
+body{background:radial-gradient(900px 380px at 50% -160px,#3a2fb8 0,transparent 70%),radial-gradient(600px 300px at 110% 20%,rgba(255,59,92,.12) 0,transparent 70%),var(--bg)}
+.ttl{background:linear-gradient(90deg,#fff,#ffd75a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ttl .dot{-webkit-text-fill-color:initial}
+.sec{display:flex;align-items:center;gap:10px;margin:18px 0 6px;padding:10px 14px;border-radius:16px;font-family:var(--display)}
+.sec:first-child{margin-top:4px}
+.sec span{font-size:1.5rem;line-height:1}
+.sec b{font-size:1.25rem;font-weight:800;flex:1}
+.sec em{font-style:normal;font-family:var(--body);font-size:.78rem;font-weight:700;background:rgba(0,0,0,.25);border-radius:99px;padding:3px 10px}
+.sec.cricket{background:linear-gradient(110deg,#0f7a4a,#14532d 70%);box-shadow:0 6px 18px rgba(16,185,129,.18)}
+.sec.football{background:linear-gradient(110deg,#1d4ed8,#312e81 70%);box-shadow:0 6px 18px rgba(59,130,246,.2)}
+.card{overflow:hidden;border-radius:20px;padding:12px 15px 11px}
+.card::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 4px 4px 0;background:var(--faint);opacity:.6}
+.card.live::before{background:var(--live);opacity:1;box-shadow:0 0 12px var(--live)}
+.card.live{background:linear-gradient(180deg,#2a2466,#1a1f58);border-color:rgba(255,59,92,.45);box-shadow:0 8px 24px rgba(255,59,92,.12),0 6px 16px rgba(0,0,0,.2)}
+.card.done::before{background:var(--green)}
+.tm .nm{font-size:1.06rem}
+.sc{font-size:1.38rem}
+.star{font-style:normal;color:var(--gold);font-size:.85em}
+.pill.pause{background:rgba(255,199,39,.15);color:#ffe08a}
+.wp{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.72rem;font-weight:700;color:var(--dim)}
+.wbar{flex:1;display:flex;gap:2px;height:6px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.06)}
+.wbar.big{height:12px;margin:6px 0 2px}
+.wbar i{display:block;height:100%}
+.wbar .pa{background:linear-gradient(90deg,#38bdf8,#60a5fa)}.wbar .pd{background:#64748b}.wbar .pb{background:linear-gradient(90deg,#fbbf24,#ffc727)}
+.days{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;margin-top:-4px;scrollbar-width:none}
+.days::-webkit-scrollbar{display:none}
+.day{border:0;background:rgba(255,255,255,.06);border-radius:10px;padding:5px 12px;font-weight:700;font-size:.82rem;color:var(--dim);white-space:nowrap}
+.day[aria-pressed=true]{background:var(--gold);color:#2b1a00}
+.ins h3 span{color:var(--dim)!important}
+.wpt{font-size:.78rem;color:var(--dim);font-weight:600}
+.wpl{display:flex;justify-content:space-between;gap:8px;font-size:.84rem;color:var(--dim)}
+.wpl b{color:var(--ink);font-family:var(--display);font-size:1.05rem}
+.rts{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:12px}
+.rts div{background:var(--card2);border-radius:12px;padding:8px 10px}
+.rts small{display:block;font-size:.72rem;color:var(--dim)}
+.rts b{font-family:var(--display);font-size:1.15rem}
+.fav{border:1px solid var(--line);background:rgba(255,255,255,.06);border-radius:99px;padding:3px 10px;font-size:.76rem;font-weight:700;color:var(--dim)}
+.fav[aria-pressed=true]{background:rgba(255,199,39,.15);color:var(--gold);border-color:rgba(255,199,39,.4)}
+.sbox2{margin-top:12px;background:var(--card2);border-radius:14px;padding:10px 12px}
+.sl{font-size:.8rem;color:var(--dim);text-align:center;margin-bottom:8px}
+.srow{display:flex;align-items:center;justify-content:center;gap:8px}
+.srow>span{flex:none;display:grid;place-items:center}
+.srow em{font-style:normal;font-family:var(--display);font-size:1.4rem;color:var(--faint)}
+.stp{display:flex;align-items:center;gap:4px}
+.stp button{width:32px;height:32px;border-radius:10px;border:0;background:rgba(255,255,255,.1);font-size:1.1rem;font-weight:800}
+.stp b{font-family:var(--display);font-size:1.6rem;min-width:28px;text-align:center}
+.sact{display:flex;gap:8px;margin-top:10px}
+.cbtn{flex:1;border:0;border-radius:12px;padding:10px;font-weight:800;background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;box-shadow:0 3px 0 #0f5132}
+.lbtn{border:1px solid var(--line);background:none;border-radius:12px;padding:10px 12px;font-weight:700;color:var(--dim)}
+.lbtabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:rgba(255,255,255,.06);padding:4px;border-radius:12px;margin-top:12px}
+.lbtabs button{border:0;background:none;border-radius:9px;padding:7px;font-weight:700;color:var(--dim)}
+.lbtabs button[aria-pressed=true]{background:#fff;color:#141a4a}
+table.lt td,table.lt th{padding:7px 3px;font-size:.8rem}
+table.lt tr.hi td{background:rgba(255,199,39,.12);font-weight:700}
+.hero .vs .t .s{font-size:1.6rem}
+/* ইমোজি প্রতিক্রিয়া, হাইলাইটসের বোতাম আর চার/ছক্কা/গোলের বড় অ্যানিমেশন */
+.rx{display:flex;justify-content:space-between;gap:6px}
+.rx button{flex:1;border:1px solid var(--line);background:var(--card2);border-radius:14px;padding:8px 2px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:1.5rem;line-height:1;transition:transform .1s}
+.rx button:active{transform:scale(.9)}
+.rx button small{font-size:.72rem;color:var(--dim);font-weight:700}
+.lnk{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.lnk a{flex:1;min-width:140px;text-align:center;text-decoration:none;border-radius:12px;padding:10px 8px;font-weight:700;font-size:.86rem;color:#fff;background:linear-gradient(135deg,#e11d48,#9f1239)}
+.lnk a.tv{background:linear-gradient(135deg,#2563eb,#1e3a8a)}
+.fly{position:fixed;z-index:80;font-size:2rem;pointer-events:none;animation:fly 1.4s ease-out forwards}
+@keyframes fly{to{transform:translateY(-220px) scale(1.4);opacity:0}}
+.burst{position:fixed;inset:0;z-index:85;display:grid;place-items:center;pointer-events:none}
+.burst b{font-family:var(--display);font-size:4.2rem;font-weight:800;padding:10px 34px;border-radius:28px;color:#fff;animation:pop 1.9s ease-out forwards;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.burst b.k4{background:linear-gradient(135deg,#0ea5e9,#2563eb)}.burst b.k6{background:linear-gradient(135deg,#a855f7,#6d28d9)}
+.burst b.kW{background:linear-gradient(135deg,#ff3b5c,#b91c1c)}.burst b.kG{background:linear-gradient(135deg,#22c55e,#15803d)}
+@keyframes pop{0%{transform:scale(.3) rotate(-8deg);opacity:0}15%{transform:scale(1.15) rotate(2deg);opacity:1}30%{transform:scale(1)}80%{opacity:1}100%{transform:scale(1.1);opacity:0}}
+/* খোঁজা, ছোট লিগ ভাঁজ, ফর্ম, মুখোমুখি, আবহাওয়া */
+.srch{width:100%;border:1px solid var(--line);background:var(--bg2);color:var(--ink);border-radius:12px;padding:9px 12px;font:inherit;font-size:.9rem;margin:-2px 0 10px}
+.srch::placeholder{color:var(--faint)}
+.more{display:block;width:100%;border:1px dashed var(--line);background:none;border-radius:14px;padding:11px;font-weight:700;color:var(--dim);margin:4px 0 12px}
+.sub2{font-size:.78rem;color:var(--dim);font-weight:700;margin:14px 0 6px}
+.frm{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:5px 0;font-size:.86rem}
+.frm span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fm{font-style:normal;display:inline-grid;place-items:center;min-width:26px;height:22px;border-radius:6px;font-size:.7rem;font-weight:800;margin-left:3px;padding:0 3px}
+.fm.fW{background:#16a34a;color:#fff}.fm.fD{background:#64748b;color:#fff}.fm.fL{background:#dc2626;color:#fff}
+.h2h{list-style:none;margin:0;padding:0}
+.h2h li{display:grid;grid-template-columns:40px 1fr auto 1fr;gap:6px;align-items:center;font-size:.8rem;padding:5px 0;border-bottom:1px solid var(--line)}
+.h2h li span:last-child{text-align:right}.h2h small{color:var(--faint)}.h2h b{font-family:var(--display)}
+.wxr{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:.84rem;color:var(--dim)}
+.wxr b{font-family:var(--display);font-size:1.25rem;color:var(--ink)}
+/* বেশি/কম আর কম্বো */
+.ouq{font-size:.84rem;font-weight:700;margin:14px 0 8px;text-align:center}
+.vbtns.ou button{flex-direction:row;justify-content:center;gap:6px;padding:9px 6px;font-size:1rem}
+.ctog{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:.8rem;color:var(--dim);background:rgba(255,199,39,.07);border:1px dashed rgba(255,199,39,.3);border-radius:12px;padding:8px 10px;cursor:pointer}
+.ctog input{width:18px;height:18px;accent-color:var(--gold)}
+.slip{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:45;width:min(560px,calc(100% - 28px))}
+.slipb{width:100%;border:0;border-radius:16px;padding:12px 16px;font-weight:800;font-size:.98rem;background:linear-gradient(135deg,#ffd75a,#f2a900);color:#2b1a00;box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.slipb small{font-size:.8rem;font-weight:700}
+.sl2 li{justify-content:space-between}
+.sl2 li div{display:flex;flex-direction:column;min-width:0}
+.sl2 li small{color:var(--gold);font-size:.8rem}
+.mycb{list-style:none;margin:0 0 6px;padding:0}
+.mycb li{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:.8rem}
+.mycb li div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.mycb b{white-space:nowrap}.mycb b.w{color:var(--gold)}.mycb b.l{color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head><body data-mode="predict">
+<header class="top"><div class="wrap bar">
+  <a class="ib" href="/live/" aria-label="লাইভ স্কোরে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+  <div class="ttl"><span aria-hidden="true">🎯</span>প্রেডিকশন</div>
+  <button class="pts" id="ptsBtn" type="button" aria-label="লিডারবোর্ড আর আমার পয়েন্ট"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 3h10v2h3v3a5 5 0 0 1-5 5h-.3A5 5 0 0 1 13 15.9V18h3v3H8v-3h3v-2.1A5 5 0 0 1 9.3 13H9a5 5 0 0 1-5-5V5h3zm0 4H6v1a3 3 0 0 0 1 2.2zm10 0v3.2A3 3 0 0 0 18 8V7z"/></svg><span id="ptsTxt">লিডারবোর্ড</span></button>
+</div></header>
+
+<div class="wrap">
+  <div class="seg" role="group" aria-label="খেলার ধরন">
+    <button type="button" data-s="all" aria-pressed="true">সব</button>
+    <button type="button" data-s="cricket" aria-pressed="false">🏏 ক্রিকেট</button>
+    <button type="button" data-s="football" aria-pressed="false">⚽ ফুটবল</button>
+  </div>
+  <div class="chips" role="group" aria-label="ম্যাচ বাছাই">
+    <button type="button" class="chip lv" data-f="live" aria-pressed="false" hidden>লাইভ <b id="nLive">০</b></button>
+    <button type="button" class="chip" data-f="upcoming" aria-pressed="false">অনুমান দিন <b id="nUp">০</b></button>
+    <button type="button" class="chip" data-f="done" aria-pressed="false">ফলাফল <b id="nDone">০</b></button>
+  </div>
+  <input class="srch" id="q" type="search" placeholder="🔎 দল বা লিগ খুঁজুন (যেমন Bangladesh, Barcelona)" aria-label="খুঁজুন" autocomplete="off">
+  <div class="days" id="days" hidden role="group" aria-label="দিন বাছাই"></div>
+  <div class="note" id="demoNote" hidden></div>
+  <main id="list" aria-live="polite"><div class="skel"></div><div class="skel"></div><div class="skel"></div></main>
+  <p class="foot">🎯 শুধু মজার অনুমানের খেলা: পয়েন্ট কেনা যায় না, টাকা বা পুরস্কারে বদলানো যায় না। কোনো বাজি নয়।<br>পতাকা: <a href="https://flagpedia.net" target="_blank" rel="noopener">flagpedia.net</a></p>
+</div>
+
+<section class="pane" id="pane" hidden aria-modal="true" role="dialog" aria-labelledby="pTitle">
+  <div class="top"><div class="wrap bar">
+    <button class="ib" type="button" id="pBack" aria-label="পেছনে যান"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="ttl" id="pTitle" style="font-size:1rem;font-family:var(--body);font-weight:700"></div>
+    <button class="share" type="button" id="pShare"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18 16a3 3 0 0 0-2.4 1.2l-6.7-3.4a3 3 0 0 0 0-1.6l6.7-3.4A3 3 0 1 0 15 7l-6.7 3.4a3 3 0 1 0 0 3.2L15 17a3 3 0 1 0 3-1z"/></svg>শেয়ার</button>
+  </div></div>
+  <div class="hero"><div class="wrap" id="pHero"></div></div>
+  <div class="wrap">
+    <div class="box ins" id="iBox" hidden></div>
+    <div class="box" id="vBox"></div>
+    <div class="box fun" id="fBox"></div>
+    <div class="tabs" role="tablist" id="pTabs"></div>
+    <div id="pBody"></div>
+  </div>
+</section>
+
+<div class="burst" id="burst" hidden aria-live="assertive"></div>
+<div class="slip" id="slip" hidden></div>
+<div class="sheet" id="slipSheet" hidden>
+  <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="slipT">
+    <button class="ib xb" type="button" data-x aria-label="বন্ধ করুন">✕</button>
+    <h2 id="slipT">🎯 আমার কম্বো</h2>
+    <ol class="lb sl2" id="slipList"></ol>
+    <p class="rules" id="slipInfo"></p>
+    <div class="sact"><button type="button" class="cbtn" id="slipGo">✓ কম্বো জমা দিন</button><button type="button" class="lbtn" id="slipClear">সব মুছুন</button></div>
+    <p class="rules" style="font-size:.74rem">শুধু মজার অনুমানের খেলা, পয়েন্ট কেনা বা টাকায় বদলানো যায় না।</p>
+  </div>
+</div>
+<div class="sheet" id="lbSheet" hidden>
+  <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="lbT">
+    <button class="ib xb" type="button" data-x aria-label="বন্ধ করুন">✕</button>
+    <h2 id="lbT">🏆 কে জিতবে? লিডারবোর্ড</h2>
+    <div id="lbMe"></div>
+    <div class="lbtabs" role="group" aria-label="সময়"><button type="button" data-per="week" aria-pressed="true">এই সপ্তাহ</button><button type="button" data-per="all" aria-pressed="false">সব সময়</button></div>
+    <p class="rules" id="lbRules"></p>
+    <ol class="lb" id="lbList"></ol>
+  </div>
+</div>
+
+<script type="module" src="/live/live.js"></script>
+<script src="/js/update.js"></script>
+</body></html>

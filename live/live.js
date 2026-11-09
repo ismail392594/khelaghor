@@ -2,14 +2,18 @@
 import { winProb, rates, overUnder } from '/live/insight.js';
 import { VAPID_KEY } from '/live/push-config.js';
 const API = '/api/live';
+// একই কোড দুই পাতায়: লাইভ স্কোর (/live/) আর আলাদা প্রেডিকশন চ্যানেল (/live/predict/)। দুটোর মধ্যে কোনো মিশ্রণ নেই
+const PRED = document.body.dataset.mode === 'predict';
+const BASE = PRED ? '/live/predict/' : '/live/';
 const $ = id => document.getElementById(id);
 const bn = v => String(v).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
 const pad = n => String(n).padStart(2, '0');
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const MON = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
 
-const S = { feed: null, sport: 'all', filter: null, day: null, user: null, me: null, open: null, det: null, tab: null, seen: new Set(), pts: 10, exact: 20, fav: new Set(), draft: null, period: 'week' };
+const S = { slip: [], comboOn: false, feed: null, sport: 'all', filter: null, day: null, user: null, me: null, open: null, det: null, tab: null, seen: new Set(), pts: 10, exact: 20, fav: new Set(), draft: null, period: 'week' };
 try { S.fav = new Set(JSON.parse(localStorage.getItem('kh-live-fav') || '[]')); } catch (e) {}
+try { S.slip = JSON.parse(localStorage.getItem('kh-live-slip') || '[]').filter(l => l && l.id); } catch (e) {}
 const isFav = m => S.fav.has(m.a.name) || S.fav.has(m.b.name);
 // টেস্টে দিনের খেলা শেষ (pause) হলে লাইভে না রেখে "আসন্ন"-তে দেখাই; পরদিন খেলা শুরু হলে আবার লাইভে আসবে
 // পুরোনো ডাটায় pause না থাকলেও লেখা দেখে চিনে নিই ("Stumps" / "দিন শেষ")
@@ -90,7 +94,8 @@ const kindIcon = { G: '⚽', Y: '🟨', R: '🟥', S: '🔁', V: '📺', x: '❌
 async function loadFeed() {
   try {
     S.feed = await get('f=feed');
-    S.pts = S.feed.points || 10; S.exact = S.feed.exact || 20;
+    S.pts = S.feed.points || 10; S.exact = S.feed.exact || 20; S.combo = S.feed.combo || { 2: 30, 3: 60, 4: 100, 5: 150, 6: 220 };
+    pruneSlip();
     renderList();
     if (S.open) syncOpen();
   } catch (e) {
@@ -105,6 +110,10 @@ function renderList() {
   const by = { live: [], upcoming: [], done: [] };
   for (const m of all) (by[vstate(m)] || by.upcoming).push(m);
   $('nLive').textContent = bn(by.live.length); $('nUp').textContent = bn(by.upcoming.length); $('nDone').textContent = bn(by.done.length);
+  if (PRED) { // প্রেডিকশনে শুধু আসন্ন খেলা (অনুমান দেওয়ার) আর শেষ খেলা (ফল দেখার)
+    by.upcoming = by.upcoming.filter(m => !paused(m) && m.state === 'upcoming'); by.live = [];
+    if (S.filter === 'live' || !S.filter) S.filter = 'upcoming';
+  }
   if (!S.filter || (!by[S.filter].length && S.autoFilter)) { S.filter = by.live.length ? 'live' : by.upcoming.length ? 'upcoming' : 'done'; S.autoFilter = true; }
   document.querySelectorAll('.chip[data-f]').forEach(b => b.setAttribute('aria-pressed', b.dataset.f === S.filter));
   document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === S.sport));
@@ -160,6 +169,7 @@ function renderList() {
 }
 
 function voteChip(m) {
+  if (!PRED) return '';
   const p = S.me && S.me.picks && S.me.picks[m.id];
   if (!p) return m.state === 'upcoming' ? '<span class="vt">🗳️ ভোট দিন</span>' : '';
   const pn = p === 'd' ? 'ড্র' : tname(m[p]);
@@ -236,7 +246,7 @@ async function loadDetail() {
     const prevTop = S.det && S.det.id === id && S.det.det && S.det.det.comm && S.det.det.comm[0];
     d.id = id;
     S.det = d;
-    burstFor(prevTop, d.det && d.det.comm && d.det.comm[0]);
+    if (!PRED) burstFor(prevTop, d.det && d.det.comm && d.det.comm[0]);
     renderDetail(d.m, d.det, d.votes);
   } catch (e) {
     if (!S.det && S.open === id) $('pBody').innerHTML = `<div class="empty"><span class="em">📡</span>${esc(e.message)}</div>`;
@@ -275,7 +285,7 @@ function renderDetail(m, det, votes) {
   $('pHero').innerHTML = `<div class="hsub" style="padding-top:12px">${m.sport === 'cricket' ? '🏏' : '⚽'} ${esc(m.tour)}${m.demo ? ' <span class="demo">নমুনা</span>' : ''}</div>
 <div class="vs">${team('a')}<div class="mid">${mid}</div>${team('b')}</div>${st}<div class="hsub">${sub}</div>`;
   renderInsight(m);
-  renderVote(m, votes);
+  if (PRED) { renderVote(m, votes); $('pTabs').innerHTML = ''; $('pBody').innerHTML = ''; return; }
   renderFun(m, S.det && S.det.id === m.id ? S.det.react : null);
   const tabs = m.sport === 'cricket' ? [['c', 'বল-বাই-বল'], ['s', 'স্কোরকার্ড']] : [['c', 'ঘটনা'], ['s', 'পরিসংখ্যান']];
   if (m.sport === 'football' && m.lg && m.season && !m.demo) tabs.push(['t', 'টেবিল']);
@@ -485,6 +495,59 @@ function pushAfterFav(added) {
   }
 }
 
+/* ---------- কম্বো (কয়েকটা ম্যাচের অনুমান একসাথে, সব মিললে বোনাস পয়েন্ট) ---------- */
+const saveSlip = () => { try { localStorage.setItem('kh-live-slip', JSON.stringify(S.slip)); } catch (e) {} renderSlip(); };
+function pruneSlip() {
+  const ok = id => { const m = S.feed && S.feed.matches.find(x => x.id === id); return m && m.state === 'upcoming' && m.start > Date.now() && !m.demo; };
+  const n = S.slip.length; S.slip = S.slip.filter(l => ok(l.id));
+  if (n !== S.slip.length) saveSlip(); else renderSlip();
+}
+function legText(l) {
+  const m = S.feed && S.feed.matches.find(x => x.id === l.id);
+  if (!m) return '';
+  const what = l.mk === 'ou' ? `${m.sport === 'football' ? 'মোট গোল' : 'মোট রান'} ${bn(m.oul)}-এর ${l.pick === 'o' ? 'বেশি' : 'কম'}` : (l.pick === 'd' ? 'ড্র' : `${tname(m[l.pick])} জিতবে`);
+  return { vs: `${tname(m.a)} বনাম ${tname(m.b)}`, what };
+}
+function addLeg(m, mk, pick) {
+  const i = S.slip.findIndex(l => l.id === m.id);
+  if (i >= 0 && S.slip[i].mk === mk && S.slip[i].pick === pick) { S.slip.splice(i, 1); toast('কম্বো থেকে বাদ দেওয়া হলো'); }
+  else {
+    if (i < 0 && S.slip.length >= 6) { toast('কম্বোতে সর্বোচ্চ ৬টা ম্যাচ'); return; }
+    if (i >= 0) S.slip.splice(i, 1);
+    S.slip.push({ id: m.id, mk, pick });
+    toast(i >= 0 ? 'এই ম্যাচের অনুমান বদলানো হলো (কম্বোতে একটা ম্যাচ একবারই)' : `কম্বোতে যোগ হলো (${bn(S.slip.length)}টা)`);
+  }
+  saveSlip(); renderVote(m, S.det && S.det.votes);
+}
+function renderSlip() {
+  const bar = $('slip'); if (!bar || !PRED) return;
+  const n = S.slip.length;
+  if (!n) { bar.hidden = true; return; }
+  bar.hidden = false;
+  const bonus = (S.combo || {})[n];
+  bar.innerHTML = `<button type="button" class="slipb" data-slip-open>🎯 কম্বো: ${bn(n)}টা ম্যাচ <small>${n >= 2 ? `সব মিললে +${bn(bonus)}` : 'আরও অন্তত ১টা যোগ করুন'}</small></button>`;
+}
+function openSlip() {
+  const n = S.slip.length, bonus = (S.combo || {})[n];
+  $('slipList').innerHTML = S.slip.map((l, i) => { const t = legText(l); return `<li><div><b>${esc(t.vs)}</b><small>${esc(t.what)}</small></div><button type="button" class="ib" data-rm="${i}" aria-label="বাদ দিন">✕</button></li>`; }).join('') || '<div class="empty">কম্বো খালি</div>';
+  $('slipInfo').innerHTML = n >= 2 ? `সব ${bn(n)}টা মিললে <b>+${bn(bonus)}</b> পয়েন্ট। একটাও না মিললে কিছুই নেই। খেলা বাতিল হলে সেটা বাদ দিয়ে হিসাব।` : 'কম্বো বানাতে অন্তত ২টা আলাদা ম্যাচ লাগবে।';
+  $('slipGo').disabled = n < 2;
+  $('slipSheet').hidden = false;
+}
+async function sendSlip() {
+  if (!S.user && !(await login())) { toast('কম্বো জমা দিতে Gmail দিয়ে লগইন করুন'); return; }
+  $('slipGo').disabled = true;
+  try {
+    const t = await token();
+    const r = await fetch(API + '?f=combo', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + t }, body: JSON.stringify({ legs: S.slip }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || 'কম্বো জমা হয়নি');
+    S.slip = []; S.comboOn = false; saveSlip(); $('slipSheet').hidden = true;
+    toast(`🎯 কম্বো জমা হলো! সব মিললে +${bn(j.bonus)} পয়েন্ট`);
+    loadMe();
+  } catch (e) { toast(e.message); $('slipGo').disabled = S.slip.length < 2; }
+}
+
 /* ---------- কে জিতবে? ভোট ---------- */
 function renderVote(m, votes) {
   const v = votes || { a: 0, b: 0, d: 0 };
@@ -507,6 +570,17 @@ function renderVote(m, votes) {
 <div class="srow"><span title="${esc(tname(m.a))}">${badge(m.a)}</span>${step('a', d.ga)}<em>-</em>${step('b', d.gb)}<span title="${esc(tname(m.b))}">${badge(m.b)}</span></div>
 <div class="sact"><button type="button" class="cbtn" data-send="score">✓ স্কোরসহ ভোট দিন</button><button type="button" class="lbtn" data-send="pick">শুধু বিজয়ী</button></div></div>`;
   }
+  // বেশি/কম অনুমান (ফুটবলে মোট গোল, ক্রিকেটে মোট রান)
+  if (m.oul) {
+    const myOu = S.me && S.me.ou && S.me.ou[m.id];
+    const what = m.sport === 'football' ? `মোট গোল ${bn(m.oul)}` : `দুই দল মিলে মোট রান ${bn(m.oul)}`;
+    const inSlip = S.slip.find(l => l.id === m.id && l.mk === 'ou');
+    html += `<div class="ouq">${m.sport === 'football' ? '⚽' : '🏏'} ${what}-এর বেশি না কম?</div><div class="vbtns ou">
+<button type="button" data-ou="o" aria-pressed="${(myOu && myOu.side === 'o') || (S.comboOn && inSlip && inSlip.pick === 'o')}" ${!open || (myOu && !S.comboOn) ? 'disabled' : ''}>⬆️ <span>বেশি</span></button>
+<button type="button" data-ou="u" aria-pressed="${(myOu && myOu.side === 'u') || (S.comboOn && inSlip && inSlip.pick === 'u')}" ${!open || (myOu && !S.comboOn) ? 'disabled' : ''}>⬇️ <span>কম</span></button></div>`;
+    if (myOu) html += `<div class="vmsg ok">✓ আপনার অনুমান: ${myOu.side === 'o' ? 'বেশি' : 'কম'} (${bn(myOu.line)})</div>`;
+  }
+  if (open && !m.demo) html += `<label class="ctog"><input type="checkbox" id="comboOn" ${S.comboOn ? 'checked' : ''}> 🎯 কম্বো মোড: এখানে চাপলে ভোট নয়, কম্বোতে যোগ হবে</label>`;
   if (mine || !open) {
     if (total) {
       const col = { a: 'var(--cyan)', d: '#64748b', b: 'var(--gold)' };
@@ -527,7 +601,7 @@ function renderVote(m, votes) {
   html += `<div class="vmsg ${cls}" id="vMsg">${msg}${total ? ` · মোট ${bn(total)} ভোট` : ''}</div>`;
   $('vBox').innerHTML = html;
 }
-async function doVote(pick, ga = null, gb = null) {
+async function doVote(pick, ga = null, gb = null, ou = null) {
   const m = S.det ? S.det.m : S.feed.matches.find(x => x.id === S.open);
   if (!m) return;
   if (!S.user) {
@@ -538,14 +612,18 @@ async function doVote(pick, ga = null, gb = null) {
   document.querySelectorAll('#vBox button').forEach(b => { b.disabled = true; });
   try {
     const t = await token();
-    const body = { id: m.id, pick };
+    const body = ou ? { id: m.id, mk: 'ou', side: ou.side } : { id: m.id, pick };
     if (ga != null) Object.assign(body, { ga, gb });
     const r = await fetch(API + '?f=vote', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + t }, body: JSON.stringify(body) });
     const j = await r.json().catch(() => ({}));
     if (!r.ok && r.status !== 409) throw new Error(j.error || 'ভোট হয়নি');
     S.me = S.me || { pts: 0, ok: 0, n: 0, picks: {}, scores: {} };
     S.draft = null;
-    if (r.ok) {
+    if (r.ok && ou) {
+      S.me.ou = S.me.ou || {}; S.me.ou[m.id] = { side: j.side, line: j.line };
+      renderVote(m, S.det && S.det.votes);
+      toast(`অনুমান নেওয়া হয়েছে! মিললে +${bn(S.pts)}`);
+    } else if (r.ok) {
       S.me.picks[m.id] = j.pick || pick;
       if (j.score) { S.me.scores = S.me.scores || {}; S.me.scores[m.id] = j.score; }
       const v = (S.det && S.det.votes) || { a: 0, b: 0, d: 0 };
@@ -608,7 +686,8 @@ async function loadMe() {
 /* ---------- লিডারবোর্ড ---------- */
 async function openBoard() {
   $('lbSheet').hidden = false;
-  $('lbRules').textContent = `খেলা শুরুর আগে যেকোনো ম্যাচে "কে জিতবে?" ভোট দিন। অনুমান মিলে গেলে +${bn(S.pts)} পয়েন্ট। ফুটবলে একদম সঠিক স্কোর বললে আরও +${bn(S.exact)}। ম্যাচ বাতিল বা টাই হলে পয়েন্ট নেই। সাপ্তাহিক লিডারবোর্ড প্রতি সোমবার নতুন করে শুরু হয়।`;
+  const cb = S.combo || {};
+  $('lbRules').innerHTML = `খেলা শুরুর আগে অনুমান দিন: কে জিতবে, আর মোট গোল/রান বেশি না কম। প্রতিটা মিললে +${bn(S.pts)}। ফুটবলে একদম সঠিক স্কোরে আরও +${bn(S.exact)}।<br>🎯 কম্বো: কয়েকটা ম্যাচের অনুমান একসাথে, সব মিললে বোনাস (২টা +${bn(cb[2])}, ৩টা +${bn(cb[3])}, ৪টা +${bn(cb[4])}, ৫টা +${bn(cb[5])}, ৬টা +${bn(cb[6])})।<br><b>এটা শুধু মজার অনুমানের খেলা: পয়েন্ট কেনা যায় না, টাকা বা পুরস্কারে বদলানো যায় না।</b> সাপ্তাহিক লিডারবোর্ড প্রতি সোমবার নতুন করে শুরু হয়।`;
   meBox();
   loadBoard();
 }
@@ -625,7 +704,10 @@ async function loadBoard() {
 }
 function meBox() {
   if (S.user && S.me) {
-    $('lbMe').innerHTML = `<div class="me"><div class="n"><b>${esc(S.me.name || S.user.displayName || 'আমি')}</b><small>${bn(S.me.ok)}টি সঠিক · ${bn(S.me.n)}টি ভোট · এই সপ্তাহে ${bn(S.me.week || 0)}</small></div><div class="p">${bn(S.me.pts)}</div></div>`;
+    const cs = (S.me.combos || []).slice(0, 5);
+    const rIc = r => (r === true ? '✅' : r === false ? '❌' : r === 'void' ? '➖' : '⏳');
+    const cHtml = cs.length ? `<div class="sub2">আমার কম্বো</div><ul class="mycb">${cs.map(c => `<li><div>${c.legs.map(l => `<span>${rIc(l.r)} ${esc(l.t)}</span>`).join('')}</div><b class="${c.res === true ? 'w' : c.res === false ? 'l' : ''}">${c.res === true ? '+' + bn(c.bonus) : c.res === false ? 'মেলেনি' : c.res === 'void' ? 'বাতিল' : '⏳ +' + bn(c.bonus)}</b></li>`).join('')}</ul>` : '';
+    $('lbMe').innerHTML = `<div class="me"><div class="n"><b>${esc(S.me.name || S.user.displayName || 'আমি')}</b><small>${bn(S.me.ok)}টি সঠিক · ${bn(S.me.n)}টি ভোট · এই সপ্তাহে ${bn(S.me.week || 0)}</small></div><div class="p">${bn(S.me.pts)}</div></div>${cHtml}`;
   } else {
     $('lbMe').innerHTML = `<button class="gbtn" type="button" id="lbLogin"><svg viewBox="0 0 24 24"><path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.3-1.6 3.8-5.5 3.8-3.3 0-6-2.7-6-6.1S8.7 5.7 12 5.7c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.2 14.6 2.2 12 2.2 6.6 2.2 2.3 6.6 2.3 12s4.3 9.8 9.7 9.8c5.6 0 9.3-3.9 9.3-9.5 0-.6-.1-1.1-.2-1.6z"/></svg>Gmail দিয়ে লগইন করে পয়েন্ট দেখুন</button>`;
     $('lbLogin').onclick = async () => { if (await login()) meBox(); };
@@ -673,7 +755,15 @@ $('pTabs').addEventListener('click', e => {
 $('vBox').addEventListener('click', e => {
   const m = S.det ? S.det.m : S.feed.matches.find(x => x.id === S.open);
   if (!m) return;
+  const tg = e.target.closest('#comboOn');
+  if (tg) { S.comboOn = tg.checked; return renderVote(m, S.det && S.det.votes); }
+  const ob = e.target.closest('[data-ou]');
+  if (ob && !ob.disabled) {
+    if (S.comboOn) return addLeg(m, 'ou', ob.dataset.ou);
+    return doVote(null, null, null, { mk: 'ou', side: ob.dataset.ou });
+  }
   const b = e.target.closest('[data-vote]');
+  if (b && !b.disabled && S.comboOn) return addLeg(m, 'w', b.dataset.vote);
   if (b && !b.disabled) {
     if (m.sport !== 'football') return doVote(b.dataset.vote);
     const k = b.dataset.vote; // ফুটবল: আগে দল বাছাই, তারপর স্কোর (ইচ্ছা হলে)
@@ -694,7 +784,7 @@ $('vBox').addEventListener('click', e => {
 $('pShare').onclick = async () => {
   const m = S.det ? S.det.m : S.feed && S.feed.matches.find(x => x.id === S.open);
   // শেয়ারের লিংক এমন ঠিকানায়, যেটা ফেসবুক/হোয়াটসঅ্যাপে স্কোরসহ প্রিভিউ দেখায়
-  const url = location.origin + '/api/live?f=share&id=' + encodeURIComponent(S.open || '');
+  const url = location.origin + '/api/live?f=share&id=' + encodeURIComponent(S.open || '') + (PRED ? '&p=1' : '');
   const text = m ? `${tname(m.a)} বনাম ${tname(m.b)}: লাইভ স্কোর বাংলায়, আর কে জিতবে ভোট দিন!` : 'লাইভ স্কোর বাংলায়';
   let file = null;
   try { if (m) file = await shareImage(m); } catch (e) {}
@@ -762,7 +852,17 @@ $('fBox').addEventListener('click', e => {
   rxQueue[id + '|' + k] = (rxQueue[id + '|' + k] || 0) + 1;
   if (!rxTimer) rxTimer = setTimeout(sendRx, 2000);
 });
-$('ptsBtn').onclick = openBoard;
+if (PRED) { $('ptsBtn').onclick = openBoard; $('fBox').hidden = true; $('pTabs').hidden = true; }
+else { $('vBox').hidden = true; }
+if (PRED) $('ptsBtn').onclick = openBoard;
+else { $('ptsBtn').onclick = () => { location.href = '/live/predict/'; }; $('ptsTxt').textContent = 'প্রেডিকশন'; }
+$('slip').addEventListener('click', e => { if (e.target.closest('[data-slip-open]')) openSlip(); });
+$('slipSheet').addEventListener('click', e => {
+  if (e.target === $('slipSheet') || e.target.closest('[data-x]')) { $('slipSheet').hidden = true; return; }
+  const rm = e.target.closest('[data-rm]'); if (rm) { S.slip.splice(+rm.dataset.rm, 1); saveSlip(); openSlip(); return; }
+  if (e.target.closest('#slipGo')) sendSlip();
+  if (e.target.closest('#slipClear')) { S.slip = []; saveSlip(); $('slipSheet').hidden = true; }
+});
 $('lbSheet').addEventListener('click', e => { if (e.target === $('lbSheet') || e.target.closest('[data-x]')) $('lbSheet').hidden = true; });
 addEventListener('popstate', () => {
   const id = (location.hash.match(/^#m=([\w-]+)$/) || [])[1];

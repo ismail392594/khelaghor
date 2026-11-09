@@ -17,6 +17,16 @@ import { pushSub, events, sendEvents } from './_push.js';
 import { cricPred, fbPredFrom, fbExtraFrom } from './_predict.js';
 
 export const POINTS = 10; // সঠিক অনুমানে কত পয়েন্ট
+// ওভার/আন্ডার অনুমানের সীমা: ফুটবলে মোট গোল, ক্রিকেটে (সীমিত ওভার) দুই দল মিলিয়ে মোট রান। টেস্টে নেই
+export function ouLine(m) {
+  if (!m) return null;
+  if (m.sport === 'football') return 2.5;
+  if (m.sport !== 'cricket' || m.test) return null;
+  return { t20: 310.5, odi: 520.5, t10: 210.5 }[String(m.fmt || '').toLowerCase()] || null;
+}
+const matchTotal = m => (m.sport === 'football' ? (m.a.g == null || m.b.g == null ? null : m.a.g + m.b.g) : (m.inns || []).reduce((t, i) => t + (i.r || 0), 0) || null);
+// কম্বো: সব অনুমান মিললে বোনাস পয়েন্ট (টাকা নয়, শুধু লিডারবোর্ডের জন্য)
+export const COMBO = { 2: 30, 3: 60, 4: 100, 5: 150, 6: 220 };
 export const EXACT = 20; // ফুটবলে একদম সঠিক স্কোর বললে বাড়তি পয়েন্ট
 // সপ্তাহের নাম (ঢাকার সময়ে, সোমবার থেকে শুরু): যেমন 2026-11-09
 export const weekKey = (t = Date.now()) => { const d = new Date(t + 6 * 3600e3); const day = (d.getUTCDay() + 6) % 7; return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - day)).toISOString().slice(0, 10); };
@@ -259,7 +269,8 @@ function compose(doc, now) {
   for (const [id, m] of map) {
     if (m.state === 'done') continue;
     const p = m.sport === 'football' ? (P[id] && P[id].pr) : cricPred(m);
-    if (p) map.set(id, { ...m, pred: p });
+    const oul = ouLine(m);
+    if (p || oul) map.set(id, { ...m, ...(p ? { pred: p } : {}), ...(oul ? { oul } : {}) });
   }
   return [...map.values()].filter(m =>
     m.state === 'live' ||
@@ -418,6 +429,7 @@ async function who(F, req) {
 export async function vote(req, now = Date.now()) {
   const b = req.body && typeof req.body === 'object' ? req.body : JSON.parse(req.body || '{}');
   const id = String(b.id || '');
+  if (b.mk === 'ou') return voteOU(req, b, id, now);
   let pick = String(b.pick || '');
   // ফুটবলে চাইলে সঠিক স্কোরও (০-১৫)। স্কোর দিলে বিজয়ী সেখান থেকেই ঠিক হয়
   const ga = b.ga == null || b.ga === '' ? null : Number(b.ga), gb = b.gb == null || b.gb === '' ? null : Number(b.gb);
@@ -451,6 +463,74 @@ export async function vote(req, now = Date.now()) {
   return { ok: true, pick, score: hasScore ? [ga, gb] : null };
 }
 
+async function matchFor(id, now) {
+  return id.startsWith('d_') ? (demoMatch(id, now) || {}).m : (await getFeed(now)).matches.find(x => x.id === id);
+}
+async function nameOf(F, t) {
+  const u = (await F.db.doc('users/' + t.uid).get()).data() || {};
+  return String(u.username ? '@' + u.username : (u.name || t.name || 'খেলোয়াড়')).slice(0, 24);
+}
+// ওভার/আন্ডার একক অনুমান
+async function voteOU(req, b, id, now) {
+  const side = String(b.side || '');
+  if (!['o', 'u'].includes(side) || !/^[a-z]_[A-Za-z0-9_-]{1,60}$/.test(id)) throw new HttpErr(400, 'ভুল ভোট');
+  const F = await fb();
+  if (!F) throw new HttpErr(503, 'সার্ভার এখনো চালু হয়নি');
+  const { db, FV } = F;
+  const t = await who(F, req);
+  const m = await matchFor(id, now);
+  if (!m) throw new HttpErr(404, 'ম্যাচ পাওয়া যায়নি');
+  if (m.state !== 'upcoming' || m.start <= now) throw new HttpErr(400, 'খেলা শুরু হয়ে গেছে, এখন আর ভোট দেওয়া যাবে না');
+  const line = ouLine(m);
+  if (!line) throw new HttpErr(400, 'এই ম্যাচে বেশি/কম অনুমান নেই');
+  const name = await nameOf(F, t);
+  try { await db.doc(`liveVotes/${id}/o/${t.uid}`).create({ side, line, at: now, name, res: null }); }
+  catch (e) { if (e.code === 6 || /already exists/i.test(e.message)) throw new HttpErr(409, 'এই ম্যাচে বেশি/কম অনুমান আগেই দিয়েছেন'); throw e; }
+  const demo = !!m.demo;
+  const bt = db.batch();
+  bt.set(db.doc('liveVotes/' + id), { sport: m.sport, start: m.start, settled: demo, demo, ou: line, ['o' + side]: FV.increment(1) }, { merge: true });
+  const pu = { name, recent: { [id + '~ou']: side + '|' + m.start + '|' + line }, at: now };
+  if (!demo) Object.assign(pu, { n: FV.increment(1), pts: FV.increment(0), ok: FV.increment(0) });
+  bt.set(db.doc('livePoints/' + t.uid), pu, { merge: true });
+  await bt.commit();
+  return { ok: true, mk: 'ou', side, line };
+}
+
+// কম্বো: ২-৬টা আলাদা ম্যাচের অনুমান একসাথে; সব মিললে বোনাস
+export async function combo(req, now = Date.now()) {
+  const b = req.body && typeof req.body === 'object' ? req.body : JSON.parse(req.body || '{}');
+  const raw = Array.isArray(b.legs) ? b.legs.slice(0, 6) : [];
+  const F = await fb();
+  if (!F) throw new HttpErr(503, 'সার্ভার এখনো চালু হয়নি');
+  const { db } = F;
+  const t = await who(F, req);
+  if (raw.length < 2) throw new HttpErr(400, 'কম্বোতে অন্তত ২টা আলাদা ম্যাচ লাগবে');
+  const feed = await getFeed(now);
+  const legs = [], seen = new Set();
+  for (const l of raw) {
+    const id = String(l.id || ''), mk = l.mk === 'ou' ? 'ou' : 'w', pick = String(l.pick || '');
+    if (seen.has(id)) throw new HttpErr(400, 'একই ম্যাচ কম্বোতে একবারই রাখা যায়');
+    seen.add(id);
+    const m = feed.matches.find(x => x.id === id);
+    if (!m || m.demo) throw new HttpErr(400, 'কম্বোতে নমুনা বা হারিয়ে যাওয়া ম্যাচ রাখা যায় না');
+    if (m.state !== 'upcoming' || m.start <= now) throw new HttpErr(400, `${m.a.bn || m.a.name} বনাম ${m.b.bn || m.b.name} শুরু হয়ে গেছে`);
+    if (mk === 'w' && (!['a', 'b', 'd'].includes(pick) || (pick === 'd' && m.sport === 'cricket' && !m.test))) throw new HttpErr(400, 'ভুল অনুমান');
+    const line = mk === 'ou' ? ouLine(m) : null;
+    if (mk === 'ou' && (!line || !['o', 'u'].includes(pick))) throw new HttpErr(400, 'ভুল অনুমান');
+    legs.push({ id, mk, pick, line, start: m.start, t: `${m.a.bn || m.a.name} বনাম ${m.b.bn || m.b.name}` });
+  }
+  const open = await db.collection('liveCombo').where('uid', '==', t.uid).where('res', '==', null).limit(10).get();
+  if (open.size >= 5) throw new HttpErr(400, 'একসাথে সর্বোচ্চ ৫টা কম্বো চালু রাখা যায়, আগেরগুলোর ফল আসা পর্যন্ত অপেক্ষা করুন');
+  const name = await nameOf(F, t);
+  const bt = db.batch();
+  // প্রতিটা ম্যাচের ফল যেন মেলানো হয় (একক ভোট না থাকলেও)
+  for (const l of legs) bt.set(db.doc('liveVotes/' + l.id), { sport: l.id[0] === 'f' ? 'football' : 'cricket', start: l.start, settled: false, ...(l.line ? { ou: l.line } : {}) }, { merge: true });
+  const ref = db.collection('liveCombo').doc();
+  bt.set(ref, { uid: t.uid, name, legs, n: legs.length, bonus: COMBO[legs.length], at: now, last: Math.max(...legs.map(l => l.start)), res: null });
+  await bt.commit();
+  return { ok: true, id: ref.id, bonus: COMBO[legs.length] };
+}
+
 export async function me(req, now = Date.now()) {
   const F = await fb();
   if (!F) throw new HttpErr(503, 'সার্ভার এখনো চালু হয়নি');
@@ -464,9 +544,12 @@ export async function me(req, now = Date.now()) {
     await ref.update(Object.fromEntries(old.map(k => ['recent.' + k, F.FV.delete()]))).catch(() => {});
     old.forEach(k => delete rec[k]);
   }
-  const picks = Object.fromEntries(Object.entries(rec).map(([k, v]) => [k, String(v).split('|')[0]]));
-  const scores = Object.fromEntries(Object.entries(rec).filter(([, v]) => String(v).split('|')[2]).map(([k, v]) => [k, String(v).split('|')[2].split('-').map(Number)]));
-  return { name: d.name || null, pts: d.pts || 0, ok: d.ok || 0, n: d.n || 0, ex: d.ex || 0, week: (d.wk || {})[weekKey(now)] || 0, picks, scores };
+  const picks = Object.fromEntries(Object.entries(rec).filter(([k]) => !k.endsWith('~ou')).map(([k, v]) => [k, String(v).split('|')[0]]));
+  const ou = Object.fromEntries(Object.entries(rec).filter(([k]) => k.endsWith('~ou')).map(([k, v]) => { const p = String(v).split('|'); return [k.slice(0, -3), { side: p[0], line: +p[2] }]; }));
+  const cq = await F.db.collection('liveCombo').where('uid', '==', t.uid).limit(30).get();
+  const combos = cq.docs.map(d => ({ id: d.id, ...d.data() })).sort((x, y) => y.at - x.at).slice(0, 10).map(c => ({ id: c.id, legs: c.legs.map(l => ({ id: l.id, mk: l.mk, pick: l.pick, line: l.line, t: l.t, r: (c.lr || {})[l.id] ?? null })), bonus: c.bonus, res: c.res, at: c.at }));
+  const scores = Object.fromEntries(Object.entries(rec).filter(([k, v]) => !k.endsWith('~ou') && String(v).split('|')[2]).map(([k, v]) => [k, String(v).split('|')[2].split('-').map(Number)]));
+  return { name: d.name || null, pts: d.pts || 0, ok: d.ok || 0, n: d.n || 0, ex: d.ex || 0, cw: d.cw || 0, week: (d.wk || {})[weekKey(now)] || 0, picks, scores, ou, combos };
 }
 
 export async function board(period = 'all', now = Date.now()) {
@@ -493,7 +576,38 @@ async function settleDue(F, matches, now) {
     if ((!m || m.state !== 'done') && now - v.start > 8 * HOUR) m = await fetchResult(id) || m;
     if ((!m || m.state !== 'done') && now - v.start > 6 * DAY) m = { state: 'done', result: 'void' };
     if (!m || m.state !== 'done' || !m.result) continue;
-    await settleOne(F, id, m.result, m.sport === 'football' && m.a && m.a.g != null ? [m.a.g, m.b.g] : null);
+    await settleOne(F, id, m.result, m.sport === 'football' && m.a && m.a.g != null ? [m.a.g, m.b.g] : null, m.result === 'void' ? null : matchTotal(m));
+  }
+  await settleCombos(F, now).catch(e => console.error('combo settle', e));
+}
+
+async function settleCombos({ db, FV }, now) {
+  const q = await db.collection('liveCombo').where('res', '==', null).limit(25).get();
+  const wk = weekKey(now);
+  const cache = {};
+  const par = async id => (cache[id] = cache[id] || (await db.doc('liveVotes/' + id).get()).data() || {});
+  for (const d of q.docs) {
+    const c = d.data();
+    const lr = {};
+    let pending = false, lost = false, good = 0;
+    for (const l of c.legs) {
+      const p = await par(l.id);
+      if (!p.settled) { pending = true; continue; }
+      let r;
+      if (p.result === 'void') r = 'void';
+      else if (l.mk === 'w') r = l.pick === p.result;
+      else r = p.total == null ? 'void' : (l.pick === 'o' ? p.total > l.line : p.total < l.line);
+      lr[l.id] = r;
+      if (r === false) lost = true; else if (r === true) good++;
+    }
+    if (lost) { await d.ref.update({ res: false, lr, doneAt: now }); continue; }
+    if (pending && now - c.last < 7 * DAY) { if (Object.keys(lr).length) await d.ref.update({ lr }); continue; }
+    if (good < 2) { await d.ref.update({ res: 'void', lr, doneAt: now }); continue; }
+    const bonus = COMBO[good] || 0;
+    const bt = db.batch();
+    bt.update(d.ref, { res: true, lr, won: bonus, doneAt: now });
+    bt.set(db.doc('livePoints/' + c.uid), { pts: FV.increment(bonus), cw: FV.increment(1), wk: { [wk]: FV.increment(bonus) } }, { merge: true });
+    await bt.commit();
   }
 }
 
@@ -506,8 +620,23 @@ async function fetchResult(id) {
   return null;
 }
 
-async function settleOne({ db, FV }, id, result, score = null) {
+async function settleOne({ db, FV }, id, result, score = null, total = null) {
   const wk = weekKey();
+  // বেশি/কম অনুমান
+  for (let round = 0; round < 5; round++) {
+    const q = await db.collection(`liveVotes/${id}/o`).where('res', '==', null).limit(200).get();
+    if (q.empty) break;
+    const b = db.batch();
+    for (const v of q.docs) {
+      const x = v.data();
+      const voidIt = result === 'void' || total == null;
+      const ok = !voidIt && (x.side === 'o' ? total > x.line : total < x.line);
+      b.update(v.ref, { res: voidIt ? 'void' : ok });
+      if (ok) b.set(db.doc('livePoints/' + v.id), { pts: FV.increment(POINTS), ok: FV.increment(1), wk: { [wk]: FV.increment(POINTS) } }, { merge: true });
+    }
+    await b.commit();
+    if (q.size < 200) break;
+  }
   for (let round = 0; round < 5; round++) {
     const q = await db.collection(`liveVotes/${id}/v`).where('res', '==', null).limit(200).get();
     const b = db.batch();
@@ -519,7 +648,7 @@ async function settleOne({ db, FV }, id, result, score = null) {
       b.update(v.ref, { res: result === 'void' ? 'void' : ok, ...(exact ? { exact: true } : {}) });
       if (pts) b.set(db.doc('livePoints/' + v.id), { pts: FV.increment(pts), ok: FV.increment(1), ...(exact ? { ex: FV.increment(1) } : {}), wk: { [wk]: FV.increment(pts) } }, { merge: true });
     }
-    if (q.size < 200) b.set(db.doc('liveVotes/' + id), { settled: true, result, settledAt: Date.now() }, { merge: true });
+    if (q.size < 200) b.set(db.doc('liveVotes/' + id), { settled: true, result, total, settledAt: Date.now() }, { merge: true });
     await b.commit();
     if (q.size < 200) return;
   }
