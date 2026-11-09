@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>কানামাছি · খেলাঘর</title>
+<meta name="description" content="চোখ বাঁধা! গ্রামের উঠানে বন্ধুরা হাততালি দিয়ে ডাকছে। কানে শুনে খুঁজে ছুঁয়ে দিন। কানামাছি ভোঁ ভোঁ, যারে পাবি তারে ছোঁ!">
+<link rel="canonical" href="https://khelaghorbd.online/games/kanamachi/">
+<meta property="og:title" content="কানামাছি · খেলাঘর">
+<meta property="og:description" content="কানামাছি ভোঁ ভোঁ, যারে পাবি তারে ছোঁ! চোখ বাঁধা অবস্থায় কয়জনকে ধরতে পারবেন?">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/kanamachi.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/kanamachi.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+/* কানামাছি: চোখে লাল গামছা বাঁধা; নিচে সরু ফাঁক দিয়ে একটু মাটি দেখা যায়। শব্দ শুনে খুঁজতে হয়। */
+:root{--accent:#ffb347}
+.blind{position:absolute;inset:0;z-index:2;pointer-events:none;transition:opacity .35s}
+.blind .cloth{position:absolute;inset:0;background:
+  repeating-linear-gradient(176deg,rgba(0,0,0,.18) 0 3px,rgba(0,0,0,0) 3px 14px),
+  repeating-linear-gradient(86deg,rgba(255,255,255,.05) 0 2px,rgba(0,0,0,0) 2px 9px),
+  radial-gradient(120% 90% at 50% 40%,#9b2226 0,#6a1418 60%,#3a0a0c 100%);
+  -webkit-mask:linear-gradient(180deg,#000 0,#000 var(--gap,74%),rgba(0,0,0,.35) calc(var(--gap,74%) + 6%),rgba(0,0,0,.15) 100%);mask:linear-gradient(180deg,#000 0,#000 var(--gap,74%),rgba(0,0,0,.35) calc(var(--gap,74%) + 6%),rgba(0,0,0,.15) 100%)}
+.blind.off{opacity:0}
+.cv.dim{filter:blur(3px) brightness(.8)}
+.ear{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:3;font-size:.74rem;color:#fde2c4;background:rgba(0,0,0,.45);padding:3px 10px;border-radius:999px;pointer-events:none;white-space:nowrap}
+.dirc{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:3;display:flex;gap:4px;pointer-events:none}
+.dirc i{width:8px;height:22px;border-radius:4px;background:rgba(255,255,255,.12);transition:background .15s}
+.dirc i.on{background:#fbbf24;box-shadow:0 0 10px #fbbf24}
+.peek{background:radial-gradient(circle at 40% 30%,#fbcfe8,#db2777 60%,#831843)!important;width:64px!important;height:64px!important;font-size:.7rem!important}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="sc">০</b><small>পয়েন্ট · ধরা <span id="caught">০</span></small></div>
+    <div class="stat r"><b id="tm">৯০</b><small>সেকেন্ড বাকি</small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas class="cv dim" id="cv"></canvas>
+    <div class="blind" id="blind"><div class="cloth"></div></div>
+    <div class="ear" id="ear">🎧 কানে শুনে খুঁজুন · হেডফোনে সবচেয়ে ভালো</div>
+    <div class="dirc" id="dirc" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="joy" id="joy" hidden><i></i></div>
+    <div class="say" id="say" hidden></div>
+    <div class="chost" id="chatHost"></div>
+
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>কানামাছি</h1>
+        <p class="story">বিকেলে গ্রামের উঠানে পাড়ার বন্ধুরা। আপনার চোখে গামছা বাঁধা, সবাই চারপাশে হাততালি দিয়ে ডাকছে: "কানামাছি ভোঁ ভোঁ, যারে পাবি তারে ছোঁ!"</p>
+        <div class="rules">
+          <div>🎧 <b>কানে শুনুন</b>: যার হাততালি বা ডাক যেদিক থেকে আসে, সে সেদিকে। জোরে শোনা মানে কাছে। হেডফোন থাকলে আরো সহজ।</div>
+          <div>🕹️ পর্দার বাম দিকে আঙুল রেখে টানুন: <b>উপরে টানলে সামনে হাঁটা</b>, ডানে-বামে টানলে ঘোরা।</div>
+          <div>✋ কেউ খুব কাছে এলে <b>ধরো!</b> চাপুন। ফাঁকা জায়গায় চাপলে সবাই হাসবে।</div>
+          <div>👀 <b>উঁকি</b> দিলে এক সেকেন্ড সব দেখা যায়, কিন্তু চিটিং! ৩০ পয়েন্ট কাটা যাবে।</div>
+        </div>
+        <p>কাদের সাথে খেলবেন?</p>
+        <div class="lvl">
+          <button data-lv="0">ছোট ভাইবোন<small>ধীরে পালায়</small></button>
+          <button data-lv="1">পাড়ার বন্ধু<small>মাঝারি</small></button>
+          <button data-lv="2">চালাক দল<small>দ্রুত, কম ডাকে</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">মানুষ: Renderpeople (<a href="/games/racer/assets/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। মাটি, মাটির দেয়াল, টিন, গাছ, আকাশ: <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a> (CC0)।</p>
+      </div>
+    </div>
+
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">খেলা শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eC">০</b><span>জনকে ধরেছেন</span></div><div><b id="eP">০</b><span>বার উঁকি</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার খেলি</button><button class="gbtn ghost" id="menuBtn">দল বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">🙈</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+  <div class="ctl">
+    <button class="bigb peek" id="peekB"><span>👀</span>উঁকি</button>
+    <div class="hint" id="hint">বাম দিকে আঙুল টেনে হাঁটুন · কাছে এলে ধরো!</div>
+    <button class="bigb" id="catchB"><span>✋</span>ধরো!</button>
+  </div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { GLTFLoader } from "/js/vendor/addons/GLTFLoader.js";
+import { MeshoptDecoder } from "/js/vendor/addons/meshopt_decoder.module.js";
+import { clone as cloneSkinned } from "/js/vendor/addons/SkeletonUtils.js";
+import { TIERS, detectTier } from "/js/kh-quality.js";
+import { loadPeople } from "/js/kh-people.js";
+import { gameShell, sound, bn, pick, rnd, clamp } from "/js/kh-shell.js";
+
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'kanamachi', name: 'কানামাছি', lbTitle: 'সেরা কানামাছি', offMsg: 'বন্ধুরা মাঠে নেই, একটু পরে আসেন।' });
+const SND = sound(SH);
+
+/* ================= ৩ডি: গ্রামের উঠান ================= */
+const TIER = TIERS[detectTier()], LOW = TIER.id <= 1;
+let renderer = null; try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' }); } catch (e) {}
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(70, 1, .05, 400);
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.shadowMap.enabled = !LOW; renderer.shadowMap.type = THREE.PCFSoftShadowMap; }
+const ANISO = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1, texL = new THREE.TextureLoader(), KA = '/games/kanamachi/assets/', RA = '/games/racer/assets/';
+const tex = (u, srgb, r) => { const t = texL.load(u); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; t.repeat.set(r, r); return t; };
+const M = (c, o) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: .85 }, o || {}));
+// বিকেলের আকাশ আর আলো
+const skyT = texL.load(RA + 'sky.jpg'); skyT.colorSpace = THREE.SRGBColorSpace;
+const skyG = new THREE.SphereGeometry(200, 32, 16); skyG.scale(-1, 1, 1); scene.add(new THREE.Mesh(skyG, new THREE.MeshBasicMaterial({ map: skyT, fog: false, toneMapped: false })));
+scene.fog = new THREE.Fog('#c9b996', 25, 90);
+scene.add(new THREE.HemisphereLight('#ffeacc', '#5a4a30', 1.1));
+const sun = new THREE.DirectionalLight('#ffd9a0', 2.4); sun.position.set(-12, 14, 8); sun.castShadow = !LOW; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -14, right: 14, top: 14, bottom: -14 }); scene.add(sun);
+// উঠানের মাটি
+const ground = new THREE.Mesh(new THREE.CircleGeometry(60, 48), new THREE.MeshStandardMaterial({ map: tex(KA + 'ground_diff.jpg', true, 24), normalMap: tex(KA + 'ground_nor.jpg', false, 24), roughnessMap: tex(KA + 'ground_arm.jpg', false, 24), roughness: 1 }));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+// মাটির ঘর (টিনের চাল), পাশে আরেকটা ঘর
+const mudM = new THREE.MeshStandardMaterial({ map: tex(KA + 'mud_diff.jpg', true, 2), normalMap: tex(KA + 'mud_nor.jpg', false, 2), color: '#f2dcc0', roughness: 1 });
+const tinM = new THREE.MeshStandardMaterial({ map: tex(RA + 'tin_diff.jpg', true, 3), normalMap: tex(RA + 'tin_nor.jpg', false, 3), color: '#a9b1b6', roughness: .55, metalness: .6, side: THREE.DoubleSide });
+function hut(x, z, ry, w, d) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry;
+  const body = new THREE.Mesh(new THREE.BoxGeometry(w, 2.4, d), mudM); body.position.y = 1.2; body.castShadow = body.receiveShadow = true; g.add(body);
+  const plinth = new THREE.Mesh(new THREE.BoxGeometry(w + .5, .35, d + .5), mudM); plinth.position.y = .17; g.add(plinth);
+  for (const sd of [-1, 1]) { const r = new THREE.Mesh(new THREE.PlaneGeometry(w + .9, d / 2 + .8), tinM); r.position.set(0, 2.85, sd * (d / 4 + .2)); r.rotation.x = -Math.PI / 2 + sd * .55; r.castShadow = true; g.add(r); }
+  const door = new THREE.Mesh(new THREE.BoxGeometry(.9, 1.8, .06), M('#6b4a2c', { roughness: .7 })); door.position.set(-w * .2, .95, d / 2 + .02); g.add(door);
+  const win = new THREE.Mesh(new THREE.BoxGeometry(.7, .6, .06), M('#2b2016')); win.position.set(w * .25, 1.5, d / 2 + .02); g.add(win);
+  scene.add(g);
+}
+hut(0, -10.5, 0, 6.5, 3.6); hut(-10, -4, Math.PI / 2.4, 5, 3.2);
+// বাঁশের বেড়া
+{ const bm = M('#b49a5e', { roughness: .7 }), geo = new THREE.CylinderGeometry(.04, .05, 1.3, 6); const n = 120, im = new THREE.InstancedMesh(geo, bm, n), m4 = new THREE.Matrix4(); let k = 0;
+  for (let i = 0; i < n; i++) { const a = -.3 + i / n * Math.PI * 1.55, r = 12.5; m4.makeTranslation(Math.cos(a) * r + 2, .65, Math.sin(a) * r + 1); im.setMatrixAt(k++, m4); } im.castShadow = true; scene.add(im);
+  for (const y of [.45, 1.05]) for (let i = 0; i < 24; i++) { const a0 = -.3 + i / 24 * Math.PI * 1.55, a1 = -.3 + (i + 1) / 24 * Math.PI * 1.55, r = 12.5, x0 = Math.cos(a0) * r + 2, z0 = Math.sin(a0) * r + 1, x1 = Math.cos(a1) * r + 2, z1 = Math.sin(a1) * r + 1; const b = new THREE.Mesh(new THREE.CylinderGeometry(.03, .03, Math.hypot(x1 - x0, z1 - z0), 5), bm); b.position.set((x0 + x1) / 2, y, (z0 + z1) / 2); b.rotation.z = Math.PI / 2; b.rotation.y = -Math.atan2(z1 - z0, x1 - x0); scene.add(b); } }
+// চাপকল (টিউবওয়েল) আর খড়ের গাদা
+{ const g = new THREE.Group(); g.position.set(7.5, 0, -5.5); const cm = M('#2f6b3f', { roughness: .5, metalness: .5 });
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(.9, .9, .15, 20), M('#8a8580')); base.position.y = .07; g.add(base);
+  const pipe = new THREE.Mesh(new THREE.CylinderGeometry(.07, .08, 1.1, 10), cm); pipe.position.y = .6; g.add(pipe);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(.18, .25, .18), cm); head.position.y = 1.2; g.add(head);
+  const h = new THREE.Mesh(new THREE.CylinderGeometry(.02, .02, .7, 6), cm); h.rotation.z = Math.PI / 2.3; h.position.set(.3, 1.3, 0); g.add(h);
+  const sp = new THREE.Mesh(new THREE.CylinderGeometry(.03, .03, .25, 6), cm); sp.rotation.z = Math.PI / 2; sp.position.set(-.15, 1.05, 0); g.add(sp); g.traverse(o => o.castShadow = true); scene.add(g);
+  const hay = new THREE.Mesh(new THREE.ConeGeometry(1.6, 2.8, 16), M('#c9a24a', { roughness: 1 })); hay.position.set(-8, 1.4, 7); hay.castShadow = true; scene.add(hay); }
+// গাছ (Poly Haven-এর গাছের ছবি, ক্যামেরার দিকে মুখ)
+const treeMs = ['tree1.webp', 'tree2.webp'].map(f => { const t = texL.load(RA + f); t.colorSpace = THREE.SRGBColorSpace; return new THREE.MeshStandardMaterial({ map: t, alphaTest: .5, side: THREE.DoubleSide, roughness: 1 }); });
+const TREES = []; for (let i = 0; i < 22; i++) { const a = rnd(0, Math.PI * 2), r = rnd(16, 34), h = rnd(7, 12); const p = new THREE.Mesh(new THREE.PlaneGeometry(h * .9, h), treeMs[i % 2]); p.geometry.translate(0, h / 2, 0); p.position.set(Math.cos(a) * r, 0, Math.sin(a) * r); scene.add(p); TREES.push(p); }
+
+/* ================= বন্ধুরা ================= */
+const NAMES = ['রাজু', 'মিতু', 'সুমন', 'পলি', 'বাবু', 'তানিয়া'];
+const KIDS = []; let PEOPLE = null;
+const CALLS = ['এই যে আমি!', 'এদিকে আয়!', 'ধর তো দেখি!', 'পারবি না!', 'হি হি হি!', 'কানামাছি ভোঁ ভোঁ!'];
+async function loadKids() {
+  PEOPLE = await loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned);
+  for (let i = 0; i < 5; i++) { const h = PEOPLE.make(i, { scale: .8, shadow: !LOW }); scene.add(h.root); KIDS.push({ h, name: NAMES[i], x: 0, z: 0, tx: 0, tz: 0, vx: 0, vz: 0, call: rnd(1, 4), pitch: [520, 610, 700, 820, 940][i], moving: 0, look: 0 }); }
+  placeKids();
+}
+function placeKids() { KIDS.forEach((k, i) => { const a = i / KIDS.length * Math.PI * 2 + rnd(-.3, .3), r = rnd(3.5, 5.5); k.x = Math.cos(a) * r; k.z = Math.sin(a) * r; newTarget(k); }); }
+const R_PLAY = 7.2; // উঠানের ভেতরে খেলার সীমা
+function newTarget(k) { const a = rnd(0, Math.PI * 2), r = rnd(1.5, R_PLAY - .6); k.tx = Math.cos(a) * r; k.tz = Math.sin(a) * r; k.wait = rnd(.5, 2.5); }
+
+/* ================= শব্দ: প্রতিটা বন্ধুর জায়গা থেকে হাততালি আর ডাক ================= */
+function kidCall(k, loud) {
+  const a = SND.ac; if (!a) return; const p = SND.panner(k.x, 1.3, k.z); if (!p) return;
+  const n = loud ? 3 : 2; for (let i = 0; i < n; i++) SND.noise(.06, .9, 1700, 'bandpass', i * .17, p); // হাততালি
+  SND.tone(k.pitch, .22, 'triangle', .35, k.pitch * 1.35, n * .17 + .05, p); SND.tone(k.pitch * 1.2, .2, 'triangle', .3, k.pitch * .9, n * .17 + .3, p); // "এ-ই"
+  setTimeout(() => p.disconnect(), 2000);
+}
+function steps(k) { const p = SND.panner(k.x, .1, k.z); if (!p) return; SND.noise(.05, .25, 500, 'lowpass', 0, p); setTimeout(() => p.disconnect(), 600); }
+const SFX = {
+  whiff() { SND.noise(.25, .4, 900, 'bandpass'); SND.tone(300, .2, 'sine', .2, 180); },
+  laugh() { for (let i = 0; i < 5; i++) SND.tone(700 + Math.random() * 300, .09, 'triangle', .16, 500, i * .11); },
+  catch() { [523, 659, 784, 1047].forEach((f, i) => SND.tone(f, .2, 'triangle', .3, 0, i * .08)); },
+  bump() { SND.noise(.3, .6, 300); SND.tone(90, .25, 'sine', .4, 50); },
+  cheat() { SND.tone(880, .15, 'square', .1); SND.tone(660, .25, 'square', .1, 0, .16); },
+  end() { [784, 659, 523, 392].forEach((f, i) => SND.tone(f, .3, 'triangle', .25, 0, i * .15)); }
+};
+
+/* ================= খেলা ================= */
+// react: কাছে গেলে কত দেরিতে টের পায়; run: কতক্ষণ দৌড়ে তারপর হাঁপিয়ে থামে
+const LV = [{ n: 'ছোট ভাইবোন', spd: .8, flee: 1.6, call: [1.6, 3.2], gap: 70, react: [.7, 1.3], run: .9 }, { n: 'পাড়ার বন্ধু', spd: 1.05, flee: 2, call: [2.2, 4.2], gap: 74, react: [.45, .95], run: 1.2 }, { n: 'চালাক দল', spd: 1.3, flee: 2.4, call: [3, 5.5], gap: 77, react: [.25, .65], run: 1.5 }];
+let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0;
+const P = { x: 0, z: 0, yaw: 0, fwd: 0, turn: 0 };
+function newGame() { S = { t: 90, score: 0, caught: 0, peeks: 0, peekT: 0, revealT: 0, over: false, started: false, sayT: 0, combo: 0, lastCatch: -9 }; P.x = 0; P.z = 0; P.yaw = rnd(0, Math.PI * 2); placeKids(); hud(); }
+function say(t, col) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, 1400); }
+function pop(t, cls) { const e = document.createElement('div'); e.className = 'pop ' + (cls || ''); e.textContent = t; $('stage').appendChild(e); setTimeout(() => e.remove(), 1200); }
+function hud() { $('sc').textContent = bn(Math.max(0, Math.round(S.score))); $('caught').textContent = bn(S.caught); $('tm').textContent = bn(Math.ceil(Math.max(0, S.t))); }
+function setBlind(on) { $('blind').classList.toggle('off', !on); $('cv').classList.toggle('dim', on); }
+function tryCatch() {
+  if (!S || !S.started || S.over) return; SND.ac;
+  const fx = Math.sin(P.yaw), fz = -Math.cos(P.yaw); let best = null, bd = 1e9;
+  for (const k of KIDS) { const dx = k.x - P.x, dz = k.z - P.z, d = Math.hypot(dx, dz), ang = Math.acos(clamp((dx * fx + dz * fz) / (d || 1), -1, 1)); if (d < 1.35 && (ang < .8 || d < .7) && d < bd) { bd = d; best = k; } }
+  if (best) {
+    const quick = S.t > 0 && performance.now() / 1000 - S.lastCatch < 12; S.combo = quick ? S.combo + 1 : 1; S.lastCatch = performance.now() / 1000;
+    const pts = 100 + Math.min(4, S.combo - 1) * 25; /* টানা ধরলে বোনাস, সর্বোচ্চ +১০০ */ S.score += pts; S.caught++; SFX.catch(); say('ধরেছি! ' + best.name, '#86efac'); pop('+' + bn(pts) + (S.combo > 1 ? ' · টানা ' + bn(S.combo) : ''), 'good');
+    S.revealT = 1.2; setBlind(false); if (window.KHViral) KHViral.pop(best.name + ': ধুর! ধরা খাইলাম!', 'M3', '🙈 ' + best.name);
+    const a = rnd(0, Math.PI * 2); best.x = P.x + Math.cos(a) * 5; best.z = P.z + Math.sin(a) * 5; const r = Math.hypot(best.x, best.z); if (r > R_PLAY - .5) { best.x *= (R_PLAY - .5) / r; best.z *= (R_PLAY - .5) / r; } newTarget(best);
+  } else { S.score = Math.max(0, S.score - 10); S.combo = 0; SFX.whiff(); setTimeout(SFX.laugh, 250); pop('ফাঁকা! −১০', 'bad'); }
+  hud();
+}
+function peek() { if (!S || !S.started || S.over || S.peekT > 0) return; S.peeks++; S.score = Math.max(0, S.score - 30); S.peekT = 1; setBlind(false); SFX.cheat(); pop('👀 উঁকি! −৩০', 'bad'); setTimeout(() => { if (window.KHViral) KHViral.pop('চিটিং! চিটিং! উঁকি দিছে!', 'F2', '🙈 মিতু'); }, 300); hud(); }
+$('catchB').addEventListener('pointerdown', e => { e.preventDefault(); tryCatch(); });
+$('peekB').addEventListener('pointerdown', e => { e.preventDefault(); peek(); });
+// জয়স্টিক: পর্দার যেকোনো জায়গায় আঙুল রেখে টানুন
+let joy = null; const JR = 55;
+$('stage').addEventListener('pointerdown', e => { if (e.target.closest('.over,.chost,button')) return; joy = { id: e.pointerId, x: e.clientX, y: e.clientY }; const r = $('stage').getBoundingClientRect(); $('joy').style.left = (e.clientX - r.left) + 'px'; $('joy').style.top = (e.clientY - r.top) + 'px'; $('joy').hidden = false; $('joy').firstElementChild.style.transform = ''; SND.ac; });
+addEventListener('pointermove', e => { if (!joy || e.pointerId !== joy.id) return; let dx = e.clientX - joy.x, dy = e.clientY - joy.y; const d = Math.hypot(dx, dy); if (d > JR) { dx *= JR / d; dy *= JR / d; } $('joy').firstElementChild.style.transform = `translate(${dx}px,${dy}px)`; P.fwd = clamp(-dy / JR, -1, 1); P.turn = clamp(dx / JR, -1, 1); });
+const endJoy = e => { if (joy && e.pointerId === joy.id) { joy = null; P.fwd = P.turn = 0; $('joy').hidden = true; } };
+addEventListener('pointerup', endJoy); addEventListener('pointercancel', endJoy);
+const keys = {}; addEventListener('keydown', e => { keys[e.key] = 1; if (e.key === ' ' || e.key === 'Enter') tryCatch(); if (e.key === 'p') peek(); }); addEventListener('keyup', e => { keys[e.key] = 0; });
+
+function step(dt) {
+  S.t -= dt; const L = LV[lv];
+  // আমি: সামনে-পেছনে হাঁটা আর ঘোরা
+  const kf = P.fwd + (keys.ArrowUp ? 1 : 0) - (keys.ArrowDown ? 1 : 0), kt = P.turn + (keys.ArrowRight ? 1 : 0) - (keys.ArrowLeft ? 1 : 0);
+  P.yaw += clamp(kt, -1, 1) * dt * 2.2; const sp = clamp(kf, -.6, 1) * 2.1 * dt;
+  let nx = P.x + Math.sin(P.yaw) * sp, nz = P.z - Math.cos(P.yaw) * sp; const r = Math.hypot(nx, nz);
+  if (r > R_PLAY) { nx *= R_PLAY / r; nz *= R_PLAY / r; if (!S.bumpT || S.bumpT <= 0) { SFX.bump(); pop('ধাক্কা! বেড়ায় লাগল', 'bad'); S.bumpT = 1.2; } }
+  S.bumpT = (S.bumpT || 0) - dt; P.x = nx; P.z = nz;
+  // বন্ধুরা: ঘুরে বেড়ায়, কাছে গেলে সরে যায়, মাঝেমধ্যে ডাকে
+  for (const k of KIDS) {
+    const dx = k.x - P.x, dz = k.z - P.z, d = Math.hypot(dx, dz) || .01; let vx = 0, vz = 0;
+    if (d < L.flee && !k.alert && !(k.rest > 0)) k.alert = rnd(L.react[0], L.react[1]); // টের পেতে একটু দেরি
+    if (k.alert > 0 && (k.alert -= dt) <= 0) { k.alert = 0; k.run = L.run; }
+    if (d > L.flee * 1.6) k.alert = 0; k.rest = (k.rest || 0) - dt;
+    if (k.run > 0) { k.run -= dt; const s = L.spd * 1.6; vx = dx / d * s; vz = dz / d * s; k.wait = 0; if (k.run <= 0) { k.rest = rnd(1.2, 2.2); k.wait = k.rest; } } // দৌড়ে সরে, তারপর হাঁপিয়ে দাঁড়ায়
+    else if ((k.wait -= dt) <= 0) { const tx = k.tx - k.x, tz = k.tz - k.z, td = Math.hypot(tx, tz); if (td < .3) newTarget(k); else { vx = tx / td * L.spd * .6; vz = tz / td * L.spd * .6; } }
+    k.x += vx * dt; k.z += vz * dt; const kr = Math.hypot(k.x, k.z); if (kr > R_PLAY - .3) { k.x *= (R_PLAY - .3) / kr; k.z *= (R_PLAY - .3) / kr; if (d < L.flee) { k.tx = -k.x * .5; k.tz = -k.z * .5; k.wait = 0; } }
+    const mv = Math.hypot(vx, vz); k.moving = mv > .1; if (k.moving) { k.look = Math.atan2(vx, vz); if ((k.stepT = (k.stepT || 0) - dt) <= 0) { k.stepT = .32; steps(k); } }
+    if ((k.call -= dt) <= 0) { k.call = rnd(L.call[0], L.call[1]); kidCall(k, d < 3); if (Math.random() < .25 && window.KHViral && !S.revealT) KHViral.pop(pick(CALLS), 'M2', '🗣️ ' + k.name); }
+  }
+  // ঝাপসা গামছা ফিরে আসে
+  if (S.peekT > 0 && (S.peekT -= dt) <= 0 && !S.revealT) setBlind(true);
+  if (S.revealT > 0 && (S.revealT -= dt) <= 0) setBlind(true);
+  // সামনে কেউ কাছে থাকলে নিচের দাগ জ্বলে (কোন দিকে, কত কাছে আন্দাজ)
+  const bars = $('dirc').children; const fx = Math.sin(P.yaw), fz = -Math.cos(P.yaw); let lit = -1, ld = 9;
+  for (const k of KIDS) { const dx = k.x - P.x, dz = k.z - P.z, d = Math.hypot(dx, dz); if (d < 2.2 && d < ld) { const side = (dx * -fz + dz * fx) / d, front = (dx * fx + dz * fz) / d; if (front > 0) { ld = d; lit = Math.round(3 + side * 3); } } }
+  for (let i = 0; i < bars.length; i++) bars[i].classList.toggle('on', i === lit);
+  if ((S.hudT = (S.hudT || 0) - dt) <= 0) { S.hudT = .2; hud(); }
+  if (S.t <= 0) endGame();
+}
+const TIPS = ['জানেন কি? কানামাছি খেললে কান দিয়ে দিক বোঝার ক্ষমতা বাড়ে। চোখ বন্ধ রেখে চারপাশের শব্দ চিনতে পারা মস্তিষ্কের দারুণ ব্যায়াম।', 'জানেন কি? চোখ বেঁধে খেলার সময় খোলা মাঠে খেলুন; পুকুর, সিঁড়ি আর ধারালো জিনিস থেকে দূরে থাকুন।', 'জানেন কি? দুই কানে শব্দ পৌঁছানোর সময়ের সামান্য পার্থক্য দিয়েই মস্তিষ্ক বোঝে শব্দটা বাম না ডান দিক থেকে আসছে।'];
+function endGame() {
+  if (S.over) return; S.over = true; setBlind(false); SFX.end();
+  const sc = Math.max(0, Math.round(S.score));
+  $('endT').textContent = S.caught ? `${bn(S.caught)} জনকে ধরেছেন! 🙌` : 'কাউকে ধরতে পারলেন না 🙈';
+  const titles = [[900, 'কানামাছি সম্রাট 👑'], [600, 'কানে শোনা ওস্তাদ'], [350, 'পাড়ার চ্যাম্পিয়ন'], [150, 'নতুন কানামাছি'], [0, 'চোখ বাঁধা পথিক']];
+  $('endTitle').textContent = titles.find(x => sc >= x[0])[1];
+  $('endLine').textContent = S.peeks ? `${bn(S.peeks)} বার উঁকি দিয়েছেন, বন্ধুরা কিন্তু দেখে ফেলেছে! 😄` : 'একবারও উঁকি না দিয়ে, সৎভাবে খেলেছেন! 👏';
+  $('eS').textContent = bn(sc); $('eC').textContent = bn(S.caught); $('eP').textContent = bn(S.peeks); $('eTip').textContent = pick(TIPS);
+  setTimeout(() => { $('endO').hidden = false; if (sc >= 600 && window.KHViral) KHViral.confetti(); }, 900);
+  SH.saveScore(sc); lastScore = sc;
+}
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 78 : 64; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+const _v = new THREE.Vector3();
+function loop(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  if (S && S.started && !S.over) step(dt);
+  for (const k of KIDS) { k.h.root.position.set(k.x, 0, k.z); k.h.root.rotation.y = k.moving ? k.look : Math.atan2(P.x - k.x, P.z - k.z); k.h.update(dt, k.moving, k.moving ? 1.4 : 1); }
+  const playing = S && S.started && !S.over;
+  if (playing) { const bob = Math.sin(T0 * 7) * .02 * Math.abs(P.fwd); cam.position.set(P.x, 1.32 + bob, P.z); cam.rotation.set(-.06, -P.yaw, 0, 'YXZ'); SND.listener(P.x, 1.32, P.z, Math.sin(P.yaw), -Math.cos(P.yaw)); }
+  else { const a = T0 * .08; cam.position.set(Math.sin(a) * 9, 3.2, Math.cos(a) * 9); cam.lookAt(0, 1, 0); }
+  for (const t of TREES) t.rotation.y = Math.atan2(cam.position.x - t.position.x, cam.position.z - t.position.z);
+  if (renderer) renderer.render(scene, cam);
+  requestAnimationFrame(loop);
+}
+function start(level) {
+  lv = level; newGame(); S.started = true; ['startO', 'endO'].forEach(i => $(i).hidden = true); setBlind(true);
+  const gap = LV[lv].gap; $('blind').firstElementChild.style.setProperty('--gap', gap + '%'); SND.ac; say('কানামাছি ভোঁ ভোঁ!', '#fde68a');
+  setTimeout(() => { if (window.KHViral) KHViral.pop('কানামাছি ভোঁ ভোঁ, যারে পাবি তারে ছোঁ!', 'F2', '🗣️ সবাই একসাথে'); }, 600);
+}
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = () => start(+b.dataset.lv));
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `কানামাছিতে চোখ বেঁধে ${bn(S ? S.caught : 0)} জনকে ধরেছি, ${bn(lastScore)} পয়েন্ট! 🙈 আপনি পারবেন? ${location.origin}/games/kanamachi/`; try { navigator.clipboard.writeText(t).then(() => pop('কপি হয়েছে, শেয়ার করুন!', 'good')); } catch (e) {} };
+newGame(); setBlind(false); resize(); last = performance.now(); requestAnimationFrame(loop);
+if (renderer) loadKids().catch(e => console.warn('kids', e)); else $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+const MY = ['কই তোরা?', 'আমি কিন্তু শুনতেছি!', 'এইবার ধরবোই!', 'একটু ডাক দে না!'], OP = ['এই যে এখানে! হি হি', 'পারবি না!', 'বামে আয়, বামে!', 'আরেকটু সামনে!'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => { KHViral.pop(pick(OP), 'F2', '🗣️ বন্ধুরা', true); const k = pick(KIDS); if (k) kidCall(k, true); }, 1500); } });
+window.KHKana = { get S() { return S; }, P, KIDS, start, tryCatch, tick: n => { for (let i = 0; i < n; i++) if (S && S.started && !S.over) step(1 / 30); } };
+</script>
+<script src="/js/update.js"></script>
+</body></html>
