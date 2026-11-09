@@ -36,7 +36,9 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .score b{display:block;font:800 2rem/1 var(--display);letter-spacing:.02em}
 .score small{font-weight:700;font-size:.72rem;color:#dbe6f3}
 .combo{display:inline-block;margin-top:4px;background:rgba(255,210,63,.9);color:#2a1d00;font:800 .8rem var(--display);padding:2px 10px;border-radius:99px}
-.dist{position:absolute;left:max(12px,env(safe-area-inset-left,0px));top:calc(56px + env(safe-area-inset-top,0px));z-index:3;background:rgba(10,14,20,.5);border-left:4px solid #1f8a4c;border-radius:8px;padding:4px 10px;font-weight:700;font-size:.74rem;color:#e3efe6;pointer-events:none;backdrop-filter:blur(3px)}
+.dist svg{width:84px;height:84px;flex:none;border-radius:8px;background:rgba(0,0,0,.25)}.dist svg text{font:700 7px 'Noto Sans Bengali',sans-serif;fill:#fff;paint-order:stroke;stroke:rgba(0,0,0,.6);stroke-width:1.5px}
+.dist small{display:block;font-size:.66rem;color:#bfe8c9;margin-top:2px}
+.dist{display:flex;gap:8px;align-items:center;max-width:250px;position:absolute;left:max(12px,env(safe-area-inset-left,0px));top:calc(56px + env(safe-area-inset-top,0px));z-index:3;background:rgba(10,14,20,.5);border-left:4px solid #1f8a4c;border-radius:8px;padding:4px 10px;font-weight:700;font-size:.74rem;color:#e3efe6;pointer-events:none;backdrop-filter:blur(3px)}
 .dist b{font-family:var(--display);font-size:1rem;color:#fff}
 .com{position:absolute;left:50%;top:calc(100px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:3;max-width:min(92vw,520px);text-align:center;font-weight:700;font-size:.86rem;color:#fff;background:rgba(10,14,20,.45);padding:4px 12px;border-radius:12px;pointer-events:none;transition:opacity .4s}
 .com:empty{opacity:0}
@@ -147,7 +149,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
       <button class="hb" id="setB" aria-label="সেটিংস"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.6 7.6 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.6 7.6 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.6 7.6 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.6 7.6 0 0 0 1.7-1l2.5 1 2-3.5zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg></button>
       <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
     </div>
-    <div class="dist" id="dist" hidden>চট্টগ্রাম আর <b id="km">২৫০</b> কিমি</div>
+    <div class="dist" id="dist" hidden><svg viewBox="0 0 100 100" id="mapSvg" aria-label="ঢাকা-চট্টগ্রাম মানচিত্র"></svg><div>চট্টগ্রাম আর <b id="km">২৫০</b> কিমি<small id="mapNext"></small></div></div>
     <div class="com" id="com"></div>
     <div class="say" id="say" hidden></div>
     <div class="gauge" id="speedo" hidden>
@@ -363,10 +365,10 @@ function tex(name, srgb, rep) { const t = texL.load(A + name); if (srgb) t.color
 // আকাশ: Poly Haven-এর আসল আকাশের ছবি একটা গম্বুজে, আর একই আকাশের HDR থেকে আলো আর প্রতিফলন
 const skyTex = texL.load(A + 'sky.jpg'); skyTex.colorSpace = THREE.SRGBColorSpace;
 const dome = new THREE.Mesh(new THREE.SphereGeometry(1300, 64, 24, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.DoubleSide, fog: false, depthWrite: false, toneMapped: false }));
-dome.scale.z = -1; dome.renderOrder = -1; scene.add(dome);
+dome.scale.z = -1; dome.renderOrder = -1; scene.add(dome); dome.material.userData.noBend = true;
 // দিগন্তের নিচে গম্বুজ থেকে মাটির দিকে কুয়াশার রঙের একটা ফিতা, যাতে মাঠের শেষ মাথা দেখা না যায়
 const skirt = new THREE.Mesh(new THREE.CylinderGeometry(1290, 1290, 140, 48, 1, true), new THREE.MeshBasicMaterial({ color: HORIZON, side: THREE.BackSide, fog: false, depthWrite: false }));
-skirt.position.y = -60; skirt.renderOrder = -1; scene.add(skirt);
+skirt.position.y = -60; skirt.renderOrder = -1; scene.add(skirt); skirt.material.userData.noBend = true;
 if (renderer) {
   const pm = new THREE.PMREMGenerator(renderer);
   new RGBELoader(manager).load(A + 'sky_1k.hdr', h => {
@@ -398,7 +400,7 @@ const markTex = ctex(1024, 512, (x, w, h) => {
 markTex.wrapS = markTex.wrapT = THREE.RepeatWrapping; markTex.repeat.set(1, ROAD_L / SEG);
 const markMat = new THREE.MeshStandardMaterial({ map: markTex, transparent: true, roughness: .7, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
 function roadAt(cx, flip) {
-  const g = new THREE.PlaneGeometry(HALF * 2, ROAD_L); g.rotateX(-Math.PI / 2); g.translate(cx, 0, -ROAD_L / 2 + ROAD_BACK);
+  const g = new THREE.PlaneGeometry(HALF * 2, ROAD_L, 1, 124); g.rotateX(-Math.PI / 2); g.translate(cx, 0, -ROAD_L / 2 + ROAD_BACK);
   const r = new THREE.Mesh(g, roadMat); r.receiveShadow = true; world.add(r);
   const mg = g.clone(); if (flip) { mg.translate(-cx, 0, 0); mg.rotateY(Math.PI); mg.translate(cx, 0, 0); const uv = mg.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setY(i, 1 - uv.getY(i)); }
   const m = new THREE.Mesh(mg, markMat); m.position.y = .004; m.receiveShadow = true; world.add(m);
@@ -407,16 +409,16 @@ roadAt(0, false); roadAt(OPP, true);
 // মিডিয়ান: কংক্রিটের কার্ব আর মাঝে ঘাস
 const grassT = { map: tex('grass_diff.jpg', true, [1, 1]), normalMap: tex('grass_nor.jpg', false, [1, 1]), arm: tex('grass_arm.jpg', false, [1, 1]) };
 const grassMat = new THREE.MeshStandardMaterial({ map: grassT.map, normalMap: grassT.normalMap, roughnessMap: grassT.arm, aoMap: grassT.arm, color: '#93b26c', roughness: 1 });
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(2600, 2600), grassMat); ground.rotation.x = -Math.PI / 2; ground.position.y = -.06; ground.receiveShadow = true; scene.add(ground);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(2600, 2600, 1, 160), grassMat); ground.rotation.x = -Math.PI / 2; ground.position.y = -.06; ground.receiveShadow = true; scene.add(ground);
 [grassT.map, grassT.normalMap, grassT.arm].forEach(t => t.repeat.set(2600 / 5, 2600 / 5));
 const curbMat = new THREE.MeshStandardMaterial({ color: '#a7a49c', roughness: .9 });
-for (const cx of [HALF + .15, MED * 2 - HALF - .15]) { const c = new THREE.Mesh(new THREE.BoxGeometry(.3, .18, ROAD_L), curbMat); c.position.set(cx, .09, -ROAD_L / 2 + ROAD_BACK); c.receiveShadow = c.castShadow = true; world.add(c); }
+for (const cx of [HALF + .15, MED * 2 - HALF - .15]) { const c = new THREE.Mesh(new THREE.BoxGeometry(.3, .18, ROAD_L, 1, 1, 124), curbMat); c.position.set(cx, .09, -ROAD_L / 2 + ROAD_BACK); c.receiveShadow = c.castShadow = true; world.add(c); }
 // রেলিং (W-beam): বাইরের দুই পাশে
 const railMat = new THREE.MeshStandardMaterial({ color: '#c9ced3', metalness: .85, roughness: .38 });
 const postMat = new THREE.MeshStandardMaterial({ color: '#8f959b', metalness: .7, roughness: .5 });
 function railLine(x, face) {
   const sh = new THREE.Shape(); sh.moveTo(0, 0); sh.lineTo(.05 * face, .08); sh.lineTo(0, .16); sh.lineTo(.05 * face, .24); sh.lineTo(0, .32); sh.lineTo(.012 * face, .32); sh.lineTo(.062 * face, .24); sh.lineTo(.012 * face, .16); sh.lineTo(.062 * face, .08); sh.lineTo(.012 * face, 0);
-  const g = new THREE.ExtrudeGeometry(sh, { depth: ROAD_L, bevelEnabled: false }); g.translate(0, .45, -ROAD_L + ROAD_BACK);
+  const g = new THREE.ExtrudeGeometry(sh, { depth: ROAD_L, steps: 124, bevelEnabled: false }); g.translate(0, .45, -ROAD_L + ROAD_BACK);
   const m = new THREE.Mesh(g, railMat); m.position.x = x; m.castShadow = m.receiveShadow = true; world.add(m);
   const n = Math.floor(ROAD_L / 4), posts = new THREE.InstancedMesh(new THREE.BoxGeometry(.12, .9, .12), postMat, n), m4 = new THREE.Matrix4();
   for (let i = 0; i < n; i++) posts.setMatrixAt(i, m4.makeTranslation(x - .1 * face, .45, ROAD_BACK - i * 4)); posts.castShadow = true; posts.frustumCulled = false; world.add(posts);
@@ -480,7 +482,7 @@ async function setRide(key) {
       if (F.conf.tail) for (const sd of [-1, 1]) { const q = new THREE.Mesh(new THREE.PlaneGeometry(.28, .13), tailMat); q.position.set(sd * (F.conf.w / 2 - .2), F.conf.tail, F.size.z / 2 + .02); g.add(q); }
       rideModels[key] = g;
     }
-    body.add(rideModels[key]); const F = fleet[key]; carSize.set(F.conf.w / .72, F.size.y, F.size.z);
+    body.add(rideModels[key]); bendAll(); const F = fleet[key]; carSize.set(F.conf.w / .72, F.size.y, F.size.z);
   }
   $('paint').hidden = key !== 'sport'; drawRides(); applyCtl();
 }
@@ -527,7 +529,7 @@ async function buildProps() {
   for (let i = 0; i < n; i++) im.setMatrixAt(i, m4.makeTranslation(MED, 0, ROAD_BACK - len / 2 - i * len));
   im.castShadow = im.receiveShadow = true; im.frustumCulled = false; world.add(im);
   // দূরের অংশ: একই প্রোফাইলের সরল লম্বা ব্লক (কুয়াশায় পার্থক্য বোঝা যায় না)
-  const far = new THREE.Mesh(new THREE.BoxGeometry(bs.z < bs.x ? bs.z * .8 : bs.x * .8, bs.y, ROAD_L - near), new THREE.MeshStandardMaterial({ color: '#b8b4aa', roughness: .95 }));
+  const far = new THREE.Mesh(new THREE.BoxGeometry(bs.z < bs.x ? bs.z * .8 : bs.x * .8, bs.y, ROAD_L - near, 1, 1, 100), new THREE.MeshStandardMaterial({ color: '#b8b4aa', roughness: .95 }));
   far.position.set(MED, bs.y / 2, ROAD_BACK - near - (ROAD_L - near) / 2); far.castShadow = far.receiveShadow = true; world.add(far);
 }
 // গাছ: Poly Haven-এর আসল গাছ আগে থেকে ছবি করে রাখা (impostor), ক্যামেরার দিকে মুখ করে থাকে
@@ -547,13 +549,17 @@ function buildTrees() {
 }
 // রাস্তার পাশের সবুজ সাইনবোর্ড: "চট্টগ্রাম ... কিমি"
 const signTex = ctex(1024, 400, () => {}), signCtx = signTex.image.getContext('2d');
-function drawSign(kmLeft) {
+// ঢাকা-চট্টগ্রাম মহাসড়কের শহর (কাঁচপুর থেকে কিমি) আর মানচিত্রের অবস্থান (দ্রাঘিমা, অক্ষাংশ)
+const TOWNS = [['কাঁচপুর', 0, 90.52, 23.70], ['মেঘনা সেতু', 22, 90.61, 23.60], ['দাউদকান্দি', 38, 90.72, 23.53], ['গৌরীপুর', 52, 90.84, 23.46], ['চান্দিনা', 72, 90.98, 23.48],
+  ['কুমিল্লা', 97, 91.17, 23.44], ['চৌদ্দগ্রাম', 128, 91.31, 23.22], ['ফেনী', 152, 91.40, 23.01], ['মুহুরীগঞ্জ', 166, 91.47, 22.92], ['বারইয়ারহাট', 185, 91.57, 22.80],
+  ['মিরসরাই', 198, 91.57, 22.77], ['সীতাকুণ্ড', 222, 91.66, 22.62], ['কুমিরা', 232, 91.70, 22.52], ['চট্টগ্রাম', 250, 91.80, 22.36]];
+const nextTowns = km => TOWNS.filter(t => t[1] > km + .3);
+function drawSign(km) { // km = কাঁচপুর থেকে সাইনবোর্ডের দূরত্ব
   const x = signCtx, w = 1024, h = 400; x.fillStyle = '#0c6b3a'; x.fillRect(0, 0, w, h); x.strokeStyle = '#f2f2f2'; x.lineWidth = 12; x.strokeRect(16, 16, w - 32, h - 32);
-  x.fillStyle = '#fff'; x.textAlign = 'left'; x.font = "700 92px 'Noto Sans Bengali',sans-serif";
-  const cum = Math.max(0, kmLeft - 150);
-  x.fillText('চট্টগ্রাম', 60, 150); x.fillText(cum > 0 ? 'কুমিল্লা' : 'ফেনী', 60, 310);
-  x.textAlign = 'right'; x.fillText(bn(Math.round(kmLeft)) + ' কিমি', w - 60, 150); x.fillText(bn(Math.round(cum > 0 ? cum : Math.max(0, kmLeft - 95))) + ' কিমি', w - 60, 310);
-  x.fillStyle = '#fff'; x.beginPath(); x.moveTo(w / 2 - 30, 200); x.lineTo(w / 2 + 30, 200); x.lineTo(w / 2, 170); x.fill();
+  x.fillStyle = '#fff'; x.font = "700 88px 'Noto Sans Bengali',sans-serif";
+  const nt = nextTowns(km), a = nt[0] || TOWNS[TOWNS.length - 1], c = TOWNS[TOWNS.length - 1], b2 = a === c ? null : c;
+  [[a, 150], [b2, 310]].forEach(([t, y]) => { if (!t) return; x.textAlign = 'left'; x.fillText(t[0], 60, y); x.textAlign = 'right'; x.fillText(bn(Math.max(1, Math.round(t[1] - km))) + ' কিমি', w - 60, y); });
+  x.beginPath(); x.moveTo(w / 2 - 30, 200); x.lineTo(w / 2 + 30, 200); x.lineTo(w / 2, 170); x.fill();
   signTex.needsUpdate = true;
 }
 const sign = new THREE.Group(); {
@@ -570,6 +576,121 @@ const limSign = new THREE.Group(); {
   limSign.position.set(-HALF - 1.2, 0, -900); scene.add(limSign);
 }
 function M(c, r, m) { return new THREE.MeshStandardMaterial({ color: c, roughness: r ?? .8, metalness: m ?? 0 }); }
+
+/* ================= আঁকাবাঁকা রাস্তা (দেখার বাঁক) ================= */
+// সব কিছুর শীর্ষবিন্দু ক্যামেরা থেকে দূরত্ব অনুযায়ী পাশে আর উপর-নিচে সরে: সামনের রাস্তা বাঁক নেয়, উঁচু-নিচু হয়
+const BEND = { value: new THREE.Vector2() }, bendTo = new THREE.Vector2();
+const BEND_CHUNK = THREE.ShaderChunk.project_vertex.replace('gl_Position =', '{ float bz = min(0.0, mvPosition.z + 6.0); mvPosition.x += uBend.x * bz * bz; mvPosition.y += uBend.y * bz * bz; }\ngl_Position =');
+function bendMat(m) {
+  if (!m || m.userData.bent || m.userData.noBend) return; m.userData.bent = true;
+  const prev = m.onBeforeCompile; // আগের কাস্টম শেডার (যেমন সাইনবোর্ডের atlas) থাকলে সেটাও চলবে
+  m.onBeforeCompile = (sh, r) => { prev.call(m, sh, r); sh.uniforms.uBend = BEND; sh.vertexShader = 'uniform vec2 uBend;\n' + sh.vertexShader.replace('#include <project_vertex>', BEND_CHUNK); };
+  m.customProgramCacheKey = () => 'bend' + (m.userData.key || ''); m.needsUpdate = true;
+}
+const bendAll = () => scene.traverse(o => { if (o.material) [].concat(o.material).forEach(bendMat); });
+let bendLeft = 300;
+function bendStep(st, dt) {
+  if ((bendLeft -= st.v * dt) <= 0) { // নতুন বাঁক: কখনো সোজা, কখনো বামে-ডানে, হালকা উঁচু-নিচু
+    bendLeft = rnd(350, 750); const r = Math.random();
+    bendTo.set(r < .3 ? 0 : (Math.random() < .5 ? -1 : 1) * rnd(.00015, .00048), rnd(-.00006, .0001));
+  }
+  BEND.value.x += (bendTo.x - BEND.value.x) * Math.min(1, dt * .35); BEND.value.y += (bendTo.y - BEND.value.y) * Math.min(1, dt * .3);
+}
+
+/* ================= কালভার্ট: রাস্তার নিচ দিয়ে খাল ================= */
+const stripeTex = ctex(256, 64, (x, w, h) => { x.fillStyle = '#f2f0ea'; x.fillRect(0, 0, w, h); x.fillStyle = '#151515'; for (let i = 0; i < 8; i++) if (i % 2) x.fillRect(i * w / 8, 0, w / 8, h); for (let i = 0; i < 900; i++) { x.fillStyle = `rgba(90,80,60,${Math.random() * .15})`; x.fillRect(Math.random() * w, Math.random() * h, 2, 2); } });
+const culvert = new THREE.Group(); {
+  const water = new THREE.Mesh(new THREE.PlaneGeometry(260, 7, 26, 1), new THREE.MeshStandardMaterial({ color: '#33402f', roughness: .06, metalness: .35, envMapIntensity: 1.3 }));
+  water.rotation.x = -Math.PI / 2; water.position.set(10, -.03, 0); water.receiveShadow = true; culvert.add(water);
+  for (const dz of [-4.1, 4.1]) { const bank = new THREE.Mesh(new THREE.PlaneGeometry(260, 1.4, 26, 1), M('#5a4a33', 1)); bank.rotation.x = -Math.PI / 2; bank.position.set(10, -.035, dz); culvert.add(bank); }
+  const wallM = new THREE.MeshStandardMaterial({ map: stripeTex, roughness: .9 });
+  for (const x of [-HALF - .45, HALF + .62, MED * 2 - HALF - .62, OPP + HALF + .45]) { const w = new THREE.Mesh(new THREE.BoxGeometry(.32, .85, 9.5), wallM); w.position.set(x, .43, 0); w.castShadow = w.receiveShadow = true; culvert.add(w); }
+  culvert.position.z = -600; scene.add(culvert);
+}
+
+/* ================= রাস্তার পাশের বাজার ================= */
+const SHOPS = ['মায়ের দোয়া হোটেল', 'ভাই ভাই স্টোর', 'চা-পান-বিড়ি', 'নিউ ফার্মেসি', 'আল্লাহর দান ভ্যারাইটিজ', 'মামা হোটেল', 'বিসমিল্লাহ মিষ্টান্ন', 'রহমান টেলিকম', 'জননী ক্লথ স্টোর', 'হাজী বিরিয়ানি'];
+const SIGN_BG = ['#c0392b', '#1f6f9c', '#16803c', '#7a3fa0', '#d35400', '#0f766e'];
+const signAtlas = ctex(1024, 1024, () => {}), saCtx = signAtlas.image.getContext('2d');
+function drawSignAtlas() { // ১০টা দোকানের সাইনবোর্ড এক ছবিতে (প্রতিটা ১০২৪×১০২)
+  SHOPS.forEach((n, i) => { const y = i * 102.4; saCtx.fillStyle = SIGN_BG[i % SIGN_BG.length]; saCtx.fillRect(0, y, 1024, 102); saCtx.fillStyle = '#ffe9a8'; saCtx.fillRect(0, y + 92, 1024, 10);
+    saCtx.fillStyle = '#fff'; saCtx.textAlign = 'center'; saCtx.font = "800 64px 'Noto Sans Bengali',sans-serif"; saCtx.fillText(n, 512, y + 72); });
+  signAtlas.needsUpdate = true;
+}
+drawSignAtlas();
+const bazaarSignTex = ctex(1024, 300, () => {}), bsCtx = bazaarSignTex.image.getContext('2d'); let bazaarName = 'দাউদকান্দি';
+function drawBazaarSign() { const x = bsCtx; x.fillStyle = '#123e8a'; x.fillRect(0, 0, 1024, 300); x.strokeStyle = '#fff'; x.lineWidth = 10; x.strokeRect(14, 14, 996, 272); x.fillStyle = '#fff'; x.textAlign = 'center'; x.font = "800 104px 'Noto Sans Bengali',sans-serif"; x.fillText(bazaarName + ' বাজার', 512, 140); x.font = "700 66px 'Noto Sans Bengali',sans-serif"; x.fillStyle = '#ffd23f'; x.fillText('সামনে লোকজন, গতি কমান', 512, 240); bazaarSignTex.needsUpdate = true; }
+drawBazaarSign();
+const bazaar = new THREE.Group(); bazaar.position.z = -2000; scene.add(bazaar);
+const BZ_N = 10, BZ_LEN = 135;
+async function buildBazaar() {
+  const wallT = { map: tex('wall_diff.jpg', true, [1.5, 1]), normalMap: tex('wall_nor.jpg', false, [1.5, 1]) }, tinT = { map: tex('tin_diff.jpg', true, [2, 2]), normalMap: tex('tin_nor.jpg', false, [2, 2]) };
+  const spots = []; // প্রতিটা দোকান: x (সামনের দেয়াল), z, দিক (১ = সামনে +x)
+  for (const side of [-1, 1]) for (let i = 0; i < BZ_N; i++) { const face = side < 0 ? 1 : -1, x = side < 0 ? -HALF - 6.5 : OPP + HALF + 6.5; spots.push({ x, z: -i * (BZ_LEN / BZ_N) - rnd(0, 2), face, open: Math.random() < .55, sign: Math.floor(Math.random() * SHOPS.length) }); }
+  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3(), col = new THREE.Color();
+  const D = 5, H = 3.3, Wd = 11.5;
+  const mk = (geo, mat, n) => { const im = new THREE.InstancedMesh(geo, mat, n); im.castShadow = im.receiveShadow = true; im.frustumCulled = false; bazaar.add(im); return im; };
+  // দেয়াল (রং আলাদা), টিনের চাল, সাইনবোর্ড, ভেতরের অন্ধকার, শাটার
+  const bodyG = new THREE.BoxGeometry(D, H, Wd); bodyG.translate(0, H / 2, 0);
+  const bodies = mk(bodyG, new THREE.MeshStandardMaterial({ ...wallT, roughness: .95 }), spots.length);
+  const roofG = new THREE.BoxGeometry(D + 2.2, .05, Wd + .4); roofG.translate(.9, 0, 0);
+  const roofs = mk(roofG, new THREE.MeshStandardMaterial({ ...tinT, roughness: .5, metalness: .6, color: '#c9c2b4' }), spots.length);
+  const signG = new THREE.PlaneGeometry(Wd * .92, 1); const signs = mk(signG, new THREE.MeshStandardMaterial({ map: signAtlas, roughness: .6 }), spots.length); signs.castShadow = false;
+  // সাইনবোর্ডের UV: প্রতিটা ইনস্ট্যান্সে আলাদা দোকানের নাম (atlas-এর সারি)
+  const uvOff = new Float32Array(spots.length); signG.setAttribute('row', new THREE.InstancedBufferAttribute(uvOff, 1));
+  signs.material.userData.key = 'atlas'; signs.material.onBeforeCompile = sh => { sh.vertexShader = 'attribute float row;\n' + sh.vertexShader.replace('#include <uv_vertex>', '#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv = vec2(vMapUv.x, (vMapUv.y + (9.0 - row)) / 10.0);\n#endif'); };
+  const darkG = new THREE.PlaneGeometry(Wd * .9, 2.5); darkG.translate(0, 1.25, 0); const shelfTex = ctex(512, 256, (x, w, h) => { // খোলা দোকানের ভেতর: তাকে রঙিন প্যাকেট, বোতল, বয়াম
+    x.fillStyle = '#2a1d12'; x.fillRect(0, 0, w, h); const C = ['#e53935', '#fdd835', '#43a047', '#1e88e5', '#fb8c00', '#8e24aa', '#f5f5f5', '#6d4c41'];
+    for (let r = 0; r < 4; r++) { const y = 20 + r * 58; x.fillStyle = '#5d4030'; x.fillRect(0, y + 44, w, 8); for (let i = 0; i < 26; i++) { const bw = 8 + Math.random() * 14, bh = 18 + Math.random() * 24; x.fillStyle = C[Math.floor(Math.random() * C.length)]; x.fillRect(6 + i * 19 + Math.random() * 4, y + 44 - bh, bw, bh); } }
+    const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(0,0,0,.35)'); g.addColorStop(1, 'rgba(0,0,0,.1)'); x.fillStyle = g; x.fillRect(0, 0, w, h); });
+  const darks = mk(darkG, new THREE.MeshStandardMaterial({ map: shelfTex, roughness: .9 }), spots.length); darks.castShadow = false;
+  const sh = await load('shutter.glb'); sh.scene.updateMatrixWorld(true); let sg = null, smat = null; sh.scene.traverse(o => { if (o.isMesh && !sg) { sg = toFloat(o.geometry).applyMatrix4(o.matrixWorld); smat = o.material; } });
+  sg.computeBoundingBox(); const sb = sg.boundingBox; sg.translate(-(sb.min.x + sb.max.x) / 2, -sb.min.y, -(sb.min.z + sb.max.z) / 2);
+  smat.side = THREE.DoubleSide; const shutters = mk(sg, smat, spots.length * 2);
+  let ns = 0;
+  spots.forEach((p, i) => {
+    const ry = p.face > 0 ? Math.PI / 2 : -Math.PI / 2, cx = p.x - p.face * D / 2; e.set(0, 0, 0); q.setFromEuler(e);
+    v.set(cx, 0, p.z); m4.compose(v, q, sc.set(1, 1, 1)); bodies.setMatrixAt(i, m4); bodies.setColorAt(i, col.set(pick(['#efe2c2', '#d9ead9', '#f5cfb0', '#dcd6ee', '#f4ecb0', '#e4e4e4'])));
+    e.set(0, 0, p.face * -.08); q.setFromEuler(e); v.set(cx + p.face * .05, H + .02, p.z); m4.compose(v, q, sc.set(p.face, 1, 1)); roofs.setMatrixAt(i, m4);
+    e.set(0, ry, 0); q.setFromEuler(e); v.set(p.x + p.face * .03, H - .55, p.z); m4.compose(v, q, sc.set(1, 1, 1)); signs.setMatrixAt(i, m4); uvOff[i] = p.sign;
+    v.set(p.x + p.face * .02, .05, p.z); m4.compose(v, q, sc.set(1, 1, 1)); darks.setMatrixAt(i, m4);
+    // দুটো শাটার পাশাপাশি; খোলা দোকানে শাটার গুটানো (উপরে ছোট)
+    for (const off of [-Wd / 4, Wd / 4]) { v.set(p.x + p.face * .06, p.open ? 2.1 : .05, p.z + off); m4.compose(v, q, sc.set(Wd / 2 / 3.08 * .98, p.open ? .25 : 1.05, 1)); shutters.setMatrixAt(ns++, m4); }
+  });
+  shutters.count = ns; signG.attributes.row.needsUpdate = true; [bodies, roofs, signs, darks, shutters].forEach(im => { im.instanceMatrix.needsUpdate = true; if (im.instanceColor) im.instanceColor.needsUpdate = true; });
+  // চায়ের দোকানের সামনে প্লাস্টিকের চেয়ার আর কাঠের ক্রেট
+  const props = async (f, n, place) => { const g = await load(f); g.scene.updateMatrixWorld(true); let pg = null, pm = null; g.scene.traverse(o => { if (o.isMesh && !pg) { pg = toFloat(o.geometry).applyMatrix4(o.matrixWorld); pm = o.material; } }); pg.computeBoundingBox(); pg.translate(0, -pg.boundingBox.min.y, 0); const im = mk(pg, pm, n); for (let i = 0; i < n; i++) { place(i, v, e); q.setFromEuler(e); m4.compose(v, q, sc.set(1, 1, 1)); im.setMatrixAt(i, m4); } im.instanceMatrix.needsUpdate = true; };
+  const open = spots.filter(p => p.open);
+  await props('chair.glb', open.length * 2, (i, v, e) => { const p = open[i >> 1]; v.set(p.x + p.face * rnd(1, 2.4), 0, p.z + rnd(-4, 4)); e.set(0, rnd(0, 6.28), 0); });
+  await props('crate.glb', open.length * 3, (i, v, e) => { const p = open[i % open.length]; v.set(p.x + p.face * rnd(.4, 1.2), (i % 3 === 2) ? .35 : 0, p.z + rnd(-5, 5)); e.set(0, rnd(-.3, .3), 0); });
+  // বাজারের নামের বড় সাইন (রাস্তার বামে, বাজারের আগে)
+  const bs = new THREE.Mesh(new THREE.BoxGeometry(5.6, 1.65, .1), [M('#555', .6, .7), M('#555', .6, .7), M('#555', .6, .7), M('#555', .6, .7), new THREE.MeshStandardMaterial({ map: bazaarSignTex, roughness: .55 }), M('#555', .6, .7)]);
+  bs.position.set(-HALF - 3.6, 3.6, 40); bs.castShadow = true; bazaar.add(bs);
+  for (const dx of [-2.4, 2.4]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(.08, .08, 4.4, 8), M('#8a9096', .45, .8)); p.position.set(-HALF - 3.6 + dx, 2.2, 40.1); bazaar.add(p); }
+}
+function placeBazaar(st, first) {
+  bazaar.position.z = st.z - (first ? rnd(900, 1400) : rnd(2600, 4200));
+  const km = (st.dist + (st.z - bazaar.position.z)) / 1000, nt = TOWNS.slice().sort((a, b) => Math.abs(a[1] - km) - Math.abs(b[1] - km))[0];
+  bazaarName = nt[0]; drawBazaarSign();
+}
+
+/* ================= মানচিত্র (ঢাকা → চট্টগ্রাম) ================= */
+const mapXY = (lon, lat) => [6 + (lon - 90.45) / (91.88 - 90.45) * 88, 6 + (23.76 - lat) / (23.76 - 22.30) * 88];
+function buildMap() {
+  const pts = TOWNS.map(t => mapXY(t[2], t[3]).map(v => v.toFixed(1)).join(',')).join(' ');
+  const lbl = TOWNS.filter(t => ['কাঁচপুর', 'কুমিল্লা', 'ফেনী', 'চট্টগ্রাম'].includes(t[0])).map(t => { const [x, y] = mapXY(t[2], t[3]); return `<circle cx="${x}" cy="${y}" r="2.6" fill="#fff"/><text x="${x - 4}" y="${y + 1.5}" text-anchor="end">${t[0] === 'কাঁচপুর' ? 'ঢাকা' : t[0]}</text>`; }).join('');
+  $('mapSvg').innerHTML = `<path d="M10 20 Q30 6 52 14 L96 40 L96 98 L58 98 Q40 76 22 60 Z" fill="rgba(46,125,50,.25)"/><path d="M60 98 Q80 78 98 72 L98 98Z" fill="rgba(30,90,160,.35)"/><polyline points="${pts}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><polyline id="mapDone" points="" fill="none" stroke="#4ade80" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>${lbl}<circle id="mapMe" r="4" fill="#ffd23f" stroke="#1a1a1a" stroke-width="1.2"/>`;
+}
+function mapPos(km) {
+  km = clamp(km, 0, 250); let i = 0; while (i < TOWNS.length - 2 && TOWNS[i + 1][1] < km) i++;
+  const a = TOWNS[i], b = TOWNS[i + 1], f = (km - a[1]) / (b[1] - a[1]), lon = a[2] + (b[2] - a[2]) * f, lat = a[3] + (b[3] - a[3]) * f;
+  return { xy: mapXY(lon, lat), i };
+}
+function drawMap(km) {
+  const { xy, i } = mapPos(km), me = $('mapMe'); if (!me) return; me.setAttribute('cx', xy[0].toFixed(1)); me.setAttribute('cy', xy[1].toFixed(1));
+  $('mapDone').setAttribute('points', TOWNS.slice(0, i + 1).map(t => mapXY(t[2], t[3]).map(v => v.toFixed(1)).join(',')).concat([xy.map(v => v.toFixed(1)).join(',')]).join(' '));
+  const nt = nextTowns(km)[0]; $('mapNext').textContent = nt ? `পরের শহর: ${nt[0]} · ${bn(Math.max(0, nt[1] - km).toFixed(1))} কিমি` : 'চট্টগ্রাম পৌঁছে গেছেন!';
+}
 
 /* ================= খেলার অবস্থা ================= */
 const LV = [
@@ -614,7 +735,8 @@ function resetWorld(level) {
   S = newState(level); for (let i = 0; i < LV[level].dens; i++) spawnCar(S, true); for (let i = 0; i < LV[level].opp; i++) spawnCar(S, true, true);
   S.cars.forEach((c, i) => c.z = S.z - 60 - i * (420 / LV[level].dens) - rnd(0, 15));
   S.opp.forEach(c => c.z = S.z - rnd(-60, 650));
-  drawSign(S.signKm); sign.position.z = S.z - 380; limSign.position.z = S.z - 700;
+  culvert.position.z = S.z - 500; placeBazaar(S, true); BEND.value.set(0, 0); bendTo.set(0, 0); bendLeft = 300;
+  S.signKm = .4; drawSign(S.signKm); sign.position.z = S.z - 380; limSign.position.z = S.z - 700;
   TREES.forEach(t => t.z = S.z - rnd(-40, 700));
   if (player) { player.position.set(S.x, 0, S.z); player.rotation.set(0, 0, 0); player.userData.body.rotation.set(0, 0, 0); player.userData.body.position.set(0, 0, 0); }
 }
@@ -629,6 +751,7 @@ const COM = {
   scrape: ['রেলিংয়ে ঘষা! রং উঠে গেল!', 'আরে আরে, রেলিং তো আপনার শত্রু না!'],
   brake: ['ব্রেক! বুদ্ধিমানের কাজ।', 'দেখে শুনে, তাড়াহুড়া নাই।'],
   crash: ['ধুম! গাড়ি গ্যারেজে, আপনি থানায়!', 'ঠুস! ইন্স্যুরেন্স কোম্পানি আজকে কাঁদবে!', 'হায় হায়! নতুন গাড়ির বাম্পার শেষ!', 'ধাক্কা! চট্টগ্রাম যাওয়া আজকে আর হলো না!'],
+  bazaar: ['{k} বাজার! লোকজন রাস্তা পার হয়, উল্টো পথে রিকশা আসে, সাবধান!', '{k} বাজারে চায়ের দোকান, গরম সিঙ্গারা! কিন্তু থামা যাবে না!', 'সামনে {k} বাজার, হর্ন বাজান, চোখ খোলা রাখেন!'],
   wrong: ['সাবধান! উল্টো পথে আসতেছে, এই দেশে এটাই নিয়ম!', 'রং সাইডে রিকশা! হর্ন দেন, ব্রেক রেডি রাখেন!', 'উল্টো পথের সিএনজি! মামা, এটা হাইওয়ে, গলি না!'],
   sign: ['চট্টগ্রাম আর মাত্র {k} কিমি!', 'সাইনবোর্ড বলতেছে আরো {k} কিমি, আপনার গতিতে এক কাপ চায়ের সময়!']
 };
@@ -675,6 +798,8 @@ function step(dt) {
     if (Math.abs(st.x) > lim) { st.x = Math.sign(st.x) * lim; st.lat = -st.lat * .25; st.v *= 1 - 1.8 * dt; st.shake = .25; if (st.scrapeT <= 0) { sfx('scrape'); st.scrapeT = .35; if (Math.random() < .5) com('scrape'); st.score = Math.max(0, st.score - 25); pop('-২৫ ঘষা!'); } }
     st.scrapeT -= dt;
     st.z -= st.v * dt; st.dist += st.v * dt;
+    // বাঁকে গাড়ি বাইরের দিকে সরে যায়: স্টিয়ারিং দিয়ে ধরে রাখতে হয়
+    bendStep(st, dt); st.x -= BEND.value.x * st.v * st.v * 1.6 * dt;
     // পয়েন্ট: দূরত্ব, ১০০+ গতিতে বেশি
     const fast = st.v > VMAX * .58; st.score += st.v * dt * (fast ? .5 : .25) * (1 + Math.min(2, st.dist / 20000)) * R.mult;
     if (fast) st.fastT += dt; else st.fastT = 0;
@@ -732,16 +857,21 @@ function step(dt) {
       }
     }
   }
+  // কালভার্ট আর বাজার পেছনে পড়লে সামনে নতুন জায়গায়
+  if (culvert.position.z > st.z + 30) culvert.position.z = st.z - rnd(700, 1400);
+  if (bazaar.position.z - BZ_LEN > st.z + 40) placeBazaar(st, false);
+  const inBazaar = st.z < bazaar.position.z + 120 && st.z > bazaar.position.z - BZ_LEN - 60;
+  if (inBazaar && !st.bzSaid) { st.bzSaid = true; com('bazaar', bazaarName); if (st.wrongT > 4) st.wrongT = rnd(1, 4); } else if (!inBazaar) st.bzSaid = false;
   // উল্টো দিকের গাড়ি পাশ দিয়ে গেলে শোঁ শব্দ (ডান লেনে থাকলে বেশি জোরে)
   for (const c of st.opp) if (!c.passed && c.z > st.z) { c.passed = true; const dx = Math.abs(c.x - st.x); if (dx < 11 && !st.crashed) sfx('pass', dx < 8); }
   // সাইনবোর্ড আর গতিসীমা চিহ্ন পুনর্ব্যবহার
-  if (sign.position.z > st.z + 30) { st.signKm = Math.max(1, 250 - st.dist / 1000 - 1); drawSign(st.signKm); sign.position.z = st.z - 900; }
+  if (sign.position.z > st.z + 30) { st.signKm = st.dist / 1000 + .9; drawSign(st.signKm); sign.position.z = st.z - 900; }
   if (limSign.position.z > st.z + 30) limSign.position.z = st.z - rnd(500, 800);
   if (st.dist / 1000 > st.nextKm) { st.nextKm += 5; com('sign', bn(Math.round(250 - st.dist / 1000))); }
   // দূরে চলে গেলে সব কিছু পেছনে টেনে আনা (ফ্লোটিং অরিজিন), যাতে বহু দূর গেলেও কাঁপুনি না হয়
   if (st.z < -4000) rebase(4800);
 }
-function rebase(d) { S.z += d; S.cars.forEach(c => c.z += d); S.opp.forEach(c => c.z += d); TREES.forEach(t => t.z += d); sign.position.z += d; limSign.position.z += d; camPos.z += d; camLook.z += d; cam.position.z += d; }
+function rebase(d) { culvert.position.z += d; bazaar.position.z += d; S.z += d; S.cars.forEach(c => c.z += d); S.opp.forEach(c => c.z += d); TREES.forEach(t => t.z += d); sign.position.z += d; limSign.position.z += d; camPos.z += d; camLook.z += d; cam.position.z += d; }
 function crash(c, dz) {
   const st = S; st.crashed = true; st.crashT = 0; c.hit = true; c.spin = rnd(-1.6, 1.6); c.v = Math.max(c.v, st.v * .8);
   st.spinV = (c.x > st.x ? -1 : 1) * rnd(1.8, 3.2); st.lat = (c.x > st.x ? -1 : 1) * rnd(2, 5); st.v *= .45; st.shake = 1;
@@ -773,7 +903,7 @@ function hud() {
   $('gArc').setAttribute('stroke-dasharray', (clamp(k / (R.nit * 1.05), 0, 1) * 235.6).toFixed(1) + ' 314.2'); $('nArc').setAttribute('stroke-dasharray', (S.nitro * 192.6).toFixed(1) + ' 257.6');
   let g = 0; const kg = k * 205 / R.vmax; while (kg > GEARS[g + 1]) g++; $('gearT').textContent = S.v < .5 ? 'N' : 'গিয়ার ' + bn(g + 1);
   $('sc').textContent = bn(Math.floor(S.score)); $('nbar').style.height = Math.round(S.nitro * 100) + '%'; $('nit').classList.toggle('empty', S.nitro < .05);
-  $('km').textContent = bn(Math.max(0, 250 - S.dist / 1000).toFixed(1));
+  $('km').textContent = bn(Math.max(0, 250 - S.dist / 1000).toFixed(1)); if ((hud.n = (hud.n || 0) + 1) % 15 === 0) drawMap(S.dist / 1000);
 }
 function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.updateProjectionMatrix(); }
 addEventListener('resize', resize);
@@ -974,14 +1104,15 @@ applyCtl();
 
 /* ================= চালু ================= */
 // বাংলা ফন্ট লোড হলে প্লেট, সাইনবোর্ড আবার আঁকা
-const redrawText = () => { const p = plateTex.image.getContext('2d'); drawPlate(p, 512, 128); plateTex.needsUpdate = true; const f = limSign.userData.face; limitFace(f.image.getContext('2d'), 256); f.needsUpdate = true; if (S) drawSign(S.signKm); };
+const redrawText = () => { const p = plateTex.image.getContext('2d'); drawPlate(p, 512, 128); plateTex.needsUpdate = true; const f = limSign.userData.face; limitFace(f.image.getContext('2d'), 256); f.needsUpdate = true; if (S) drawSign(S.signKm); drawBazaarSign(); };
 try { Promise.all([document.fonts.load("700 40px 'Noto Sans Bengali'"), document.fonts.load("800 50px 'Noto Sans Bengali'")]).then(redrawText, () => {}); document.fonts.ready.then(redrawText); } catch (e) {}
 lv = store.get('kh-racer-lv', 1); resize();
 if (!renderer) { $('loadT').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।'; }
 else {
   buildTrees();
-  Promise.all([buildPlayer(), buildTraffic(), buildProps()]).then(async () => {
-    ready = true; await setRide(rideKey); resetWorld(lv); applyGfx(); renderer.compile(scene, cam); makeThumbs();
+  buildMap();
+  Promise.all([buildPlayer(), buildTraffic(), buildProps(), buildBazaar()]).then(async () => {
+    ready = true; await setRide(rideKey); resetWorld(lv); bendAll(); applyGfx(); renderer.compile(scene, cam); makeThumbs();
     $('loadB').hidden = true; $('loadT').textContent = 'গাড়ি রেডি! কোন সময়ের রাস্তায় নামবেন?'; document.querySelectorAll('[data-lv]').forEach(b => b.disabled = false);
   }).catch(err => { console.error(err); $('loadT').textContent = 'মডেল লোড হয়নি। নেট চেক করে পেজটা আবার খুলুন।'; });
 }
@@ -1017,7 +1148,7 @@ async function saveScore(sc) {
 const MY_H = ['ভাই, সাইড দেন!', 'ডান লেন ফাঁকা করেন!', 'রসমালাই খাইতে কুমিল্লা যাইতেছি!', 'হর্ন শুনেন না নাকি?'];
 const OP_H = ['আস্তে চালান ভাই, জীবন একটাই!', 'এত তাড়া কিসের? প্লেন ধরবেন?', 'লেন মেনে চলেন!', 'পুলিশ সামনে, সাবধান!'];
 if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY_H, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP_H), 'M3', '🚌 পাশের ড্রাইভার', true), 2600); } });
-window.KHRacer = { dbgAudio: () => ({ state: ac && ac.state, eng: !!eng, master: master && master.gain.value, out: eng && eng.out.gain.value, road: eng && eng.road.g.gain.value }), get S() { return S; }, _scene: scene, _r: renderer, get ready() { return ready; }, start, keys, carSize, get tier() { return tier.name; }, get fleet() { return fleet; }, addTyped(type, x, dz, v) { const c = spawnCar(S, true); if (c && fleet[type]) { const F = fleet[type]; Object.assign(c, { type, kind: F.conf.kind, hl: F.size.z / 2, hw: Math.min(F.size.x, F.conf.w + .25) / 2, x, tx: x, z: S.z + dz, v, want: v, chT: 99 }); } return !!c; }, addCar(dx, dz, v) { const c = spawnCar(S, true); if (c) { c.x = c.tx = S.x + dx; c.z = S.z + dz; c.v = c.want = v; c.chT = 99; } return !!c; }, tick: n => { for (let i = 0; i < n; i++) if (S && S.started && !S.over) step(1 / 60); } };
+window.KHRacer = { dbg: { bend(x, y) { BEND.value.set(x, y); bendTo.set(x, y); bendLeft = 1e9; }, place(bz, cz) { bazaar.position.z = S.z + bz; culvert.position.z = S.z + cz; } }, dbgAudio: () => ({ state: ac && ac.state, eng: !!eng, master: master && master.gain.value, out: eng && eng.out.gain.value, road: eng && eng.road.g.gain.value }), get S() { return S; }, _scene: scene, _r: renderer, get ready() { return ready; }, start, keys, carSize, get tier() { return tier.name; }, get fleet() { return fleet; }, addTyped(type, x, dz, v) { const c = spawnCar(S, true); if (c && fleet[type]) { const F = fleet[type]; Object.assign(c, { type, kind: F.conf.kind, hl: F.size.z / 2, hw: Math.min(F.size.x, F.conf.w + .25) / 2, x, tx: x, z: S.z + dz, v, want: v, chT: 99 }); } return !!c; }, addCar(dx, dz, v) { const c = spawnCar(S, true); if (c) { c.x = c.tx = S.x + dx; c.z = S.z + dz; c.v = c.want = v; c.chT = 99; } return !!c; }, tick: n => { for (let i = 0; i < n; i++) if (S && S.started && !S.over) step(1 / 60); } };
 </script>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
 </body></html>
