@@ -20,3 +20,10 @@ Poly Haven (https://polyhaven.com), সব CC0:
   "Sophia Animated 003 - Animated 3D Woman" — Renderpeople — https://sketchfab.com/3d-models/sophia-animated-003-animated-3d-woman-dc448c3be0e74f96a55fb475a13433cf
 
 বাজার আর স্টপেজ: Poly Haven (CC0) — corrugated_iron_02, concrete_wall_004, rollershutter_door, plastic_monobloc_chair_01, wooden_crate_01
+
+হাঁটা মানুষ (p_*.glb, হাড়সহ 3D স্ক্যান; Nathan-এর হাঁটা আর Sophia-র দাঁড়ানো সবার গায়ে লাগানো; পলিগন কমানো, টেক্সচার ছোট), CC-BY 4.0:
+  p_nathan.glb: "Nathan Animated 003 - Walking 3D Man" — Renderpeople — https://sketchfab.com/3d-models/nathan-animated-003-walking-3d-man-143a2b1ea5eb4385ae90a73657aca3bc
+  p_carla.glb: "Carla Rigged 001 - Rigged 3D Business Women" — Renderpeople — https://sketchfab.com/3d-models/carla-rigged-001-rigged-3d-business-women-acf520f450d14dd799f98a6fede3edf5
+  p_claudia.glb: "Claudia Rigged 002 - 3D Rigged Business Women" — Renderpeople — https://sketchfab.com/3d-models/claudia-rigged-002-3d-rigged-business-women-c659bd0accab47c6bbe390cf822a2b92
+  p_eric.glb: "Eric Rigged 001 - Rigged 3D Business Man" — Renderpeople — https://sketchfab.com/3d-models/eric-rigged-001-rigged-3d-business-man-a46bc9f67aaa415bb4f3241eef900e7f
+  p_sophia.glb: "Sophia Animated 003 - Animated 3D Woman" — Renderpeople — https://sketchfab.com/3d-models/sophia-animated-003-animated-3d-woman-dc448c3be0e74f96a55fb475a13433cf

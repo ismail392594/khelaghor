@@ -276,6 +276,7 @@ import { GLTFLoader } from "/js/vendor/addons/GLTFLoader.js";
 import { RGBELoader } from "/js/vendor/addons/RGBELoader.js";
 import { MeshoptDecoder } from "/js/vendor/addons/meshopt_decoder.module.js";
 import { mergeGeometries } from "/js/vendor/addons/BufferGeometryUtils.js";
+import { clone as cloneSkinned } from "/js/vendor/addons/SkeletonUtils.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -366,6 +367,7 @@ const SFX = {
     else if (snd === 'moto') tone(620, t, .35, 'square', .14, 0, f);
     else { tone(415, t, .5, 'sawtooth', .22, 0, f); tone(523, t, .5, 'sawtooth', .18, 0, f); } },
   air() { const t = ac.currentTime; noise(t, .7, .45, 5200, 'highpass', 2600); }, // বাস-ট্রাকের এয়ার ব্রেক "পসস"
+  door() { const t = ac.currentTime; noise(t, .5, .32, 4200, 'highpass', 1700); noise(t + .48, .12, .6, 420, 'lowpass', 140); tone(68, t + .48, .16, 'sine', .45, 42); }, // দরজার বাতাস "ফসস" আর শেষে ধাক্কা
   revBeep() { const t = ac.currentTime; tone(1180, t, .22, 'sine', .16); },
   siren() { const t = ac.currentTime, o = ac.createOscillator(), og = ac.createGain(); o.type = 'square'; o.frequency.setValueAtTime(650, t); for (let i = 0; i < 6; i++) o.frequency.linearRampToValueAtTime(i % 2 ? 650 : 1050, t + .25 * (i + 1)); og.gain.value = .07; o.connect(og); og.connect(master); o.start(t); o.stop(t + 1.5); },
   slap() { const t = ac.currentTime; noise(t, .08, .7, 1800, 'bandpass', 900, 2); noise(t + .16, .08, .7, 1800, 'bandpass', 900, 2); }, // হেল্পারের বাসের গায়ে চাপড় ("ডাবল")
@@ -765,21 +767,53 @@ function placeStop(st, first) {
   const km = (st.dist + (st.z - stopG.position.z)) / 1000, nt = TOWNS.slice().sort((a, b) => Math.abs(a[1] - km) - Math.abs(b[1] - km))[0];
   stopName = nt[0] + pick([' বাসস্ট্যান্ড', ' মোড়', ' বাজার স্টপেজ', ' কলেজ গেট']); drawStopSign();
   const n = R.pax ? Math.min(MAXW, Math.max(1, Math.round(rnd(2, 10) * (R.pax < 5 ? .3 : 1)))) : Math.floor(rnd(1, 6));
-  stopWait = Array.from({ length: n }, (_, i) => ({ cell: Math.floor(Math.random() * 9), x: -HALF - rnd(2.6, 4.6), z: rnd(-3, 3) + (i % 2) * .4 }));
+  stopWait = Array.from({ length: n }, (_, i) => newPerson(-HALF - rnd(2.9, 4.6), rnd(-3, 3) + (i % 2) * .4));
   st.stop = { z: stopG.position.z, served: false, dwell: 0, said: false, alight: 0 };
 }
 function doorPos() { // বাসের দরজা: বাম পাশে সামনের দিকে (বাংলাদেশে বাম দিকে নামা-ওঠা)
   const yaw = player ? player.rotation.y : 0, hx = -(carSize.x * .72 / 2 + .25), hz = -carSize.z / 2 + (carSize.z > 6 ? 1.5 : carSize.z * .45);
   return { x: S.x + hx * Math.cos(yaw) + hz * Math.sin(yaw), z: S.z - hx * Math.sin(yaw) + hz * Math.cos(yaw) };
 }
+// স্টপেজের মানুষ: প্রত্যেকের নিজের জায়গা (x, স্টপেজের সাপেক্ষে z) আর অবস্থা, হেঁটে লক্ষ্যে যায় (১.৩৫ মি/সে)
+// wait: ছাউনিতে অপেক্ষা · queue: বাসের পাশে লাইনে দাঁড়ানো · board: দরজার দিকে হাঁটা · climb: সিঁড়ি দিয়ে ওঠা · in: ভেতরে
+// alight: দরজা থেকে নেমে আসা · leave: সরে গিয়ে দাঁড়ানো (তারপর আবার wait)
+function newPerson(x, z) { return { cell: Math.floor(Math.random() * 9), x, z, hx: x, hz: z, tx: x, tz: z, st: 'wait', y: 0, look: Math.PI / 2, wk: Math.floor(Math.random() * 5) }; }
+const groundY = x => clamp((x + HALF + 2.8) / .8, 0, 1) * .3 - .3; // রাস্তা ০, মাঠ -০.৩
+function walkPeople(dt) {
+  for (const p of stopWait) {
+    const dx = p.tx - p.x, dz = p.tz - p.z, d = Math.hypot(dx, dz), sp = 1.35 * dt;
+    p.moving = d > .04; if (p.moving) { const k = Math.min(1, sp / d); p.x += dx * k; p.z += dz * k; p.look = Math.atan2(dx, dz); }
+    else if (p.st === 'wait' || p.st === 'queue') p.look += (((p.st === 'queue' ? Math.PI : Math.PI / 2) - p.look + Math.PI * 3) % (Math.PI * 2) - Math.PI) * Math.min(1, dt * 4);
+  }
+}
+// আসল হাঁটা মানুষ (Renderpeople স্ক্যান, হাড়সহ): ভালো ফোনে ১০ জন; দুর্বল ফোনে আগের ছবি
+const WALKERS = []; let walkersLoading = false, lastWalkT = 0;
+async function loadWalkers() {
+  if (walkersLoading || tier.id < 1 || !renderer) return; walkersLoading = true;
+  try {
+    const L = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), ks = ['nathan', 'carla', 'claudia', 'eric', 'sophia'];
+    const gs = await Promise.all(ks.map(k => L.loadAsync(A + 'p_' + k + '.glb'))), walk = gs[0].animations[0], idle = gs[4].animations[0];
+    for (let i = 0; i < 10; i++) {
+      const o = cloneSkinned(gs[i % 5].scene); o.scale.setScalar(.01); o.visible = false;
+      o.traverse(m => { if (m.isMesh) { m.castShadow = !LOW; m.frustumCulled = false; bendMat(m.material); } }); scene.add(o);
+      const mx = new THREE.AnimationMixer(o), w = mx.clipAction(walk), id = mx.clipAction(idle); w.play(); id.play(); w.time = Math.random() * 2; id.time = Math.random() * 3; w.weight = 0;
+      WALKERS.push({ o, mx, w, id, b: 0 });
+    }
+  } catch (e) { console.warn('walkers', e); }
+}
 function drawStopPeople() {
-  if (!stopPeople) return; const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3(), cell = stopPeople.geometry.attributes.cell;
-  let n = 0;
-  stopWait.forEach(p => { // অপেক্ষা: ছাউনিতে; ওঠা: ছাউনি → দরজা; নামা: দরজা → ছাউনি
-    const sx = p.x, sz = stopG.position.z + p.z, d = p.door || { x: STOP_X, z: sz }, k = p.k || 0, e2 = k * k * (3 - 2 * k);
-    let wx = sx, wz = sz; if (p.board) { wx = sx + (d.x - sx) * e2; wz = sz + (d.z - sz) * e2; if (k >= 1) return; } else if (p.out) { if (!(k > 0)) return; wx = d.x + (sx - d.x) * e2; wz = d.z + (sz - d.z) * e2; }
-    const i = n++, h = PPL_H[Math.floor(p.cell / 3)], wy = wx > -HALF - .1 ? 0 : -.3;
-    e.set(0, Math.atan2(cam.position.x - wx, cam.position.z - wz), 0); q.setFromEuler(e); m4.compose(v.set(wx, wy + Math.abs(Math.sin(k * 18)) * .03, wz), q, sc.set(h * .5, h, 1)); stopPeople.setMatrixAt(i, m4); cell.setX(i, p.cell); });
+  if (!stopPeople) return; const now = performance.now(), dt = Math.min(.1, (now - (lastWalkT || now)) / 1000); lastWalkT = now;
+  const vis = stopWait.filter(p => p.st !== 'in' && !(p.st === 'alightWait'));
+  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3(), cell = stopPeople.geometry.attributes.cell;
+  const use3d = WALKERS.length > 0; let n = 0;
+  WALKERS.forEach((W, i) => {
+    const p = vis[i]; if (!use3d || !p) { W.o.visible = false; return; }
+    W.o.visible = true; W.o.position.set(p.x, groundY(p.x) + (p.y || 0), stopG.position.z + p.z); W.o.rotation.y = p.look;
+    W.b += ((p.moving ? 1 : 0) - W.b) * Math.min(1, dt * 6); W.w.weight = W.b; W.id.weight = 1 - W.b; W.mx.update(dt);
+  });
+  vis.forEach((p, k) => { // ছবির মানুষ: ৩ডি না থাকলে সবাই, থাকলে ১০ জনের বেশি হলে বাকিরা
+    if (use3d && k < WALKERS.length) return; const wx = p.x, wz = stopG.position.z + p.z, i = n++, h = PPL_H[Math.floor(p.cell / 3)];
+    e.set(0, Math.atan2(cam.position.x - wx, cam.position.z - wz), 0); q.setFromEuler(e); m4.compose(v.set(wx, groundY(wx) + (p.y || 0) + (p.moving ? Math.abs(Math.sin(now / 90)) * .03 : 0), wz), q, sc.set(h * .5, h, 1)); stopPeople.setMatrixAt(i, m4); cell.setX(i, p.cell); });
   stopPeople.count = n; stopPeople.instanceMatrix.needsUpdate = true; cell.needsUpdate = true;
 }
 // গাড়ির ভেতরের যাত্রী: সিটে বসা (কোমর পর্যন্ত আসল মানুষের ছবি), সামনের দিকে মুখ করে।
@@ -844,31 +878,43 @@ function paxSay() { if (!window.KHViral || talkT > 0) return; talkT = 7; KHViral
 let wallet = store.get('kh-racer-taka', 300); // জমানো টাকা (মেরামতে খরচ হয়)
 function addTaka(n) { S.money += n; wallet += n; store.set('kh-racer-taka', wallet); }
 function stopStep(st, dt) {
-  const s = st.stop; if (!s) return; const dz = st.z - s.z;
+  const s = st.stop; if (!s) return; walkPeople(dt); const dz = st.z - s.z;
   if (R.pax) {
     if (!s.said && dz < 110 && dz > 30) { s.said = true; talkT = 0; helperSay('near'); sfx('beep2'); } // ১০০ মিটার আগে সংকেত
     if (!s.served && dz > 9 && dz < 160) { $('stopHint').hidden = false; $('stopHint').innerHTML = `🚏 ${stopName}: ${bn(Math.round(dz))} মিটার সামনে<br><small>বাম কিনারায় হলুদ দাগে ব্রেক চেপে থামুন</small>`; }
     else if (!s.served && dz < -9 && dz > -95 && stopWait.length) { $('stopHint').hidden = false; $('stopHint').innerHTML = `↩️ স্টপেজ পার হয়ে গেছেন! থেমে ${SIM ? 'গিয়ার R দিয়ে' : 'ব্রেক চেপে ধরে'} পেছান`; }
     const atBay = Math.abs(dz) < 9 && st.x < LANES[0] + .6 && Math.abs(st.v) < 7 / KMH && !st.crashed;
     // পার্কিং জোনে থামলে: ক্যামেরা পাশে গিয়ে দেখায় যাত্রী নামছে-উঠছে (একজন একজন করে দরজা দিয়ে), শেষে হেল্পার "ডাবল!"
-    if (atBay && !s.served && !s.seq) {
+    if (atBay && !s.served && !s.seq) { // নিয়ম: আগে যাত্রী নামবে, তারপর লাইন ধরে একজন একজন করে উঠবে
       const offN = st.paxList.filter(p => p.dest <= 0).length, onN = Math.min(R.pax - (st.paxList.length - offN), stopWait.length);
-      s.seq = { t: 0, offN, onN, offDone: 0, onDone: 0, dur: 1.4 + Math.max(offN, onN) * .75 }; st.cine = true; talkT = 0; helperSay(offN ? 'alight' : 'board'); sfx('air');
-      for (let i = 0; i < offN; i++) stopWait.push({ cell: Math.floor(Math.random() * 9), x: -HALF - rnd(2.8, 4.8), z: rnd(-3, 3), out: true, t0: .3 + i * .75, k: 0 });
-      stopWait.filter(p => !p.out).slice(0, onN).forEach((p, i) => { p.board = true; p.t0 = .6 + i * .75; p.k = 0; });
+      s.seq = { t: 0, offN, onN, offDone: 0, onDone: 0, next: 0 }; st.cine = true; talkT = 0; helperSay(offN ? 'alight' : 'board'); sfx('air'); sfx('door');
+      const door = doorPos(), dl = door.z - s.z;
+      for (let i = 0; i < offN; i++) { const p = newPerson(door.x, dl); p.st = 'alightWait'; p.t0 = .7 + i * 1.1; p.tx = door.x - 1.1 - rnd(1.6, 3.2); p.tz = dl + 3.5 + i * .9 + rnd(-.3, .3); stopWait.push(p); }
+      stopWait.filter(p => p.st === 'wait').slice(0, onN).forEach((p, i) => { p.st = 'queue'; p.qi = i; p.tx = door.x - .75; p.tz = dl + 1.1 + i * .78; });
     }
     if (s.seq && !s.served) {
-      const q = s.seq; if (!atBay) { // মাঝপথে চলে গেলে বাতিল
-        if (q.t > .2) helperSay('wait'); stopWait = stopWait.filter(p => !p.out); stopWait.forEach(p => { p.board = false; p.k = 0; }); s.seq = null; st.cine = false;
+      const q = s.seq; if (!atBay) { // মাঝপথে চলে গেলে বাতিল: নামার অপেক্ষার মানুষ বাদ, লাইনের মানুষ আবার ছাউনিতে
+        if (q.t > .2) helperSay('wait'); stopWait = stopWait.filter(p => p.st !== 'alightWait' && p.st !== 'in'); stopWait.forEach(p => { if (p.st !== 'leave') { p.st = 'wait'; p.tx = p.hx; p.tz = p.hz; p.y = 0; } }); s.seq = null; st.cine = false;
       } else {
-        q.t += dt; const door = doorPos();
-        for (const p of stopWait) { if (!(p.board || p.out) || q.t < p.t0) continue; p.k = Math.min(1, (q.t - p.t0) / .9); p.door = door; }
-        q.onDone = stopWait.filter(p => p.board && p.k >= 1).length; q.offDone = stopWait.filter(p => p.out && p.k >= 1).length;
-        $('stopHint').hidden = false; $('stopHint').innerHTML = `🚏 ${stopName}${q.offN ? ` · নামছে ${bn(q.offDone)}/${bn(q.offN)}` : ''}${q.onN ? ` · উঠছে ${bn(q.onDone)}/${bn(q.onN)}` : ''}<div class="bar"><i style="width:${Math.round(Math.min(1, q.t / q.dur) * 100)}%"></i></div>`;
-        if (q.t >= q.dur) { // ভাড়া হিসাব
+        q.t += dt; const door = doorPos(), dl = door.z - s.z;
+        for (const p of stopWait) {
+          if (p.st === 'alightWait' && q.t >= p.t0) { p.st = 'alight'; p.x = door.x + .35; p.z = dl; p.y = .4; p.ax = p.tx; p.az = p.tz; p.tx = door.x - .6; p.tz = dl; }
+          else if (p.st === 'alight') { p.y = Math.max(0, p.y - dt * 1.1); if (!p.moving && p.y <= 0) { p.st = 'leave'; p.tx = p.ax; p.tz = p.az; q.offDone++; } }
+          else if (p.st === 'board') { p.tx = door.x; p.tz = dl; if (Math.hypot(p.x - door.x, p.z - dl) < .08) { p.st = 'climb'; p.tx = door.x + .45; } }
+          else if (p.st === 'climb') { p.tz = dl; p.y = Math.min(.42, (p.y || 0) + dt * 1.2); if (p.y >= .42 && Math.abs(p.x - p.tx) < .08) { p.st = 'in'; q.onDone++; } }
+        }
+        // নামা শেষ হলে লাইনের প্রথম জন দরজায় যায়; সে উঠলে পরের জন, বাকিরা এক ধাপ করে এগোয়
+        if (q.offDone >= q.offN && !stopWait.some(p => p.st === 'board' || p.st === 'climb')) {
+          const nx = stopWait.find(p => p.st === 'queue' && p.qi === q.next);
+          if (nx && q.t > .6) { nx.st = 'board'; q.next++; stopWait.forEach(p => { if (p.st === 'queue') p.tz = dl + 1.1 + (p.qi - q.next) * .78; }); }
+        }
+        const total = q.offN + q.onN, done = q.offDone + q.onDone;
+        $('stopHint').hidden = false; $('stopHint').innerHTML = `🚏 ${stopName}${q.offN ? ` · নামছে ${bn(q.offDone)}/${bn(q.offN)}` : ''}${q.onN ? ` · উঠছে ${bn(q.onDone)}/${bn(q.onN)}` : ''}<div class="bar"><i style="width:${Math.round((total ? done / total : 1) * 100)}%"></i></div>`;
+        if ((done >= total && q.t > 1.2) || q.t > 40) { // ভাড়া হিসাব
+          if (q.onDone < q.onN) q.onN = q.onDone; sfx('door');
           const off = st.paxList.filter(p => p.dest <= 0); st.paxList = st.paxList.filter(p => p.dest > 0); off.forEach(p => addTaka(p.fare)); st.carried += off.length;
           for (let i = 0; i < q.onN; i++) { const d = 1 + Math.floor(Math.random() * 4), fare = (R.pax < 5 ? 40 : 20) + d * (R.pax < 5 ? 25 : 15); st.paxList.push({ dest: d, fare }); }
-          stopWait = stopWait.filter(p => !p.board).map(p => (p.out ? { cell: p.cell, x: p.x, z: p.z } : p)); s.served = true; st.cine = false;
+          stopWait = stopWait.filter(p => p.st !== 'in' && p.st !== 'alightWait'); stopWait.forEach(p => { p.st = 'wait'; p.hx = p.tx; p.hz = p.tz; p.y = 0; }); s.served = true; st.cine = false;
           pop(`${off.length ? `${bn(off.length)} জন নামল · ` : ''}${bn(q.onN)} জন উঠল · ভাড়া ৳${bn(off.reduce((a, p) => a + p.fare, 0))}`); sfx('combo');
           st.score += (off.length * 40 + q.onN * 20) * R.mult; talkT = 0; helperSay(R.pax - st.paxList.length <= 0 ? 'full' : 'go'); sfx('slap');
           $('stopHint').innerHTML = '✅ ওঠানামা শেষ, এবার চালান!'; setTimeout(() => { if (!$('stopHint').innerHTML.startsWith('🚏')) $('stopHint').hidden = true; }, 2500);
@@ -1218,7 +1264,7 @@ function loop(ts) {
       const ck = CFG.cam === 'cockpit' && !S.crashed && !S.cine; cockWheel.visible = ck && !(CFG.mode === 'auto' && R.wheel); cockpit.visible = ck; player.userData.body.visible = !ck; // পর্দায় গোল স্টিয়ারিং থাকলে ৩ডি চাকা লুকানো, যাতে দুটো না দেখায়
       if (S.cine) { // স্টপেজের দৃশ্য: পাশ থেকে দরজা আর যাত্রী
         cockWheel.visible = cockpit.visible = false; player.userData.body.visible = true; const d = doorPos();
-        camPos.set(STOP_X - 7.5, 2.6, d.z + 6.5); camLook.set(d.x + .5, 1.2, d.z - 1); if (cam.position.distanceTo(camPos) > 30) cam.position.copy(camPos); else cam.position.lerp(camPos, Math.min(1, dt * 2.5));
+        camPos.set(STOP_X - 5.2, 2.1, d.z + 5); camLook.set(d.x + .3, 1.1, d.z - .5); if (cam.position.distanceTo(camPos) > 30) cam.position.copy(camPos); else cam.position.lerp(camPos, Math.min(1, dt * 2.5));
       } else if (ck) { // ড্রাইভারের সিট: বাংলাদেশে স্টিয়ারিং ডানে
         const big = carSize.y > 2.2, moto = rideKey === 'moto', yaw = player.rotation.y, side = moto ? 0 : carSize.x * .72 * .22;
         const fz = carSize.z / 2 - (moto ? .7 : big ? 1.25 : rideKey === 'cng' ? 1.1 : 2.05), hy = moto ? 1.45 : big ? carSize.y * .66 : rideKey === 'sport' ? 1.02 : carSize.y * .72;
@@ -1281,7 +1327,7 @@ function endRun() {
 }
 function start(level) {
   if (!ready) return; audio(); engineOn(); lv = level; store.set('kh-racer-lv', lv);
-  resetWorld(level); S.started = true; S.nextKm = 5; ['startO', 'endO'].forEach(i => $(i).hidden = true); ['speedo', 'ctlL', 'ctlR', 'dist', 'keyhint', 'life'].forEach(i => $(i).hidden = false); applyCtl(); lifeHud(); drawMap(0); document.querySelector('.score').style.visibility = 'visible';
+  resetWorld(level); S.started = true; if (R.pax) loadWalkers(); S.nextKm = 5; ['startO', 'endO'].forEach(i => $(i).hidden = true); ['speedo', 'ctlL', 'ctlR', 'dist', 'keyhint', 'life'].forEach(i => $(i).hidden = false); applyCtl(); lifeHud(); drawMap(0); document.querySelector('.score').style.visibility = 'visible';
   cam.position.set(S.x, 2.6, S.z + 9); com('start'); sfx('go'); if (SIM) { S.v = 0; S.gear = 'D'; $('gearL').textContent = 'D'; pop('🚌 এক্সিলারেটর চেপে ধরে চালান'); } if (store.get('kh-racer-radio', false) && !radio) radioToggle();
 }
 document.querySelectorAll('[data-lv]').forEach(b => b.onclick = () => start(+b.dataset.lv));
