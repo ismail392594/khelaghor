@@ -288,10 +288,12 @@ function renderDetail(m, det, votes) {
   if (PRED) { renderVote(m, votes); $('pTabs').innerHTML = ''; $('pBody').innerHTML = ''; return; }
   renderFun(m, S.det && S.det.id === m.id ? S.det.react : null);
   const tabs = m.sport === 'cricket' ? [['c', 'বল-বাই-বল'], ['s', 'স্কোরকার্ড']] : [['c', 'ঘটনা'], ['s', 'পরিসংখ্যান']];
+  if (m.sport === 'football' && det && det.lu && det.lu.length) tabs.push(['l', 'একাদশ']);
   if (m.sport === 'football' && m.lg && m.season && !m.demo) tabs.push(['t', 'টেবিল']);
   if (!S.tab) S.tab = 'c';
   $('pTabs').innerHTML = tabs.map(([k, t]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${S.tab === k}">${t}</button>`).join('');
   if (S.tab === 't') { tableHtml(m); return; }
+  if (S.tab === 'l') { $('pBody').innerHTML = luHtml(det); return; }
   $('pBody').innerHTML = det === null && !S.det ? '<div class="skel" style="margin-top:12px"></div>' : (S.tab === 'c' ? commHtml(m, det) : (m.sport === 'cricket' ? cardTbl(det) : statsHtml(det)));
 }
 // খেলার হিসাব: জেতার সম্ভাবনা আর রান রেট
@@ -402,10 +404,33 @@ function commHtml(m, det) {
   comm.forEach(x => S.seen.add(x.o + '|' + x.t));
   return html;
 }
+// ফুটবলের একাদশ
+function luHtml(det) {
+  const lu = (det && det.lu) || [];
+  if (!lu.length) return '<div class="empty"><span class="em">👕</span>একাদশ এখনো ঘোষণা হয়নি</div>';
+  const P = { G: 'গোলকিপার', D: 'ডিফেন্ডার', M: 'মিডফিল্ডার', F: 'ফরোয়ার্ড' };
+  return '<div class="lus">' + lu.map(l => `<div class="lu"><h4>${esc(l.t)}${l.f ? ` <span>${esc(l.f)}</span>` : ''}</h4>
+<ol>${l.xi.map(p => `<li><b>${p[0] != null ? bn(p[0]) : ''}</b>${esc(p[1] || '')}<small>${P[p[2]] || ''}</small></li>`).join('')}</ol>
+${l.sub && l.sub.length ? `<div class="sub2">বদলি</div><ol class="sb">${l.sub.map(p => `<li><b>${p[0] != null ? bn(p[0]) : ''}</b>${esc(p[1] || '')}</li>`).join('')}</ol>` : ''}
+${l.coach ? `<div class="sub2">কোচ: ${esc(l.coach)}</div>` : ''}</div>`).join('') + '</div>';
+}
+// ক্রিকেট: ওভার প্রতি রানের গ্রাফ (লাল দাগ = সেই ওভারে উইকেট)
+function ovChart(det) {
+  const ov = (det && det.ov) || [];
+  if (!ov.length) return '';
+  const max = Math.max(12, ...ov.flatMap(x => x.o.map(o => o[0])));
+  return ov.map(x => {
+    const n = x.o.length, W = 320, H = 110, bw = Math.max(2, Math.min(14, W / Math.max(n, 1) - 2));
+    const bars = x.o.map((o, i) => { const h = Math.max(1, o[0] / max * (H - 18)), xx = i * (W / n) + 1;
+      return `<rect x="${xx.toFixed(1)}" y="${(H - 14 - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="${o[0] >= 12 ? '#a78bfa' : '#38bdf8'}"/>${o[1] ? `<circle cx="${(xx + bw / 2).toFixed(1)}" cy="${(H - 18 - h).toFixed(1)}" r="3" fill="#ff3b5c"/>` : ''}`; }).join('');
+    const tot = x.o.reduce((t, o) => t + o[0], 0);
+    return `<div class="ovc"><div class="sub2">${esc(x.t)} · ওভার প্রতি রান (মোট ${bn(tot)})</div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="ওভার প্রতি রানের গ্রাফ">${bars}<text x="0" y="${H - 2}" fill="#737bb3" font-size="9">১</text><text x="${W - 14}" y="${H - 2}" fill="#737bb3" font-size="9">${bn(n)}</text></svg></div>`;
+  }).join('');
+}
 function cardTbl(det) {
   const card = (det && det.card) || [];
   if (!card.length) return '<div class="empty"><span class="em">📋</span>খেলা শুরু হলে স্কোরকার্ড দেখা যাবে</div>';
-  return card.map((inn, i) => `<details class="inn"${i === card.length - 1 ? ' open' : ''}><summary><span>${esc(inn.t)}</span><b>${inn.tot ? bn(`${inn.tot.r}/${inn.tot.w}`) + ` <small style="font-size:.75rem;color:var(--dim)">(${bn(inn.tot.o)})</small>` : ''}</b></summary>
+  return ovChart(det) + card.map((inn, i) => `<details class="inn"${i === card.length - 1 ? ' open' : ''}><summary><span>${esc(inn.t)}</span><b>${inn.tot ? bn(`${inn.tot.r}/${inn.tot.w}`) + ` <small style="font-size:.75rem;color:var(--dim)">(${bn(inn.tot.o)})</small>` : ''}</b></summary>
 <table><thead><tr><th>ব্যাটার</th><th>রান</th><th>বল</th><th>৪</th><th>৬</th></tr></thead><tbody>
 ${inn.bat.map(b => `<tr><td>${esc(b[0])}<small>${esc(b[1])}</small></td><td class="r">${bn(b[2])}</td><td>${bn(b[3])}</td><td>${bn(b[4])}</td><td>${bn(b[5])}</td></tr>`).join('')}
 </tbody></table>${inn.ext != null ? `<div class="ext">অতিরিক্ত: ${bn(inn.ext)}</div>` : ''}
@@ -593,7 +618,10 @@ function renderVote(m, votes) {
   if (mine && m.state === 'done' && m.result) {
     const ex = myScore && fb && myScore[0] === m.a.g && myScore[1] === m.b.g;
     if (m.result === 'void') msg = 'ম্যাচের ফল হয়নি, তাই পয়েন্ট নেই';
-    else if (m.result === mine) { msg = m.demo ? '🎉 আপনার অনুমান মিলেছে! (নমুনা ম্যাচ, পয়েন্ট যোগ হয় না)' : `🎉 আপনার অনুমান মিলেছে! +${bn(S.pts + (ex ? S.exact : 0))} পয়েন্ট${ex ? ' (একদম সঠিক স্কোর!)' : ''}`; cls = 'ok'; }
+    else if (m.result === mine) {
+      const cl = !ex && myScore && fb && (myScore[0] - myScore[1]) === ((m.a.g || 0) - (m.b.g || 0));
+      msg = m.demo ? '🎉 আপনার অনুমান মিলেছে! (নমুনা ম্যাচ, পয়েন্ট যোগ হয় না)' : `🎉 আপনার অনুমান মিলেছে! +${bn(S.pts + (ex ? S.exact : 0) + (cl ? 5 : 0))} পয়েন্ট${ex ? ' (একদম সঠিক স্কোর!)' : cl ? ' (স্কোরও কাছাকাছি!)' : ''}`; cls = 'ok';
+    }
     else msg = 'এবার মেলেনি, পরের ম্যাচে আবার চেষ্টা করুন';
   } else if (mine) { msg = `✓ আপনার ভোট: ${mine === 'd' ? 'ড্র' : esc(tname(m[mine]))}${scTxt}। খেলা শেষে ফল মিলিয়ে পয়েন্ট দেওয়া হবে`; cls = 'ok'; }
   else if (open) msg = m.demo ? 'নমুনা ম্যাচ: ভোট দেওয়া যায়, তবে পয়েন্ট যোগ হয় না' : (fb ? 'দল বাছাই করুন, চাইলে সঠিক স্কোরও বলুন' : 'খেলা শুরুর আগ পর্যন্ত ভোট দেওয়া যাবে');
@@ -687,18 +715,42 @@ async function loadMe() {
 async function openBoard() {
   $('lbSheet').hidden = false;
   const cb = S.combo || {};
-  $('lbRules').innerHTML = `খেলা শুরুর আগে অনুমান দিন: কে জিতবে, আর মোট গোল/রান বেশি না কম। প্রতিটা মিললে +${bn(S.pts)}। ফুটবলে একদম সঠিক স্কোরে আরও +${bn(S.exact)}।<br>🎯 কম্বো: কয়েকটা ম্যাচের অনুমান একসাথে, সব মিললে বোনাস (২টা +${bn(cb[2])}, ৩টা +${bn(cb[3])}, ৪টা +${bn(cb[4])}, ৫টা +${bn(cb[5])}, ৬টা +${bn(cb[6])})।<br><b>এটা শুধু মজার অনুমানের খেলা: পয়েন্ট কেনা যায় না, টাকা বা পুরস্কারে বদলানো যায় না।</b> সাপ্তাহিক লিডারবোর্ড প্রতি সোমবার নতুন করে শুরু হয়।`;
+  $('lbRules').innerHTML = `খেলা শুরুর আগে অনুমান দিন: কে জিতবে, আর মোট গোল/রান বেশি না কম। প্রতিটা মিললে +${bn(S.pts)}। ফুটবলে একদম সঠিক স্কোরে আরও +${bn(S.exact)}, বিজয়ী আর গোলের ব্যবধান মিললে +৫। টানা মিললে 🔥 স্ট্রিক বাড়ে।<br>🎯 কম্বো: কয়েকটা ম্যাচের অনুমান একসাথে, সব মিললে বোনাস (২টা +${bn(cb[2])}, ৩টা +${bn(cb[3])}, ৪টা +${bn(cb[4])}, ৫টা +${bn(cb[5])}, ৬টা +${bn(cb[6])})।<br><b>এটা শুধু মজার অনুমানের খেলা: পয়েন্ট কেনা যায় না, টাকা বা পুরস্কারে বদলানো যায় না।</b> সাপ্তাহিক লিডারবোর্ড প্রতি সোমবার নতুন করে শুরু হয়।`;
   meBox();
   loadBoard();
 }
+// বন্ধুদের গ্রুপ: বানানো, লিংক দিয়ে যোগ দেওয়া, গ্রুপের লিডারবোর্ড
+function renderGroups() {
+  const box = $('grpBox'); if (!box) return;
+  const gs = (S.me && S.me.groups) || [];
+  box.innerHTML = `<div class="gtabs"><button type="button" data-grp="" aria-pressed="${!S.grp}">🌍 সবাই</button>${gs.map(g => `<button type="button" data-grp="${esc(g.code)}" aria-pressed="${S.grp === g.code}">👥 ${esc(g.name)}</button>`).join('')}</div>
+${S.grp ? `<div class="ginv">বন্ধুদের ডাকুন: <b>${esc(S.grp)}</b> <button type="button" class="lbtn" data-ginv>🔗 লিংক শেয়ার</button> <button type="button" class="lbtn" data-gleave>গ্রুপ ছাড়ুন</button></div>` : ''}
+${S.user ? `<details class="gnew"><summary>➕ বন্ধুদের নিয়ে নতুন গ্রুপ / কোড দিয়ে যোগ দিন</summary><div class="grow"><input id="gName" maxlength="30" placeholder="গ্রুপের নাম (যেমন: অফিসের বন্ধুরা)"><button type="button" class="cbtn" data-gnew>বানান</button></div><div class="grow"><input id="gCode" maxlength="6" placeholder="৬ অক্ষরের কোড"><button type="button" class="lbtn" data-gjoin>যোগ দিন</button></div></details>` : ''}`;
+}
+async function grpAct(body) {
+  const t = await token(); if (!t) { toast('আগে Gmail দিয়ে লগইন করুন'); return null; }
+  const r = await fetch(API + '?f=group', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + t }, body: JSON.stringify(body) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { toast(j.error || 'হয়নি'); return null; }
+  return j;
+}
+async function joinFromLink() {
+  const code = (location.hash.match(/join=([A-Za-z0-9]{6})/) || [])[1];
+  if (!code || !PRED) return;
+  if (!S.user && !(await login())) { toast('গ্রুপে যোগ দিতে Gmail দিয়ে লগইন করুন'); return; }
+  const j = await grpAct({ act: 'join', code });
+  history.replaceState(null, '', location.pathname);
+  if (j) { await loadMe(); S.grp = j.code; toast(`👥 "${j.name}" গ্রুপে যোগ দিয়েছেন!`); openBoard(); }
+}
 async function loadBoard() {
+  renderGroups();
   document.querySelectorAll('[data-per]').forEach(b => b.setAttribute('aria-pressed', b.dataset.per === S.period));
   $('lbList').innerHTML = '<div class="skel" style="height:60px"></div>';
   try {
-    const d = await get('f=board&p=' + S.period);
+    const d = S.grp ? await get(`f=gboard&code=${encodeURIComponent(S.grp)}&p=${S.period}`) : await get('f=board&p=' + S.period);
     const medal = ['🥇', '🥈', '🥉'];
     const list = d.list.filter(x => x.pts > 0 || S.period === 'all');
-    $('lbList').innerHTML = list.length ? list.map((x, i) => `<li><span class="rk">${medal[i] || bn(i + 1)}</span><span class="nm">${esc(x.name)}<small>${bn(x.ok)}টি সঠিক${x.ex ? ` · ${bn(x.ex)}টি একদম সঠিক স্কোর` : ''} · ${bn(x.n)}টি ভোট</small></span><span class="p">${bn(x.pts)}</span></li>`).join('')
+    $('lbList').innerHTML = list.length ? list.map((x, i) => `<li><span class="rk">${medal[i] || bn(i + 1)}</span><span class="nm">${esc(x.name)}${x.st >= 3 ? ` <i class="stk">🔥${bn(x.st)}</i>` : ''}<small>${bn(x.ok)}টি সঠিক${x.ex ? ` · ${bn(x.ex)}টি একদম সঠিক স্কোর` : ''} · ${bn(x.n)}টি ভোট</small></span><span class="p">${bn(x.pts)}</span></li>`).join('')
       : `<div class="empty"><span class="em">🏆</span>${S.period === 'week' ? 'এই সপ্তাহে এখনো কেউ পয়েন্ট পায়নি। প্রথম হোন!' : 'এখনো কেউ পয়েন্ট পায়নি। প্রথম হোন!'}</div>`;
   } catch (e) { $('lbList').innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
 }
@@ -707,7 +759,7 @@ function meBox() {
     const cs = (S.me.combos || []).slice(0, 5);
     const rIc = r => (r === true ? '✅' : r === false ? '❌' : r === 'void' ? '➖' : '⏳');
     const cHtml = cs.length ? `<div class="sub2">আমার কম্বো</div><ul class="mycb">${cs.map(c => `<li><div>${c.legs.map(l => `<span>${rIc(l.r)} ${esc(l.t)}</span>`).join('')}</div><b class="${c.res === true ? 'w' : c.res === false ? 'l' : ''}">${c.res === true ? '+' + bn(c.bonus) : c.res === false ? 'মেলেনি' : c.res === 'void' ? 'বাতিল' : '⏳ +' + bn(c.bonus)}</b></li>`).join('')}</ul>` : '';
-    $('lbMe').innerHTML = `<div class="me"><div class="n"><b>${esc(S.me.name || S.user.displayName || 'আমি')}</b><small>${bn(S.me.ok)}টি সঠিক · ${bn(S.me.n)}টি ভোট · এই সপ্তাহে ${bn(S.me.week || 0)}</small></div><div class="p">${bn(S.me.pts)}</div></div>${cHtml}`;
+    $('lbMe').innerHTML = `<div class="me"><div class="n"><b>${esc(S.me.name || S.user.displayName || 'আমি')}${S.me.st >= 2 ? ` 🔥${bn(S.me.st)}` : ''}</b><small>${bn(S.me.ok)}টি সঠিক · ${bn(S.me.n)}টি ভোট · এই সপ্তাহে ${bn(S.me.week || 0)}${S.me.best >= 3 ? ` · সেরা স্ট্রিক ${bn(S.me.best)}` : ''}</small></div><div class="p">${bn(S.me.pts)}</div></div>${cHtml}`;
   } else {
     $('lbMe').innerHTML = `<button class="gbtn" type="button" id="lbLogin"><svg viewBox="0 0 24 24"><path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.3-1.6 3.8-5.5 3.8-3.3 0-6-2.7-6-6.1S8.7 5.7 12 5.7c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.2 14.6 2.2 12 2.2 6.6 2.2 2.3 6.6 2.3 12s4.3 9.8 9.7 9.8c5.6 0 9.3-3.9 9.3-9.5 0-.6-.1-1.1-.2-1.6z"/></svg>Gmail দিয়ে লগইন করে পয়েন্ট দেখুন</button>`;
     $('lbLogin').onclick = async () => { if (await login()) meBox(); };
@@ -864,7 +916,17 @@ $('slipSheet').addEventListener('click', e => {
   if (e.target.closest('#slipGo')) sendSlip();
   if (e.target.closest('#slipClear')) { S.slip = []; saveSlip(); $('slipSheet').hidden = true; }
 });
-$('lbSheet').addEventListener('click', e => { if (e.target === $('lbSheet') || e.target.closest('[data-x]')) $('lbSheet').hidden = true; });
+$('lbSheet').addEventListener('click', async e => {
+  const gt = e.target.closest('[data-grp]'); if (gt) { S.grp = gt.dataset.grp || null; loadBoard(); return; }
+  if (e.target.closest('[data-gnew]')) { const j = await grpAct({ act: 'create', name: $('gName').value }); if (j) { await loadMe(); S.grp = j.code; toast('👥 গ্রুপ তৈরি! এবার লিংক শেয়ার করে বন্ধুদের ডাকুন'); loadBoard(); } return; }
+  if (e.target.closest('[data-gjoin]')) { const j = await grpAct({ act: 'join', code: $('gCode').value }); if (j) { await loadMe(); S.grp = j.code; loadBoard(); } return; }
+  if (e.target.closest('[data-gleave]')) { if (!confirm('এই গ্রুপ ছেড়ে দেবেন?')) return; const j = await grpAct({ act: 'leave', code: S.grp }); if (j) { S.grp = null; await loadMe(); loadBoard(); } return; }
+  if (e.target.closest('[data-ginv]')) {
+    const g = ((S.me && S.me.groups) || []).find(x => x.code === S.grp);
+    const url = `${location.origin}/live/predict/#join=${S.grp}`, text = `খেলাঘর প্রেডিকশনে আমার "${g ? g.name : ''}" গ্রুপে যোগ দাও, দেখি কে বেশি সঠিক অনুমান করে! কোড: ${S.grp}`;
+    try { if (navigator.share) await navigator.share({ title: 'খেলাঘর প্রেডিকশন গ্রুপ', text, url }); else { await navigator.clipboard.writeText(text + ' ' + url); toast('লিংক কপি হয়েছে'); } } catch (er) {}
+    return;
+  } if (e.target === $('lbSheet') || e.target.closest('[data-x]')) $('lbSheet').hidden = true; });
 addEventListener('popstate', () => {
   const id = (location.hash.match(/^#m=([\w-]+)$/) || [])[1];
   if (id) openMatch(id, false); else closeMatch();
@@ -894,5 +956,5 @@ loadFeed().then(() => {
   const id = (location.hash.match(/^#m=([\w-]+)$/) || [])[1];
   if (id) openMatch(id, false);
   const idle = window.requestIdleCallback || (f => setTimeout(f, 1200));
-  idle(() => fbAuth().then(() => { if (S.user) loadMe(); }).catch(() => {}));
+  idle(() => fbAuth().then(async () => { if (S.user) await loadMe(); joinFromLink(); }).catch(() => {}));
 });

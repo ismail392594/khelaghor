@@ -18,10 +18,12 @@
 // POST /api/live?f=vote {id,pick}  → (লগইন) "কে জিতবে?" ভোট
 // POST /api/live?f=vote {id,mk:'ou',side:'o'|'u'} → বেশি/কম অনুমান
 // POST /api/live?f=combo {legs:[{id,mk,pick}]} → কম্বো (২-৬টা ম্যাচ, সব মিললে বোনাস)
+// POST /api/live?f=group {act:'create'|'join'|'leave', name|code} → বন্ধুদের গ্রুপ;  GET ?f=gboard&code=&p= → গ্রুপের লিডারবোর্ড
 // POST /api/live?f=push {token,teams} → প্রিয় দলের খবর ফোনে পেতে নাম লেখানো (teams খালি = বন্ধ)
 // POST /api/live?f=react {id,e,n}  → দর্শকের ইমোজি প্রতিক্রিয়া (fire, wow, clap, sad, love)
 import { shareHtml } from './_share.js';
 import { matchPage, sitemapXml } from './_seo.js';
+import { group, gboard } from './_store.js';
 import { getFeed, getMatch, vote, combo, me, board, diag, table, react, push, HttpErr, POINTS, EXACT, COMBO } from './_store.js';
 
 const cache = (res, s, swr) => res.setHeader('Cache-Control', s ? `public, max-age=0, s-maxage=${s}, stale-while-revalidate=${swr}` : 'no-store');
@@ -34,6 +36,7 @@ export default async function handler(req, res) {
       cache(res, 0);
       if (f === 'vote') return res.status(200).json(await vote(req));
       if (f === 'combo') return res.status(200).json(await combo(req));
+      if (f === 'group') return res.status(200).json(await group(req));
       if (f === 'react') return res.status(200).json(await react(req));
       if (f === 'push') return res.status(200).json(await push(req));
       throw new HttpErr(405, 'ভুল অনুরোধ');
@@ -49,6 +52,7 @@ export default async function handler(req, res) {
       cache(res, d.m.state === 'done' ? 120 : d.m.state === 'live' ? 10 : 30, 30);
       return res.status(200).json(d);
     }
+    if (f === 'gboard') { cache(res, 30, 60); return res.status(200).json(await gboard(q.code, q.p === 'week' ? 'week' : 'all')); }
     if (f === 'board') { cache(res, 60, 120); return res.status(200).json(await board(q.p === 'week' ? 'week' : 'all')); }
     if (f === 'table') { cache(res, 1800, 3600); return res.status(200).json(await table(q.lg, q.season)); }
     if (f === 'page') {
