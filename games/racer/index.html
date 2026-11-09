@@ -147,6 +147,11 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .tip{background:rgba(54,209,196,.14);border:1px solid rgba(54,209,196,.4);border-radius:12px;padding:8px 10px;text-align:left;font-size:.82rem!important;line-height:1.45;color:var(--fg)!important}
 .flash{position:absolute;inset:0;z-index:2;background:#fff;opacity:0;pointer-events:none}
 .flash.go{animation:fl .5s ease-out}@keyframes fl{from{opacity:.75}to{opacity:0}}
+/* আড়াআড়ি/ছোট উচ্চতার পর্দা (পুরো স্ক্রিনে ফোন কাত করলে): প্যানেল ছোট, রাস্তা বেশি দেখা যায় */
+@media (max-height:520px){.dist svg{width:56px;height:56px}.dist{top:calc(48px + env(safe-area-inset-top,0px));padding:3px 8px;font-size:.66rem}.dist b{font-size:.85rem}
+.life{top:calc(118px + env(safe-area-inset-top,0px));width:190px;padding:4px 6px}.lrow{font-size:.7rem;margin-top:3px}
+.stopHint{top:calc(54px + env(safe-area-inset-top,0px));font-size:.76rem}.com{top:calc(48px + env(safe-area-inset-top,0px));font-size:.74rem;max-width:40vw;left:auto;right:12px;transform:none}
+.gauge{bottom:calc(8px + env(safe-area-inset-bottom,0px));width:92px;height:92px}.gauge b{font-size:1.5rem}.stb{width:60px;height:60px}.pd{width:54px;height:80px}.swheel{width:112px;height:112px}.chost{display:none}.score b{font-size:1.5rem}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head><body>
@@ -158,6 +163,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
       <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
       <div class="score"><b id="sc">০</b><small id="scL">পয়েন্ট</small><div><span class="combo" id="combo" hidden></span></div></div>
       <button class="hb" id="horn" aria-label="হর্ন" style="font-size:1.15rem">📯</button>
+      <button class="hb" id="fsB" aria-label="পুরো স্ক্রিন" style="font-size:1.05rem">⛶</button>
       <button class="hb" id="radioB" aria-label="বাংলা গানের রেডিও" style="font-size:1.05rem">📻</button>
       <button class="hb" id="camB" aria-label="ক্যামেরা বদলান" style="font-size:1.05rem">🎥</button>
       <button class="hb" id="setB" aria-label="সেটিংস"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.6 7.6 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.6 7.6 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.6 7.6 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.6 7.6 0 0 0 1.7-1l2.5 1 2-3.5zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg></button>
@@ -362,6 +368,7 @@ const SFX = {
   air() { const t = ac.currentTime; noise(t, .7, .45, 5200, 'highpass', 2600); }, // বাস-ট্রাকের এয়ার ব্রেক "পসস"
   revBeep() { const t = ac.currentTime; tone(1180, t, .22, 'sine', .16); },
   siren() { const t = ac.currentTime, o = ac.createOscillator(), og = ac.createGain(); o.type = 'square'; o.frequency.setValueAtTime(650, t); for (let i = 0; i < 6; i++) o.frequency.linearRampToValueAtTime(i % 2 ? 650 : 1050, t + .25 * (i + 1)); og.gain.value = .07; o.connect(og); og.connect(master); o.start(t); o.stop(t + 1.5); },
+  slap() { const t = ac.currentTime; noise(t, .08, .7, 1800, 'bandpass', 900, 2); noise(t + .16, .08, .7, 1800, 'bandpass', 900, 2); }, // হেল্পারের বাসের গায়ে চাপড় ("ডাবল")
   beep2() { const t = ac.currentTime; tone(988, t, .12, 'sine', .15); tone(1318, t + .14, .16, 'sine', .15); },
   whoosh() { const t = ac.currentTime; noise(t, .55, .7, 500, 'bandpass', 2800, 1.2); },
   pass(close) { const t = ac.currentTime; noise(t, .5, close ? .45 : .22, 1400, 'bandpass', 380, 1.5); tone(180, t, .45, 'sawtooth', close ? .05 : .025, 120); }, // পাশ কাটানোর ডপলার
@@ -455,7 +462,7 @@ roadAt(0, false); roadAt(OPP, true);
 // মিডিয়ান: কংক্রিটের কার্ব আর মাঝে ঘাস
 const grassT = { map: tex('grass_diff.jpg', true, [1, 1]), normalMap: tex('grass_nor.jpg', false, [1, 1]), arm: tex('grass_arm.jpg', false, [1, 1]) };
 const grassMat = new THREE.MeshStandardMaterial({ polygonOffset: true, polygonOffsetFactor: 4, polygonOffsetUnits: 4, map: grassT.map, normalMap: grassT.normalMap, roughnessMap: grassT.arm, aoMap: grassT.arm, color: '#93b26c', roughness: 1 });
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(2600, 2600, 1, 420), grassMat); ground.rotation.x = -Math.PI / 2; ground.position.y = -.32; ground.receiveShadow = true; scene.add(ground); // রাস্তার চেয়ে নিচে, যাতে উঁচু-নিচু বাঁকে ঘাস রাস্তার উপর না ওঠে
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(2600, 2600, 1, 420), grassMat); ground.rotation.x = -Math.PI / 2; ground.position.y = -.32; ground.receiveShadow = true; scene.add(ground); grassMat.depthWrite = false; ground.renderOrder = -.5; // মাঠ সবার আগে পটভূমির মতো আঁকা: কোনো ফোনেই রাস্তা-রেলিং ঢাকবে না // রাস্তার চেয়ে নিচে, যাতে উঁচু-নিচু বাঁকে ঘাস রাস্তার উপর না ওঠে
 [grassT.map, grassT.normalMap, grassT.arm].forEach(t => t.repeat.set(2600 / 5, 2600 / 5));
 const curbMat = new THREE.MeshStandardMaterial({ color: '#a7a49c', roughness: .9 });
 for (const cx of [HALF + .15, MED * 2 - HALF - .15]) { const c = new THREE.Mesh(new THREE.BoxGeometry(.3, .18, ROAD_L, 1, 1, 124), curbMat); c.position.set(cx, .09, -ROAD_L / 2 + ROAD_BACK); c.receiveShadow = c.castShadow = true; world.add(c); }
@@ -727,7 +734,7 @@ function placeBazaar(st, first) {
 /* ================= বাস স্টপেজ, যাত্রী, ভাড়া ================= */
 // মানুষ: Renderpeople-এর আসল স্ক্যান (CC-BY) আগে থেকে ছবি করা, ৩ জন × ৩ দিক = ৯ ঘরের atlas
 const pplTex = texL.load(A + 'people.webp'); pplTex.colorSpace = THREE.SRGBColorSpace;
-const PPL_H = [1.74, 1.66, 1.63], MAXW = 12;
+const PPL_H = [1.74, 1.66, 1.63], MAXW = 40;
 const stopG = new THREE.Group(); stopG.position.set(0, -.3, -900); scene.add(stopG);
 const STOP_X = -HALF - .9; // শোল্ডারে বাস থামার জায়গা (রাস্তার বাম কিনারা)
 let stopPeople = null, stopName = '', stopWait = [];
@@ -737,8 +744,13 @@ function buildStop() {
   const roof = new THREE.Mesh(new THREE.BoxGeometry(2.6, .06, 7), tinM); roof.position.set(-HALF - 3.6, 2.7, 0); roof.rotation.z = .08; roof.castShadow = true; stopG.add(roof);
   for (const [dx, dz] of [[-1.1, -3.2], [-1.1, 3.2], [1.1, -3.2], [1.1, 3.2]]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(.05, .05, 2.7, 8), postM); p.position.set(-HALF - 3.6 + dx, 1.35, dz); p.castShadow = true; stopG.add(p); }
   const bench = new THREE.Mesh(new THREE.BoxGeometry(.45, .08, 5), M('#7a5a3a', .8)); bench.position.set(-HALF - 4.4, .48, 0); stopG.add(bench);
-  const bay = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 16), new THREE.MeshStandardMaterial({ map: ctex(64, 256, (x, w, h) => { x.strokeStyle = '#f2c230'; x.lineWidth = 5; for (let y = -64; y < h + 64; y += 22) { x.beginPath(); x.moveTo(0, y); x.lineTo(w, y + 30); x.stroke(); } }), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 }));
-  bay.rotation.x = -Math.PI / 2; bay.position.set(STOP_X, .306, 0); stopG.add(bay); // stopG মাঠে (-.৩), বে রাস্তায়
+  // দাগ দেওয়া পার্কিং জোন: সাদা বর্ডার, হলুদ তেরছা দাগ, "বাস স্টপ" লেখা (চালকের দিক থেকে পড়া যায়)
+  const bayTex = ctex(256, 1024, (x, w, h) => { x.clearRect(0, 0, w, h); x.fillStyle = 'rgba(242,194,48,.35)'; x.fillRect(0, 0, w, h);
+    x.strokeStyle = 'rgba(242,194,48,.95)'; x.lineWidth = 10; for (let y = -w; y < h + w; y += 70) { x.beginPath(); x.moveTo(0, y); x.lineTo(w, y + w * .7); x.stroke(); }
+    x.strokeStyle = '#f5f5f0'; x.lineWidth = 18; x.strokeRect(9, 9, w - 18, h - 18);
+    x.save(); x.translate(w / 2, h / 2); x.rotate(-Math.PI / 2); x.fillStyle = '#ffffff'; x.font = "800 120px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('বাস স্টপ', 0, 0); x.restore(); });
+  const bay = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 18), new THREE.MeshStandardMaterial({ map: bayTex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 }));
+  bay.rotation.x = -Math.PI / 2; bay.rotation.z = Math.PI; bay.position.set(STOP_X, .306, 0); stopG.add(bay); // stopG মাঠে (-.৩), বে রাস্তায়
   const st = new THREE.Mesh(new THREE.PlaneGeometry(2.4, .7), new THREE.MeshStandardMaterial({ map: stopSignTex, roughness: .6, side: THREE.DoubleSide })); st.position.set(-HALF - 2.25, 2.35, -3.6); st.rotation.y = Math.PI / 2; stopG.add(st);
   // অপেক্ষার মানুষ: ক্যামেরার দিকে মুখ করা ছবি, atlas-এর ঘর আলাদা
   const g = new THREE.PlaneGeometry(1, 1); g.translate(0, .5, 0); g.setAttribute('cell', new THREE.InstancedBufferAttribute(new Float32Array(MAXW), 1));
@@ -756,11 +768,19 @@ function placeStop(st, first) {
   stopWait = Array.from({ length: n }, (_, i) => ({ cell: Math.floor(Math.random() * 9), x: -HALF - rnd(2.6, 4.6), z: rnd(-3, 3) + (i % 2) * .4 }));
   st.stop = { z: stopG.position.z, served: false, dwell: 0, said: false, alight: 0 };
 }
+function doorPos() { // বাসের দরজা: বাম পাশে সামনের দিকে (বাংলাদেশে বাম দিকে নামা-ওঠা)
+  const yaw = player ? player.rotation.y : 0, hx = -(carSize.x * .72 / 2 + .25), hz = -carSize.z / 2 + (carSize.z > 6 ? 1.5 : carSize.z * .45);
+  return { x: S.x + hx * Math.cos(yaw) + hz * Math.sin(yaw), z: S.z - hx * Math.sin(yaw) + hz * Math.cos(yaw) };
+}
 function drawStopPeople() {
   if (!stopPeople) return; const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3(), cell = stopPeople.geometry.attributes.cell;
-  stopWait.forEach((p, i) => { const wx = p.walk ? p.x + (STOP_X - p.x) * p.walk : p.x, wz = stopG.position.z + p.z, h = PPL_H[Math.floor(p.cell / 3)];
-    e.set(0, Math.atan2(cam.position.x - wx, cam.position.z - wz), 0); q.setFromEuler(e); m4.compose(v.set(wx, p.walk > .7 ? 0 : -.3, wz), q, sc.set(h * .5, h, 1)); stopPeople.setMatrixAt(i, m4); cell.setX(i, p.cell); });
-  stopPeople.count = stopWait.length; stopPeople.instanceMatrix.needsUpdate = true; cell.needsUpdate = true;
+  let n = 0;
+  stopWait.forEach(p => { // অপেক্ষা: ছাউনিতে; ওঠা: ছাউনি → দরজা; নামা: দরজা → ছাউনি
+    const sx = p.x, sz = stopG.position.z + p.z, d = p.door || { x: STOP_X, z: sz }, k = p.k || 0, e2 = k * k * (3 - 2 * k);
+    let wx = sx, wz = sz; if (p.board) { wx = sx + (d.x - sx) * e2; wz = sz + (d.z - sz) * e2; if (k >= 1) return; } else if (p.out) { if (!(k > 0)) return; wx = d.x + (sx - d.x) * e2; wz = d.z + (sz - d.z) * e2; }
+    const i = n++, h = PPL_H[Math.floor(p.cell / 3)], wy = wx > -HALF - .1 ? 0 : -.3;
+    e.set(0, Math.atan2(cam.position.x - wx, cam.position.z - wz), 0); q.setFromEuler(e); m4.compose(v.set(wx, wy + Math.abs(Math.sin(k * 18)) * .03, wz), q, sc.set(h * .5, h, 1)); stopPeople.setMatrixAt(i, m4); cell.setX(i, p.cell); });
+  stopPeople.count = n; stopPeople.instanceMatrix.needsUpdate = true; cell.needsUpdate = true;
 }
 // গাড়ির ভেতরের যাত্রী: সিটে বসা (কোমর পর্যন্ত আসল মানুষের ছবি), সামনের দিকে মুখ করে।
 // প্রতিজনের জন্য দুটো আড়াআড়ি ছবি: পেছন থেকে (মাথার পেছন) আর পাশ থেকে, তাই যেকোনো দিক থেকে ঠিক দেখায়।
@@ -813,7 +833,9 @@ const HELPER = {
   hit: ['ওস্তাদ! ধাক্কা লাগছে, বডি গেল!', 'আল্লাহ বাঁচাইছে! ওস্তাদ, দেইখা চালান!'],
   near2: ['ওস্তাদ, আরেকটু হইলে গেছিলাম!', 'কান ঘেঁইষা গেলাম ওস্তাদ, বুক ধড়ফড় করে!'],
   low: ['ইঞ্জিন গরম, গাড়ি মেরামত লাগবো ওস্তাদ!', 'চাকা কাঁপতেছে, মেরামত করেন!'],
-  full: ['গাড়ি ফুল ওস্তাদ, আর উঠানো যাইবো না!']
+  full: ['গাড়ি ফুল ওস্তাদ, আর উঠানো যাইবো না!'],
+  alight: ['নামেন নামেন, তাড়াতাড়ি নামেন!', 'যারা নামবেন, সামনের দরজা দিয়া!'],
+  wait: ['দাঁড়ান ওস্তাদ! যাত্রী এখনো উঠতেছে!', 'থামেন থামেন, মানুষ পইড়া যাইবো!']
 };
 const PAX = ['ভাই একটু আস্তে চালান, বাচ্চা আছে!', 'জানালাটা খুলেন, গরম লাগে!', 'কুমিল্লা নামবো, মনে কইরা থামাইয়েন!', 'গান বন্ধ করেন, মাথা ধরছে!', 'ড্রাইভার সাহেব, এত ব্রেক কষেন কেন?', 'ভাড়া এত বেশি কেন, গতকাল তো কম ছিল!', 'আর কতক্ষণ লাগবো ভাই?', 'সামনের সিটে একটু জায়গা দেন!'];
 let talkT = 0;
@@ -828,23 +850,35 @@ function stopStep(st, dt) {
     if (!s.served && dz > 9 && dz < 160) { $('stopHint').hidden = false; $('stopHint').innerHTML = `🚏 ${stopName}: ${bn(Math.round(dz))} মিটার সামনে<br><small>বাম কিনারায় হলুদ দাগে ব্রেক চেপে থামুন</small>`; }
     else if (!s.served && dz < -9 && dz > -95 && stopWait.length) { $('stopHint').hidden = false; $('stopHint').innerHTML = `↩️ স্টপেজ পার হয়ে গেছেন! থেমে ${SIM ? 'গিয়ার R দিয়ে' : 'ব্রেক চেপে ধরে'} পেছান`; }
     const atBay = Math.abs(dz) < 9 && st.x < LANES[0] + .6 && Math.abs(st.v) < 7 / KMH && !st.crashed;
-    if (atBay && !s.served) {
-      s.dwell += dt; const need = 2.4, f = Math.min(1, s.dwell / need);
-      $('stopHint').hidden = false; $('stopHint').innerHTML = `🚏 ${stopName}: যাত্রী ওঠানামা<div class="bar"><i style="width:${Math.round(f * 100)}%"></i></div>`;
-      stopWait.forEach((p, i) => { p.walk = Math.min(1, f * 1.3 - i * .05); });
-      if (s.dwell >= need) { // নামা আর ওঠা
-        const off = st.paxList.filter(p => p.dest <= 0); st.paxList = st.paxList.filter(p => p.dest > 0); off.forEach(p => addTaka(p.fare)); st.carried += off.length;
-        const space = R.pax - st.paxList.length, on = Math.min(space, stopWait.length); let fares = 0;
-        for (let i = 0; i < on; i++) { const d = 1 + Math.floor(Math.random() * 4), fare = (R.pax < 5 ? 40 : 20) + d * (R.pax < 5 ? 25 : 15); st.paxList.push({ dest: d, fare }); fares += fare; }
-        stopWait = stopWait.slice(on); s.served = true; $('stopHint').hidden = true;
-        pop(`${off.length ? `${bn(off.length)} জন নামল · ` : ''}${bn(on)} জন উঠল · ভাড়া ৳${bn(off.reduce((a, p) => a + p.fare, 0))}`); sfx('combo');
-        st.score += (off.length * 40 + on * 20) * R.mult; helperSay(on ? (space <= on ? 'full' : 'go') : 'go'); if (on) setTimeout(() => helperSay('board'), 2500);
+    // পার্কিং জোনে থামলে: ক্যামেরা পাশে গিয়ে দেখায় যাত্রী নামছে-উঠছে (একজন একজন করে দরজা দিয়ে), শেষে হেল্পার "ডাবল!"
+    if (atBay && !s.served && !s.seq) {
+      const offN = st.paxList.filter(p => p.dest <= 0).length, onN = Math.min(R.pax - (st.paxList.length - offN), stopWait.length);
+      s.seq = { t: 0, offN, onN, offDone: 0, onDone: 0, dur: 1.4 + Math.max(offN, onN) * .75 }; st.cine = true; talkT = 0; helperSay(offN ? 'alight' : 'board'); sfx('air');
+      for (let i = 0; i < offN; i++) stopWait.push({ cell: Math.floor(Math.random() * 9), x: -HALF - rnd(2.8, 4.8), z: rnd(-3, 3), out: true, t0: .3 + i * .75, k: 0 });
+      stopWait.filter(p => !p.out).slice(0, onN).forEach((p, i) => { p.board = true; p.t0 = .6 + i * .75; p.k = 0; });
+    }
+    if (s.seq && !s.served) {
+      const q = s.seq; if (!atBay) { // মাঝপথে চলে গেলে বাতিল
+        if (q.t > .2) helperSay('wait'); stopWait = stopWait.filter(p => !p.out); stopWait.forEach(p => { p.board = false; p.k = 0; }); s.seq = null; st.cine = false;
+      } else {
+        q.t += dt; const door = doorPos();
+        for (const p of stopWait) { if (!(p.board || p.out) || q.t < p.t0) continue; p.k = Math.min(1, (q.t - p.t0) / .9); p.door = door; }
+        q.onDone = stopWait.filter(p => p.board && p.k >= 1).length; q.offDone = stopWait.filter(p => p.out && p.k >= 1).length;
+        $('stopHint').hidden = false; $('stopHint').innerHTML = `🚏 ${stopName}${q.offN ? ` · নামছে ${bn(q.offDone)}/${bn(q.offN)}` : ''}${q.onN ? ` · উঠছে ${bn(q.onDone)}/${bn(q.onN)}` : ''}<div class="bar"><i style="width:${Math.round(Math.min(1, q.t / q.dur) * 100)}%"></i></div>`;
+        if (q.t >= q.dur) { // ভাড়া হিসাব
+          const off = st.paxList.filter(p => p.dest <= 0); st.paxList = st.paxList.filter(p => p.dest > 0); off.forEach(p => addTaka(p.fare)); st.carried += off.length;
+          for (let i = 0; i < q.onN; i++) { const d = 1 + Math.floor(Math.random() * 4), fare = (R.pax < 5 ? 40 : 20) + d * (R.pax < 5 ? 25 : 15); st.paxList.push({ dest: d, fare }); }
+          stopWait = stopWait.filter(p => !p.board).map(p => (p.out ? { cell: p.cell, x: p.x, z: p.z } : p)); s.served = true; st.cine = false;
+          pop(`${off.length ? `${bn(off.length)} জন নামল · ` : ''}${bn(q.onN)} জন উঠল · ভাড়া ৳${bn(off.reduce((a, p) => a + p.fare, 0))}`); sfx('combo');
+          st.score += (off.length * 40 + q.onN * 20) * R.mult; talkT = 0; helperSay(R.pax - st.paxList.length <= 0 ? 'full' : 'go'); sfx('slap');
+          $('stopHint').innerHTML = '✅ ওঠানামা শেষ, এবার চালান!'; setTimeout(() => { if (!$('stopHint').innerHTML.startsWith('🚏')) $('stopHint').hidden = true; }, 2500);
+        }
       }
-    } else if (!atBay) { if (s.served || dz < -95 || dz > 160) $('stopHint').hidden = true; if (s.dwell > 0 && !s.served) s.dwell = Math.max(0, s.dwell - dt * 2); }
+    } else if (!atBay) { if (s.served ? dz < -20 || dz > 30 : (dz < -95 || dz > 160)) $('stopHint').hidden = true; }
   }
   if (dz < -95 || (s.served && dz < -30)) { // স্টপেজ অনেক পেছনে পড়ল (তার আগে পেছানো যায়)
     if (R.pax && !s.served && (stopWait.length || st.paxList.some(p => p.dest <= 0))) { helperSay('skip'); st.score = Math.max(0, st.score - 50); }
-    st.paxList.forEach(p => p.dest--); $('stopHint').hidden = true; placeStop(st, false);
+    st.paxList.forEach(p => p.dest--); $('stopHint').hidden = true; st.cine = false; placeStop(st, false);
   }
 }
 // গাড়ির লাইফ: ধাক্কায় কমে, শূন্য হলে খেলা শেষ; টাকা দিয়ে চলন্ত অবস্থাতেই মেরামত
@@ -1181,8 +1215,11 @@ function loop(ts) {
     // ক্যামেরা
     if (S.started) {
       const k = clamp(S.v * KMH / 230, 0, 1.2), nearC = CFG.cam === 'near', back = (nearC ? (port ? 5.6 : 4.8) : (port ? 7.6 : 6.4)) + k * 1.4 + Math.max(0, carSize.z - 4.4) * .75, up = (nearC ? (port ? 2.1 : 1.7) : (port ? 2.9 : 2.25)) + k * .2 + Math.max(0, carSize.y - 1.3) * .8;
-      const ck = CFG.cam === 'cockpit' && !S.crashed; cockWheel.visible = ck; cockpit.visible = ck; player.userData.body.visible = !ck;
-      if (ck) { // ড্রাইভারের সিট: বাংলাদেশে স্টিয়ারিং ডানে
+      const ck = CFG.cam === 'cockpit' && !S.crashed && !S.cine; cockWheel.visible = ck && !(CFG.mode === 'auto' && R.wheel); cockpit.visible = ck; player.userData.body.visible = !ck; // পর্দায় গোল স্টিয়ারিং থাকলে ৩ডি চাকা লুকানো, যাতে দুটো না দেখায়
+      if (S.cine) { // স্টপেজের দৃশ্য: পাশ থেকে দরজা আর যাত্রী
+        cockWheel.visible = cockpit.visible = false; player.userData.body.visible = true; const d = doorPos();
+        camPos.set(STOP_X - 7.5, 2.6, d.z + 6.5); camLook.set(d.x + .5, 1.2, d.z - 1); if (cam.position.distanceTo(camPos) > 30) cam.position.copy(camPos); else cam.position.lerp(camPos, Math.min(1, dt * 2.5));
+      } else if (ck) { // ড্রাইভারের সিট: বাংলাদেশে স্টিয়ারিং ডানে
         const big = carSize.y > 2.2, moto = rideKey === 'moto', yaw = player.rotation.y, side = moto ? 0 : carSize.x * .72 * .22;
         const fz = carSize.z / 2 - (moto ? .7 : big ? 1.25 : rideKey === 'cng' ? 1.1 : 2.05), hy = moto ? 1.45 : big ? carSize.y * .66 : rideKey === 'sport' ? 1.02 : carSize.y * .72;
         camPos.set(S.x + side * Math.cos(yaw) - fz * Math.sin(yaw), hy, S.z - fz * Math.cos(yaw) - side * Math.sin(yaw)); camLook.set(camPos.x - Math.sin(yaw) * 40, hy - 1.1, camPos.z - Math.cos(yaw) * 40);
@@ -1291,7 +1328,18 @@ function radioToggle() {
       t += beat; step++; } };
   tick(); radio = { g, timer: setInterval(tick, 120) }; $('radioB').classList.remove('off'); pop('📻 বাংলা সুর বাজছে'); store.set('kh-racer-radio', true);
 }
-$('radioB').onclick = () => radioToggle(); $('radioB').classList.add('off');
+$('radioB').onclick = () => radioToggle();
+// ⛶ পুরো স্ক্রিন + আড়াআড়ি (বাস সিমুলেটর গেমের মতো); iPhone Safari-তে পুরো স্ক্রিন হয় না, তখন হোম স্ক্রিনে যোগ করার পরামর্শ
+async function fullScreen() {
+  const d = document, el = d.documentElement;
+  try {
+    if (d.fullscreenElement || d.webkitFullscreenElement) { await (d.exitFullscreen || d.webkitExitFullscreen).call(d); try { screen.orientation.unlock(); } catch (e) {} return; }
+    const req = el.requestFullscreen || el.webkitRequestFullscreen; if (!req) { pop('এই ব্রাউজারে পুরো স্ক্রিন হয় না: Share → Add to Home Screen দিন'); return; }
+    await req.call(el, { navigationUI: 'hide' }); try { await screen.orientation.lock('landscape'); } catch (e) {}
+  } catch (e) { pop('পুরো স্ক্রিন চালু হলো না'); }
+  setTimeout(resize, 300);
+}
+$('fsB').onclick = fullScreen; document.addEventListener('fullscreenchange', () => setTimeout(resize, 200)); $('radioB').classList.add('off');
 // গাড়ি বাছাই (খেলা চলার সময় বদলানো যায় না: শুধু শুরুর আর শেষের পাতায়)
 const THUMB = {};
 function drawRides() {
