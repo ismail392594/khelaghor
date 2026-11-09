@@ -10,7 +10,7 @@ const E = process.env, KEY = E.KEY;
     p.on('pageerror', e => errs.push(e.message));
     await p.goto(`http://localhost:8811/games/${KEY}/`); await p.waitForFunction(E.READY, null, { timeout: 300000 }); await p.waitForTimeout(1500);
     await p.evaluate(E.SETUP); await p.waitForTimeout(+(E.WAIT || 2500));
-    if (out === 'og') await p.addStyleTag({ content: '.hud,.ctl,.chost,.khViral,.say,.pop,.turn,.meter,.pw,.spins,.beat,.prog,.pos,.race,.breath,.route,.fare,.bub,.mood,.qinfo,.tags,.seats,.dls,.tbar,.line,.seatq,#sms{display:none!important}' });
+    if (out === 'og') await p.addStyleTag({ content: '.hud,.ctl,.chost,.khViral,.say,.pop,.turn,.meter,.pw,.spins,.beat,.prog,.pos,.race,.breath,.route,.fare,.bub,.mood,.qinfo,.tags,.seats,.dls,.tbar,.line,.seatq,.order,.cur,#sms{display:none!important}' });
     await p.waitForTimeout(400); await p.screenshot({ path: `${E.OUT}/${KEY}_${out}.png` });
     if (out === 'shot' && E.BOT) console.log('bot', JSON.stringify(await p.evaluate(E.BOT)));
     await p.close();

@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>ফুচকা মাস্টার · খেলাঘর</title>
+<meta name="description" content="আপনি ফুচকাওয়ালা মামা! অর্ডার মতো ফুচকা ভাঙুন, পুর দিন, ঝাল আর ডিম দিয়ে টকে ডুবিয়ে প্লেটে দিন। কাস্টমার যেন রাগ না করে!">
+<link rel="canonical" href="https://khelaghorbd.online/games/fuchka/">
+<meta property="og:title" content="ফুচকা মাস্টার · খেলাঘর">
+<meta property="og:description" content="মামা, ঝাল বেশি দিয়েন! কতজনকে খুশি করতে পারবেন?">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/fuchka.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/fuchka.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+:root{--accent:#f59e0b}
+.order{position:absolute;left:10px;right:10px;top:10px;z-index:3;background:rgba(15,10,5,.82);border:1px solid #57401f;border-radius:14px;padding:8px 10px;pointer-events:none}
+.order .who{font-size:.72rem;color:#fcd34d;font-weight:700}
+.order .req{font:800 1rem var(--display);margin:2px 0 4px;display:flex;flex-wrap:wrap;gap:4px 10px}
+.order .req span{white-space:nowrap}
+.order .bar{height:8px;background:rgba(255,255,255,.12);border-radius:5px;overflow:hidden}.order .bar i{display:block;height:100%;background:#22c55e;width:100%}
+.order .plate{font-size:.72rem;color:#cbd5e1;margin-top:4px}
+.cur{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:3;background:rgba(0,0,0,.6);border-radius:10px;padding:4px 10px;font-size:.78rem;font-weight:700;white-space:nowrap;pointer-events:none}
+.ings{display:flex;gap:6px;flex:1;justify-content:center}
+.ing{border:0;border-radius:14px;flex:1;max-width:76px;height:66px;display:flex;flex-direction:column;align-items:center;justify-content:center;font:800 .7rem var(--body);color:#fff;background:#3b2a16;box-shadow:0 4px 0 rgba(0,0,0,.45);cursor:pointer;touch-action:manipulation}
+.ing span{font-size:1.45rem;line-height:1.1}.ing:active{transform:translateY(3px)}
+.ing.tok{background:#7c2d12}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="sc">৳০</b><small>আজকের বিক্রি</small></div>
+    <div class="stat r"><b id="left">৬</b><small>কাস্টমার বাকি</small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas class="cv" id="cv"></canvas>
+    <div class="order" id="order" hidden><div class="who" id="who"></div><div class="req" id="req"></div><div class="bar"><i id="pat"></i></div><div class="plate" id="plate"></div></div>
+    <div class="cur" id="cur" hidden></div>
+    <div class="say" id="say" hidden></div>
+    <div class="chost" id="chatHost"></div>
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>ফুচকা মাস্টার</h1>
+        <p class="story">বিকেলের রাস্তা, আপনার ফুচকার ভ্যান। কাস্টমার এসে বলবে: "মামা, ছয়টা দেন, ঝাল বেশি!" অর্ডার মতো একটা একটা করে বানিয়ে প্লেটে দিন। দেরি হলে বা ভুল হলে মেজাজ খারাপ!</p>
+        <div class="rules">
+          <div>👊 <b>ভাঙো</b> → 🥔 <b>পুর</b> → 🌶️ <b>ঝাল</b> (অর্ডারে যত মরিচ, তত বার) → 🥚 <b>ডিম</b> (চাইলে) → 💧 <b>টক</b>। টকে ডুবালেই প্লেটে চলে যায়।</div>
+          <div>😋 কাস্টমার প্লেট থেকে একটা একটা করে খায়। প্লেট খালি থাকলে ধৈর্য দ্রুত কমে।</div>
+          <div>💰 সব ঠিক হলে দাম + বকশিশ। ঝাল কম-বেশি হলে বা ডিম ভুল হলে বকশিশ কাটে।</div>
+        </div>
+        <div class="lvl">
+          <button data-lv="0">পাড়ার মোড়<small>ধীরে খায়</small></button>
+          <button data-lv="1">শুক্রবার বিকেল<small>ভিড়</small></button>
+          <button data-lv="2">ভার্সিটি গেট<small>ঝড়ের গতি</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">মানুষ: Renderpeople (<a href="/games/racer/assets/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। পিচ, দেয়াল, আকাশ: Poly Haven (CC0)। ফুচকা আর ভ্যান খেলাঘরের নিজের বানানো।</p>
+      </div>
+    </div>
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">দোকান বন্ধ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট (৳)</span></div><div><b id="eN">০</b><span>ফুচকা বিক্রি</span></div><div><b id="eHappy">০</b><span>খুশি কাস্টমার</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার দোকান খুলি</button><button class="gbtn ghost" id="menuBtn">জায়গা বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">🥟</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+  <div class="ctl"><div class="hint" id="hint">জায়গা বেছে দোকান খুলুন</div><div class="ings" id="ings" hidden>
+    <button class="ing" data-k="crack"><span>👊</span>ভাঙো</button>
+    <button class="ing" data-k="fill"><span>🥔</span>পুর</button>
+    <button class="ing" data-k="chili"><span>🌶️</span>ঝাল</button>
+    <button class="ing" data-k="egg"><span>🥚</span>ডিম</button>
+    <button class="ing tok" data-k="tok"><span>💧</span>টক</button>
+  </div></div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { GLTFLoader } from "/js/vendor/addons/GLTFLoader.js";
+import { RGBELoader } from "/js/vendor/addons/RGBELoader.js";
+import { MeshoptDecoder } from "/js/vendor/addons/meshopt_decoder.module.js";
+import { clone as cloneSkinned } from "/js/vendor/addons/SkeletonUtils.js";
+import { TIERS, detectTier } from "/js/kh-quality.js";
+import { loadPeople } from "/js/kh-people.js";
+import { gameShell, sound, bn, pick, rnd, clamp } from "/js/kh-shell.js";
+
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'fuchka', name: 'ফুচকা মাস্টার', lbTitle: 'সেরা ফুচকাওয়ালা', offMsg: 'আজ আলু সেদ্ধ হয়নি, দোকান বন্ধ! পরে আসেন।' });
+const SND = sound(SH);
+const TIER = TIERS[detectTier()], LOW = TIER.id <= 1;
+let renderer = null; try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' }); } catch (e) {}
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(55, 1, .01, 200);
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.shadowMap.enabled = !LOW; }
+const ANISO = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1, texL = new THREE.TextureLoader(), RA = '/games/racer/assets/', JA = '/games/jam/assets/';
+const tex = (u, srgb, rx, ry) => { const t = texL.load(u); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; t.repeat.set(rx, ry ?? rx); return t; };
+const cvTex = (w, h, draw, rx = 1, ry = 1) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.anisotropy = ANISO; return t; };
+const M = o => new THREE.MeshStandardMaterial(o);
+const lathe = (pts, m, seg = 32) => new THREE.Mesh(new THREE.LatheGeometry(pts.map(([x, y]) => new THREE.Vector2(x, y)), seg), m);
+if (renderer && TIER.id >= 1) new RGBELoader().load(RA + 'sky_1k.hdr', h => { const pm = new THREE.PMREMGenerator(renderer); h.mapping = THREE.EquirectangularReflectionMapping; scene.environment = pm.fromEquirectangular(h).texture; h.dispose(); pm.dispose(); }, undefined, () => {});
+
+/* ---------- বিকেলের রাস্তা ---------- */
+const skyT = texL.load(RA + 'sky.jpg'); skyT.colorSpace = THREE.SRGBColorSpace;
+{ const g = new THREE.SphereGeometry(120, 32, 16); g.scale(-1, 1, 1); scene.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: skyT, color: '#ffc9a0', fog: false, toneMapped: false }))); }
+scene.fog = new THREE.Fog('#c9a98a', 8, 60);
+scene.add(new THREE.HemisphereLight('#ffe2c4', '#4a3c30', 1.0));
+const sun = new THREE.DirectionalLight('#ffbf80', 1.8); sun.position.set(6, 6, -4); sun.castShadow = !LOW; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -2, right: 2, top: 2, bottom: -2, near: .5, far: 20 }); scene.add(sun);
+const lamp = new THREE.PointLight('#ffd9a0', 2.2, 3, 1.5); lamp.position.set(0, 1.75, .25); scene.add(lamp);
+const asph = ['asphalt_diff.jpg', 'asphalt_nor.jpg'].map((f, i) => tex(RA + f, i === 0, 12, 12));
+{ const g = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), M({ map: asph[0], normalMap: asph[1], color: '#9a948c', roughness: 1 })); g.rotation.x = -Math.PI / 2; g.receiveShadow = true; scene.add(g); }
+const plas = ['plaster_diff.jpg', 'plaster_nor.jpg'].map((f, i) => tex(JA + f, i === 0, 2, 2));
+const signT = (t, bg) => cvTex(512, 128, (x) => { x.fillStyle = bg; x.fillRect(0, 0, 512, 128); x.fillStyle = '#fff'; x.font = "800 64px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(t, 256, 66); });
+[['জনতা ফার্মেসি', '#166534'], ['মায়ের দোয়া স্টোর', '#991b1b'], ['নিউ মডেল টেইলার্স', '#1e3a8a'], ['বিসমিল্লাহ হোটেল', '#92400e'], ['মোবাইল সার্ভিসিং', '#4c1d95']].forEach(([t, c], i) => {
+  const x = -8 + i * 4; const b = new THREE.Mesh(new THREE.BoxGeometry(3.9, 6, 3), M({ map: plas[0], normalMap: plas[1], color: pick(['#e7dcc7', '#d8c9b0', '#efe6d6']), roughness: .95 })); b.position.set(x, 3, -7.5); scene.add(b);
+  const s = new THREE.Mesh(new THREE.PlaneGeometry(3.4, .85), new THREE.MeshBasicMaterial({ map: signT(t, c), toneMapped: false })); s.position.set(x, 3.0, -5.98); scene.add(s);
+  const sh = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 2.3), M({ color: '#2a2622', emissive: '#6b4a20', emissiveIntensity: .6 })); sh.position.set(x, 1.15, -5.98); scene.add(sh); });
+{ const bulbM = new THREE.MeshBasicMaterial({ color: '#ffe8b0' }); for (let i = 0; i < 30; i++) { const b = new THREE.Mesh(new THREE.SphereGeometry(.03, 8, 6), bulbM); b.position.set(-9 + i * .62, 3.75 + Math.sin(i * .9) * .08, -5.9); scene.add(b); } }
+
+/* ---------- ফুচকার ভ্যান ---------- */
+const woodT = cvTex(512, 512, (x, w, h) => { x.fillStyle = '#7a4a26'; x.fillRect(0, 0, w, h); for (let i = 0; i < 160; i++) { x.strokeStyle = `rgba(${rnd(30, 60)},${rnd(15, 30)},5,${rnd(.15, .4)})`; x.lineWidth = rnd(1, 3); x.beginPath(); const y = rnd(0, h); x.moveTo(0, y); x.bezierCurveTo(w * .3, y + rnd(-8, 8), w * .6, y + rnd(-8, 8), w, y + rnd(-6, 6)); x.stroke(); } x.fillStyle = 'rgba(0,0,0,.25)'; for (let i = 1; i < 4; i++) x.fillRect(0, i * 128, w, 3); }, 1, 1);
+const cart = new THREE.Group(); scene.add(cart);
+{ const top = new THREE.Mesh(new THREE.BoxGeometry(1.3, .05, .75), M({ map: woodT, roughness: .7 })); top.position.y = .9; top.receiveShadow = true; cart.add(top);
+  const side = new THREE.Mesh(new THREE.BoxGeometry(1.3, .8, .7), M({ color: '#1d4ed8', roughness: .6 })); side.position.y = .48; cart.add(side);
+  const st = new THREE.Mesh(new THREE.PlaneGeometry(1.2, .36), new THREE.MeshBasicMaterial({ map: signT('মামার স্পেশাল ফুচকা', '#b91c1c') })); st.position.set(0, .6, .352); cart.add(st);
+  for (const sx of [-.6, .6]) { const w = new THREE.Mesh(new THREE.TorusGeometry(.2, .03, 8, 24), M({ color: '#222', roughness: .8 })); w.position.set(sx, .2, .38); cart.add(w); }
+  // কাচের বাক্সে ফুচকার স্তূপ
+  const glass = new THREE.Mesh(new THREE.BoxGeometry(.42, .34, .4), new THREE.MeshStandardMaterial({ color: '#dff3f7', transparent: true, opacity: .18, roughness: .05, depthWrite: false })); glass.position.set(-.42, 1.1, -.12); cart.add(glass);
+  const fr = M({ color: '#9ca3af', metalness: .8, roughness: .3 }); for (const [x, z] of [[-.63, -.32], [-.21, -.32], [-.63, .08], [-.21, .08]]) { const p = new THREE.Mesh(new THREE.BoxGeometry(.015, .34, .015), fr); p.position.set(x, 1.1, z); cart.add(p); }
+  // খুঁটি আর বাতি
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(.012, .012, .9, 8), fr); pole.position.set(.55, 1.37, -.3); cart.add(pole);
+  const bulb = new THREE.Mesh(new THREE.SphereGeometry(.035, 12, 8), new THREE.MeshBasicMaterial({ color: '#fff2c8' })); bulb.position.set(0, 1.75, .2); cart.add(bulb);
+  const bar = new THREE.Mesh(new THREE.CylinderGeometry(.008, .008, .6, 6), fr); bar.rotation.z = Math.PI / 2; bar.position.set(.27, 1.8, -.05); cart.add(bar); }
+// ফুচকার টেক্সচার: সোনালি ভাজা, বাদামি ফুটকি
+const puriT = cvTex(256, 128, (x, w, h) => { x.fillStyle = '#d9a556'; x.fillRect(0, 0, w, h); for (let i = 0; i < 900; i++) { x.fillStyle = `rgba(${rnd(120, 170)},${rnd(70, 100)},${rnd(20, 40)},${rnd(.1, .45)})`; x.beginPath(); x.arc(rnd(0, w), rnd(0, h), rnd(.5, 3), 0, 7); x.fill(); } x.fillStyle = 'rgba(255,230,170,.25)'; for (let i = 0; i < 120; i++) x.fillRect(rnd(0, w), rnd(0, h), 3, 1); });
+const puriM = new THREE.MeshStandardMaterial({ map: puriT, roughness: .55, side: THREE.DoubleSide });
+const R = .026, wholeG = new THREE.SphereGeometry(R, 20, 14); wholeG.scale(1, .82, 1);
+const openG = new THREE.SphereGeometry(R, 20, 14, 0, Math.PI * 2, .62, Math.PI - .62); openG.scale(1, .82, 1);
+// কাচের বাক্সের ভেতরের স্তূপ
+{ const im = new THREE.InstancedMesh(wholeG, puriM, 60), m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(); for (let i = 0; i < 60; i++) { e.set(rnd(0, 3), rnd(0, 3), rnd(0, 3)); q.setFromEuler(e); m4.compose(new THREE.Vector3(-.42 + rnd(-.17, .17), .96 + Math.floor(i / 20) * .045 + rnd(0, .02), -.12 + rnd(-.16, .16)), q, new THREE.Vector3(1, 1, 1)); im.setMatrixAt(i, m4); } im.castShadow = true; cart.add(im); }
+const steel = M({ color: '#d7dadd', metalness: .9, roughness: .22 });
+const bowl = (x, z, r, fillCol, fillY) => { const b = lathe([[0, 0], [r * .6, 0], [r * .85, r * .25], [r, r * .55], [r * 1.02, r * .58]], steel); b.material.side = THREE.DoubleSide; b.position.set(x, .925, z); b.castShadow = true; cart.add(b); if (fillCol) { const f = new THREE.Mesh(new THREE.CircleGeometry(r * .92, 28), M({ color: fillCol, roughness: .9 })); f.rotation.x = -Math.PI / 2; f.position.set(x, .925 + r * fillY, z); cart.add(f); } return b; };
+bowl(-.08, -.2, .1, '#d9b25a', .45);
+bowl(.11, -.24, .06, '#b91c1c', .4);
+bowl(.23, -.12, .06, '#f2e6b8', .4);
+// টকের মাটির হাঁড়ি
+{ const clay = M({ color: '#9a4a25', roughness: .85 }); const pot = lathe([[0, 0], [.08, .01], [.12, .07], [.13, .12], [.1, .17], [.09, .19], [.1, .2]], clay); pot.material.side = THREE.DoubleSide; pot.scale.setScalar(.78); pot.position.set(.3, .925, .12); pot.castShadow = true; cart.add(pot);
+  const liq = new THREE.Mesh(new THREE.CircleGeometry(.088, 24), M({ color: '#4a2a10', roughness: .08, metalness: .1 })); liq.rotation.x = -Math.PI / 2; liq.scale.setScalar(.78); liq.position.set(.3, .925 + .2 * .78 - .015, .12); cart.add(liq); }
+// খদ্দেরের স্টিলের প্লেট
+const plate = new THREE.Group(); plate.position.set(-.13, .926, .17); cart.add(plate);
+{ const p = lathe([[0, 0], [.13, 0], [.15, .012], [.155, .016]], steel, 40); p.material.side = THREE.DoubleSide; p.receiveShadow = true; plate.add(p); }
+const SLOTS = []; for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; SLOTS.push(new THREE.Vector3(i === 0 ? 0 : Math.cos(a) * .085, .028, i === 0 ? 0 : Math.sin(a) * .085)); }
+SLOTS[0].set(Math.cos(0) * .085, .028, 0);
+// বানানোর ফুচকা (হাতের সামনে)
+const fill = M({ color: '#d4ad57', roughness: .9 }), tokM = new THREE.MeshStandardMaterial({ color: '#3d200a', roughness: .05, transparent: true, opacity: .9 }), chiliM = M({ color: '#c81e1e', roughness: .6 }), eggM = M({ color: '#f5eccc', roughness: .8 }), yolkM = M({ color: '#f2b705', roughness: .7 });
+const spG = new THREE.BoxGeometry(.004, .002, .004);
+function makePuri() {
+  const g = new THREE.Group(), whole = new THREE.Mesh(wholeG, puriM), open = new THREE.Mesh(openG, puriM); open.visible = false; whole.castShadow = open.castShadow = true; g.add(whole, open);
+  const f = new THREE.Mesh(new THREE.SphereGeometry(R * .62, 14, 10), fill); f.scale.y = .6; f.position.y = R * .25; f.visible = false; g.add(f);
+  const ch = new THREE.Group(); g.add(ch); const eg = new THREE.Group(); g.add(eg);
+  const tk = new THREE.Mesh(new THREE.CircleGeometry(R * .66, 18), tokM); tk.rotation.x = -Math.PI / 2; tk.position.y = R * .56; tk.visible = false; g.add(tk);
+  return { g, whole, open, f, ch, eg, tk, st: { crack: false, fill: false, chili: 0, egg: false } };
+}
+function addChili(p) { for (let i = 0; i < 6; i++) { const s = new THREE.Mesh(spG, chiliM); s.position.set(rnd(-.011, .011), R * .5 + rnd(0, .003), rnd(-.011, .011)); s.rotation.y = rnd(0, 3); p.ch.add(s); } }
+function addEgg(p) { for (let i = 0; i < 7; i++) { const s = new THREE.Mesh(spG, i % 3 ? eggM : yolkM); s.scale.set(1.4, 1.5, 1.4); s.position.set(rnd(-.011, .011), R * .54, rnd(-.011, .011)); p.eg.add(s); } }
+const HAND = new THREE.Vector3(.1, 1.0, .27);
+
+/* ---------- কাস্টমার ---------- */
+let PEOPLE = null; const CUST = [];
+loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned).then(P => { PEOPLE = P; for (let i = 0; i < 5; i++) { const h = P.make(i, { scale: rnd(.95, 1.02), shadow: !LOW }); h.root.visible = false; scene.add(h.root); CUST.push(h); } }).catch(() => {});
+
+const SFX = {
+  crack() { SND.noise(.07, .5, 3000, 'highpass'); SND.noise(.04, .3, 1500, 'bandpass', .03); },
+  fill() { SND.noise(.12, .25, 500); },
+  chili() { for (let i = 0; i < 4; i++) SND.noise(.02, .2, 5000, 'highpass', i * .035); },
+  egg() { SND.noise(.08, .2, 1800, 'bandpass'); },
+  tok() { SND.noise(.25, .3, 700, 'lowpass'); SND.tone(320, .18, 'sine', .08, 520, .05); },
+  crunch() { SND.noise(.09, .45, 2500, 'highpass'); SND.noise(.07, .35, 2000, 'highpass', .11); },
+  coin() { [1046, 1318].forEach((f, i) => SND.tone(f, .14, 'triangle', .2, 0, i * .07)); },
+  bad() { SND.tone(200, .35, 'sawtooth', .12, 120); }
+};
+const LV = [{ n: 'পাড়ার মোড়', cnt: [4, 6], eat: 2.4, pat: .045, cust: 6 }, { n: 'শুক্রবার বিকেল', cnt: [5, 7], eat: 1.8, pat: .06, cust: 7 }, { n: 'ভার্সিটি গেট', cnt: [6, 8], eat: 1.3, pat: .08, cust: 8 }];
+const NAMES = { M: [['👨‍💼 অফিস ফেরত ভাই', 'M2'], ['🧑 পাড়ার বড় ভাই', 'M3'], ['🧑‍🎓 ভার্সিটির ছাত্র', 'M1']], F: [['🧑‍🎓 ভার্সিটির ছাত্রী', 'F1'], ['👩 আপা', 'F2'], ['👩‍💼 অফিস ফেরত আপা', 'F1']] }, SEX = 'MFFMF';
+const CHL = ['ঝাল কম', 'ঝাল মাঝারি', 'ঝাল বেশি'];
+let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0;
+function newGame() { S = { score: 0, sold: 0, happy: 0, ci: 0, over: false, started: false, plate: [], cur: null, c: null }; hud(); }
+function say(t, col, ms) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, ms || 1200); }
+function pop(t, cls) { const e = document.createElement('div'); e.className = 'pop ' + (cls || ''); e.textContent = t; $('stage').appendChild(e); setTimeout(() => e.remove(), 1100); }
+function talk(t, who, v) { if (window.KHViral) KHViral.pop(t, v || 'M3', who); }
+function hud() { $('sc').textContent = '৳' + bn(Math.max(0, Math.round(S.score))); $('left').textContent = bn(Math.max(0, LV[lv].cust - S.ci)); }
+function orderUI() {
+  const c = S.c; if (!c) return; $('who').textContent = c.name[0];
+  $('req').innerHTML = `<span>🥟 ${bn(c.n)}টা</span><span>${'🌶️'.repeat(c.chili)} ${CHL[c.chili - 1]}</span><span>${c.egg ? '🥚 ডিম দিয়ে' : '🚫 ডিম ছাড়া'}</span>`;
+  $('plate').textContent = `দেওয়া হয়েছে ${bn(c.served)}/${bn(c.n)} · প্লেটে ${bn(S.plate.length)}টা`;
+  const st = S.cur && S.cur.st; $('cur').textContent = st ? `হাতের ফুচকা: ${st.crack ? '✅ভাঙা' : '⬜ভাঙা'} ${st.fill ? '✅পুর' : '⬜পুর'} 🌶️×${bn(st.chili)} ${st.egg ? '🥚' : ''}` : '';
+}
+function nextCust() {
+  const L = LV[lv]; if (S.ci >= L.cust) return endGame();
+  const ix = S.ci % 5, h = CUST[ix]; const nm = pick(NAMES[SEX[ix]]);
+  S.c = { n: Math.round(rnd(...L.cnt)), chili: 1 + Math.floor(Math.random() * 3), egg: Math.random() < .55, name: nm, served: 0, eaten: 0, err: 0, pat: 1, h, x: 2.2, eatT: 0, leaving: false };
+  CUST.forEach(o => o.root.visible = false); if (h) { h.root.visible = true; h.root.position.set(2.2, 0, -.75); }
+  const lines = [`মামা, ${bn(S.c.n)}টা দেন, ${CHL[S.c.chili - 1]}${S.c.egg ? ', ডিম বেশি করে' : ', ডিম দিয়েন না'}!`, `${bn(S.c.n)}টা ফুচকা, ${CHL[S.c.chili - 1]} প্লিজ${S.c.egg ? '' : ', ডিম ছাড়া'}।`];
+  talk(pick(lines), nm[0], nm[1]); newPuri(); orderUI(); hud();
+}
+function newPuri() { if (S.cur) cart.remove(S.cur.g); S.cur = makePuri(); S.cur.g.position.copy(HAND); S.cur.g.position.y = HAND.y + .06; S.cur.g.scale.setScalar(1.5); cart.add(S.cur.g); S.cur.drop = 0; }
+function act(k) {
+  if (!S || !S.started || S.over || !S.c || S.c.leaving || !S.cur) return; const p = S.cur, st = p.st;
+  if (k === 'crack') { if (st.crack) return nope('ভাঙা হয়েছে তো!'); st.crack = true; p.whole.visible = false; p.open.visible = true; SFX.crack(); }
+  else if (k === 'fill') { if (!st.crack) return nope('আগে ফুচকা ভাঙেন!'); if (st.fill) return nope('পুর দেওয়া আছে'); st.fill = true; p.f.visible = true; SFX.fill(); }
+  else if (k === 'chili') { if (!st.fill) return nope('আগে পুর দিন!'); st.chili++; addChili(p); SFX.chili(); }
+  else if (k === 'egg') { if (!st.fill) return nope('আগে পুর দিন!'); if (st.egg) return nope('ডিম দেওয়া আছে'); st.egg = true; addEgg(p); SFX.egg(); }
+  else if (k === 'tok') { if (!st.crack) return nope('না ভেঙে টকে দিবেন?'); if (!st.fill) return nope('খালি ফুচকা দিবেন নাকি!'); p.tk.visible = true; SFX.tok(); serve(); }
+  p.bump = .12; orderUI();
+}
+function nope(t) { say(t, '#fde047'); SFX.bad(); if (S.c) S.c.pat = Math.max(0, S.c.pat - .03); }
+function serve() {
+  const c = S.c, p = S.cur, st = p.st; let bad = '';
+  if (st.chili !== c.chili) bad = st.chili > c.chili ? 'উফ! এত ঝাল ক্যান মামা! 🥵' : 'ঝাল তো লাগেই না!';
+  else if (st.egg !== c.egg) bad = c.egg ? 'ডিম কই মামা?' : 'ডিম দিতে মানা করলাম না!';
+  if (bad) { c.err++; c.pat = Math.max(0, c.pat - .12); talk(bad, c.name[0], c.name[1]); SFX.bad(); } else { pop('পারফেক্ট! 👌', 'good'); }
+  const slot = S.plate.length % 8; p.fly = { t: 0, from: p.g.position.clone(), to: plate.position.clone().add(SLOTS[slot]) }; S.plate.push(p); S.flying = p; S.cur = null; c.served++; S.sold++;
+  if (c.served < c.n) setTimeout(() => { if (S && !S.over && S.c === c) { newPuri(); orderUI(); } }, 160); orderUI();
+}
+function custDone(angry) {
+  const c = S.c; if (c.leaving) return; c.leaving = true; const L = LV[lv];
+  const price = c.served * 10, tip = angry ? 0 : Math.max(0, Math.round((c.pat * 30) - c.err * 8)), sc = price + tip + (angry ? -30 : 0);
+  S.score += sc; if (!angry && c.err === 0) S.happy++; SFX.coin(); hud();
+  if (angry) { say('রাগ করে চলে গেল! 😠', '#fca5a5', 1500); talk('এত দেরি! আর আসবো না।', c.name[0], c.name[1]); }
+  else { say(`৳${bn(price)} + বকশিশ ৳${bn(tip)}`, '#86efac', 1500); talk(c.err ? 'ঠিক আছে… পরের বার ঠিকমতো দিয়েন।' : pick(['মামা, সেরা ফুচকা! কালকে আবার আসবো 😋', 'উফ, ঝাল টা পারফেক্ট!', 'টকটা যা হইসে না!']), c.name[0], c.name[1]); }
+  if (S.cur) { cart.remove(S.cur.g); S.cur = null; } S.plate.forEach(p => cart.remove(p.g)); S.plate = [];
+  S.ci++; setTimeout(() => { if (S && !S.over) nextCust(); }, 1600);
+}
+function step(dt) {
+  const c = S.c; if (!c) return; const L = LV[lv];
+  if (c.h) { const tx = c.leaving ? -2.5 : 0; const mv = Math.abs(c.x - tx) > .02; c.x += clamp(tx - c.x, -dt * 1.3, dt * 1.3); c.h.root.position.set(c.x, 0, -.72); c.h.root.rotation.y = mv ? (tx < c.x ? -Math.PI / 2 : Math.PI / 2) : 0; c.h.update(dt, mv ? 1 : 0, 1); }
+  if (c.leaving) return;
+  const arrived = Math.abs(c.x) < .05;
+  // ধৈর্য: প্লেট খালি থাকলে দ্রুত কমে
+  if (arrived) c.pat = Math.max(0, c.pat - dt * L.pat * (S.plate.length ? .35 : 1));
+  $('pat').style.width = (c.pat * 100) + '%'; $('pat').style.background = c.pat < .3 ? '#ef4444' : c.pat < .6 ? '#f59e0b' : '#22c55e';
+  if (c.pat <= 0) return custDone(true);
+  // খাওয়া: প্লেট থেকে একটা একটা করে
+  if (arrived && S.plate.length && !S.plate[0].fly) { c.eatT += dt; if (c.eatT > L.eat) { c.eatT = 0; const p = S.plate.shift(); cart.remove(p.g); c.eaten++; SFX.crunch(); if (Math.random() < .3) pop(pick(['উমম! 😋', 'কুড়মুড়!', 'আহ!']), 'good'); orderUI(); if (c.eaten >= c.n) custDone(false); } }
+}
+const TIPS = ['জানেন কি? ফুচকার টক বানানো হয় তেঁতুল গোলা পানি, বিট লবণ, ভাজা জিরা আর ধনেপাতা দিয়ে।', 'জানেন কি? পশ্চিমবঙ্গে ফুচকাকে বলে "পুচকা", উত্তর ভারতে "গোলগাপ্পা" আর "পানিপুরি"।', 'জানেন কি? ফুচকার খোল বানানো হয় সুজি বা আটা দিয়ে, গরম তেলে ফুলে গোল হয়।', 'জানেন কি? রাস্তার খাবার খেতে চাইলে দেখে নিন পানি পরিষ্কার কিনা; বিক্রেতা গ্লাভস পরলে আরও ভালো।'];
+function endGame() {
+  if (S.over) return; S.over = true; $('order').hidden = true; $('cur').hidden = true; $('ings').hidden = true; $('hint').hidden = false; $('hint').textContent = 'দোকান বন্ধ';
+  const sc = Math.max(0, Math.round(S.score)), L = LV[lv];
+  $('endT').textContent = S.happy === L.cust ? 'সবাই খুশি! ফুচকা সম্রাট 👑' : 'আজকের মতো দোকান বন্ধ';
+  $('endTitle').textContent = S.happy >= L.cust - 1 ? 'মামার স্পেশাল ফুচকা ⭐' : S.happy >= L.cust / 2 ? 'ভালো ফুচকাওয়ালা' : 'শিক্ষানবিশ মামা';
+  $('endLine').textContent = `${L.n}-এ ${bn(S.sold)}টা ফুচকা বিক্রি, ${bn(L.cust)} জনের মধ্যে ${bn(S.happy)} জন একদম খুশি।`;
+  $('eS').textContent = bn(sc); $('eN').textContent = bn(S.sold); $('eHappy').textContent = bn(S.happy); $('eTip').textContent = pick(TIPS);
+  setTimeout(() => { $('endO').hidden = false; if (S.happy >= L.cust - 1 && window.KHViral) KHViral.confetti(); }, 900);
+  SH.saveScore(sc); lastScore = sc;
+}
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 62 : 48; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+function loop(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  if (S && S.started && !S.over) step(dt);
+  if (S && S.cur) { const p = S.cur; p.bump = Math.max(0, (p.bump || 0) - dt); p.g.position.y += ((HAND.y) - p.g.position.y) * Math.min(1, dt * 10); p.g.rotation.y = Math.sin(T0 * 1.5) * .3; p.g.position.y += Math.sin(p.bump * 40) * p.bump * .02; }
+  if (S) for (const p of S.plate) if (p.fly) { p.fly.t += dt * 3.2; const u = Math.min(1, p.fly.t); p.g.position.lerpVectors(p.fly.from, p.fly.to, u); p.g.scale.setScalar(1.5 - .5 * u); p.g.position.y += Math.sin(u * Math.PI) * .06; if (u >= 1) p.fly = null; }
+  const port = W / H < .8;
+  if (S && S.started) { if (port) { cam.position.set(.03, 1.6, .52); cam.lookAt(.03, .9, -.03); } else { cam.position.set(.02, 1.42, .85); cam.lookAt(0, .93, .02); } }
+  else { const a = T0 * .1; cam.position.set(Math.sin(a) * 1.6, 1.5, 1.4 + Math.cos(a) * .4); cam.lookAt(0, 1, -.2); }
+  if (renderer) renderer.render(scene, cam);
+  requestAnimationFrame(loop);
+}
+function start(level) { lv = level; if (S) { if (S.cur) cart.remove(S.cur.g); S.plate.forEach(p => cart.remove(p.g)); } newGame(); S.started = true; ['startO', 'endO'].forEach(i => $(i).hidden = true); $('order').hidden = false; $('cur').hidden = false; $('ings').hidden = false; $('hint').hidden = true; SND.ac; nextCust(); }
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = e => { e.stopPropagation(); start(+b.dataset.lv); });
+document.querySelectorAll('.ing').forEach(b => b.onpointerdown = e => { e.preventDefault(); act(b.dataset.k); });
+addEventListener('keydown', e => { const k = { '1': 'crack', '2': 'fill', '3': 'chili', '4': 'egg', '5': 'tok' }[e.key]; if (k) act(k); });
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `ফুচকা মাস্টারে ৳${bn(lastScore)} কামাই করেছি! 🥟🌶️ আপনি পারবেন? ${location.origin}/games/fuchka/`; try { navigator.clipboard.writeText(t).then(() => pop('কপি হয়েছে, শেয়ার করুন!', 'good')); } catch (e) {} };
+newGame(); resize(); last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+const MY = ['আসেন আসেন, গরম ফুচকা!', 'ঝাল কেমন দিবো?', 'টক আরেকটু দিবো?', 'আজকের আলু একদম ফ্রেশ!'], OP = ['মামা, একটা বেশি দিয়েন', 'টক টা জোস!', 'দাম কমান মামা', 'আরেক প্লেট দেন!'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP), 'F1', '😋 কাস্টমার', true), 1500); } });
+window.KHG = { get S() { return S; }, start, act, CUST };
+</script>
+<script src="/js/update.js"></script>
+</body></html>
