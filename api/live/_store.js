@@ -13,6 +13,7 @@ import { fbCall, fbSummary, fbDetail, leagues } from './_football.js';
 import { demoAll, demoMatch } from './_demo.js';
 
 export const POINTS = 10; // সঠিক অনুমানে কত পয়েন্ট
+const CACHE_V = 2; // ক্যাশের ছাঁচ বদলালে বাড়াতে হয়, তাহলে পুরোনো ক্যাশ ফেলে সব নতুন করে আনে
 const MIN = 60e3, HOUR = 60 * MIN, DAY = 24 * HOUR;
 
 export class HttpErr extends Error { constructor(status, msg) { super(msg); this.status = status; } }
@@ -68,11 +69,12 @@ function plan(doc, H, now) {
   const cLive = (c.list || []).some(m => m.state === 'live');
   const fAll = [...(f.day || []), ...(f.live || [])];
   const fLive = fAll.some(m => m.state === 'live' || (m.state === 'upcoming' && m.start <= now + MIN && m.start > now - 3 * HOUR));
+  const stale = doc.v !== CACHE_V;
   const d = {
-    cList: H.c && now - (c.at || 0) > (cLive ? every(cRem, now, MIN, 0.35) : Math.max(15 * MIN, every(cRem, now, 15 * MIN, 0.1))),
-    cUp: H.c && now - (c.upAt || 0) > Math.max(3 * HOUR, every(cRem, now, 3 * HOUR, 0.05)),
+    cList: H.c && stale || H.c && now - (c.at || 0) > (cLive ? every(cRem, now, MIN, 0.35) : Math.max(15 * MIN, every(cRem, now, 15 * MIN, 0.1))),
+    cUp: H.c && stale || H.c && now - (c.upAt || 0) > Math.max(3 * HOUR, every(cRem, now, 3 * HOUR, 0.05)),
     fLive: H.f && fLive && now - (f.at || 0) > every(fRem, now, MIN, 0.35),
-    fDay: H.f && (now - (f.dayAt || 0) > Math.max(30 * MIN, every(fRem, now, 30 * MIN, 0.1)) || f.dayKey !== dhakaDay(now))
+    fDay: H.f && stale || H.f && (now - (f.dayAt || 0) > Math.max(30 * MIN, every(fRem, now, 30 * MIN, 0.1)) || f.dayKey !== dhakaDay(now))
   };
   d.any = d.cList || d.cUp || d.fLive || d.fDay;
   return d;
@@ -99,14 +101,21 @@ async function refresh(F, doc, due, now) {
   let cq = doc.cq || meta.cq || null, fq = doc.fq || meta.fq || null;
   try {
     const jobs = [];
-    if (due.cList) jobs.push(cricCall('currentMatches', { offset: 0 }).then(r => {
-      cq = qOf(r, now, cq);
-      if (r.ok) { c.list = (r.data || []).map(cricSummary).slice(0, 60); c.at = now; }
-      else c.err = r.err;
-    }));
-    if (due.cUp) jobs.push(cricCall('matches', { offset: 0 }).then(r => {
-      cq = qOf(r, now, cq);
-      if (r.ok) { c.up = (r.data || []).map(cricSummary).filter(m => m.state === 'upcoming' && m.start > now - HOUR && m.start < now + 5 * DAY).slice(0, 40); c.upAt = now; }
+    // API একবারে ২৫টা ম্যাচ দেয়; বেশি থাকলে পরের পাতাও আনি (বড় দলের খেলা যেন বাদ না পড়ে)
+    const pages = async (path, max) => {
+      const out = []; let ok = false;
+      for (let i = 0; i < max; i++) {
+        const r = await cricCall(path, { offset: i * 25 });
+        cq = qOf(r, now, cq);
+        if (!r.ok) { c.err = r.err; break; }
+        ok = true; out.push(...(r.data || []));
+        if (!r.total || (i + 1) * 25 >= r.total) break;
+      }
+      return ok ? out.map(cricSummary) : null;
+    };
+    if (due.cList) jobs.push(pages('currentMatches', 2).then(l => { if (l) { c.list = l.slice(0, 60); c.at = now; } }));
+    if (due.cUp) jobs.push(pages('matches', 4).then(l => {
+      if (l) { c.up = l.filter(m => m.state === 'upcoming' && m.start > now - HOUR && m.start < now + 8 * DAY).sort((x, y) => (y.rk || 0) - (x.rk || 0) || x.start - y.start).slice(0, 50); c.upAt = now; }
     }));
     const lg = leagues();
     if (due.fDay) {
@@ -132,7 +141,7 @@ async function refresh(F, doc, due, now) {
       }
     }));
     await Promise.all(jobs);
-    const out = { c, f, cq, fq };
+    const out = { v: CACHE_V, c, f, cq, fq };
     await db.doc('liveCache/feed').set(out);
     const metaUp = { until: 0, cq, fq };
     if (now - (meta.settleAt || 0) > 5 * MIN) {
@@ -158,7 +167,7 @@ function compose(doc, now) {
   for (const m of f.live || []) map.set(m.id, m);
   return [...map.values()].filter(m =>
     m.state === 'live' ||
-    (m.state === 'upcoming' && m.start > now - 12 * HOUR && m.start < now + 4 * DAY) ||
+    (m.state === 'upcoming' && m.start > now - 12 * HOUR && m.start < now + 8 * DAY) ||
     (m.state === 'done' && m.start > now - 36 * HOUR));
 }
 

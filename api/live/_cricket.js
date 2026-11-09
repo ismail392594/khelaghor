@@ -5,6 +5,18 @@ import { bnNum, gen, cricStatusBn, cricResult, matchLabel, fmtType, oversToBalls
 
 const BASE = 'https://api.cricapi.com/v1/';
 
+// ICC-র পূর্ণ সদস্য ১২ দেশ: এদের পুরুষ দলের খেলা তালিকায় সবার আগে দেখানো হয়
+const FULL = ['afghanistan', 'australia', 'bangladesh', 'england', 'india', 'ireland', 'new zealand', 'pakistan', 'south africa', 'sri lanka', 'west indies', 'zimbabwe'];
+// rk: ৩ = পূর্ণ সদস্যের পুরুষ দল, ২ = পূর্ণ সদস্যের মহিলা বা অন্য দল, ১ = বাকি সব। বাংলাদেশের খেলা থাকলে +১
+function rankOf(na, nb) {
+  const base = n => String(n || '').toLowerCase().replace(/\s+(women|w|u-?19|under[- ]19|a|xi|emerging)$/i, '');
+  const full = FULL.includes(base(na)) && FULL.includes(base(nb));
+  const plain = n => FULL.includes(String(n || '').toLowerCase());
+  let rk = full ? (plain(na) && plain(nb) ? 3 : 2) : 1;
+  if (/^bangladesh/i.test(na) || /^bangladesh/i.test(nb)) rk += 1;
+  return rk;
+}
+
 // একবার API ডাকা। ফেরত: { ok, data, rem, lim }  (rem = আজ আর কতবার ডাকা যাবে)
 export async function cricCall(path, params = {}) {
   const key = process.env.CRICKET_API_KEY;
@@ -20,7 +32,7 @@ export async function cricCall(path, params = {}) {
     const lim = Number(info.hitsLimit) || null, used = Number(info.hitsToday);
     const rem = lim != null && !isNaN(used) ? Math.max(0, lim - used) : null;
     if (j.status !== 'success') return { ok: false, err: String(j.reason || j.status || r.status), rem, lim };
-    return { ok: true, data: j.data, rem, lim };
+    return { ok: true, data: j.data, rem, lim, total: Number(info.totalRows) || 0 };
   } catch (e) {
     return { ok: false, err: 'net' };
   } finally { clearTimeout(tm); }
@@ -57,7 +69,7 @@ export function cricSummary(m) {
   const label = matchLabel(parts[1] || '') || fmtType(m.matchType);
   const test = String(m.matchType || '').toLowerCase() === 'test' || /test/i.test(parts[1] || '');
   const out = {
-    id: 'c_' + m.id, sport: 'cricket', state, start, tour, label, test, intl,
+    id: 'c_' + m.id, sport: 'cricket', state, start, tour, label, test, intl, rk: rankOf(na, nb),
     venue: m.venue || '', a, b,
     inns: (m.score || []).map(s => ({ side: String(s.inning || '').toLowerCase().startsWith(na.toLowerCase()) ? 'a' : 'b', r: +s.r || 0, w: +s.w || 0, o: +s.o || 0 })),
     status: cricStatusBn(status, bnOf), raw: status.slice(0, 120)
