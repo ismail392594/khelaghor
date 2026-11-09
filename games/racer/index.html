@@ -851,7 +851,7 @@ function stopStep(st, dt) {
 const fixCost = () => Math.ceil((100 - S.hp) * 4);
 function hitCar(c, dz) {
   const st = S; if (st.inv > 0 || c.ghost) return; c.ghost = true;
-  const rel = Math.abs(st.v - (c.wrong ? -c.v : c.v)), dmg = clamp((10 + rel * 1.4) * R.armor, 6, 70);
+  const rel = Math.abs(st.v - (c.wrong ? -c.v : c.v)); let dmg = clamp((10 + rel * 1.4) * R.armor, 6, 70);
   if (c.wrong) { dmg *= .35; const b = Math.round(300 * R.mult); st.score += b; pop(`🚫 উল্টো পথের শাস্তি! +${bn(b)}`); sfx('combo'); com('wrongHit'); }
   st.hp -= dmg; st.inv = 1.2; c.hit = true; c.spin = rnd(-1.4, 1.4); c.v *= .4;
   st.lat = (c.x > st.x ? -1 : 1) * rnd(3, 5.5); st.v *= dz < 0 ? .45 : .8; st.shake = .8;
