@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>এক্কা-দোক্কা · খেলাঘর</title>
+<meta name="description" content="উঠানে চক দিয়ে আঁকা ঘর। গুটি ছুড়ে ঠিক ঘরে ফেলুন, তারপর এক পায়ে-দুই পায়ে তালে তালে লাফিয়ে আসমান পর্যন্ত যান!">
+<link rel="canonical" href="https://khelaghorbd.online/games/ekkadokka/">
+<meta property="og:title" content="এক্কা-দোক্কা · খেলাঘর">
+<meta property="og:description" content="গুটি ঠিক ঘরে, পা দাগে পড়বে না! আটটা ঘর পার হতে পারবেন?">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/ekkadokka.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/ekkadokka.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+:root{--accent:#f472b6}
+.meter{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:3;width:min(86%,420px);pointer-events:none}
+.meter small{display:block;text-align:center;font-weight:800;font-size:.8rem;color:#fff;text-shadow:0 1px 3px #000;margin-bottom:4px}
+.mbar{position:relative;height:18px;border-radius:10px;background:rgba(0,0,0,.55);border:2px solid rgba(255,255,255,.7);overflow:hidden}
+.mbar .z{position:absolute;top:0;bottom:0;background:#22c55e}.mbar b{position:absolute;top:-2px;bottom:-2px;width:6px;margin-left:-3px;border-radius:3px;background:#fff;box-shadow:0 0 8px #fff}
+.beat{position:absolute;left:50%;top:44%;width:120px;height:120px;margin:-60px 0 0 -60px;z-index:3;pointer-events:none}
+.beat i{position:absolute;inset:0;border-radius:50%;border:5px solid rgba(255,255,255,.9)}
+.beat em{position:absolute;inset:36px;border-radius:50%;border:4px solid #f472b6;box-shadow:0 0 12px #f472b6}
+.beat span{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:8px;font:800 1.1rem var(--display);white-space:nowrap;text-shadow:0 2px 4px #000}
+.feet{display:flex;gap:10px}
+.feet .bigb{width:96px;height:76px;border-radius:18px}
+.feet .two{background:radial-gradient(circle at 40% 30%,#f9a8d4,#db2777 60%,#831843)}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="sc">০</b><small>পয়েন্ট · ঘর <span id="box">১</span>/৮</small></div>
+    <div class="stat r"><b id="lives">❤️❤️❤️</b><small>বাকি সুযোগ</small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas class="cv" id="cv"></canvas>
+    <div class="meter" id="meter" hidden><small id="mTxt"></small><div class="mbar"><i class="z" id="mZone"></i><b id="mMark"></b></div></div>
+    <div class="beat" id="beat" hidden><i id="bRing"></i><em></em><span id="bTxt"></span></div>
+    <div class="say" id="say" hidden></div>
+    <div class="chost" id="chatHost"></div>
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>এক্কা-দোক্কা</h1>
+        <p class="story">উঠানে চক দিয়ে আটটা ঘর আঁকা, মাথায় "আসমান"। হাতে চ্যাপ্টা মাটির গুটি। বান্ধবীরা বলছে: "দাগে পা পড়লেই কিন্তু আউট!"</p>
+        <div class="rules">
+          <div>🪨 <b>গুটি ছোড়া:</b> দাগের সবুজ অংশে এলে চাপুন, গুটি সেই ঘরে পড়বে (১ নম্বর থেকে ৮ নম্বর, পালা করে)।</div>
+          <div>🦶👣 <b>লাফ:</b> প্রতিটা লাফে সাদা বৃত্ত ছোট হয়ে গোলাপি বৃত্তে মিললে চাপুন: একটা ঘর হলে <b>এক পা</b>, পাশাপাশি দুটো ঘর হলে <b>দুই পা</b>।</div>
+          <div>🚫 গুটির ঘরে পা দেওয়া যাবে না, সেটা ডিঙিয়ে যেতে হয় (দুই ঘরের সারিতে তখন এক পা)।</div>
+          <div>❤️ ভুল পা, দেরি বা গুটি দাগে পড়লে একটা সুযোগ যায়। আটটা ঘর পার হলে জয়!</div>
+        </div>
+        <div class="lvl">
+          <button data-lv="0">ধীরে<small>নতুনদের জন্য</small></button>
+          <button data-lv="1">মাঝারি<small>পাড়ার মতো</small></button>
+          <button data-lv="2">দ্রুত<small>ওস্তাদ</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">মাটি, আকাশ, গাছ: <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a> (CC0)। মানুষ: Renderpeople (<a href="/games/racer/assets/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)।</p>
+      </div>
+    </div>
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">খেলা শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eB">০</b><span>ঘর পার</span></div><div><b id="eP">০</b><span>নিখুঁত লাফ</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার খেলি</button><button class="gbtn ghost" id="menuBtn">গতি বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">🪨</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+  <div class="ctl"><div class="hint" id="hint">গতি বেছে খেলা শুরু করুন</div><div class="feet"><button class="bigb one" id="oneB"><span>🦶</span>এক পা</button><button class="bigb two" id="twoB"><span>👣</span>দুই পা</button></div></div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { GLTFLoader } from "/js/vendor/addons/GLTFLoader.js";
+import { MeshoptDecoder } from "/js/vendor/addons/meshopt_decoder.module.js";
+import { clone as cloneSkinned } from "/js/vendor/addons/SkeletonUtils.js";
+import { TIERS, detectTier } from "/js/kh-quality.js";
+import { loadPeople } from "/js/kh-people.js";
+import { gameShell, sound, bn, pick, rnd, clamp } from "/js/kh-shell.js";
+
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'ekkadokka', name: 'এক্কা-দোক্কা', lbTitle: 'সেরা এক্কা-দোক্কা', offMsg: 'বৃষ্টিতে চকের দাগ মুছে গেছে, একটু পরে আসেন।' });
+const SND = sound(SH);
+const TIER = TIERS[detectTier()], LOW = TIER.id <= 1;
+let renderer = null; try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' }); } catch (e) {}
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(60, 1, .02, 300);
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.shadowMap.enabled = !LOW; renderer.shadowMap.type = THREE.PCFSoftShadowMap; }
+const ANISO = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1, texL = new THREE.TextureLoader(), KA = '/games/kanamachi/assets/', RA = '/games/racer/assets/';
+const tex = (u, srgb, r) => { const t = texL.load(u); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; t.repeat.set(r, r); return t; };
+const skyT = texL.load(RA + 'sky.jpg'); skyT.colorSpace = THREE.SRGBColorSpace;
+const skyG = new THREE.SphereGeometry(150, 32, 16); skyG.scale(-1, 1, 1); scene.add(new THREE.Mesh(skyG, new THREE.MeshBasicMaterial({ map: skyT, fog: false, toneMapped: false })));
+scene.add(new THREE.HemisphereLight('#fff0d6', '#5a4a30', 1.1));
+const sun = new THREE.DirectionalLight('#ffe2b4', 2.5); sun.position.set(-3, 8, 2); sun.castShadow = !LOW; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -4, right: 4, top: 4, bottom: -4, near: .5, far: 20 }); scene.add(sun, sun.target); sun.target.position.set(0, 0, -2);
+const ground = new THREE.Mesh(new THREE.CircleGeometry(40, 48), new THREE.MeshStandardMaterial({ map: tex(KA + 'ground_diff.jpg', true, 40), normalMap: tex(KA + 'ground_nor.jpg', false, 40), roughnessMap: tex(KA + 'ground_arm.jpg', false, 40), roughness: 1 }));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+// ঘরের নকশা: সারি অনুযায়ী (১, ২, ৩, [৪,৫], ৬, [৭,৮], আসমান); প্রতিটা ঘর ৫০×৫০ সেমি
+const BS = .5, ROWS = [[1], [2], [3], [4, 5], [6], [7, 8]], BOX = {};
+ROWS.forEach((r, i) => r.forEach((n, k) => { BOX[n] = { x: r.length === 1 ? 0 : (k ? BS / 2 : -BS / 2), z: -(i * BS + BS / 2), row: i }; }));
+const TOPZ = -(ROWS.length * BS);
+const chalk = (() => { const W = 512, H = 1024, c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d'); x.clearRect(0, 0, W, H); const sx = W / 1.2, sy = H / 4; // ১.২ মি চওড়া, ৪ মি লম্বা জায়গা
+  const L = (x0, z0, x1, z1) => { for (let k = 0; k < 2; k++) { x.strokeStyle = `rgba(250,248,240,${.65 + k * .2})`; x.lineWidth = 7 - k * 3; x.beginPath(); x.moveTo((x0 + .6) * sx + rnd(-1, 1), H - (-z0 + .2) * sy); x.lineTo((x1 + .6) * sx + rnd(-1, 1), H - (-z1 + .2) * sy); x.stroke(); } };
+  ROWS.forEach((r, i) => { const z0 = -i * BS, z1 = -(i + 1) * BS; L(-BS / 2 * (r.length === 1 ? 1 : 2), z0, BS / 2 * (r.length === 1 ? 1 : 2), z0); L(-BS / 2 * (r.length === 1 ? 1 : 2), z0, -BS / 2 * (r.length === 1 ? 1 : 2), z1); L(BS / 2 * (r.length === 1 ? 1 : 2), z0, BS / 2 * (r.length === 1 ? 1 : 2), z1); if (r.length === 2) L(0, z0, 0, z1); });
+  L(-BS, TOPZ, BS, TOPZ); x.beginPath(); x.lineWidth = 6; x.strokeStyle = 'rgba(250,248,240,.85)'; x.arc(.6 * sx, H - (-TOPZ + .2) * sy, BS * sx, Math.PI, 0); x.stroke();
+  x.fillStyle = 'rgba(250,248,240,.85)'; x.font = "800 64px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.textBaseline = 'middle';
+  for (const n in BOX) { const b = BOX[n]; x.fillText('০১২৩৪৫৬৭৮৯'[n], (b.x + .6) * sx, H - (-b.z + .2) * sy); }
+  x.font = "800 46px 'Noto Sans Bengali',sans-serif"; x.fillText('আসমান', .6 * sx, H - (-TOPZ + .2 + .25) * sy);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; })();
+const grid = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 4), new THREE.MeshStandardMaterial({ map: chalk, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, roughness: 1 }));
+grid.rotation.x = -Math.PI / 2; grid.position.set(0, .002, -1.8); scene.add(grid);
+// গুটি: চ্যাপ্টা পোড়ামাটির টুকরো
+const stone = new THREE.Mesh(new THREE.CylinderGeometry(.05, .055, .018, 9), new THREE.MeshStandardMaterial({ color: '#a4532e', roughness: .9, flatShading: true })); stone.castShadow = true; scene.add(stone);
+// পায়ের ছাপ (লাফ দেখাতে)
+const fpT = (() => { const c = document.createElement('canvas'); c.width = 64; c.height = 128; const x = c.getContext('2d'); x.fillStyle = 'rgba(40,25,15,.55)'; x.beginPath(); x.ellipse(32, 80, 18, 40, 0, 0, 7); x.fill(); for (let i = 0; i < 5; i++) { x.beginPath(); x.arc(14 + i * 9, 30 - Math.abs(2 - i) * 4, 5, 0, 7); x.fill(); } const t = new THREE.CanvasTexture(c); return t; })();
+const prints = [];
+function footprint(x, z, side) { const m = new THREE.Mesh(new THREE.PlaneGeometry(.1, .2), new THREE.MeshBasicMaterial({ map: fpT, transparent: true, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.set(x + side * .06, .004, z); scene.add(m); prints.push(m); }
+// গাছ আর বান্ধবীরা
+const treeMs = ['tree1.webp', 'tree2.webp'].map(f => { const t = texL.load(RA + f); t.colorSpace = THREE.SRGBColorSpace; return new THREE.MeshStandardMaterial({ map: t, alphaTest: .5, side: THREE.DoubleSide, roughness: 1 }); });
+const TREES = []; for (let i = 0; i < 18; i++) { const a = rnd(-2.6, 2.6), r = rnd(14, 30), h = rnd(8, 13); const p = new THREE.Mesh(new THREE.PlaneGeometry(h * .9, h), treeMs[i % 2]); p.geometry.translate(0, h / 2, 0); p.position.set(Math.sin(a) * r, 0, -Math.cos(a) * r - 2); scene.add(p); TREES.push(p); }
+const FR = [];
+loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned).then(P => { [[-1.2, -1.4, 1], [1.3, -2.4, 2], [-1.1, -3.4, 4]].forEach(([x, z, i]) => { const h = P.make(i, { scale: .8, shadow: !LOW }); h.root.position.set(x, 0, z); h.root.rotation.y = x < 0 ? Math.PI / 2 : -Math.PI / 2; scene.add(h.root); FR.push(h); }); }).catch(() => {});
+
+const SFX = {
+  toss() { SND.noise(.2, .35, 1500, 'bandpass'); },
+  land() { SND.noise(.08, .6, 700); SND.tone(160, .08, 'sine', .3, 90); },
+  hop(t) { SND.noise(.06, .5, 400); SND.tone(t ? 220 : 180, .08, 'sine', .25, 120); },
+  good() { SND.tone(880, .08, 'triangle', .2); },
+  bad() { SND.tone(220, .3, 'sawtooth', .12, 140); },
+  win() { [523, 659, 784, 1047].forEach((f, i) => SND.tone(f, .2, 'triangle', .28, 0, i * .1)); }
+};
+const LV = [{ n: 'ধীরে', beat: 1.15, win: .2, meter: 1 }, { n: 'মাঝারি', beat: .9, win: .15, meter: 1.3 }, { n: 'দ্রুত', beat: .7, win: .11, meter: 1.6 }];
+let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0;
+function newGame() { S = { score: 0, lives: 3, box: 1, cleared: 0, perfect: 0, phase: 'idle', over: false, started: false, px: 0, pz: .45 }; stone.position.set(.2, .01, .3); hud(); }
+function say(t, col) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, 1300); }
+function pop(t, cls) { const e = document.createElement('div'); e.className = 'pop ' + (cls || ''); e.textContent = t; $('stage').appendChild(e); setTimeout(() => e.remove(), 1100); }
+function hud() { $('sc').textContent = bn(Math.round(S.score)); $('box').textContent = bn(Math.min(8, S.box)); $('lives').textContent = '❤️'.repeat(S.lives) + '🤍'.repeat(3 - S.lives); }
+// গুটি ছোড়ার দাগ: দূরত্ব ০ থেকে ৩.২ মি; সবুজ অংশ = এই ঘরের ভেতর
+let markP = 0;
+function startToss() {
+  S.phase = 'toss'; S.t = 0; prints.forEach(p => scene.remove(p)); prints.length = 0; S.px = 0; S.pz = .45;
+  const b = BOX[S.box], near = -b.z - BS / 2 + .07, far = -b.z + BS / 2 - .07, toP = d => d / 3.2 * 100; S.zone = [toP(near), toP(far)];
+  $('mZone').style.cssText = `left:${S.zone[0]}%;width:${S.zone[1] - S.zone[0]}%`; $('meter').hidden = false; $('beat').hidden = true;
+  $('mTxt').textContent = `🪨 গুটি ${bn(S.box)} নম্বর ঘরে ফেলুন`; $('hint').textContent = 'সবুজে এলে যেকোনো বোতাম চাপুন'; stone.position.set(.2, .01, .3);
+}
+function toss() {
+  const d = markP / 100 * 3.2, b = BOX[S.box], x = b.x + rnd(-.08, .08) * (lv + 1) * .5; S.phase = 'flying'; $('meter').hidden = true; SFX.toss();
+  S.fly = { t: 0, T: .55, x0: .2, z0: .3, x1: x, z1: -d + .45 * 0 };
+  S.fly.z1 = -d; // ছোড়ার দাগ থেকে মাপা
+}
+function landStone() {
+  const { x1, z1 } = S.fly, b = BOX[S.box], inX = Math.abs(x1 - b.x) < BS / 2 - .03, inZ = Math.abs(z1 - b.z) < BS / 2 - .03; SFX.land();
+  if (inX && inZ) { pop('গুটি ঠিক ঘরে! 👍', 'good'); SFX.good(); S.score += 40; setTimeout(startHops, 700); }
+  else { const onLine = Math.abs(Math.abs(z1 - b.z) - BS / 2) < .06 || Math.abs(Math.abs(x1 - b.x) - BS / 2) < .06; lose(onLine ? 'গুটি দাগে পড়েছে!' : 'গুটি অন্য ঘরে গেছে!'); }
+}
+// লাফের তালিকা: সারি ধরে; গুটির ঘর ডিঙানো
+function plan() {
+  const out = [], sb = S.box;
+  ROWS.forEach((r, i) => { if (r.length === 1) { if (r[0] !== sb) out.push({ feet: 1, cells: [r[0]] }); } else { const free = r.filter(n => n !== sb); out.push({ feet: free.length === 2 ? 2 : 1, cells: free }); } });
+  out.push({ feet: 2, cells: [], top: true }); return out;
+}
+function startHops() { S.phase = 'hop'; S.hops = plan(); S.hi = 0; S.t = 0; $('beat').hidden = false; nextBeatText(); $('hint').textContent = 'সাদা বৃত্ত গোলাপিতে মিললে ঠিক পা চাপুন'; }
+function nextBeatText() { const h = S.hops[S.hi]; $('bTxt').textContent = h.top ? '👣 আসমান! দুই পা' : h.feet === 2 ? '👣 দুই পা' : '🦶 এক পা'; }
+function press(feet) {
+  if (!S || !S.started || S.over) return; SND.ac;
+  if (S.phase === 'toss') { toss(); return; }
+  if (S.phase !== 'hop') return;
+  const L = LV[lv], ph = S.t / L.beat, off = Math.abs(ph - 1), h = S.hops[S.hi];
+  if (off > L.win * 1.8) { lose(ph < 1 ? 'আগেই লাফ দিলেন!' : 'দেরি হয়ে গেল!'); return; }
+  if (feet !== h.feet) { lose(h.feet === 1 ? 'এখানে এক পায়ে লাফাতে হবে!' : 'এখানে দুই পা লাগবে!'); return; }
+  const perfect = off < L.win * .6; if (perfect) S.perfect++; S.score += perfect ? 30 : 15; SFX.hop(feet === 2); pop(perfect ? 'নিখুঁত!' : 'ভালো', 'good');
+  // ক্যামেরা নতুন ঘরে
+  if (h.top) { S.pz = TOPZ - .3; S.px = 0; } else { const c = h.cells.map(n => BOX[n]); S.px = c.reduce((a, b) => a + b.x, 0) / c.length; S.pz = c[0].z; c.forEach(b => footprint(b.x, b.z, h.feet === 1 ? 0 : 0)); }
+  S.jump = 1; S.hi++; S.t = 0;
+  if (S.hi >= S.hops.length) boxDone(); else nextBeatText();
+}
+function boxDone() {
+  S.phase = 'done'; $('beat').hidden = true; S.cleared++; S.score += 100 + lv * 30; SFX.win(); say(bn(S.box) + ' নম্বর ঘর পার! ✨', '#86efac');
+  if (window.KHViral && Math.random() < .5) KHViral.pop(pick(['বাহ! একবারও দাগে পা পড়ে নাই!', 'এইবার পরের ঘর!', 'তুই তো ওস্তাদ!']), 'F2', '👧 বান্ধবী');
+  S.box++; hud(); setTimeout(() => { if (S.box > 8) endGame(true); else startToss(); }, 1500);
+}
+function lose(why) {
+  S.lives--; S.phase = 'done'; $('beat').hidden = true; $('meter').hidden = true; SFX.bad(); say(why, '#fca5a5'); hud();
+  if (window.KHViral && Math.random() < .6) KHViral.pop(pick(['আউট! আউট!', 'দাগে পা! হি হি', 'আবার শুরু কর!']), 'F2', '👧 বান্ধবী');
+  setTimeout(() => { if (S.lives <= 0) endGame(false); else startToss(); }, 1500);
+}
+function step(dt) {
+  const L = LV[lv];
+  if (S.phase === 'toss') { S.t += dt; markP = (Math.sin(S.t * 2.2 * L.meter - 1.57) * .5 + .5) * 100; $('mMark').style.left = markP + '%'; }
+  if (S.phase === 'flying') { const f = S.fly; f.t += dt; const k = Math.min(1, f.t / f.T); stone.position.set(f.x0 + (f.x1 - f.x0) * k, .01 + Math.sin(k * Math.PI) * .6, f.z0 + (f.z1 - f.z0) * k); stone.rotation.y += dt * 12; if (k >= 1) { S.phase = 'landed'; landStone(); } }
+  if (S.phase === 'hop') { S.t += dt; const s = clamp(2.2 - 1.2 * (S.t / L.beat), .9, 2.2); $('bRing').style.transform = `scale(${s / 1.0 * .45 + .1})`; if (S.t > L.beat * (1 + L.win * 2)) lose('দেরি হয়ে গেল!'); }
+}
+const TIPS = ['জানেন কি? এক্কা-দোক্কায় এক পায়ে লাফালে পায়ের পেশি আর ভারসাম্য দুটোই মজবুত হয়।', 'জানেন কি? এই খেলা পৃথিবীর নানা দেশে আছে: ইংরেজিতে hopscotch, ভারতে স্টাপু, ফ্রান্সে marelle।', 'জানেন কি? সমতল, পাকা বা শক্ত মাটিতে খেলুন; ভেজা বা পিছলা জায়গায় লাফালে পড়ে গিয়ে ব্যথা লাগতে পারে।'];
+function endGame(win) {
+  if (S.over) return; S.over = true; const sc = Math.round(S.score + (win ? 300 + S.lives * 100 : 0));
+  $('endT').textContent = win ? 'আসমান ছুঁয়ে ফেলেছেন! 🌈' : `${bn(S.cleared)}টা ঘর পার হয়েছেন`;
+  const titles = [[1600, 'এক্কা-দোক্কা রানি/রাজা 👑'], [1100, 'পাড়ার চ্যাম্পিয়ন'], [600, 'পাকা খেলোয়াড়'], [250, 'উঠতি খেলোয়াড়'], [0, 'নতুন শিখছি']];
+  $('endTitle').textContent = titles.find(x => sc >= x[0])[1];
+  $('endLine').textContent = win ? `${bn(S.perfect)}টা নিখুঁত লাফ, ${bn(S.lives)}টা সুযোগ হাতে রেখেই আটটা ঘর পার!` : 'দাগ আর তাল দুটোই খেয়াল রাখুন, পরেরবার আসমান আপনার!';
+  $('eS').textContent = bn(sc); $('eB').textContent = bn(S.cleared); $('eP').textContent = bn(S.perfect); $('eTip').textContent = pick(TIPS);
+  setTimeout(() => { $('endO').hidden = false; if (win && window.KHViral) KHViral.confetti(); }, 600);
+  SH.saveScore(sc); lastScore = sc;
+}
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 70 : 55; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+const camP = new THREE.Vector3(0, 1.4, 1.2), look = new THREE.Vector3();
+function loop(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  if (S && S.started && !S.over) step(dt);
+  FR.forEach(h => h.update(dt, false));
+  if (S && S.started) { S.jump = Math.max(0, (S.jump || 0) - dt * 3); const port = W / H < .8; camP.lerp(look.set(S.px, (port ? 1.5 : 1.35) + Math.sin(S.jump * Math.PI) * .18, S.pz + .55), Math.min(1, dt * 6)); cam.position.copy(camP); cam.lookAt(S.px * .5, 0, S.pz - 1.3); }
+  else { const a = T0 * .1; cam.position.set(Math.sin(a) * 3, 2.2, -1.8 + Math.cos(a) * 3); cam.lookAt(0, 0, -1.8); }
+  for (const t of TREES) t.rotation.y = Math.atan2(cam.position.x - t.position.x, cam.position.z - t.position.z);
+  if (renderer) renderer.render(scene, cam);
+  requestAnimationFrame(loop);
+}
+function start(level) { lv = level; newGame(); S.started = true; ['startO', 'endO'].forEach(i => $(i).hidden = true); SND.ac; startToss(); }
+$('oneB').addEventListener('pointerdown', e => { e.preventDefault(); press(1); }); $('twoB').addEventListener('pointerdown', e => { e.preventDefault(); press(2); });
+addEventListener('keydown', e => { if (e.key === '1' || e.key === 'ArrowLeft') press(1); if (e.key === '2' || e.key === 'ArrowRight') press(2); if (e.key === ' ') press(S && S.phase === 'hop' ? S.hops[S.hi].feet : 1); });
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = () => start(+b.dataset.lv));
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `এক্কা-দোক্কায় ${bn(S ? S.cleared : 0)}টা ঘর পার, ${bn(lastScore)} পয়েন্ট! 🪨 আপনি আসমান ছুঁতে পারবেন? ${location.origin}/games/ekkadokka/`; try { navigator.clipboard.writeText(t).then(() => pop('কপি হয়েছে, শেয়ার করুন!', 'good')); } catch (e) {} };
+newGame(); resize(); last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+const MY = ['দাগে পা পড়ে নাই কিন্তু!', 'এইবার আট নম্বর!', 'আমার গুটি সবচেয়ে ভালো!', 'একটু জোরে ডাক দে!'], OP = ['পড়ছে পড়ছে, আমি দেখছি!', 'এক পায়ে, এক পায়ে!', 'আসমানে গেলে দুই পা!', 'হি হি, পারবি না!'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP), 'F2', '👧 বান্ধবী', true), 1500); } });
+window.KHG = { get S() { return S; }, start, press, get markP() { return markP; }, get beat() { return LV[lv]; } };
+</script>
+<script src="/js/update.js"></script>
+</body></html>
