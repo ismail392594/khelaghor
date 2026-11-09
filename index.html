@@ -709,7 +709,9 @@ let filter='all', curGame=null;
 function drawGrid(){
   const g=$('grid');g.innerHTML='';
   const qq=(($('gSearch')||{}).value||'').trim();
-  const list=GAMES.map((x,i)=>[x[0],x[1],x[2]||null,i]).filter(x=>(filter==='all'||x[1]===filter||(filter==='live'&&x[2]))&&(!qq||x[0].includes(qq)||String(x[3]+1)===qq.replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭৮৯'.indexOf(d))));
+  // বাস্তবসম্মত হাই-গ্রাফিক্স গেম সবার উপরে (নতুন এমন গেম এলে HI তালিকায় যোগ করুন); নম্বর আগের মতোই থাকে
+  const HI=['হাইওয়ে রাজা','ঢাকা জ্যাম রানার'],hiRank=n=>{const k=HI.indexOf(n);return k<0?99:k};
+  const list=GAMES.map((x,i)=>[x[0],x[1],x[2]||null,i]).sort((a,b)=>hiRank(a[0])-hiRank(b[0])||a[3]-b[3]).filter(x=>(filter==='all'||x[1]===filter||(filter==='live'&&x[2]))&&(!qq||x[0].includes(qq)||String(x[3]+1)===qq.replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭৮৯'.indexOf(d))));
   const GS=(window.KH&&window.KH.gameStatus)||{};
   let shown=0;
   list.forEach(([name,cat,url,i])=>{
