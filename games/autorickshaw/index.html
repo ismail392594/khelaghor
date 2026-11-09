@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>অটোরিকশা উল্টো পথে · খেলাঘর</title>
+<meta name="description" content="একমুখী রাস্তায় সিএনজি চালাচ্ছেন, অথচ উল্টো দিক থেকে ছুটে আসছে ইজিবাইক, রিকশা, মোটরসাইকেল! লেন বদলে পাশ কাটান, হর্ন দিন, রাস্তার পাশের যাত্রী তুলুন।">
+<link rel="canonical" href="https://khelaghorbd.online/games/autorickshaw/">
+<meta property="og:title" content="অটোরিকশা উল্টো পথে · খেলাঘর">
+<meta property="og:description" content="একমুখী রাস্তা, তবু সবাই উল্টো আসে! কতদূর যেতে পারবেন?">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/autorickshaw.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/autorickshaw.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+:root{--accent:#22c55e}
+.lives{position:absolute;left:10px;top:10px;z-index:3;background:rgba(0,0,0,.55);border-radius:10px;padding:4px 10px;font-size:.9rem;pointer-events:none}
+.fare{position:absolute;right:10px;top:10px;z-index:3;background:rgba(20,83,45,.85);border-radius:10px;padding:4px 10px;font:700 .76rem var(--body);pointer-events:none;max-width:60%}
+.ab{border:0;border-radius:16px;width:68px;height:62px;font:800 1.5rem var(--display);color:#fff;background:#1f2937;box-shadow:0 4px 0 rgba(0,0,0,.4);cursor:pointer;touch-action:manipulation}
+.ab:active{transform:translateY(3px)}
+.mid{display:flex;gap:8px;flex:1;justify-content:center}
+.mb{border:0;border-radius:14px;width:74px;height:62px;font:800 .7rem var(--body);color:#fff;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.4);display:flex;flex-direction:column;align-items:center;justify-content:center;touch-action:none}
+.mb span{font-size:1.35rem}.mb.br{background:#b91c1c}.mb.hn{background:#b45309}.mb.on{transform:translateY(3px);filter:brightness(1.2)}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="dist">০ মি</b><small>দূরত্ব · <span id="spd">০</span> কিমি/ঘ</small></div>
+    <div class="stat r"><b id="cash">৳০</b><small>আজকের ভাড়া</small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas class="cv" id="cv"></canvas>
+    <div class="lives" id="lives" hidden></div>
+    <div class="fare" id="fare" hidden></div>
+    <div class="say" id="say" hidden></div>
+    <div class="chost" id="chatHost"></div>
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>অটোরিকশা উল্টো পথে</h1>
+        <p class="story">মিরপুরের একমুখী রাস্তা। আপনি সিএনজি চালাচ্ছেন নিয়ম মেনে, কিন্তু উল্টো দিক থেকে ছুটে আসছে ইজিবাইক, রিকশা, মোটরসাইকেল! সামনে আবার ধীর বাস। রাস্তার পাশে হাত তুলে যাত্রী ডাকছে…</p>
+        <div class="rules">
+          <div>◀ ▶ চেপে লেন বদলান। উল্টো দিক থেকে আসা গাড়ি আর সামনের ধীর বাস-ট্রাকের পাশ কাটান। ৩ বার ধাক্কা লাগলে খেলা শেষ।</div>
+          <div>📢 <b>হর্ন</b> দিলে সামনের উল্টো পথের চালক অনেক সময় সরে যায়। 🛑 <b>ব্রেক</b> চেপে ধরলে গতি কমে।</div>
+          <div>🙋 বাম কিনারে হাত তোলা যাত্রী: বাম লেনে থেকে ব্রেক করে আস্তে পাশ দিয়ে গেলে উঠবে। গন্তব্যে নামিয়ে দিলে ভাড়া!</div>
+        </div>
+        <div class="lvl">
+          <button data-lv="0">শুক্রবার সকাল<small>ফাঁকা</small></button>
+          <button data-lv="1">অফিস টাইম<small>ভিড়</small></button>
+          <button data-lv="2">ঈদের আগে<small>মহা জট</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">সিএনজি, রিকশা, ইজিবাইক, বাস, মোটরসাইকেল: Sketchfab-এর শিল্পী (<a href="/assets/vehicles/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। মানুষ: Renderpeople (CC-BY 4.0)। পিচ, দেয়াল, আকাশ: Poly Haven (CC0)।</p>
+      </div>
+    </div>
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">খেলা শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eD">০</b><span>মিটার</span></div><div><b id="eF">৳০</b><span>ভাড়া</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার চালাই</button><button class="gbtn ghost" id="menuBtn">সময় বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">🛺</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+  <div class="ctl">
+    <button class="ab" id="lB" aria-label="বামের লেন">◀</button>
+    <div class="mid"><button class="mb hn" id="hB"><span>📢</span>হর্ন</button><button class="mb br" id="bB"><span>🛑</span>ব্রেক</button></div>
+    <button class="ab" id="rB" aria-label="ডানের লেন">▶</button>
+  </div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { GLTFLoader } from "/js/vendor/addons/GLTFLoader.js";
+import { RGBELoader } from "/js/vendor/addons/RGBELoader.js";
+import { MeshoptDecoder } from "/js/vendor/addons/meshopt_decoder.module.js";
+import { clone as cloneSkinned } from "/js/vendor/addons/SkeletonUtils.js";
+import { TIERS, detectTier } from "/js/kh-quality.js";
+import { loadPeople } from "/js/kh-people.js";
+import { loadFleet } from "/js/kh-vehicles.js";
+import { gameShell, sound, bn, pick, rnd, clamp } from "/js/kh-shell.js";
+
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'autorickshaw', name: 'অটোরিকশা উল্টো পথে', lbTitle: 'সেরা সিএনজি চালক', offMsg: 'রাস্তা খোঁড়াখুঁড়ি চলছে, আজ বন্ধ! পরে আসেন।' });
+const SND = sound(SH);
+const TIER = TIERS[detectTier()], LOW = TIER.id <= 1;
+let renderer = null; try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' }); } catch (e) {}
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(60, 1, .05, 300);
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; }
+const ANISO = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1, texL = new THREE.TextureLoader(), RA = '/games/racer/assets/', JA = '/games/jam/assets/';
+const tex = (u, srgb, rx, ry) => { const t = texL.load(u); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; t.repeat.set(rx, ry ?? rx); return t; };
+const cvTex = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; return t; };
+const M = o => new THREE.MeshStandardMaterial(o);
+if (renderer && TIER.id >= 1) new RGBELoader().load(RA + 'sky_1k.hdr', h => { const pm = new THREE.PMREMGenerator(renderer); h.mapping = THREE.EquirectangularReflectionMapping; scene.environment = pm.fromEquirectangular(h).texture; scene.environmentIntensity = .6; h.dispose(); pm.dispose(); }, undefined, () => {});
+
+/* ---------- রোদেলা একমুখী রাস্তা ---------- */
+const skyT = texL.load(RA + 'sky.jpg'); skyT.colorSpace = THREE.SRGBColorSpace;
+{ const g = new THREE.SphereGeometry(220, 32, 16); g.scale(-1, 1, 1); scene.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: skyT, fog: false, toneMapped: false }))); }
+scene.fog = new THREE.Fog('#d6d2c8', 30, 140);
+scene.add(new THREE.HemisphereLight('#fff6e6', '#5a5244', 1.2));
+{ const d = new THREE.DirectionalLight('#fff0d8', 1.8); d.position.set(-8, 14, 6); scene.add(d); }
+const ROADW = 8.4, SEG = 9, NSEG = 16, LANES = [-2.6, 0, 2.6];
+const asph = ['asphalt_diff.jpg', 'asphalt_nor.jpg'].map((f, i) => tex(RA + f, i === 0, 3, 60));
+const road = new THREE.Mesh(new THREE.PlaneGeometry(ROADW, 200), M({ map: asph[0], normalMap: asph[1], color: '#9a968e', roughness: .95 })); road.rotation.x = -Math.PI / 2; scene.add(road);
+const markT = cvTex(64, 512, (x, w, h) => { x.clearRect(0, 0, w, h); x.fillStyle = 'rgba(245,245,240,.85)'; x.fillRect(26, 0, 12, h * .55); });
+markT.repeat.set(1, 25); const marks = [];
+for (const lx of [-1.3, 1.3]) { const m = new THREE.Mesh(new THREE.PlaneGeometry(.3, 200), new THREE.MeshBasicMaterial({ map: markT, transparent: true, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.set(lx, .01, 0); scene.add(m); marks.push(m); }
+const plaster = ['plaster_diff.jpg', 'plaster_nor.jpg'].map((f, i) => tex(JA + f, i === 0, 2, 2));
+const signTex = (t, col) => cvTex(512, 96, (x) => { x.fillStyle = col; x.fillRect(0, 0, 512, 96); x.fillStyle = '#fff'; x.font = "800 52px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(t, 256, 52); });
+const SHOPS = ['চা-বিস্কুট', 'মায়ের দোয়া স্টোর', 'লাইফ কেয়ার ফার্মেসি', 'মোবাইল রিচার্জ', 'কাচ্চি ঘর', 'স্টাইল সেলুন', 'বিসমিল্লাহ হোটেল', 'বই ঘর', 'জেনারেল স্টোর', 'ইলেকট্রিক হাউস'];
+const SIGNS = SHOPS.map(s => new THREE.MeshBasicMaterial({ map: signTex(s, pick(['#b91c1c', '#15803d', '#1d4ed8', '#7c2d12', '#6d28d9'])) }));
+const bMats = ['#e8dcc6', '#d9c7a8', '#c9d6cf', '#e3c9b8', '#d4cfc4', '#efe3cf'].map(c => M({ map: plaster[0], normalMap: plaster[1], color: c, roughness: .95 }));
+const shutM = M({ color: '#5b6067', metalness: .5, roughness: .5 }), fpM = M({ color: '#a39d92', roughness: .9 });
+const oneWay = signTex('একমুখী রাস্তা ↑', '#1d4ed8');
+const SEGS = [];
+for (let i = 0; i < NSEG; i++) for (const sd of [-1, 1]) { const g = new THREE.Group(), h = rnd(8, 18);
+  const b = new THREE.Mesh(new THREE.BoxGeometry(6, h, SEG - .3), pick(bMats)); b.position.set(sd * (ROADW / 2 + 6), h / 2, 0); g.add(b);
+  const sh = new THREE.Mesh(new THREE.PlaneGeometry(SEG - 1.4, 2.6), shutM); sh.position.set(sd * (ROADW / 2 + 2.98), 1.45, 0); sh.rotation.y = -sd * Math.PI / 2; g.add(sh);
+  const sg = new THREE.Mesh(new THREE.PlaneGeometry(SEG - 1.2, (SEG - 1.2) * 96 / 512), SIGNS[(i * 2 + (sd > 0)) % SIGNS.length]); sg.position.set(sd * (ROADW / 2 + 2.97), 3.4, 0); sg.rotation.y = -sd * Math.PI / 2; g.add(sg);
+  const fp = new THREE.Mesh(new THREE.BoxGeometry(3, .25, SEG), fpM); fp.position.set(sd * (ROADW / 2 + 1.5), .12, 0); g.add(fp);
+  if (i % 4 === 0 && sd < 0) { const p = new THREE.Mesh(new THREE.CylinderGeometry(.05, .05, 2.6, 6), M({ color: '#666' })); p.position.set(sd * (ROADW / 2 + .4), 1.3, 0); g.add(p); const s = new THREE.Mesh(new THREE.PlaneGeometry(1.4, .27), new THREE.MeshBasicMaterial({ map: oneWay, side: THREE.DoubleSide })); s.position.set(sd * (ROADW / 2 + .4), 2.5, 0); g.add(s); }
+  if (Math.random() < .5) { const p = new THREE.Mesh(new THREE.CylinderGeometry(.09, .11, 7, 8), M({ color: '#8a8a86', roughness: .9 })); p.position.set(sd * (ROADW / 2 + .5), 3.5, rnd(-3, 3)); g.add(p); }
+  g.userData.i = i; scene.add(g); SEGS.push(g); }
+
+/* ---------- গাড়ি আর মানুষ ---------- */
+const FL = {}, me = new THREE.Group(); scene.add(me);
+const ONC = ['easybike', 'rickshaw', 'moto', 'cng'], SAME = ['bus_hino', 'bus_mini', 'truck_tata', 'hiace'];
+loadFleet(THREE, new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), ['cng', 'easybike', 'rickshaw', 'moto', 'bus_hino', 'bus_mini', 'truck_tata', 'hiace']).then(f => { Object.assign(FL, f); const g = new THREE.Group(); f.cng.parts.forEach(p => g.add(new THREE.Mesh(p.geo, p.mat))); me.add(g); window.KHG.ready = !!PEOPLE; }).catch(() => {});
+let PEOPLE = null; const PAX = [];
+loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned).then(P => { PEOPLE = P; for (let i = 0; i < 3; i++) { const h = P.make(i + 1, { scale: 1, shadow: false }); h.root.visible = false; scene.add(h.root); PAX.push({ h, on: false }); } window.KHG.ready = !!FL.cng; }).catch(() => {});
+const wave = cvTex(128, 128, (x) => { x.font = '96px serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('🙋', 64, 70); });
+const VEH = [];
+function mkVeh(k) { const F = FL[k]; if (!F) return null; const g = new THREE.Group(); F.parts.forEach(p => g.add(new THREE.Mesh(p.geo, p.mat))); scene.add(g); return g; }
+
+const SFX = {
+  horn() { SND.tone(520, .35, 'square', .06); SND.tone(620, .35, 'square', .05); },
+  bell() { [1800, 2200, 1800].forEach((f, i) => SND.tone(f, .07, 'triangle', .08, 0, i * .07)); },
+  crash() { SND.noise(.5, .6, 900, 'lowpass'); SND.noise(.3, .4, 3000, 'highpass', .05); SND.tone(80, .4, 'sine', .3, 40); },
+  coin() { [1046, 1318].forEach((f, i) => SND.tone(f, .14, 'triangle', .22, 0, i * .07)); },
+  whoosh() { SND.noise(.3, .18, 1200, 'bandpass'); }
+};
+let engL = null;
+const LV = [{ n: 'শুক্রবার সকাল', onc: 2.2, same: 6, vmax: 13 }, { n: 'অফিস টাইম', onc: 1.4, same: 4.2, vmax: 14 }, { n: 'ঈদের আগে', onc: .9, same: 3, vmax: 15 }];
+let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0;
+function newGame() { S = { over: false, started: false, lane: 0, x: LANES[0], z: 0, v: 0, lives: 3, cash: 0, brake: false, nextOnc: 2, nextSame: 3, nextPax: 6, pax: null, t: 0, hit: 0, honks: 0, near: 0, shake: 0 }; hud(); }
+function say(t, col, ms) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, ms || 1300); }
+function pop(t, cls) { const e = document.createElement('div'); e.className = 'pop ' + (cls || ''); e.textContent = t; $('stage').appendChild(e); setTimeout(() => e.remove(), 1100); }
+function talk(t, who, v) { if (window.KHViral) KHViral.pop(t, v || 'M3', who); }
+function hud() { $('dist').textContent = bn(Math.round(-S.z)) + ' মি'; $('spd').textContent = bn(Math.round(S.v * 3.6)); $('cash').textContent = '৳' + bn(S.cash); $('lives').textContent = '❤️'.repeat(S.lives) + '🖤'.repeat(3 - S.lives); const p = S.pax; $('fare').hidden = !p || !p.in; if (p && p.in) $('fare').textContent = `🧍 যাত্রী: ${p.dest} · আর ${bn(Math.max(0, Math.round(p.dz - -S.z)))} মি`; }
+const DESTS = ['মিরপুর ১০', 'কাজীপাড়া', 'শেওড়াপাড়া', 'আগারগাঁও', 'ফার্মগেট', 'মহাখালী'];
+function spawn(kind) {
+  const L = LV[lv]; const onc = kind === 'onc'; const k = pick(onc ? ONC : SAME); const g = mkVeh(k); if (!g) return;
+  const lane = onc ? pick([0, 1, 2, 1]) : pick([1, 2, 1, 0]); const len = FL[k].conf.len;
+  const v = { g, k, onc, lane, x: LANES[lane] + rnd(-.25, .25), z: S.z - rnd(70, 95), sp: onc ? rnd(4, 7) : -rnd(4, 7), len, w: FL[k].conf.w || 1.6, dodge: 0, passed: false };
+  if (VEH.some(o => o.lane === lane && Math.abs(o.z - v.z) < 12)) { scene.remove(g); return; }
+  g.rotation.y = onc ? Math.PI : 0; VEH.push(v);
+}
+function laneTo(d) { if (!S || S.over || !S.started) return; const n = clamp(S.lane + d, 0, 2); if (n !== S.lane) { S.lane = n; SFX.whoosh(); } }
+function honk() { if (!S || S.over) return; SFX.horn(); S.honks++; const t = VEH.filter(v => v.onc && v.lane === S.lane && v.z < S.z && S.z - v.z < 30).sort((a, b) => b.z - a.z)[0]; if (t && Math.random() < .6) { const free = [0, 1, 2].filter(l => l !== S.lane && !VEH.some(o => o !== t && o.lane === l && Math.abs(o.z - t.z) < 8)); if (free.length) { t.lane = pick(free); t.dodge = 1; talk(pick(['আচ্ছা আচ্ছা, সরতেছি!', 'হর্ন দেন ক্যান!', 'রাস্তা কি আপনার একার?']), '😤 উল্টো চালক'); } } else if (t) talk(pick(['আমি সরুম না, আপনি সরেন!', 'জায়গা নাই, দেখেন না?']), '😤 উল্টো চালক'); }
+function step(dt) {
+  const L = LV[lv]; S.t += dt;
+  const target = S.brake ? 2 : Math.min(L.vmax, 9 + S.t * .05); S.v += clamp(target - S.v, -dt * 8, dt * 2.4); if (S.hit > 0) { S.hit -= dt; S.v = Math.min(S.v, 3); }
+  S.z -= S.v * dt; S.x += (LANES[S.lane] - S.x) * Math.min(1, dt * 6);
+  if ((S.nextOnc -= dt) <= 0) { S.nextOnc = L.onc * rnd(.6, 1.4); spawn('onc'); }
+  if ((S.nextSame -= dt) <= 0) { S.nextSame = L.same * rnd(.6, 1.4); spawn('same'); }
+  // গাড়ি চলা, ধাক্কা
+  for (let i = VEH.length - 1; i >= 0; i--) { const v = VEH[i]; v.z += v.sp * dt; v.x += (LANES[v.lane] + (v.onc ? .1 : -.1) - v.x) * Math.min(1, dt * (v.dodge ? 3 : 1.2)); v.g.position.set(v.x, 0, v.z); v.g.rotation.y = (v.onc ? Math.PI : 0) + (LANES[v.lane] - v.x) * (v.onc ? -.12 : .12);
+    const dz = Math.abs(v.z - S.z), dx = Math.abs(v.x - S.x), minz = (v.len + 2.7) / 2, minx = (v.w + 1.35) / 2 * .9;
+    if (dz < minz && dx < minx && S.hit <= 0) { S.hit = 1.2; S.lives--; S.shake = .5; SFX.crash(); say('ধাক্কা! 💥', '#fca5a5'); talk(v.onc ? pick(['উল্টা পথে আইসা আবার ধাক্কা!', 'চোখে দেখেন না?']) : 'ব্রেক কইরা চালান!', v.onc ? '😠 উল্টো চালক' : '😠 বাসের হেলপার'); v.lane = clamp(v.lane + (v.x > S.x ? 1 : -1), 0, 2); v.dodge = 1; if (S.lives <= 0) return endGame(); }
+    else if (!v.passed && v.onc && dz < minz && dx < minx + .9 && dx >= minx) { v.passed = true; S.near++; pop('অল্পের জন্য বাঁচলাম! +২০', 'good'); }
+    if (v.z - S.z > 25 || S.z - v.z > 160) { scene.remove(v.g); VEH.splice(i, 1); } }
+  // যাত্রী
+  if (!S.pax && (S.nextPax -= dt) <= 0) { const p = PAX[0]; if (p) { S.pax = { h: p.h, z: S.z - 70, in: false, dest: pick(DESTS) }; p.h.root.visible = true; p.h.root.position.set(-ROADW / 2 - .5, .25, S.pax.z); p.h.root.rotation.y = Math.PI / 2; } }
+  const P = S.pax; if (P && !P.in) { const dz = S.z - P.z; if (Math.abs(dz) < 3 && S.lane === 0 && S.v < 5) { P.in = true; P.h.root.visible = false; P.dz = -S.z + rnd(180, 320); P.fare = Math.round((P.dz + S.z) / 10) * 0 + Math.round(rnd(60, 120) / 10) * 10; SFX.bell(); say(`যাত্রী উঠলেন: ${P.dest} 🧍`, '#86efac'); talk(pick([`মামা, ${P.dest} যাবেন? তাড়াতাড়ি!`, `${P.dest}, মিটারে না, ঠিক করে নেন!`]), '🧍 যাত্রী', 'M2'); } else if (dz < -6) { S.pax = null; S.nextPax = rnd(5, 9); P.h.root.visible = false; pop('যাত্রী মিস হলো', 'bad'); } }
+  if (P && P.in && -S.z >= P.dz) { S.cash += P.fare; SFX.coin(); say(`${P.dest} পৌঁছালেন! +৳${bn(P.fare)}`, '#86efac'); S.pax = null; S.nextPax = rnd(4, 8); }
+  hud();
+}
+const TIPS = ['জানেন কি? উল্টো পথে গাড়ি চালানো ঢাকার সড়ক দুর্ঘটনার বড় কারণগুলোর একটি; এতে নিজের আর অন্যের জীবন ঝুঁকিতে পড়ে।', 'জানেন কি? অপ্রয়োজনে হর্ন বাজানো শব্দদূষণ; ঢাকার অনেক এলাকায় শব্দ সহনীয় মাত্রার চেয়ে অনেক বেশি।', 'জানেন কি? সিএনজি চালিত অটোরিকশার আসল নাম "থ্রি-হুইলার"; সবুজ রং মানে ভাড়ায় চলে, ধূসর মানে ব্যক্তিগত।', 'জানেন কি? লেন মেনে চললে যানজট কমে আর দুর্ঘটনার ঝুঁকিও কমে।'];
+function endGame() {
+  if (S.over) return; S.over = true; S.brake = false; $('lives').hidden = true; $('fare').hidden = true;
+  const d = Math.round(-S.z), sc = Math.round(d / 2 + S.cash * 2 + S.near * 20);
+  $('endT').textContent = 'তিনবার ধাক্কা! সিএনজি গ্যারেজে 🔧'; $('endTitle').textContent = d > 2500 ? 'রাস্তার ওস্তাদ 👑' : d > 1200 ? 'দক্ষ সিএনজি চালক' : 'নতুন চালক';
+  $('endLine').textContent = `${LV[lv].n}-এ ${bn(d)} মিটার চালালেন, ভাড়া ৳${bn(S.cash)}। ${bn(S.near)} বার অল্পের জন্য বেঁচেছেন, ${bn(S.honks)} বার হর্ন দিয়েছেন।`;
+  $('eS').textContent = bn(sc); $('eD').textContent = bn(d); $('eF').textContent = '৳' + bn(S.cash); $('eTip').textContent = pick(TIPS);
+  setTimeout(() => $('endO').hidden = false, 900); SH.saveScore(sc); lastScore = sc;
+}
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 70 : 58; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+function loop(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  if (S && S.started && !S.over) step(dt);
+  const z = S ? S.z : 0, x = S ? S.x : LANES[0];
+  me.position.set(x, Math.sin(T0 * 18) * .006 * (S ? S.v / 10 : 0), z); me.rotation.set(0, (S ? (LANES[S.lane] - x) * .15 : 0), S && S.shake > 0 ? Math.sin(T0 * 50) * .04 * S.shake : 0); if (S) S.shake = Math.max(0, S.shake - dt);
+  for (const g of SEGS) { const span = NSEG * SEG; let gz = -g.userData.i * SEG; while (gz > z + 25) gz -= span; while (gz < z + 25 - span) gz += span; g.position.z = gz; }
+  road.position.z = z - 80; asph[0].offset.y = asph[1].offset.y = (z - 80) / 200 * 60 * -1 / 1; markT.offset.y = -(z - 80) / 200 * 25;
+  marks.forEach(m => m.position.z = z - 80);
+  if (S && S.pax && !S.pax.in) S.pax.h.update(dt, 0, 1);
+  const port = W / H < .8;
+  if (S && S.started) { cam.position.set(x * .7, port ? 3.4 : 2.9, z + (port ? 7.2 : 6.2)); cam.lookAt(x * .8, 1.1, z - 10); }
+  else { const a = T0 * .08; cam.position.set(Math.sin(a) * 4, 3, z + 7); cam.lookAt(x, 1, z - 6); }
+  if (engL && SND.ac) { engL.g.gain.setTargetAtTime(S && S.started && !S.over ? .05 + (S.v / 15) * .05 : 0, SND.ac.currentTime, .1); engL.f.frequency.setTargetAtTime(160 + (S ? S.v : 0) * 26, SND.ac.currentTime, .1); }
+  if (renderer) renderer.render(scene, cam);
+  requestAnimationFrame(loop);
+}
+function start(level) { lv = level; VEH.forEach(v => scene.remove(v.g)); VEH.length = 0; PAX.forEach(p => p.h.root.visible = false); newGame(); S.started = true; ['startO', 'endO'].forEach(i => $(i).hidden = true); $('lives').hidden = false; SND.ac; if (!engL) engL = SND.loop('bandpass', 200, 3); SFX.horn(); hud(); say('একমুখী রাস্তা… কিন্তু ওরা তো মানে না!', '#fde047', 1800); }
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = e => { e.stopPropagation(); if (!FL.cng) return say('সিএনজি আসছে, একটু দাঁড়ান…'); start(+b.dataset.lv); });
+$('lB').onpointerdown = e => { e.preventDefault(); laneTo(-1); }; $('rB').onpointerdown = e => { e.preventDefault(); laneTo(1); }; $('hB').onpointerdown = e => { e.preventDefault(); honk(); };
+{ const b = $('bB'); const on = e => { e.preventDefault(); if (S) S.brake = true; b.classList.add('on'); }, off = () => { if (S) S.brake = false; b.classList.remove('on'); }; b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off); }
+// সোয়াইপেও লেন বদল
+{ let sx = null; $('stage').addEventListener('pointerdown', e => sx = e.clientX); $('stage').addEventListener('pointerup', e => { if (sx !== null && Math.abs(e.clientX - sx) > 40) laneTo(e.clientX > sx ? 1 : -1); sx = null; }); }
+addEventListener('keydown', e => { if (e.key === 'ArrowLeft') laneTo(-1); if (e.key === 'ArrowRight') laneTo(1); if (e.key === 'h') honk(); if (e.key === 'ArrowDown' && S) S.brake = true; });
+addEventListener('keyup', e => { if (e.key === 'ArrowDown' && S) S.brake = false; });
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `অটোরিকশা উল্টো পথে: ${S ? bn(Math.round(-S.z)) : 0} মিটার, ${bn(lastScore)} পয়েন্ট! 🛺 উল্টো পথের ভিড়ে আপনি কতদূর যাবেন? ${location.origin}/games/autorickshaw/`; try { navigator.clipboard.writeText(t).then(() => pop('কপি হয়েছে, শেয়ার করুন!', 'good')); } catch (e) {} };
+newGame(); resize(); last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+const MY = ['ভাই, এটা একমুখী রাস্তা!', 'উল্টা আসেন ক্যান?', 'মামা, সাইড দেন!', 'আইন মানেন একটু'], OP = ['সবাই তো আসে, আমি আসলে দোষ?', 'শর্টকাট ভাই, দুই মিনিট', 'চুপ থাকেন!', 'পুলিশ নাই তো!'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY, onSay: t => { KHViral.pop(t, 'M1', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP), 'M3', '😤 উল্টো চালক', true), 1500); } });
+window.KHG = { get S() { return S; }, start, laneTo, honk, spawn, ready: false, get VEH() { return VEH; } };
+</script>
+<script src="/js/update.js"></script>
+</body></html>
