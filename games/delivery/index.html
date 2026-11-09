@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>ডেলিভারি রাইডার · খেলাঘর</title>
+<meta name="description" content="বাইক নিয়ে শহরে খাবার ডেলিভারি! হ্যান্ডেলের ফোনে ম্যাপ দেখে রেস্টুরেন্ট থেকে অর্ডার তুলুন, গরম থাকতে থাকতে গ্রাহকের দরজায় পৌঁছান। ধাক্কা খেলে খাবার নষ্ট!">
+<link rel="canonical" href="https://khelaghorbd.online/games/delivery/">
+<meta property="og:title" content="ডেলিভারি রাইডার · খেলাঘর">
+<meta property="og:description" content="খাবার ঠান্ডা হওয়ার আগে পৌঁছাতে পারবেন? ৫ স্টার পাবেন তো?">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/delivery.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/delivery.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+:root{--accent:#ec4899}
+.order{position:absolute;left:10px;right:10px;top:10px;z-index:3;background:rgba(15,10,20,.82);border:1px solid #6b2148;border-radius:12px;padding:6px 10px;pointer-events:none;font-size:.78rem}
+.order b{font:800 .95rem var(--display);color:#f9a8d4}
+.order .bar{height:7px;background:rgba(255,255,255,.12);border-radius:4px;overflow:hidden;margin-top:4px}.order .bar i{display:block;height:100%;width:100%;background:#f97316}
+.pin{position:absolute;transform:translate(-50%,-100%);z-index:3;pointer-events:none;background:#ec4899;color:#fff;border-radius:10px;padding:3px 8px;font:800 .72rem var(--body);white-space:nowrap}
+.pin.food{background:#f97316}
+.ab{border:0;border-radius:16px;width:74px;height:66px;font:800 1.6rem var(--display);color:#fff;background:#1f2937;box-shadow:0 4px 0 rgba(0,0,0,.4);cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none}
+.ab.on{transform:translateY(3px);background:#374151}
+.mid{display:flex;gap:8px;flex:1;justify-content:center}
+.mb{border:0;border-radius:14px;width:76px;height:66px;font:800 .72rem var(--body);color:#fff;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.4);display:flex;flex-direction:column;align-items:center;justify-content:center;touch-action:none}
+.mb span{font-size:1.35rem}.mb.gas{background:#15803d}.mb.br{background:#b91c1c}.mb.on{transform:translateY(3px);filter:brightness(1.2)}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="earn">৳০</b><small>আয় · <span id="stars">⭐ ৫.০</span></small></div>
+    <div class="stat r"><b id="time">৩:০০</b><small>শিফট বাকি</small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas class="cv" id="cv"></canvas>
+    <div class="order" id="order" hidden></div>
+    <div class="pin" id="pin" hidden></div>
+    <div class="say" id="say" hidden></div>
+    <div class="chost" id="chatHost"></div>
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>ডেলিভারি রাইডার</h1>
+        <p class="story">দুপুর ১টা, অর্ডারের পর অর্ডার! আপনি বাইক নিয়ে শহরে খাবার পৌঁছে দেন। হ্যান্ডেলে লাগানো ফোনে ম্যাপ, পেছনে গোলাপি খাবারের ব্যাগ। গ্রাহক অপেক্ষা করছে: "ভাই, কতদূর?"</p>
+        <div class="rules">
+          <div>🗺️ হ্যান্ডেলের ফোনের ম্যাপে <b>কমলা</b> = রেস্টুরেন্ট, <b>গোলাপি</b> = গ্রাহক। আকাশে রঙিন আলোর খুঁটিও দেখা যায়।</div>
+          <div>⬅️➡️ চেপে ধরে মোড় নিন, <b>⚡ গ্যাস</b> চেপে চালান, <b>🛑 ব্রেক</b>। জায়গায় পৌঁছে থামলেই খাবার তোলা/দেওয়া।</div>
+          <div>🍱 খাবার সময়ের সাথে ঠান্ডা হয়। দেয়াল বা গাড়িতে ধাক্কা লাগলে খাবার নষ্ট, রেটিং কমে!</div>
+        </div>
+        <div class="lvl">
+          <button data-lv="0">সকালের শিফট<small>ফাঁকা রাস্তা</small></button>
+          <button data-lv="1">দুপুরের ভিড়<small>বেশি অর্ডার</small></button>
+          <button data-lv="2">ইফতারের আগে<small>মহা চাপ</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">গাড়ি: Sketchfab-এর শিল্পী (<a href="/assets/vehicles/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। পিচ, দেয়াল, আকাশ: Poly Haven (CC0)। বাইকের হ্যান্ডেল খেলাঘরের নিজের বানানো। রেস্টুরেন্টের নাম কাল্পনিক।</p>
+      </div>
+    </div>
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">শিফট শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eN">০</b><span>ডেলিভারি</span></div><div><b id="eStar">০</b><span>রেটিং</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার শিফট</button><button class="gbtn ghost" id="menuBtn">সময় বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">🛵</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+  <div class="ctl">
+    <button class="ab" id="lB" aria-label="বামে">⬅️</button>
+    <div class="mid"><button class="mb br" id="bB"><span>🛑</span>ব্রেক</button><button class="mb gas" id="gB"><span>⚡</span>গ্যাস</button></div>
+    <button class="ab" id="rB" aria-label="ডানে">➡️</button>
+  </div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { GLTFLoader } from "/js/vendor/addons/GLTFLoader.js";
+import { RGBELoader } from "/js/vendor/addons/RGBELoader.js";
+import { MeshoptDecoder } from "/js/vendor/addons/meshopt_decoder.module.js";
+import { TIERS, detectTier } from "/js/kh-quality.js";
+import { loadFleet } from "/js/kh-vehicles.js";
+import { gameShell, sound, bn, pick, rnd, clamp } from "/js/kh-shell.js";
+
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'delivery', name: 'ডেলিভারি রাইডার', lbTitle: 'সেরা ডেলিভারি রাইডার', offMsg: 'সার্ভার ডাউন, আজ অর্ডার নেই! পরে আসেন।' });
+const SND = sound(SH);
+const TIER = TIERS[detectTier()], LOW = TIER.id <= 1;
+let renderer = null; try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' }); } catch (e) {}
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(68, 1, .05, 400); scene.add(cam);
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; }
+const ANISO = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1, texL = new THREE.TextureLoader(), RA = '/games/racer/assets/', JA = '/games/jam/assets/';
+const tex = (u, srgb, rx, ry) => { const t = texL.load(u); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; t.repeat.set(rx, ry ?? rx); return t; };
+const cvTex = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; };
+const M = o => new THREE.MeshStandardMaterial(o);
+if (renderer && TIER.id >= 1) new RGBELoader().load(RA + 'sky_1k.hdr', h => { const pm = new THREE.PMREMGenerator(renderer); h.mapping = THREE.EquirectangularReflectionMapping; scene.environment = pm.fromEquirectangular(h).texture; scene.environmentIntensity = .6; h.dispose(); pm.dispose(); }, undefined, () => {});
+
+/* ---------- শহরের গ্রিড: রাস্তা x,z = ৪০-এর গুণিতক ---------- */
+const G = 40, N = 6, RW = 10, MAXC = G * N;
+const skyT = texL.load(RA + 'sky.jpg'); skyT.colorSpace = THREE.SRGBColorSpace;
+{ const g = new THREE.SphereGeometry(320, 32, 16); g.scale(-1, 1, 1); const s = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: skyT, fog: false, toneMapped: false })); s.position.set(MAXC / 2, 0, MAXC / 2); scene.add(s); }
+scene.fog = new THREE.Fog('#d9d4c8', 40, 170);
+scene.add(new THREE.HemisphereLight('#fff6e6', '#5a5244', 1.2)); { const d = new THREE.DirectionalLight('#fff0d8', 1.8); d.position.set(-60, 120, 40); scene.add(d); }
+const asph = ['asphalt_diff.jpg', 'asphalt_nor.jpg'].map((f, i) => tex(RA + f, i === 0, 60, 60));
+{ const r = new THREE.Mesh(new THREE.PlaneGeometry(MAXC + 60, MAXC + 60), M({ map: asph[0], normalMap: asph[1], color: '#8e8a82', roughness: .95 })); r.rotation.x = -Math.PI / 2; r.position.set(MAXC / 2, 0, MAXC / 2); scene.add(r); }
+const plaster = ['plaster_diff.jpg', 'plaster_nor.jpg'].map((f, i) => tex(JA + f, i === 0, 3, 4));
+const facade = (base) => { const t = cvTex(256, 256, (x) => { x.fillStyle = base; x.fillRect(0, 0, 256, 256); for (let i = 0; i < 2600; i++) { x.fillStyle = `rgba(0,0,0,${Math.random() * .06})`; x.fillRect(Math.random() * 256, Math.random() * 256, 3, 3); } for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) { const wx = 14 + c * 62, wy = 14 + r * 62; x.fillStyle = Math.random() < .2 ? '#e8d9a8' : '#3a4450'; x.fillRect(wx, wy, 34, 40); x.strokeStyle = '#555'; x.lineWidth = 3; x.strokeRect(wx, wy, 34, 40); x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(wx - 6, wy + 44, 46, 5); x.strokeStyle = '#2b2b2b'; x.lineWidth = 2; for (let k = 0; k < 4; k++) { x.beginPath(); x.moveTo(wx + 4 + k * 9, wy); x.lineTo(wx + 4 + k * 9, wy + 40); x.stroke(); } } }); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; };
+const bMats = ['#e8dcc6', '#d9c7a8', '#c9d6cf', '#e3c9b8', '#d4cfc4', '#efe3cf', '#cdbfae'].map(c => { const m = M({ map: facade(c), normalMap: plaster[1], roughness: .95 }); return m; });
+const fpM = M({ color: '#a39d92', roughness: .9 }), shutM = M({ color: '#4f555c', metalness: .5, roughness: .5 });
+const signTex = (t, col) => cvTex(512, 112, (x) => { x.fillStyle = col; x.fillRect(0, 0, 512, 112); x.fillStyle = '#fff'; x.font = "800 56px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(t, 256, 60); });
+const SHOPM = ['মায়ের দোয়া স্টোর', 'লাইফ কেয়ার ফার্মেসি', 'মোবাইল সার্ভিসিং', 'স্টাইল সেলুন', 'জেনারেল স্টোর', 'বই ঘর', 'ইলেকট্রিক হাউস'].map((t, i) => new THREE.MeshBasicMaterial({ map: signTex(t, ['#1d4ed8', '#15803d', '#6d28d9', '#b91c1c', '#0f766e', '#7c2d12', '#334155'][i]), side: THREE.DoubleSide }));
+const REST = ['কাচ্চি ঘর', 'মামা হালিম', 'চিকেন ভাজা হাউস', 'পিঠাপুলি', 'বার্গার কর্নার', 'ভর্তা-ভাত'];
+const BLK = [];
+for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) { const cx = i * G + G / 2, cz = j * G + G / 2, S2 = G - RW; const fp = new THREE.Mesh(new THREE.BoxGeometry(S2, .2, S2), fpM); fp.position.set(cx, .1, cz); scene.add(fp);
+  for (let k = 0; k < 4; k++) { const ox = (k % 2 ? 1 : -1) * S2 / 4, oz = (k < 2 ? -1 : 1) * S2 / 4, h = rnd(8, 26); const mt = pick(bMats).clone(); mt.map = mt.map.clone(); mt.map.repeat.set(1, h / 13); mt.map.needsUpdate = true; const b = new THREE.Mesh(new THREE.BoxGeometry(S2 / 2 - 2, h, S2 / 2 - 2), mt); b.position.set(cx + ox, h / 2, cz + oz); scene.add(b); }
+  if (Math.random() < .7) { const s = new THREE.Mesh(new THREE.PlaneGeometry(8, 1.3), SHOPM[(i * 7 + j) % SHOPM.length]); s.position.set(cx - S2 / 4, 3.4, cz - S2 / 2 - .02); s.rotation.y = Math.PI; scene.add(s); const s2 = s.clone(); s2.material = SHOPM[(i * 3 + j + 2) % SHOPM.length]; s2.position.set(cx + S2 / 2 + .02, 3.4, cz + S2 / 4); s2.rotation.y = Math.PI / 2; scene.add(s2); }
+  BLK.push({ i, j, cx, cz }); }
+// রেস্টুরেন্ট আর গ্রাহকের বাসা: ব্লকের কোণে, রাস্তার দিকে মুখ
+const SPOTS = [];
+for (const b of BLK) for (const [dx, dz, ry] of [[0, -(G - RW) / 2, Math.PI], [(G - RW) / 2, 0, Math.PI / 2]]) SPOTS.push({ x: b.cx + dx * 1.18, z: b.cz + dz * 1.18, fx: b.cx + dx, fz: b.cz + dz, ry });
+const restSpots = SPOTS.filter((_, i) => i % 5 === 0).slice(0, 6);
+restSpots.forEach((s, i) => { s.rest = REST[i]; const sg = new THREE.Mesh(new THREE.PlaneGeometry(7, 1.5), new THREE.MeshBasicMaterial({ map: signTex(REST[i], ['#b91c1c', '#c2410c', '#a16207', '#7c2d12', '#be185d', '#15803d'][i]) })); sg.position.set(s.fx + Math.sin(s.ry) * .05, 4, s.fz + Math.cos(s.ry) * .05); sg.rotation.y = s.ry; scene.add(sg); const sh = new THREE.Mesh(new THREE.PlaneGeometry(6, 3), M({ color: '#2b2622', emissive: '#6b4a20', emissiveIntensity: .7 })); sh.position.set(s.fx + Math.sin(s.ry) * .05, 1.5, s.fz + Math.cos(s.ry) * .05); sh.rotation.y = s.ry; scene.add(sh); });
+// লক্ষ্যের আলোর খুঁটি
+const beacon = new THREE.Mesh(new THREE.CylinderGeometry(.6, .6, 60, 16, 1, true), new THREE.MeshBasicMaterial({ color: '#f97316', transparent: true, opacity: .35, depthWrite: false, side: THREE.DoubleSide, toneMapped: false })); beacon.position.y = 30; scene.add(beacon);
+const ring = new THREE.Mesh(new THREE.RingGeometry(2.6, 3.2, 40), new THREE.MeshBasicMaterial({ color: '#f97316', transparent: true, opacity: .7, side: THREE.DoubleSide, depthWrite: false })); ring.rotation.x = -Math.PI / 2; ring.position.y = .05; scene.add(ring);
+
+/* ---------- বাইকের হ্যান্ডেল (চালকের চোখে), ফোনে ম্যাপ ---------- */
+const bike = new THREE.Group(); cam.add(bike); bike.position.set(0, -.36, -.62); bike.scale.setScalar(.62);
+const mapC = document.createElement('canvas'); mapC.width = 256; mapC.height = 320; const mapT = new THREE.CanvasTexture(mapC); mapT.colorSpace = THREE.SRGBColorSpace;
+{ const chrome = M({ color: '#cfd4d8', metalness: .9, roughness: .2 }), blk = M({ color: '#141414', roughness: .7 });
+  const bar = new THREE.Mesh(new THREE.CylinderGeometry(.014, .014, .74, 10), chrome); bar.rotation.z = Math.PI / 2; bike.add(bar);
+  for (const sx of [-1, 1]) { const g = new THREE.Mesh(new THREE.CylinderGeometry(.02, .02, .13, 12), blk); g.rotation.z = Math.PI / 2; g.position.x = sx * .34; bike.add(g); const lv = new THREE.Mesh(new THREE.BoxGeometry(.13, .008, .02), chrome); lv.position.set(sx * .3, .01, -.05); lv.rotation.y = sx * .25; bike.add(lv);
+    const st = new THREE.Mesh(new THREE.CylinderGeometry(.005, .005, .2, 6), chrome); st.position.set(sx * .27, .1, -.02); bike.add(st); const mr = new THREE.Mesh(new THREE.CircleGeometry(.05, 20), M({ color: '#9fb3c8', metalness: 1, roughness: .05 })); mr.position.set(sx * .29, .2, -.02); bike.add(mr); const mb = new THREE.Mesh(new THREE.TorusGeometry(.05, .006, 6, 20), blk); mb.position.copy(mr.position); bike.add(mb); }
+  const head = new THREE.Mesh(new THREE.BoxGeometry(.28, .12, .12), M({ color: '#b91c1c', roughness: .4, metalness: .3 })); head.position.set(0, -.02, -.12); bike.add(head);
+  const sp = new THREE.Mesh(new THREE.CircleGeometry(.045, 24), new THREE.MeshBasicMaterial({ map: cvTex(128, 128, (x) => { x.fillStyle = '#0b0f14'; x.beginPath(); x.arc(64, 64, 64, 0, 7); x.fill(); x.strokeStyle = '#e5e7eb'; x.lineWidth = 3; for (let i = 0; i <= 8; i++) { const a = Math.PI * .75 + i / 8 * Math.PI * 1.5; x.beginPath(); x.moveTo(64 + Math.cos(a) * 50, 64 + Math.sin(a) * 50); x.lineTo(64 + Math.cos(a) * 58, 64 + Math.sin(a) * 58); x.stroke(); } }) })); sp.position.set(-.1, .045, -.06); sp.rotation.x = -.5; bike.add(sp);
+  const needle = new THREE.Mesh(new THREE.BoxGeometry(.004, .036, .002), new THREE.MeshBasicMaterial({ color: '#ef4444' })); needle.geometry.translate(0, .018, 0); needle.position.set(-.1, .046, -.058); needle.rotation.x = -.5; bike.add(needle); bike.userData.needle = needle;
+  const ph = new THREE.Mesh(new THREE.BoxGeometry(.085, .14, .01), blk); ph.position.set(.08, .1, -.05); ph.rotation.x = -.35; bike.add(ph);
+  const scr = new THREE.Mesh(new THREE.PlaneGeometry(.078, .13), new THREE.MeshBasicMaterial({ map: mapT, toneMapped: false })); scr.position.set(.08, .1, -.044); scr.rotation.x = -.35; bike.add(scr);
+  const hold = new THREE.Mesh(new THREE.CylinderGeometry(.006, .006, .1, 6), blk); hold.position.set(.08, .03, -.03); bike.add(hold); }
+// পেছনের দিকে না দেখা গেলেও, আয়নায় দেখা যায় না; থাক।
+
+/* ---------- ট্রাফিক ---------- */
+const FL = {}, TR = [];
+loadFleet(THREE, new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), ['cng', 'corolla', 'rickshaw', 'bus_mini', 'easybike']).then(f => { Object.assign(FL, f); spawnTraffic(); }).catch(() => {});
+function spawnTraffic() { TR.forEach(t => scene.remove(t.g)); TR.length = 0; const ks = Object.keys(FL); const n = [6, 10, 14][lv];
+  for (let i = 0; i < n; i++) { const k = pick(ks), g = new THREE.Group(); FL[k].parts.forEach(p => g.add(new THREE.Mesh(p.geo, p.mat))); scene.add(g); const alongX = Math.random() < .5, line = Math.floor(rnd(0, N + 1)) * G, dir = Math.random() < .5 ? 1 : -1;
+    TR.push({ g, alongX, line: line + dir * 2.4, dir, s: rnd(0, MAXC), v: k === 'rickshaw' ? rnd(2, 3.5) : rnd(5, 9), len: FL[k].conf.len }); } }
+
+/* ---------- খেলা ---------- */
+const SFX = {
+  ding() { [1046, 1318, 1568].forEach((f, i) => SND.tone(f, .14, 'triangle', .2, 0, i * .08)); },
+  crash() { SND.noise(.4, .5, 900, 'lowpass'); SND.tone(90, .3, 'sine', .25, 50); },
+  bell() { SND.tone(1800, .12, 'square', .05); },
+  bad() { SND.tone(200, .35, 'sawtooth', .12, 120); }
+};
+let engL = null;
+const LV = [{ n: 'সকালের শিফট', dur: 180, tLim: 70 }, { n: 'দুপুরের ভিড়', dur: 180, tLim: 60 }, { n: 'ইফতারের আগে', dur: 180, tLim: 50 }];
+const CUST = ['রাফি ভাই (৫/বি)', 'নীলা আপা (৩ তলা)', 'অফিসের সুমন সাহেব', 'হোস্টেলের তানিম', 'জাহানারা খালা', 'ডাক্তার আপা (চেম্বার)'];
+let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0;
+function newGame() { S = { over: false, started: false, x: G * 3, z: G * 3 + 4, h: 0, v: 0, steer: 0, gas: false, brake: false, t: 0, earn: 0, done: 0, stars: [], ord: null, bump: 0, crashes: 0 }; }
+function say(t, col, ms) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, ms || 1300); }
+function pop(t, cls) { const e = document.createElement('div'); e.className = 'pop ' + (cls || ''); e.textContent = t; $('stage').appendChild(e); setTimeout(() => e.remove(), 1100); }
+function talk(t, who, v) { if (window.KHViral) KHViral.pop(t, v || 'M2', who); }
+const onRoad = (x, z) => x > -4 && z > -4 && x < MAXC + 4 && z < MAXC + 4 && (Math.abs(x - Math.round(x / G) * G) < RW / 2 - .6 || Math.abs(z - Math.round(z / G) * G) < RW / 2 - .6);
+function newOrder() { const r = pick(restSpots), c = pick(SPOTS.filter(s => !s.rest && Math.hypot(s.x - r.x, s.z - r.z) > 60)); S.ord = { r, c, stage: 'pick', t: 0, food: 100, who: pick(CUST), item: pick(['কাচ্চি বিরিয়ানি', 'হালিম', 'চিকেন ফ্রাই', 'ভাপা পিঠা', 'বার্গার', 'ভর্তা-ভাত']) }; say(`নতুন অর্ডার: ${r.rest}`, '#fdba74'); SFX.bell(); }
+function target() { const o = S.ord; return o ? (o.stage === 'pick' ? o.r : o.c) : null; }
+function hud() { const left = Math.max(0, LV[lv].dur - S.t); $('time').textContent = bn(Math.floor(left / 60)) + ':' + bn(String(Math.floor(left % 60)).padStart(2, '0')); $('earn').textContent = '৳' + bn(S.earn); const st = S.stars.length ? S.stars.reduce((a, b) => a + b, 0) / S.stars.length : 5; $('stars').textContent = '⭐ ' + bn(st.toFixed(1));
+  const o = S.ord; if (o) { const tg = target(), d = Math.hypot(tg.x - S.x, tg.z - S.z); $('order').innerHTML = o.stage === 'pick' ? `<b>🍱 ${o.r.rest}</b> থেকে ${o.item} তুলুন · ${bn(Math.round(d))} মি` : `<b>🏠 ${o.who}</b>-কে ${o.item} দিন · ${bn(Math.round(d))} মি<div class="bar"><i style="width:${o.food}%;background:${o.food < 40 ? '#3b82f6' : '#f97316'}"></i></div>`; } }
+function drawMap() { const x = mapC.getContext('2d'), sc = 256 / (MAXC + 40), o = 20 * sc; x.fillStyle = '#e5e7eb'; x.fillRect(0, 0, 256, 320); x.fillStyle = '#cbd5e1'; for (const b of BLK) x.fillRect(o + (b.cx - (G - RW) / 2) * sc, 32 + o + (b.cz - (G - RW) / 2) * sc, (G - RW) * sc, (G - RW) * sc);
+  for (const r of restSpots) { x.fillStyle = '#f97316'; x.beginPath(); x.arc(o + r.x * sc, 32 + o + r.z * sc, 3, 0, 7); x.fill(); }
+  const tg = target(); if (tg) { x.fillStyle = S.ord.stage === 'pick' ? '#ea580c' : '#db2777'; x.beginPath(); x.arc(o + tg.x * sc, 32 + o + tg.z * sc, 7, 0, 7); x.fill(); x.strokeStyle = '#fff'; x.lineWidth = 2; x.stroke(); }
+  x.save(); x.translate(o + S.x * sc, 32 + o + S.z * sc); x.rotate(-S.h); x.fillStyle = '#1d4ed8'; x.beginPath(); x.moveTo(0, -9); x.lineTo(6, 7); x.lineTo(0, 3); x.lineTo(-6, 7); x.closePath(); x.fill(); x.restore();
+  x.fillStyle = '#111827'; x.fillRect(0, 0, 256, 30); x.fillStyle = '#fff'; x.font = "700 18px 'Noto Sans Bengali',sans-serif"; x.fillText(S.ord ? (S.ord.stage === 'pick' ? '🍱 রেস্টুরেন্টে যান' : '🏠 গ্রাহকের কাছে') : 'অর্ডারের অপেক্ষা…', 10, 21); mapT.needsUpdate = true; }
+function step(dt) {
+  const L = LV[lv]; S.t += dt; if (S.t >= L.dur) return endGame();
+  const maxV = 13; S.v += (S.gas ? 6 : -2.5) * dt; if (S.brake) S.v -= 14 * dt; S.v = clamp(S.v, 0, maxV);
+  S.h += S.steer * dt * (1.1 + (1 - S.v / maxV) * .9) * (S.v > .3 ? 1 : .4);
+  const nx = S.x - Math.sin(S.h) * S.v * dt, nz = S.z - Math.cos(S.h) * S.v * dt;
+  if (onRoad(nx, nz)) { S.x = nx; S.z = nz; } else if (S.v > 2) { hit('দেয়ালে ধাক্কা!'); } else S.v = 0;
+  if (S.bump > 0) S.bump -= dt;
+  for (const t of TR) { t.s += t.v * t.dir * dt; if (t.s > MAXC + 20) t.s = -20; if (t.s < -20) t.s = MAXC + 20; const x = t.alongX ? t.s : t.line, z = t.alongX ? t.line : t.s; t.g.position.set(x, 0, z); t.g.rotation.y = t.alongX ? (t.dir > 0 ? -Math.PI / 2 : Math.PI / 2) : (t.dir > 0 ? Math.PI : 0); if (Math.hypot(x - S.x, z - S.z) < (t.len / 2 + .6) * .8 && S.bump <= 0 && S.v > 1) hit('গাড়ির সাথে ধাক্কা!'); }
+  const o = S.ord; if (!o) { if ((S.wait = (S.wait || 0) + dt) > 1.5) { S.wait = 0; newOrder(); } }
+  else { o.t += dt; if (o.stage === 'drop') o.food = Math.max(0, o.food - dt * 100 / (L.tLim * 1.6)); const tg = target(), d = Math.hypot(tg.x - S.x, tg.z - S.z);
+    if (d < 4 && S.v < 2.5) { if (o.stage === 'pick') { o.stage = 'drop'; o.t = 0; SFX.ding(); say(`${o.item} তোলা হলো! 🍱`, '#fdba74'); talk(pick(['মামা, গরম গরম নিয়ে যান!', 'ব্যাগ ঠিকমতো বন্ধ কইরেন!']), '👨‍🍳 ' + o.r.rest, 'M3'); }
+      else { const late = o.t > L.tLim, star = clamp(Math.round(5 - (late ? (o.t - L.tLim) / 15 : 0) - (100 - o.food) / 30), 1, 5); const tip = star >= 5 ? 40 : star >= 4 ? 20 : 0, pay = 60 + tip; S.earn += pay; S.done++; S.stars.push(star); SFX.ding(); say(`ডেলিভারি! +৳${bn(pay)} ${'⭐'.repeat(star)}`, '#86efac', 1600); talk(star >= 4 ? pick(['থ্যাংক ইউ ভাই! একদম গরম!', 'এত তাড়াতাড়ি! ৫ স্টার দিলাম']) : pick(['এত দেরি ক্যান ভাই?', 'খাবার তো ঠান্ডা হয়ে গেছে…']), '🏠 ' + o.who, 'M2'); S.ord = null; } } }
+  hud();
+}
+function hit(msg) { if (S.bump > 0) return; S.bump = 1; S.crashes++; S.v = 0; SFX.crash(); say(msg + ' 💥', '#fca5a5'); if (S.ord && S.ord.stage === 'drop') { S.ord.food = Math.max(0, S.ord.food - 20); pop('খাবার উল্টে গেল -২০%', 'bad'); } S.x += Math.sin(S.h) * .8; S.z += Math.cos(S.h) * .8; if (!onRoad(S.x, S.z)) { S.x = Math.round(S.x / G) * G; } }
+const TIPS = ['জানেন কি? বাইক চালানোর সময় হেলমেট মাথায় ঠিকমতো বেঁধে নিলে দুর্ঘটনায় মাথার আঘাতের ঝুঁকি অনেক কমে।', 'জানেন কি? ফোনে ম্যাপ দেখতে হ্যান্ডেলে মাউন্ট ব্যবহার করুন; চালাতে চালাতে হাতে ফোন ধরা বিপজ্জনক।', 'জানেন কি? ডেলিভারি রাইডারদের ধন্যবাদ আর ভালো রেটিং দিলে তাদের আয় বাড়ে।', 'জানেন কি? ফুটপাতে বাইক চালানো বেআইনি আর পথচারীদের জন্য বিপজ্জনক।'];
+function endGame() {
+  if (S.over) return; S.over = true; S.gas = S.brake = false; $('order').hidden = true; $('pin').hidden = true; const st = S.stars.length ? S.stars.reduce((a, b) => a + b, 0) / S.stars.length : 0;
+  const sc = Math.round(S.earn * 3 + S.done * 80 + st * 40 - S.crashes * 25);
+  $('endT').textContent = `${bn(S.done)}টা ডেলিভারি, ৳${bn(S.earn)} আয়!`; $('endTitle').textContent = st >= 4.5 && S.done >= 4 ? 'সুপার রাইডার 👑' : S.done >= 3 ? 'দক্ষ রাইডার' : 'নতুন রাইডার';
+  $('endLine').textContent = `${LV[lv].n}: ${bn(S.done)}টা অর্ডার পৌঁছে দিয়েছেন, গড় রেটিং ${bn(st.toFixed(1))}, ${bn(S.crashes)} বার ধাক্কা।`;
+  $('eS').textContent = bn(Math.max(0, sc)); $('eN').textContent = bn(S.done); $('eStar').textContent = '⭐' + bn(st.toFixed(1)); $('eTip').textContent = pick(TIPS);
+  setTimeout(() => { $('endO').hidden = false; if (st >= 4.5 && S.done >= 4 && window.KHViral) KHViral.confetti(); }, 600); SH.saveScore(Math.max(0, sc)); lastScore = Math.max(0, sc);
+}
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 74 : 62; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+const v3 = new THREE.Vector3(); let mapT0 = 0;
+function loop(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  if (S && S.started && !S.over) step(dt);
+  const x = S ? S.x : G * 3, z = S ? S.z : G * 3, h = S ? S.h : T0 * .1;
+  cam.position.set(x, 1.32 + Math.sin(T0 * 9) * .006 * (S ? S.v / 13 : 0), z); cam.rotation.set(-.1, h, -(S ? S.steer * S.v / 13 : 0) * .08, 'YXZ');
+  bike.rotation.y = (S ? -S.steer : 0) * .12; if (bike.userData.needle) bike.userData.needle.rotation.z = -(S ? S.v / 13 : 0) * 4 + 2;
+  const tg = S && S.ord ? target() : null; beacon.visible = ring.visible = !!tg; if (tg) { beacon.position.set(tg.x, 30, tg.z); ring.position.set(tg.x, .05, tg.z); const col = S.ord.stage === 'pick' ? '#f97316' : '#ec4899'; beacon.material.color.set(col); ring.material.color.set(col); ring.scale.setScalar(1 + Math.sin(T0 * 4) * .08);
+    v3.set(tg.x, 3, tg.z).project(cam); const vis = v3.z < 1; $('pin').hidden = !vis; if (vis) { $('pin').style.left = clamp((v3.x + 1) / 2 * W, 40, W - 40) + 'px'; $('pin').style.top = clamp((1 - v3.y) / 2 * H, 90, H - 80) + 'px'; $('pin').className = 'pin' + (S.ord.stage === 'pick' ? ' food' : ''); $('pin').textContent = (S.ord.stage === 'pick' ? '🍱 ' : '🏠 ') + bn(Math.round(Math.hypot(tg.x - S.x, tg.z - S.z))) + ' মি'; } } else $('pin').hidden = true;
+  if (S && T0 - mapT0 > .15) { mapT0 = T0; drawMap(); }
+  if (!S || !S.started) for (const t of TR) { t.s += t.v * t.dir * dt; if (t.s > MAXC + 20) t.s = -20; if (t.s < -20) t.s = MAXC + 20; t.g.position.set(t.alongX ? t.s : t.line, 0, t.alongX ? t.line : t.s); }
+  if (engL && SND.ac) { engL.g.gain.setTargetAtTime(S && S.started && !S.over ? .04 + (S.v / 13) * .06 : 0, SND.ac.currentTime, .1); engL.f.frequency.setTargetAtTime(120 + (S ? S.v : 0) * 30, SND.ac.currentTime, .1); }
+  if (renderer) renderer.render(scene, cam);
+  requestAnimationFrame(loop);
+}
+function start(level) { lv = level; newGame(); S.started = true; S.wait = 1; spawnTraffic(); ['startO', 'endO'].forEach(i => $(i).hidden = true); $('order').hidden = false; SND.ac; if (!engL) engL = SND.loop('bandpass', 140, 2.5); hud(); talk('অ্যাপ: আপনার শিফট শুরু হলো। নিরাপদে চালান! 🛵', '📱 অ্যাপ', 'F1'); }
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = e => { e.stopPropagation(); start(+b.dataset.lv); });
+const hold = (id, on, off) => { const b = $(id); b.addEventListener('pointerdown', e => { e.preventDefault(); b.setPointerCapture(e.pointerId); b.classList.add('on'); on(); }); const up = () => { b.classList.remove('on'); off(); }; b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up); b.addEventListener('lostpointercapture', up); };
+hold('lB', () => S && (S.steer = 1), () => S && S.steer > 0 && (S.steer = 0)); hold('rB', () => S && (S.steer = -1), () => S && S.steer < 0 && (S.steer = 0));
+hold('gB', () => S && (S.gas = true), () => S && (S.gas = false)); hold('bB', () => S && (S.brake = true), () => S && (S.brake = false));
+const KD = {}; addEventListener('keydown', e => { if (!S || KD[e.key]) return; KD[e.key] = 1; if (e.key === 'ArrowLeft') S.steer = 1; if (e.key === 'ArrowRight') S.steer = -1; if (e.key === 'ArrowUp') S.gas = true; if (e.key === 'ArrowDown') S.brake = true; });
+addEventListener('keyup', e => { KD[e.key] = 0; if (!S) return; if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') S.steer = 0; if (e.key === 'ArrowUp') S.gas = false; if (e.key === 'ArrowDown') S.brake = false; });
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `ডেলিভারি রাইডারে ${bn(S ? S.done : 0)}টা ডেলিভারি, ${bn(lastScore)} পয়েন্ট! 🛵 খাবার ঠান্ডা হওয়ার আগে পৌঁছাতে পারবেন? ${location.origin}/games/delivery/`; try { navigator.clipboard.writeText(t).then(() => pop('কপি হয়েছে, শেয়ার করুন!', 'good')); } catch (e) {} };
+newGame(); resize(); last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+const MY = ['ভাই, ৫ মিনিটে আসতেছি', 'গেটে আসেন প্লিজ', 'লোকেশনটা আরেকবার পাঠান', 'জ্যামে আটকা, একটু দেরি হবে'], OP = ['ঠিক আছে ভাই, আস্তে আসেন', 'গেটে দারোয়ানকে বলেন', 'খুব ক্ষুধা লাগছে!', 'কতদূর ভাই?'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY, onSay: t => { KHViral.pop(t, 'M1', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP), 'M2', '🏠 গ্রাহক', true), 1500); } });
+window.KHG = { get S() { return S; }, start, target, ready: true, onRoad };
+</script>
+<script src="/js/update.js"></script>
+</body></html>
