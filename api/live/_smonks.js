@@ -41,13 +41,18 @@ export function smSummary(x) {
   const a = { ...team(na, national), inn: inns.filter(i => i.side === 'a').map(({ r, w, o }) => ({ r, w, o })) };
   const b = { ...team(nb, national), inn: inns.filter(i => i.side === 'b').map(({ r, w, o }) => ({ r, w, o })) };
   const status = String(x.status || '');
-  let state = DONE.test(status) ? 'done' : (x.live || (!UPC.test(status) && inns.length)) ? 'live' : 'upcoming';
+  // "NS" (শুরু হয়নি) হলে live পতাকা থাকলেও আসন্ন; স্কোর এসে গেলে তবেই লাইভ
+  let state = DONE.test(status) ? 'done' : UPC.test(status) && !inns.length ? 'upcoming' : (x.live || inns.length) ? 'live' : 'upcoming';
   const bnOf = n => (sameTeam(n, na) ? a.bn || n : sameTeam(n, nb) ? b.bn || n : n);
   let st;
   let m;
   if (x.note) st = cricStatusBn(x.note, bnOf);
   else if ((m = status.match(/^(\d)(st|nd|rd|th) Innings/i))) st = `${ord(+m[1])} ইনিংস চলছে`;
   else if ((m = status.match(/stump day (\d+)/i))) st = `${ord(+m[1])} দিন শেষ`;
+  else if (/^ns$/i.test(status)) st = 'খেলা এখনো শুরু হয়নি';
+  else if (/^postp/i.test(status)) st = 'খেলা পিছিয়েছে';
+  else if (/^delayed/i.test(status)) st = 'খেলা শুরু হতে দেরি হচ্ছে';
+  else if (/^int/i.test(status)) st = 'খেলা থেমে আছে';
   else st = cricStatusBn(status, bnOf) || status;
   const fmt = FMT(x.type);
   const out = {
