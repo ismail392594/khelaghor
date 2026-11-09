@@ -43,6 +43,8 @@ index.html GAMES-এ url, SHOT ম্যাপ + icons/shots/*.png, lbTabs চ�
 - পরের উন্নতি: ট্রাফিকে একই গাড়ি (শুধু রং আলাদা)। বাস/ট্রাক/সিএনজির বাস্তব CC0/CC-BY মডেল পেলে যোগ করা (Poly Haven-এ গাড়ি নেই; Sketchfab-এর CC0 মডেলে লগইন লাগে)। রাত/বৃষ্টি মোড, মোবাইলে টিল্ট স্টিয়ারিং। আসল ফোনে FPS দেখে নেওয়া।
 - addons কপি হয়ে গেছে: GLTFLoader, RGBELoader, BufferGeometryUtils, SkeletonUtils, meshopt_decoder (from বদলানো)।
 
+## Vercel নোট: claude/** ব্রাঞ্চে Vercel বানানো বন্ধ (vercel.json git.deploymentEnabled), শুধু main থেকে সাইট। ৯ নভেম্বর অনেক push-এ সাইট v73-এ আটকে ছিল (সম্ভবত দিনের সীমা)।
+
 ## মালিকের হাতের কাজ (মালিক চাইলে বাকিগুলো ধাপে ধাপে বলতে হবে)
 - ✅ firestore.rules Firebase Console-এ Publish (৯ নভেম্বর করেছেন)
 - ⬜ Vercel → Settings → Environment Variables → CRON_SECRET (যেকোনো লম্বা এলোমেলো লেখা) → Save → Redeploy
