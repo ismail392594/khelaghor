@@ -148,17 +148,19 @@ async function refresh(F, doc, due, now) {
     if (due.fLive) jobs.push(fbCall('fixtures', { live: lg.join('-') }).then(async r => {
       fq = qOf(r, now, fq);
       if (!r.ok) { f.err = r.err; return; }
-      f.live = r.data.map(fbSummary); f.at = now;
-      // তালিকায় "চলছে" ছিল কিন্তু এখন লাইভে নেই → খেলা শেষ, ফলাফল আনি
-      const liveIds = new Set(f.live.map(m => m.id));
+      f.live = r.data.map(fbSummary); f.at = now; f.liveOk = now;
+    }));
+    await Promise.all(jobs);
+    // তালিকায় "চলছে" ছিল কিন্তু এখন লাইভে নেই → খেলা শেষ, ফলাফল আনি (সব কাজ শেষে, যাতে একটা আরেকটাকে মুছে না দেয়)
+    if (f.liveOk === now) {
+      const liveIds = new Set((f.live || []).map(m => m.id));
       const gone = (f.day || []).filter(m => m.state === 'live' && !liveIds.has(m.id)).map(m => m.id.slice(2)).slice(0, 20);
       if (gone.length) {
         const g = await fbCall('fixtures', { ids: gone.join('-') });
         fq = qOf(g, now, fq);
         if (g.ok) { const upd = new Map(g.data.map(fbSummary).map(m => [m.id, m])); f.day = (f.day || []).map(m => upd.get(m.id) || m); }
       }
-    }));
-    await Promise.all(jobs);
+    }
     const out = { v: CACHE_V, c, f, cq, fq };
     await db.doc('liveCache/feed').set(out);
     const metaUp = { until: 0, cq, fq };
