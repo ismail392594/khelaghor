@@ -208,7 +208,14 @@ export function cricScoreSummary(x) {
   if (!x || !x.t1 || !x.t2 || !x.id) return null;
   const na = tName(x.t1), nb = tName(x.t2);
   const ms = String(x.ms || '').toLowerCase();
-  const state = ms === 'live' ? 'live' : ms === 'result' ? 'done' : 'upcoming';
+  let state = ms === 'live' ? 'live' : ms === 'result' ? 'done' : 'upcoming';
+  // API অনেক সময় খেলা শুরু হওয়ার পরও কিছুক্ষণ 'fixture' রেখে দেয়: স্কোর বা টসের খবর থাকলে আর সময় পার হলে লাইভ ধরি
+  const st = String(x.status || '');
+  const t0 = Date.parse(/[zZ]$/.test(x.dateTimeGMT || '') ? x.dateTimeGMT : (x.dateTimeGMT || '') + 'Z') || 0;
+  if (state === 'upcoming' && t0 && t0 <= Date.now()) {
+    if (/won|drawn|tied|no result|abandon/i.test(st)) state = 'done';
+    else if (x.t1s || x.t2s || /opt|elected|chose|need|lead|trail|innings|stumps|day \d/i.test(st)) state = 'live';
+  }
   const ia = parseScore(x.t1s), ib = parseScore(x.t2s);
   const fake = {
     id: x.id, name: `${na} vs ${nb}, ${x.matchDesc || ''}, ${x.series || ''}`, series: x.series, matchType: x.matchType,
