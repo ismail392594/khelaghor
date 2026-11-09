@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>ঈদের বাস টিকিট · খেলাঘর</title>
+<meta name="description" content="ঈদের আগে বাস টার্মিনালে টিকিটের লাইন! লাইন ভাঙা লোক আটকান, দালাল এড়ান, সিট শেষ হওয়ার আগে জানালার সিট বুক করুন।">
+<link rel="canonical" href="https://khelaghorbd.online/games/eidticket/">
+<meta property="og:title" content="ঈদের বাস টিকিট · খেলাঘর">
+<meta property="og:description" content="লাইনে দাঁড়ান ভাই! ঈদে বাড়ি যাওয়ার টিকিট পাবেন তো?">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/eidticket.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/eidticket.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+:root{--accent:#34d399}
+.tags{position:absolute;inset:0;z-index:3;pointer-events:none}
+.tag{position:absolute;transform:translate(-50%,-100%);border-radius:12px;padding:5px 9px;font:800 .78rem var(--body);white-space:nowrap;pointer-events:auto;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.5);animation:pulse .5s infinite alternate}
+.tag.cut{background:#ef4444;color:#fff}.tag.tout{background:#fbbf24;color:#2a1600}
+@keyframes pulse{to{transform:translate(-50%,-100%) scale(1.08)}}
+.qinfo{position:absolute;left:10px;top:10px;z-index:3;background:rgba(0,0,0,.55);padding:5px 10px;border-radius:10px;font-size:.78rem;font-weight:700;pointer-events:none}
+.seats{position:absolute;inset:0;z-index:4;display:grid;place-items:center;background:rgba(5,8,16,.75);padding:12px}
+.sbox{width:min(96%,360px);background:#161b22;border:1px solid #2b3550;border-radius:16px;padding:12px;text-align:center}
+.sbox h3{margin:0 0 4px;font-family:var(--display)}.sbox p{margin:0 0 8px;font-size:.8rem;color:#9aa4b2}
+.sgrid{display:grid;grid-template-columns:repeat(2,1fr) 18px repeat(2,1fr);gap:5px;margin:6px auto;max-width:240px}
+.sgrid button{border:0;border-radius:6px 6px 3px 3px;height:30px;font:700 .68rem var(--body);cursor:pointer;background:#16a34a;color:#fff}
+.sgrid button.win{background:#0ea5e9}.sgrid button.gone{background:#374151;color:#6b7280;cursor:default}.sgrid i{display:block}
+.legend{font-size:.7rem;color:#9aa4b2;display:flex;gap:10px;justify-content:center}.legend b{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:3px;vertical-align:-1px}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="sc">০</b><small>পয়েন্ট · পকেটে <span id="cash">৳১৫০০</span></small></div>
+    <div class="stat r"><b id="seatsL">৪০</b><small>সিট বাকি</small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas class="cv" id="cv"></canvas>
+    <div class="qinfo" id="qinfo" hidden></div>
+    <div class="tags" id="tags"></div>
+    <div class="seats" id="seats" hidden><div class="sbox"><h3 id="sTitle">সিট বাছুন!</h3><p id="sTxt">অন্যরাও বুক করছে, তাড়াতাড়ি! নীল = জানালার পাশে</p><div class="sgrid" id="sgrid"></div><div class="legend"><span><b style="background:#0ea5e9"></b>জানালা</span><span><b style="background:#16a34a"></b>খালি</span><span><b style="background:#374151"></b>বিক্রি</span></div></div></div>
+    <div class="say" id="say" hidden></div>
+    <div class="chost" id="chatHost"></div>
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>ঈদের বাস টিকিট</h1>
+        <p class="story">ঈদের তিন দিন আগে, গাবতলী বাস টার্মিনাল। কাউন্টারের সামনে বিশাল লাইন, চারপাশে দালালের ফিসফিস: "টিকিট লাগবো? টিকিট?" মায়ের কাছে বাড়ি যেতেই হবে!</p>
+        <div class="rules">
+          <div>🚫 কেউ লাইনে ঢুকতে চাইলে তার মাথার উপর <b>লাল লেখা</b> আসবে; দ্রুত চাপুন: "লাইনে দাঁড়ান!" না আটকালে আপনি পিছিয়ে যাবেন।</div>
+          <div>🤫 <b>হলুদ লেখার দালাল</b>কে চাপবেন না! নকল টিকিট দিয়ে টাকা নিয়ে যাবে।</div>
+          <div>🎫 কাউন্টারে পৌঁছালে সিটের নকশা আসবে। অন্যরাও কিনছে, সিট উধাও হচ্ছে; জানালার সিট (নীল) পেলে বোনাস!</div>
+        </div>
+        <div class="lvl">
+          <button data-lv="0">ঈদের ৭ দিন আগে<small>লাইন ছোট</small></button>
+          <button data-lv="1">৩ দিন আগে<small>ভিড়</small></button>
+          <button data-lv="2">চাঁদরাত<small>মহা ভিড়</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">বাস: Sketchfab-এর শিল্পী (<a href="/assets/vehicles/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। মানুষ: Renderpeople (CC-BY 4.0)। পিচ, দেয়াল, আকাশ: Poly Haven (CC0)।</p>
+      </div>
+    </div>
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">খেলা শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eB">০</b><span>লাইন ভাঙা আটকানো</span></div><div><b id="eSeat">—</b><span>সিট</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার লাইনে</button><button class="gbtn ghost" id="menuBtn">দিন বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">🎫</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+  <div class="ctl"><div class="hint" id="hint">দিন বেছে লাইনে দাঁড়ান</div></div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { GLTFLoader } from "/js/vendor/addons/GLTFLoader.js";
+import { MeshoptDecoder } from "/js/vendor/addons/meshopt_decoder.module.js";
+import { clone as cloneSkinned } from "/js/vendor/addons/SkeletonUtils.js";
+import { TIERS, detectTier } from "/js/kh-quality.js";
+import { loadPeople } from "/js/kh-people.js";
+import { loadFleet } from "/js/kh-vehicles.js";
+import { gameShell, sound, bn, pick, rnd, clamp } from "/js/kh-shell.js";
+
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'eidticket', name: 'ঈদের বাস টিকিট', lbTitle: 'সেরা টিকিট যোদ্ধা', offMsg: 'কাউন্টার বন্ধ, সব টিকিট শেষ! একটু পরে আসেন।' });
+const SND = sound(SH);
+const TIER = TIERS[detectTier()], LOW = TIER.id <= 1;
+let renderer = null; try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' }); } catch (e) {}
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(60, 1, .05, 300);
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.shadowMap.enabled = !LOW; }
+const ANISO = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1, texL = new THREE.TextureLoader(), RA = '/games/racer/assets/', JA = '/games/jam/assets/';
+const tex = (u, srgb, rx, ry) => { const t = texL.load(u); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; t.repeat.set(rx, ry ?? rx); return t; };
+const skyT = texL.load(RA + 'sky.jpg'); skyT.colorSpace = THREE.SRGBColorSpace;
+const skyG = new THREE.SphereGeometry(200, 32, 16); skyG.scale(-1, 1, 1); scene.add(new THREE.Mesh(skyG, new THREE.MeshBasicMaterial({ map: skyT, fog: false, toneMapped: false })));
+scene.fog = new THREE.Fog('#c9c4b8', 30, 130);
+scene.add(new THREE.HemisphereLight('#fff0d6', '#5a5040', 1.1));
+const sun = new THREE.DirectionalLight('#ffe2b4', 2.2); sun.position.set(-10, 16, 8); sun.castShadow = !LOW; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -14, right: 14, top: 14, bottom: -14 }); scene.add(sun);
+const asph = ['asphalt_diff.jpg', 'asphalt_nor.jpg'].map((f, i) => tex(RA + f, i === 0, 10, 10));
+const yard = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshStandardMaterial({ map: asph[0], normalMap: asph[1], color: '#aaa', roughness: 1 })); yard.rotation.x = -Math.PI / 2; yard.receiveShadow = true; scene.add(yard);
+// কাউন্টার: প্লাস্টারের ছোট ঘর, জানালার গ্রিল, বড় সাইনবোর্ড
+const plaster = ['plaster_diff.jpg', 'plaster_nor.jpg'].map((f, i) => tex(JA + f, i === 0, 2, 1));
+const signTex = (t, sub, col) => { const c = document.createElement('canvas'); c.width = 1024; c.height = 200; const x = c.getContext('2d'); x.fillStyle = col; x.fillRect(0, 0, 1024, 200); x.fillStyle = '#fff'; x.font = "800 86px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(t, 512, 78); x.fillStyle = '#fde047'; x.font = "700 44px 'Noto Sans Bengali',sans-serif"; x.fillText(sub, 512, 160); const tt = new THREE.CanvasTexture(c); tt.colorSpace = THREE.SRGBColorSpace; return tt; };
+{ const g = new THREE.Group(); g.position.set(0, 0, -12); const b = new THREE.Mesh(new THREE.BoxGeometry(12, 4, 3), new THREE.MeshStandardMaterial({ map: plaster[0], normalMap: plaster[1], color: '#e5e0d4', roughness: .95 })); b.position.y = 2; g.add(b);
+  const w = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1), new THREE.MeshStandardMaterial({ color: '#1f2937', roughness: .3 })); w.position.set(0, 1.5, 1.51); g.add(w);
+  for (let i = 0; i < 8; i++) { const r = new THREE.Mesh(new THREE.CylinderGeometry(.012, .012, 1, 6), new THREE.MeshStandardMaterial({ color: '#888', metalness: .8 })); r.position.set(-.6 + i * .17, 1.5, 1.53); g.add(r); }
+  const sg = new THREE.Mesh(new THREE.PlaneGeometry(10, 1.95), new THREE.MeshBasicMaterial({ map: signTex('খেলাঘর পরিবহন · টিকিট কাউন্টার', 'ঈদ স্পেশাল · ঢাকা ⇄ চট্টগ্রাম · রংপুর · খুলনা', '#14532d') })); sg.position.set(0, 4.9, 1.51); g.add(sg);
+  for (const sd of [-1, 1]) { const rail = new THREE.Mesh(new THREE.BoxGeometry(.06, .9, 14), new THREE.MeshStandardMaterial({ color: '#b0b4b8', metalness: .7, roughness: .3 })); rail.position.set(sd * .7, .45, 8.5); g.add(rail); }
+  scene.add(g); }
+// পাশে দাঁড়ানো বাস (খেলাঘর পরিবহনের কোচ)
+loadFleet(THREE, new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), ['bus_coach', 'bus_aero']).then(f => { [['bus_coach', -8, -6, .15], ['bus_aero', 9, -4, -.2]].forEach(([k, x, z, r]) => { const g = new THREE.Group(); f[k].parts.forEach(p => { const m = new THREE.Mesh(p.geo, p.mat); m.castShadow = true; g.add(m); }); g.position.set(x, 0, z); g.rotation.y = r; scene.add(g); }); }).catch(() => {});
+// মানুষের লাইন: আমি লাইনের পেছনে, সামনে অনেকে
+let PEOPLE = null; const Q = [], SIDE = [];
+loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned).then(P => { PEOPLE = P; for (let i = 0; i < 12; i++) { const h = P.make(i, { scale: rnd(.92, 1.02), shadow: !LOW }); h.root.visible = false; scene.add(h.root); Q.push({ h }); } for (let i = 0; i < 3; i++) { const h = P.make(i + 2, { scale: 1, shadow: !LOW }); h.root.visible = false; scene.add(h.root); SIDE.push({ h, on: false }); } if (S) layQ(); }).catch(() => {});
+
+const SFX = {
+  stop() { SND.tone(520, .1, 'square', .1); SND.tone(390, .14, 'square', .1, 0, .1); },
+  good() { SND.tone(880, .1, 'triangle', .2); },
+  bad() { SND.tone(200, .35, 'sawtooth', .12, 120); },
+  step() { SND.noise(.06, .3, 400); },
+  ticket() { [523, 659, 784, 1047].forEach((f, i) => SND.tone(f, .16, 'triangle', .25, 0, i * .08)); },
+  gone() { SND.noise(.05, .2, 2400, 'highpass'); }
+};
+let crowdLoop = null;
+const LV = [{ n: '৭ দিন আগে', ahead: 6, cut: [5, 8], tout: .25, sell: 1.3, sold: 14 }, { n: '৩ দিন আগে', ahead: 9, cut: [3.5, 6], tout: .35, sell: .8, sold: 22 }, { n: 'চাঁদরাত', ahead: 11, cut: [2.5, 4.5], tout: .45, sell: .5, sold: 28 }];
+const TOUT = ['টিকিট লাগবো? ডাবল দাম, সিট কনফার্ম!', 'ভাই, লাইনে দাঁড়ায়া লাভ নাই, আমার কাছে আছে!', 'এসি বাস, জানালার সিট, আসেন!'];
+let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0;
+function newGame() { S = { score: 0, cash: 1500, ahead: LV[lv].ahead, blocked: 0, scammed: 0, phase: 'idle', over: false, started: false, t: 0, nextCut: 3, nextAdv: 3.5, cut: null, seat: null }; hud(); layQ(); }
+function say(t, col) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, 1300); }
+function pop(t, cls) { const e = document.createElement('div'); e.className = 'pop ' + (cls || ''); e.textContent = t; $('stage').appendChild(e); setTimeout(() => e.remove(), 1100); }
+function hud() { $('sc').textContent = bn(Math.round(S.score)); $('cash').textContent = '৳' + bn(S.cash); $('seatsL').textContent = bn(S.free ?? 40 - LV[lv].sold); $('qinfo').textContent = `🧍 আপনার সামনে ${bn(S.ahead)} জন`; }
+// লাইনে মানুষ বসানো: কাউন্টার থেকে পেছনের দিকে (z বাড়ে), আমি শেষে
+const QZ0 = -9.6, GAP = .85;
+function layQ() { Q.forEach((q, i) => { const on = i < S.ahead; q.h.root.visible = on; q.tz = QZ0 + i * GAP; if (q.z === undefined) q.z = q.tz; q.x = rnd(-.12, .12); }); }
+function talk(t, who, v) { if (window.KHViral) KHViral.pop(t, v || 'M3', who); }
+function spawnCutter() { // কেউ পাশ থেকে আমার সামনে ঢুকতে আসে
+  const free = SIDE.find(s => !s.on); if (!free || S.cut) return; const tout = Math.random() < LV[lv].tout;
+  free.on = true; free.tout = tout; free.x = 1.6; free.z = QZ0 + (S.ahead - .5) * GAP; free.t = 0; free.h.root.visible = true; S.cut = free;
+  const el = document.createElement('div'); el.className = 'tag ' + (tout ? 'tout' : 'cut'); el.textContent = tout ? '🤫 টিকিট লাগবো?' : '🚫 লাইনে দাঁড়ান!'; el.onpointerdown = e => { e.stopPropagation(); tapCut(); }; $('tags').appendChild(el); free.el = el;
+  if (tout) talk(pick(TOUT), '🤫 দালাল'); else SFX.step();
+}
+function clearCut() { const c = S.cut; if (!c) return; c.on = false; c.h.root.visible = false; if (c.el) c.el.remove(); S.cut = null; S.nextCut = rnd(...LV[lv].cut); }
+function tapCut() {
+  const c = S.cut; if (!c || S.phase !== 'queue') return; SND.ac;
+  if (c.tout) { S.cash -= 500; S.scammed++; S.score = Math.max(0, S.score - 80); SFX.bad(); say('দালালের ফাঁদ! −৳৫০০ 😭', '#fca5a5'); talk('হে হে, এই নেন টিকিট! (পরে দেখা গেল নকল)', '🤫 দালাল'); }
+  else { S.blocked++; S.score += 40 + Math.round(clamp(1 - c.t / 2.2, 0, 1) * 30); SFX.stop(); say('লাইনে দাঁড়ান ভাই! ✋', '#86efac'); talk(pick(['আচ্ছা আচ্ছা, যাচ্ছি…', 'একটু তাড়া আছিলো…', 'রাগ করেন ক্যান!']), '😅 লাইন ভাঙা লোক'); }
+  hud(); clearCut();
+}
+function step(dt) {
+  const L = LV[lv];
+  if (S.phase === 'queue') {
+    S.t += dt;
+    if ((S.nextAdv -= dt) <= 0) { S.nextAdv = rnd(2.2, 3.4); S.ahead--; SFX.step(); Q.forEach((q, i) => q.tz = QZ0 + (i - (L.ahead - S.ahead)) * GAP); hud(); if (S.ahead <= 0) return toCounter(); }
+    if (!S.cut && (S.nextCut -= dt) <= 0) spawnCutter();
+    if (S.cut) { const c = S.cut; c.t += dt; c.x = Math.max(.15, 1.6 - c.t * .7);
+      if (c.t > 2.2) { if (!c.tout) { S.ahead++; S.score = Math.max(0, S.score - 20); SFX.bad(); say('লোকটা সামনে ঢুকে গেল! 😤', '#fca5a5'); hud(); } else { S.score += 15; pop('দালাল এড়িয়েছেন +১৫', 'good'); } clearCut(); } }
+    // অন্যরা এর মধ্যে টিকিট কিনছে
+    if ((S.sellT = (S.sellT || 0) + dt) > L.sell * 2.5) { S.sellT = 0; S.free = Math.max(4, (S.free ?? 40 - L.sold) - 1); hud(); }
+  }
+  if (S.phase === 'seat') { if ((S.sellT = (S.sellT || 0) + dt) > L.sell) { S.sellT = 0; const avail = SEATS.filter(s => !s.gone); if (avail.length > 1) { const s = pick(avail); s.gone = true; s.el.className = 'gone'; s.el.disabled = true; SFX.gone(); S.free = avail.length - 1; hud(); } if (!SEATS.some(s => !s.gone)) endGame(); } }
+}
+let SEATS = [];
+function toCounter() {
+  S.phase = 'seat'; clearCut(); $('qinfo').hidden = true; SFX.ticket(); say('কাউন্টারে পৌঁছেছেন! 🎫', '#86efac');
+  const g = $('sgrid'); g.innerHTML = ''; SEATS = []; const sold = Math.min(38, 40 - (S.free ?? 40 - LV[lv].sold)); const taken = new Set(); while (taken.size < sold) taken.add(Math.floor(Math.random() * 40));
+  for (let r = 0; r < 10; r++) { for (let c = 0; c < 4; c++) { if (c === 2) g.appendChild(document.createElement('i')); const i = r * 4 + c, win = c === 0 || c === 3, b = document.createElement('button'), name = String.fromCharCode(65 + r) + (c + 1); b.textContent = name; const s = { i, win, name, gone: taken.has(i), el: b }; b.className = s.gone ? 'gone' : win ? 'win' : ''; b.disabled = s.gone; b.onclick = () => buy(s); g.appendChild(b); SEATS.push(s); } }
+  setTimeout(() => { $('seats').hidden = false; $('sTitle').textContent = 'সিট বাছুন! ' + bn(SEATS.filter(s => !s.gone).length) + 'টা বাকি'; }, 700);
+}
+function buy(s) { if (!S || S.phase !== 'seat' || s.gone) return; S.seat = s; S.cash -= 900; S.score += 300 + (s.win ? 200 : 0) + Math.max(0, 6 - s.i / 4) * 15; SFX.ticket(); endGame(); }
+const TIPS = ['জানেন কি? ঈদের টিকিট কাউন্টারের বাইরে কারো কাছ থেকে কিনবেন না; অনেক সময় নকল বা বেশি দামের টিকিট গছিয়ে দেয়।', 'জানেন কি? এখন অনেক বাস কোম্পানির টিকিট অনলাইনে বা অ্যাপে কেনা যায়; লাইনের ঝামেলা কমে।', 'জানেন কি? লাইনে দাঁড়ানো মানে অন্যের সময়কে সম্মান করা; লাইন ভাঙলে সবার দেরি হয়।'];
+function endGame() {
+  if (S.over) return; S.over = true; $('seats').hidden = true; $('tags').innerHTML = ''; const got = !!S.seat; const sc = Math.max(0, Math.round(S.score + (got ? 0 : -100) + S.cash / 10));
+  $('endT').textContent = got ? `টিকিট পেয়েছেন! সিট ${S.seat.name} 🎉` : 'সব টিকিট শেষ 😭';
+  $('endTitle').textContent = got ? (S.seat.win ? 'জানালার সিটের রাজা 👑' : 'ঈদে বাড়ি যাচ্ছি!') : 'পরের বার আগে আসবো';
+  $('endLine').textContent = `${bn(S.blocked)} জন লাইন ভাঙা লোক আটকেছেন${S.scammed ? `, দালালের কাছে ${bn(S.scammed)} বার ঠকেছেন` : ', দালালের ফাঁদে একবারও পা দেননি'}। পকেটে আছে ৳${bn(S.cash)}।`;
+  $('eS').textContent = bn(sc); $('eB').textContent = bn(S.blocked); $('eSeat').textContent = got ? S.seat.name : '—'; $('eTip').textContent = pick(TIPS);
+  setTimeout(() => { $('endO').hidden = false; if (got && window.KHViral) KHViral.confetti(); }, 500);
+  SH.saveScore(sc); lastScore = sc;
+}
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 70 : 56; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+const v3 = new THREE.Vector3();
+function loop(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  if (S && S.started && !S.over) step(dt);
+  for (const q of Q) { if (!q.h.root.visible || q.tz === undefined) continue; const mv = Math.abs(q.tz - q.z) > .02; q.z += (q.tz - q.z) * Math.min(1, dt * 2); q.h.root.position.set(q.x, 0, q.z); q.h.root.rotation.y = Math.PI; q.h.update(dt, mv, 1); }
+  for (const s of SIDE) { if (!s.on) continue; s.h.root.position.set(s.x, 0, s.z); s.h.root.rotation.y = -Math.PI / 2 - .4; s.h.update(dt, true, 1); if (s.el) { v3.set(s.x, 2.0, s.z).project(cam); s.el.style.left = ((v3.x + 1) / 2 * W) + 'px'; s.el.style.top = ((1 - v3.y) / 2 * H) + 'px'; } }
+  const myZ = S ? QZ0 + Math.max(0, S.ahead) * GAP + 1.2 : 2; const port = W / H < .8;
+  if (S && S.started) { cam.position.set(.35, 1.62, myZ + (port ? .8 : .4)); cam.lookAt(.2, 1.3, -12); } else { const a = T0 * .07; cam.position.set(Math.sin(a) * 10, 4, 4 + Math.cos(a) * 4); cam.lookAt(0, 1.5, -10); }
+  if (crowdLoop && SND.ac) crowdLoop.g.gain.setTargetAtTime(S && S.started && !S.over ? .06 : 0, SND.ac.currentTime, .4);
+  if (renderer) renderer.render(scene, cam);
+  requestAnimationFrame(loop);
+}
+function start(level) { lv = level; Q.forEach(q => q.z = undefined); newGame(); S.started = true; S.phase = 'queue'; S.free = 40 - LV[lv].sold; ['startO', 'endO'].forEach(i => $(i).hidden = true); $('qinfo').hidden = false; SND.ac; if (!crowdLoop) crowdLoop = SND.loop('bandpass', 900, .6); hud(); $('hint').textContent = 'লাল লেখা = লাইন ভাঙা লোক, চাপুন! হলুদ = দালাল, চাপবেন না'; }
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = e => { e.stopPropagation(); start(+b.dataset.lv); });
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `ঈদের বাস টিকিটে ${S && S.seat ? 'সিট ' + S.seat.name + ' পেয়েছি' : 'টিকিট পাইনি'}, ${bn(lastScore)} পয়েন্ট! 🎫 আপনি পাবেন তো? ${location.origin}/games/eidticket/`; try { navigator.clipboard.writeText(t).then(() => pop('কপি হয়েছে, শেয়ার করুন!', 'good')); } catch (e) {} };
+newGame(); resize(); last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+const MY = ['ভাই, লাইনে দাঁড়ান!', 'কাউন্টার কয়টায় খুলবে?', 'জানালার সিট আছে?', 'আম্মু, টিকিট পাইছি!'], OP = ['টিকিট শেষ হইয়া যাইতেছে!', 'ধাক্কা দিয়েন না!', 'কাউন্টারে লোক কম!', 'আমি দুই ঘণ্টা ধইরা দাঁড়ায়া!'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP), 'M3', '🧍 লাইনের লোক', true), 1500); } });
+window.KHG = { get S() { return S; }, start, tapCut, buy, get SEATS() { return SEATS; }, Q };
+</script>
+<script src="/js/update.js"></script>
+</body></html>
