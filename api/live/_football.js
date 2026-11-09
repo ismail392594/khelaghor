@@ -125,5 +125,11 @@ export function fbDetail(f, sum) {
     xi: (l.startXI || []).map(p => [p.player && p.player.number, p.player && p.player.name, p.player && p.player.pos]),
     sub: (l.substitutes || []).map(p => [p.player && p.player.number, p.player && p.player.name, p.player && p.player.pos])
   })).filter(l => l.xi.length);
-  return { comm: comm.reverse(), stats, lu };
+  // গোলদাতা আর লাল কার্ড (দলের নামের নিচে দেখানোর জন্য)
+  const gl = (f.events || []).filter(e => (e.type === 'Goal' && !/missed/i.test(e.detail || '')) || (e.type === 'Card' && /red/i.test(e.detail || ''))).map(e => {
+    const sd = side(e.team && e.team.name) === sum.a ? 'a' : 'b';
+    const min = e.time ? (e.time.elapsed || 0) + (e.time.extra ? '+' + e.time.extra : '') : '';
+    return { s: sd, m: min, n: (e.player && e.player.name) || '', k: e.type === 'Card' ? 'R' : /own/i.test(e.detail || '') ? 'OG' : /penalty/i.test(e.detail || '') ? 'P' : 'G' };
+  });
+  return { comm: comm.reverse(), stats, lu, gl };
 }

@@ -765,3 +765,27 @@ export async function gboard(code, period = 'all', now = Date.now()) {
     .sort((p, q) => q.pts - p.pts);
   return { name: g.name, code, n: (g.members || []).length, period, list };
 }
+
+/* ---------- ক্রিকেটের পয়েন্ট টেবিল (Sportmonks, মৌসুম অনুযায়ী, ৬ ঘণ্টায় একবার) ---------- */
+export async function ctable(sid, now = Date.now()) {
+  sid = Number(sid);
+  if (!sid || !hasSm()) return { groups: [] };
+  const F = await fb();
+  if (!F) return { groups: [] };
+  const ref = F.db.doc('liveTable/c_' + sid);
+  const d = (await ref.get()).data() || null;
+  if (d && (now - d.at < 6 * HOUR || (d.until || 0) > now)) return { groups: d.groups || [] };
+  await ref.set({ until: now + 20e3 }, { merge: true });
+  const r = await smCall('standings/season/' + sid, { include: 'team' });
+  if (!r.ok) { await ref.set({ until: 0, at: now - 5 * HOUR }, { merge: true }); return { groups: (d && d.groups) || [] }; }
+  const rows = (Array.isArray(r.data) ? r.data : []).flatMap(x => (Array.isArray(x.standings) ? x.standings.map(y => ({ ...y, _g: x.name || x.stage_name || '' })) : [x]));
+  const byG = new Map();
+  for (const x of rows) {
+    const g = x._g || (x.stage && x.stage.name) || '';
+    if (!byG.has(g)) byG.set(g, []);
+    byG.get(g).push([x.position || 0, (x.team && x.team.name) || '', x.played || 0, x.won || 0, x.lost || 0, (x.noresult || 0) + (x.draw || 0), x.netto_run_rate != null ? Number(x.netto_run_rate) : null, x.points || 0]);
+  }
+  const groups = [...byG.entries()].map(([name, rws]) => ({ name, rows: rws.sort((p, q) => p[0] - q[0]) })).slice(0, 12);
+  await ref.set({ at: now, until: 0, groups });
+  return { groups };
+}
