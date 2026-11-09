@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>মেট্রোরেল রাশ · খেলাঘর</title>
+<meta name="description" content="অফিস টাইমে ঢাকার মেট্রোরেল! কম ভিড়ের দরজা বেছে ট্রেনে উঠুন, দরজা বন্ধের আগে, তারপর ঠিক স্টেশনে নামুন।">
+<link rel="canonical" href="https://khelaghorbd.online/games/metro/">
+<meta property="og:title" content="মেট্রোরেল রাশ · খেলাঘর">
+<meta property="og:description" content="দরজা বন্ধ হচ্ছে! সকাল ৯টার মেট্রোতে উঠতে পারবেন তো?">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/metro.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/metro.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+:root{--accent:#22c55e}
+.dls{position:absolute;inset:0;z-index:3;pointer-events:none}
+.dl{position:absolute;transform:translate(-50%,-100%);background:rgba(10,14,22,.82);border:2px solid #334155;border-radius:12px;padding:4px 8px;font:700 .72rem var(--body);text-align:center;white-space:nowrap;pointer-events:auto;cursor:pointer;line-height:1.25}
+.dl b{font:800 .95rem var(--display);display:block}
+.dl.me{border-color:#22c55e;background:rgba(20,83,45,.88)}.dl.full{border-color:#ef4444}
+.dl.edge{opacity:.85}
+.tbar{position:absolute;left:10px;right:10px;top:10px;z-index:3;display:flex;gap:8px;align-items:center;pointer-events:none}
+.tbar .tt{background:rgba(0,0,0,.6);padding:5px 10px;border-radius:10px;font-size:.78rem;font-weight:700}
+.tbar .door{flex:1;height:10px;background:rgba(255,255,255,.12);border-radius:6px;overflow:hidden}.tbar .door i{display:block;height:100%;width:100%;background:#22c55e;transition:width .1s linear}
+.line{position:absolute;left:8px;right:8px;bottom:64px;z-index:3;background:rgba(8,12,20,.8);border-radius:12px;padding:8px 10px 6px;pointer-events:none}
+.line .ln{position:relative;height:4px;background:#475569;border-radius:3px;margin:6px 4px 16px}
+.line .st{position:absolute;top:-4px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#1e293b;border:2px solid #64748b}
+.line .st.done{background:#22c55e;border-color:#22c55e}.line .st.dest{background:#ef4444;border-color:#fff;width:16px;height:16px;top:-6px;margin-left:-8px}
+.line .st small{position:absolute;top:15px;left:50%;transform:translateX(-50%);font-size:.6rem;color:#cbd5e1;white-space:nowrap}
+.line .tr{position:absolute;top:-9px;width:22px;height:22px;margin-left:-11px;font-size:16px;line-height:22px;text-align:center;transition:left .3s linear}
+.line p{margin:0;font-size:.78rem;font-weight:700;text-align:center}
+.ab{border:0;border-radius:14px;width:64px;height:58px;font:800 1.4rem var(--display);color:#fff;background:#1f2937;box-shadow:0 4px 0 rgba(0,0,0,.4);cursor:pointer;touch-action:manipulation}
+.ab:active{transform:translateY(3px)}
+.mid{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+.pushb{border:0;border-radius:10px;padding:7px 12px;font:800 .8rem var(--body);color:#fff;background:#b45309;cursor:pointer}
+.offb{background:radial-gradient(circle at 40% 30%,#f87171,#dc2626 60%,#7f1d1d)}
+.seatq{position:absolute;left:50%;top:22%;transform:translateX(-50%);z-index:4;background:#fef3c7;color:#422006;border-radius:14px;padding:10px 14px;font:700 .85rem var(--body);text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.5);width:min(86%,320px)}
+.seatq button{margin-top:6px;border:0;border-radius:10px;padding:8px 14px;font:800 .9rem var(--body);background:#16a34a;color:#fff;cursor:pointer}
+.fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:5;transition:opacity .35s}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="sc">০</b><small>পয়েন্ট · যাত্রা <span id="trip">১/৩</span></small></div>
+    <div class="stat r"><b id="dest">—</b><small>আপনি যাবেন</small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas class="cv" id="cv"></canvas>
+    <div class="tbar" id="tbar" hidden><span class="tt" id="tTxt"></span><div class="door"><i id="doorBar"></i></div></div>
+    <div class="dls" id="dls"></div>
+    <div class="line" id="line" hidden><p id="lineTxt"></p><div class="ln" id="ln"></div></div>
+    <div class="seatq" id="seatq" hidden><div id="seatTxt">👴 একজন বয়স্ক চাচা উঠেছেন, দাঁড়িয়ে আছেন।</div><button id="seatB">💺 সিট ছেড়ে দিন</button></div>
+    <div class="say" id="say" hidden></div>
+    <div class="chost" id="chatHost"></div>
+    <div class="fade" id="fade"></div>
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>মেট্রোরেল রাশ</h1>
+        <p class="story">উত্তরা থেকে মতিঝিল, ঢাকার মেট্রোরেল। অফিস টাইমে প্ল্যাটফর্মে মানুষের ঢল, ট্রেনের দরজা খোলে মাত্র কয়েক সেকেন্ড। ঠিক দরজা বাছুন, উঠুন, আর নিজের স্টেশনে নামতে ভুলবেন না!</p>
+        <div class="rules">
+          <div>🚪 প্রতিটা দরজার উপরে লেখা কতজন লাইনে আর ভেতরে কত জায়গা। <b>◀ ▶</b> চেপে বা লেখায় চেপে কম ভিড়ের দরজায় যান।</div>
+          <div>⏱️ দরজা খোলার পর সময় কমতে থাকে। সামনের সবাই উঠলে আপনি উঠবেন। ভেতরে জায়গা শেষ হলে অন্য দরজায় দৌড়!</div>
+          <div>🚉 ভেতরে উঠে নিচের ম্যাপে দেখুন কোথায় আছেন। নিজের স্টেশনে ট্রেন থামলে <b>🚪 নামুন</b> চাপুন।</div>
+        </div>
+        <div class="lvl">
+          <button data-lv="0">দুপুর<small>ফাঁকা</small></button>
+          <button data-lv="1">সকাল ৯টা<small>অফিস টাইম</small></button>
+          <button data-lv="2">সন্ধ্যা ৬টা<small>ছুটির ঢল</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">মানুষ: Renderpeople (<a href="/games/racer/assets/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। আকাশ, দেয়াল: Poly Haven (CC0)। ট্রেন আর স্টেশন খেলাঘরের নিজের বানানো।</p>
+      </div>
+    </div>
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">খেলা শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eOk">০</b><span>ঠিক স্টেশনে নামা</span></div><div><b id="eMiss">০</b><span>ট্রেন মিস</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার যাত্রা</button><button class="gbtn ghost" id="menuBtn">সময় বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">🚇</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+  <div class="ctl">
+    <button class="ab" id="lB" aria-label="বামের দরজা" hidden>◀</button>
+    <div class="mid"><div class="hint" id="hint">সময় বেছে স্টেশনে ঢুকুন</div><button class="pushb" id="pushB" hidden>💪 ঠেলে আগে যাই</button></div>
+    <button class="bigb offb" id="offB" hidden><span>🚪</span>নামুন</button>
+    <button class="ab" id="rB" aria-label="ডানের দরজা" hidden>▶</button>
+  </div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { GLTFLoader } from "/js/vendor/addons/GLTFLoader.js";
+import { RGBELoader } from "/js/vendor/addons/RGBELoader.js";
+import { MeshoptDecoder } from "/js/vendor/addons/meshopt_decoder.module.js";
+import { clone as cloneSkinned } from "/js/vendor/addons/SkeletonUtils.js";
+import { TIERS, detectTier } from "/js/kh-quality.js";
+import { loadPeople } from "/js/kh-people.js";
+import { gameShell, sound, bn, pick, rnd, clamp } from "/js/kh-shell.js";
+
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'metro', name: 'মেট্রোরেল রাশ', lbTitle: 'সেরা মেট্রো যাত্রী', offMsg: 'যান্ত্রিক ত্রুটির কারণে মেট্রো চলাচল সাময়িক বন্ধ। একটু পরে আসেন।' });
+const SND = sound(SH);
+const TIER = TIERS[detectTier()], LOW = TIER.id <= 1;
+let renderer = null; try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' }); } catch (e) {}
+const plat = new THREE.Scene(), car = new THREE.Scene(), cam = new THREE.PerspectiveCamera(62, 1, .05, 400);
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.shadowMap.enabled = !LOW; }
+const ANISO = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1, texL = new THREE.TextureLoader(), RA = '/games/racer/assets/', JA = '/games/jam/assets/';
+const tex = (u, srgb, rx, ry) => { const t = texL.load(u); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; t.repeat.set(rx, ry ?? rx); return t; };
+const cvTex = (w, h, draw, rx = 1, ry = 1) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.anisotropy = ANISO; t.userData.c = c; return t; };
+const speck = (x, w, h, n, a) => { for (let i = 0; i < n; i++) { x.fillStyle = `rgba(${Math.random() < .5 ? '0,0,0' : '255,255,255'},${Math.random() * a})`; x.fillRect(Math.random() * w, Math.random() * h, 2, 2); } };
+const M = (o) => new THREE.MeshStandardMaterial(o);
+const box = (w, h, d, m, x, y, z, par) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); if (par) par.add(b); return b; };
+if (renderer && TIER.id >= 1) new RGBELoader().load(RA + 'sky_1k.hdr', h => { const pm = new THREE.PMREMGenerator(renderer); h.mapping = THREE.EquirectangularReflectionMapping; const e = pm.fromEquirectangular(h).texture; plat.environment = e; car.environment = e; h.dispose(); pm.dispose(); }, undefined, () => {});
+
+const STN = ['উত্তরা উত্তর', 'উত্তরা সেন্টার', 'উত্তরা দক্ষিণ', 'পল্লবী', 'মিরপুর ১১', 'মিরপুর ১০', 'কাজীপাড়া', 'শেওড়াপাড়া', 'আগারগাঁও', 'বিজয় সরণি', 'ফার্মগেট', 'কারওয়ান বাজার', 'শাহবাগ', 'ঢাকা বিশ্ববিদ্যালয়', 'সচিবালয়', 'মতিঝিল'];
+
+/* ---------- প্ল্যাটফর্ম (উঁচু স্টেশন) ---------- */
+const skyT = texL.load(RA + 'sky.jpg'); skyT.colorSpace = THREE.SRGBColorSpace;
+{ const g = new THREE.SphereGeometry(300, 32, 16); g.scale(-1, 1, 1); plat.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: skyT, fog: false, toneMapped: false }))); }
+plat.fog = new THREE.Fog('#cfd3d6', 40, 170);
+plat.add(new THREE.HemisphereLight('#f4f6ff', '#6b6458', 1.25));
+const sun = new THREE.DirectionalLight('#fff1dc', 1.6); sun.position.set(-12, 20, 14); sun.castShadow = !LOW; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -16, right: 16, top: 12, bottom: -12, far: 60 }); plat.add(sun); plat.add(sun.target);
+const EDGE = -1.65, TZ = -3.3;
+// মেঝে: ধূসর গ্রানাইট টাইল
+const tileT = cvTex(512, 512, (x, w, h) => { x.fillStyle = '#c3c5c4'; x.fillRect(0, 0, w, h); for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) { x.fillStyle = `hsl(40,3%,${70 + Math.random() * 8}%)`; x.fillRect(i * 128 + 1, j * 128 + 1, 126, 126); } speck(x, w, h, 9000, .18); x.strokeStyle = '#8f9190'; x.lineWidth = 2; for (let i = 0; i <= 4; i++) { x.beginPath(); x.moveTo(i * 128, 0); x.lineTo(i * 128, h); x.moveTo(0, i * 128); x.lineTo(w, i * 128); x.stroke(); } }, 60, 6);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(120, 10), M({ map: tileT, roughness: .55, metalness: .05 })); floor.rotation.x = -Math.PI / 2; floor.position.set(10, 0, EDGE + 5); floor.receiveShadow = true; plat.add(floor);
+const tacT = cvTex(128, 64, (x, w, h) => { x.fillStyle = '#e8b80c'; x.fillRect(0, 0, w, h); x.fillStyle = '#c79a06'; for (let i = 0; i < 8; i++) for (let j = 0; j < 4; j++) { x.beginPath(); x.arc(8 + i * 16, 8 + j * 16, 4, 0, 7); x.fill(); } }, 240, 1);
+{ const t = new THREE.Mesh(new THREE.PlaneGeometry(120, .4), M({ map: tacT, roughness: .7 })); t.rotation.x = -Math.PI / 2; t.position.set(10, .005, EDGE + .7); plat.add(t); }
+box(120, 1.1, .3, M({ color: '#9a9c9b', roughness: .9 }), 10, -.55, EDGE + .02, plat);
+// রেললাইনের ডেক: পাথর, স্লিপার, রেল
+const deckT = cvTex(512, 256, (x, w, h) => { x.fillStyle = '#6e6a63'; x.fillRect(0, 0, w, h); speck(x, w, h, 14000, .35); x.fillStyle = '#8a857c'; for (let i = 0; i < 8; i++) x.fillRect(i * 64 + 8, 40, 26, 176); }, 60, 1);
+for (const tz of [TZ, TZ - 4.3]) { const d = new THREE.Mesh(new THREE.PlaneGeometry(240, 3.6), M({ map: deckT, roughness: 1 })); d.rotation.x = -Math.PI / 2; d.position.set(10, -1.12, tz); d.receiveShadow = true; plat.add(d); for (const s of [-.72, .72]) box(240, .14, .07, M({ color: '#8d8f92', metalness: .9, roughness: .35 }), 10, -1.0, tz + s, plat); }
+box(240, .5, .3, M({ color: '#a7a8a6', roughness: .95 }), 10, -.9, TZ - 6.6, plat);
+// ছাদ, খুঁটি, আলো
+const roofM = M({ color: '#c9cdd1', metalness: .2, roughness: .6, emissive: '#5a5f66' });
+box(160, .3, 17, roofM, 10, 6.2, -1.5, plat);
+for (let i = -6; i <= 8; i++) { const c = new THREE.Mesh(new THREE.CylinderGeometry(.28, .28, 6.2, 16), M({ color: '#b9bcbf', metalness: .5, roughness: .4 })); c.position.set(i * 10, 3.1, 7.5); c.castShadow = true; plat.add(c); }
+const lightM = new THREE.MeshBasicMaterial({ color: '#ffffff' });
+for (const z of [-1, 2.5, 5.5]) box(140, .06, .22, lightM, 10, 6.02, z, plat);
+// দূরের শহর
+const plas = ['plaster_diff.jpg', 'plaster_nor.jpg'].map((f, i) => tex(JA + f, i === 0, 2, 3));
+for (let i = 0; i < 26; i++) { const h = rnd(14, 46), w = rnd(8, 18); const b = box(w, h, rnd(8, 14), M({ map: plas[0], normalMap: plas[1], color: pick(['#d8d2c4', '#c9c0b0', '#e2ddd2', '#b9b4aa', '#cfc6b8']), roughness: .95 }), -90 + i * 8 + rnd(-3, 3), h / 2 - 14, rnd(-70, -40), plat); }
+// স্টেশনের নামফলক
+const signT = cvTex(1024, 180, () => {});
+function drawSign(name) { const c = signT.userData.c, x = c.getContext('2d'); x.fillStyle = '#0f2a44'; x.fillRect(0, 0, 1024, 180); x.fillStyle = '#22c55e'; x.fillRect(0, 0, 1024, 14); x.fillStyle = '#fff'; x.font = "800 92px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(name, 512, 92); x.font = "600 30px 'Noto Sans Bengali',sans-serif"; x.fillStyle = '#93c5fd'; x.fillText('মতিঝিলের দিকে ট্রেন →', 512, 156); signT.needsUpdate = true; }
+{ const s = new THREE.Mesh(new THREE.PlaneGeometry(5.2, .92), new THREE.MeshBasicMaterial({ map: signT })); s.position.set(0, 3.35, EDGE + .4); plat.add(s); for (const sx of [-2.2, 2.2]) box(.04, 2.5, .04, M({ color: '#555' }), sx, 5.0, EDGE + .4, plat); }
+// প্ল্যাটফর্ম স্ক্রিন ডোর (অর্ধেক উঁচু কাচের বেড়া)
+const DOFF = [-7.2, -2.4, 2.4, 7.2], CARS = [-40, -20, 0, 20, 40, 60];
+const glassM = new THREE.MeshStandardMaterial({ color: '#cfe6ee', transparent: true, opacity: .28, roughness: .05, metalness: .2, depthWrite: false });
+const frameM = M({ color: '#5c6670', metalness: .7, roughness: .35 }), psdLeaves = [], trainLeaves = [];
+{ const opens = []; CARS.forEach(cx => DOFF.forEach(d => opens.push(cx + d))); let x0 = -52;
+  for (const ox of [...opens, 72]) { const x1 = ox - .8, len = x1 - x0; if (len > .1) { box(len, 1.35, .04, glassM, (x0 + x1) / 2, .8, EDGE, plat); box(len, .1, .14, frameM, (x0 + x1) / 2, 1.52, EDGE, plat); } box(.12, 1.6, .2, frameM, x1 - .06, .8, EDGE, plat); if (ox < 72) { box(.12, 1.6, .2, frameM, ox + .86, .8, EDGE, plat); for (const s of [-1, 1]) { const g = new THREE.Group(); box(.78, 1.35, .04, glassM, 0, .8, 0, g); box(.78, .08, .08, frameM, 0, 1.5, 0, g); box(.04, 1.35, .06, frameM, s * .37, .8, 0, g); g.position.set(ox + s * .4, 0, EDGE + .07); g.userData = { bx: ox + s * .4, s }; plat.add(g); psdLeaves.push(g); } } x0 = ox + .92; } }
+// ট্রেন: স্টেইনলেস স্টিলের ৬ বগি, সবুজ-লাল দাগ
+const train = new THREE.Group(); plat.add(train);
+{ const bodyM = M({ color: '#e3e7ea', metalness: .4, roughness: .3 }), winM = M({ color: '#1a2430', metalness: .3, roughness: .08 }), greenM = M({ color: '#15803d', roughness: .5 }), redM = M({ color: '#b91c1c', roughness: .5 }), doorM = M({ color: '#d0d5d9', metalness: .4, roughness: .3 }), darkM = M({ color: '#2b2f33', roughness: .8 }), roofCM = M({ color: '#aeb3b8', metalness: .5, roughness: .5 });
+  const F = TZ + 1.45;
+  CARS.forEach((cx, ci) => { const g = new THREE.Group(); g.position.x = cx; train.add(g);
+    const b = box(19.4, 3.1, 2.9, bodyM, 0, 1.0, TZ, g); b.castShadow = true;
+    box(19.2, .3, 2.6, roofCM, 0, 2.66, TZ, g);
+    box(19.4, .85, .02, winM, 0, 1.45, F + .01, g);
+    box(19.4, .16, .02, greenM, 0, .55, F + .02, g); box(19.4, .05, .02, redM, 0, .42, F + .02, g);
+    for (const bx of [-6.5, 6.5]) box(2.6, .7, 2.2, darkM, bx, -.75, TZ, g);
+    DOFF.forEach(d => { for (const s of [-1, 1]) { const l = new THREE.Group(); box(.66, 1.9, .03, doorM, 0, .95, 0, l); box(.4, .7, .02, winM, 0, 1.4, .02, l); box(.66, .14, .02, greenM, 0, .55, .02, l); l.position.set(d + s * .33, 0, F + .03); l.userData = { bx: d + s * .33, s }; g.add(l); trainLeaves.push(l); } box(1.42, .06, .04, darkM, d, 1.93, F + .03, g); });
+    if (ci === 5) { const n = box(1.6, 2.6, 2.7, bodyM, 10.4, 1.0, TZ, g); n.rotation.z = -.18; box(.3, .9, 2.4, winM, 10.95, 1.7, TZ, g); }
+  }); }
+train.position.x = -170;
+
+/* ---------- কামরার ভেতর ---------- */
+car.background = new THREE.Color('#1b1f24');
+car.add(new THREE.HemisphereLight('#ffffff', '#8a8f96', 1.5));
+{ const d = new THREE.DirectionalLight('#ffffff', .6); d.position.set(0, 5, 3); car.add(d); }
+const wallM = M({ color: '#e6e9ec', metalness: .15, roughness: .45 }), seatM = M({ color: '#3f6d93', roughness: .6 }), poleM = M({ color: '#e4e8ec', metalness: .5, roughness: .25 }), cflM = M({ color: '#5d6166', roughness: .85 });
+box(2.9, .05, 21, cflM, 0, 0, 0, car); box(2.9, .05, 21, wallM, 0, 2.3, 0, car);
+for (const z of [-7.5, -2.5, 2.5, 7.5]) box(.3, .02, 3.6, lightM, 0, 2.27, z, car);
+box(2.9, 2.3, .05, wallM, 0, 1.15, -10.4, car);
+// জানালার বাইরের শহর (চললে সরে যায়)
+const cityT = cvTex(1024, 256, (x, w, h) => { const gr = x.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#9cc3e6'); gr.addColorStop(1, '#e4ecf2'); x.fillStyle = gr; x.fillRect(0, 0, w, h); for (let i = 0; i < 60; i++) { const bw = rnd(30, 90), bh = rnd(60, 220), bx = rnd(0, w); x.fillStyle = `hsl(${rnd(25, 45)},${rnd(5, 18)}%,${rnd(55, 82)}%)`; x.fillRect(bx, h - bh, bw, bh); x.fillStyle = 'rgba(40,50,60,.35)'; for (let wy = h - bh + 10; wy < h - 10; wy += 16) for (let wx = bx + 5; wx < bx + bw - 8; wx += 12) x.fillRect(wx, wy, 6, 8); } x.fillStyle = '#3f6b3a'; for (let i = 0; i < 40; i++) { x.beginPath(); x.arc(rnd(0, w), h - rnd(0, 20), rnd(10, 26), 0, 7); x.fill(); } x.fillStyle = '#9a9a96'; x.fillRect(0, h - 14, w, 14); }, .5, 1);
+const stnT = cvTex(1024, 256, () => {});
+function drawStn(name) { const c = stnT.userData.c, x = c.getContext('2d'); x.fillStyle = '#c9cbcc'; x.fillRect(0, 0, 1024, 256); x.fillStyle = '#6b7178'; x.fillRect(0, 0, 1024, 50); x.fillStyle = '#fff'; for (let i = 0; i < 6; i++) x.fillRect(i * 180, 40, 120, 6); x.fillStyle = 'rgba(200,225,235,.5)'; x.fillRect(0, 150, 1024, 106); x.fillStyle = '#5c6670'; for (let i = 0; i < 8; i++) x.fillRect(i * 140, 150, 8, 106); x.fillStyle = '#0f2a44'; x.fillRect(312, 64, 400, 70); x.fillStyle = '#fff'; x.font = "800 46px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(name, 512, 100); x.fillStyle = 'rgba(30,30,30,.55)'; for (let i = 0; i < 9; i++) { const px = rnd(20, 1000); x.beginPath(); x.arc(px, 120, 16, 0, 7); x.fill(); x.fillRect(px - 20, 134, 40, 122); } stnT.needsUpdate = true; }
+const winMat = new THREE.MeshBasicMaterial({ map: cityT, toneMapped: false });
+for (const sx of [-1, 1]) { box(.05, 2.3, 21, wallM, sx * 1.45, 1.15, 0, car);
+  for (const [z0, z1] of [[-10.4, -8.4], [-6.6, -3.6], [-1.6, 1.6], [3.6, 6.6], [8.4, 10.4]]) { const len = z1 - z0 - .4, w = new THREE.Mesh(new THREE.PlaneGeometry(len, .8), winMat); w.position.set(sx * 1.42, 1.5, (z0 + z1) / 2); w.rotation.y = -sx * Math.PI / 2; car.add(w); box(.05, 1.0, len + .3, M({ color: '#2b3036' }), sx * 1.425, 1.5, (z0 + z1) / 2, car).scale.x = .4;
+    box(.5, .1, len + .2, seatM, sx * 1.15, .45, (z0 + z1) / 2, car); box(.1, .5, len + .2, seatM, sx * 1.38, .72, (z0 + z1) / 2, car); box(.4, .4, len, M({ color: '#4b5259' }), sx * 1.2, .2, (z0 + z1) / 2, car); }
+  for (const z of [-7.5, -2.5, 2.5, 7.5]) { box(.03, 1.95, 1.3, M({ color: '#b8bec4', metalness: .6, roughness: .3 }), sx * 1.43, .97, z, car); const dw = new THREE.Mesh(new THREE.PlaneGeometry(.9, .6), winMat); dw.position.set(sx * 1.41, 1.45, z); dw.rotation.y = -sx * Math.PI / 2; car.add(dw); }
+  const rail = new THREE.Mesh(new THREE.CylinderGeometry(.018, .018, 21, 8), poleM); rail.rotation.x = Math.PI / 2; rail.position.set(sx * .85, 1.95, 0); car.add(rail);
+  for (let z = -9.5; z <= 9.5; z += .55) { if (DOFF.some(d => Math.abs(z - d) < .8)) continue; const hh = new THREE.Mesh(new THREE.TorusGeometry(.06, .012, 6, 14), M({ color: '#f1f1f1', roughness: .4 })); hh.position.set(sx * .85, 1.72, z); hh.rotation.y = Math.PI / 2; car.add(hh); const st = new THREE.Mesh(new THREE.CylinderGeometry(.008, .008, .17, 4), M({ color: '#cbd5e1' })); st.position.set(sx * .85, 1.86, z); car.add(st); }
+}
+for (const z of [-7.5, -2.5, 2.5, 7.5]) for (const sx of [-.55, .55]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(.02, .02, 2.3, 10), poleM); p.position.set(sx, 1.15, z + .9); car.add(p); }
+// LED বোর্ড: পরের স্টেশন
+const ledT = cvTex(1024, 128, () => {});
+function drawLed(t) { const c = ledT.userData.c, x = c.getContext('2d'); x.fillStyle = '#050505'; x.fillRect(0, 0, 1024, 128); x.fillStyle = '#ff9f1a'; x.font = "700 62px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = '#ff7a00'; x.shadowBlur = 12; x.fillText(t, 512, 66); ledT.needsUpdate = true; }
+{ const l = new THREE.Mesh(new THREE.PlaneGeometry(2.2, .28), new THREE.MeshBasicMaterial({ map: ledT, toneMapped: false })); l.position.set(0, 2.05, -10.36); car.add(l); }
+
+/* ---------- মানুষ ---------- */
+const POOL = [];
+loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned).then(P => { const n = LOW ? 10 : 18; for (let i = 0; i < n; i++) { const h = P.make(i, { scale: rnd(.92, 1.03), shadow: !LOW }); h.root.visible = false; plat.add(h.root); POOL.push({ h, x: 0, z: 0, tx: 0, tz: 0 }); } placeCrowd(); }).catch(() => {});
+
+const SFX = {
+  chime() { [659, 523].forEach((f, i) => SND.tone(f, .5, 'sine', .22, 0, i * .45)); },
+  door() { [880, 880, 880, 880].forEach((f, i) => SND.tone(f, .14, 'square', .07, 0, i * .22)); SND.noise(.8, .08, 600, 'lowpass', .1); },
+  good() { [523, 659, 784].forEach((f, i) => SND.tone(f, .14, 'triangle', .22, 0, i * .08)); },
+  bad() { SND.tone(200, .35, 'sawtooth', .12, 120); },
+  step() { SND.noise(.06, .25, 500); },
+  brake() { SND.tone(2300, 1.4, 'sine', .025, 1900); }
+};
+let rumble = null, crowdL = null;
+const LV = [{ n: 'দুপুর', q: [0, 3], sp: [5, 10], open: 13, join: 3.2, seat: .8 }, { n: 'সকাল ৯টা', q: [2, 7], sp: [2, 8], open: 11, join: 1.8, seat: .35 }, { n: 'সন্ধ্যা ৬টা', q: [3, 8], sp: [1, 6], open: 9.5, join: 1.2, seat: .12 }];
+let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0, scene = plat;
+function newGame() { S = { score: 0, trip: 0, okN: 0, miss: 0, pushes: 0, over: false, started: false }; hud(); }
+function say(t, col, ms) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, ms || 1400); }
+function pop(t, cls) { const e = document.createElement('div'); e.className = 'pop ' + (cls || ''); e.textContent = t; $('stage').appendChild(e); setTimeout(() => e.remove(), 1100); }
+function talk(t, who, v) { if (window.KHViral) KHViral.pop(t, v || 'M3', who); }
+function hud() { $('sc').textContent = bn(Math.max(0, Math.round(S.score))); $('trip').textContent = bn(Math.min(3, S.trip + 1)) + '/৩'; $('dest').textContent = S.to !== undefined ? STN[S.to] : '—'; }
+const fade = (on) => $('fade').style.opacity = on ? 1 : 0;
+function show(ids) { ['lB', 'rB', 'pushB', 'offB'].forEach(i => $(i).hidden = !ids.includes(i)); }
+
+/* ---------- প্ল্যাটফর্মের ধাপ ---------- */
+const DL = [];
+for (let d = 0; d < 4; d++) { const e = document.createElement('div'); e.className = 'dl'; e.onpointerdown = ev => { ev.stopPropagation(); moveTo(d); }; $('dls').appendChild(e); DL.push(e); }
+function newTrip() {
+  const L = LV[lv]; S.from = Math.floor(rnd(0, 11)); S.to = Math.min(15, S.from + 2 + Math.floor(Math.random() * 3));
+  S.phase = 'wait'; S.t = 0; S.door = 1 + (Math.random() < .5 ? 1 : 0); S.moving = 0; S.boardT = 0; S.open = 0; S.trainT = 0; S.dep = 0; S.boarded = false;
+  S.D = DOFF.map(() => ({ q: Math.round(rnd(...L.q)), sp: Math.round(rnd(...L.sp)) }));
+  if (S.D.every(d => d.sp <= d.q)) S.D[Math.floor(Math.random() * 4)].sp = S.D[0].q + 3;
+  S.ahead = S.D[S.door].q; S.nextJoin = L.join; train.position.x = -170; S.camX = DOFF[S.door];
+  drawSign(STN[S.from]); scene = plat; $('line').hidden = true; $('tbar').hidden = false; $('dls').hidden = false; $('seatq').hidden = true;
+  show(['lB', 'rB']); $('hint').textContent = 'ট্রেন আসছে! কম ভিড়ের দরজায় যান'; hud(); placeCrowd(); setDoors(0);
+  say(`${STN[S.from]} → ${STN[S.to]}`, '#86efac', 1800);
+}
+function moveTo(d) {
+  if (!S || S.phase === undefined || !['wait', 'open'].includes(S.phase) || S.boarded) return; d = clamp(d, 0, 3); if (d === S.door) return;
+  const dist = Math.abs(d - S.door); S.door = d; S.moving = .55 * dist; S.ahead = S.D[d].q; SFX.step(); placeCrowd();
+}
+function push() { if (!S || S.phase !== 'open' || S.ahead <= 0 || S.moving > 0) return; S.ahead--; S.D[S.door].q = Math.max(0, S.D[S.door].q - 1); S.pushes++; S.score -= 25; SFX.bad(); talk(pick(['এই! ধাক্কা দেন ক্যান?', 'লাইনে আসেন ভাই!', 'ভদ্রতা নাই নাকি?']), '😠 যাত্রী'); placeCrowd(); hud(); }
+function setDoors(o) { psdLeaves.forEach(l => l.position.x = l.userData.bx + l.userData.s * o * .78); trainLeaves.forEach(l => l.position.x = l.userData.bx + l.userData.s * o * .64); }
+function placeCrowd() {
+  if (!S || scene !== plat) return; let k = 0; const per = LOW ? 2 : 4;
+  POOL.forEach(p => { p.h.root.visible = false; if (p.h.root.parent !== plat) plat.add(p.h.root); });
+  S.D && S.D.forEach((d, i) => { const mine = i === S.door && !S.moving; const n = Math.min(per, mine ? S.ahead : d.q); for (let j = 0; j < n && k < POOL.length; j++, k++) { const p = POOL[k]; p.tx = DOFF[i] + rnd(-.12, .12); p.tz = EDGE + .75 * (j + 1); if (!p.vis) { p.x = p.tx; p.z = p.tz + 1.5; } p.vis = true; p.h.root.visible = true; p.h.root.rotation.y = Math.PI; } });
+  for (; k < POOL.length; k++) POOL[k].vis = false;
+}
+function stepPlat(dt) {
+  const L = LV[lv]; S.t += dt;
+  if (S.moving > 0) { S.moving -= dt; if (S.moving <= 0) { S.moving = 0; S.ahead = S.D[S.door].q; placeCrowd(); } }
+  if (S.phase === 'wait' || S.phase === 'open') { if ((S.nextJoin -= dt) <= 0) { S.nextJoin = L.join * rnd(.6, 1.4); const i = Math.floor(Math.random() * 4); if (i !== S.door || S.moving) { S.D[i].q++; placeCrowd(); } } }
+  if (S.phase === 'wait') { const T = 5.2; S.trainT += dt; const e = Math.min(1, S.trainT / T); train.position.x = -170 * Math.pow(1 - e, 2.2); if (rumble) rumble.g.gain.value = .14 * (1 - e) + .02; if (e > .75 && !S.braked) { S.braked = true; SFX.brake(); } if (S.trainT > T + .6) { S.phase = 'open'; S.openT = 0; SFX.door(); show(['lB', 'rB', 'pushB']); $('hint').textContent = 'দরজা খুলেছে! লাইনে উঠুন'; } }
+  else if (S.phase === 'open') {
+    S.openT += dt; S.open = Math.min(1, S.open + dt * 1.6); setDoors(S.open);
+    if ((S.boardT += dt) > .55) { S.boardT = 0; let ch = false; S.D.forEach((d, i) => { if (d.q > 0 && d.sp > 0) { const mine = i === S.door && !S.moving; if (mine && S.ahead > 0) { S.ahead--; d.q--; d.sp--; ch = true; } else if (!mine) { d.q--; d.sp--; ch = true; } } }); if (ch) placeCrowd();
+      const d = S.D[S.door]; if (!S.moving && S.ahead <= 0 && !S.boarded) { if (d.sp > 0) { d.sp--; board(); } else if (!S.fullSaid) { S.fullSaid = true; say('ভেতরে জায়গা নেই! অন্য দরজা!', '#fca5a5'); SFX.bad(); } } else S.fullSaid = false; }
+    if (S.openT > L.open - 3 && !S.warned) { S.warned = true; SFX.door(); say('দরজা বন্ধ হচ্ছে!', '#fde047'); }
+    if (S.openT >= L.open && !S.boarded) { S.phase = 'close'; S.dep = 0; show([]); $('hint').textContent = 'ট্রেন ছেড়ে দিল…'; }
+  }
+  else if (S.phase === 'close' || S.phase === 'board') {
+    S.open = Math.max(0, S.open - dt * 1.6); setDoors(S.open); S.dep += dt;
+    if (S.phase === 'close') { if (S.dep > 1) train.position.x = Math.pow(S.dep - 1, 2.1) * 9; if (rumble) rumble.g.gain.value = Math.min(.14, (S.dep - 1) * .05); if (S.dep > 5) { S.miss++; S.score -= 80; say('ট্রেন মিস! পরেরটা ৮ মিনিট পর 😩', '#fca5a5', 1600); hud(); S.phase = 'gap'; setTimeout(() => { if (S && !S.over) { const to = S.to, from = S.from; newTrip(); S.from = from; S.to = to; drawSign(STN[from]); hud(); } }, 1700); } }
+    if (S.phase === 'board' && S.dep > 1.5) { S.phase = 'toride'; fade(1); setTimeout(() => { if (S && !S.over) startRide(); }, 400); }
+  }
+}
+function board() { S.boarded = true; S.phase = 'board'; S.dep = -1.2; const left = LV[lv].open - S.openT; const pts = 100 + Math.round(left * 8); S.score += pts; SFX.good(); pop(`উঠে পড়েছেন! +${bn(pts)}`, 'good'); show([]); $('hint').textContent = 'ভেতরে ঢুকছেন…'; hud(); }
+
+/* ---------- চলন্ত কামরার ধাপ ---------- */
+function startRide() {
+  scene = car; $('tbar').hidden = true; $('dls').hidden = true; $('line').hidden = false; fade(0);
+  S.phase = 'ride'; S.at = S.from; S.seg = 'go'; S.segT = 0; S.v = 0; S.seated = Math.random() < LV[lv].seat; S.elder = S.seated && Math.random() < .8 ? S.from + 1 : -1; S.late = false;
+  POOL.forEach(p => { p.h.root.visible = false; }); const n = Math.min(POOL.length, [4, 8, 12][lv]);
+  for (let i = 0; i < n; i++) { const p = POOL[i]; car.add(p.h.root); p.h.root.visible = true; const z = 5.4 - (i * 1.37) % 15, x = pick([-.4, 0, .4]) + rnd(-.1, .1); p.h.root.position.set(x, 0, z); p.h.root.rotation.y = rnd(0, 6.28); p.vis = false; }
+  show(['offB']); $('hint').textContent = 'নিজের স্টেশনে থামলে নামুন চাপুন'; drawLine(); drawLed('পরবর্তী স্টেশন: ' + STN[S.at + 1]); SFX.chime();
+}
+function drawLine() {
+  const a = Math.max(0, S.from - 1), b = Math.min(15, S.to + 2), ln = $('ln'); ln.innerHTML = '';
+  for (let i = a; i <= b; i++) { const e = document.createElement('div'); e.className = 'st' + (i === S.to ? ' dest' : i <= S.at ? ' done' : ''); e.style.left = ((i - a) / (b - a) * 100) + '%'; if (i === S.to || i === S.at || i === a || i === b) e.innerHTML = `<small>${STN[i]}</small>`; ln.appendChild(e); }
+  const t = document.createElement('div'); t.className = 'tr'; t.id = 'trI'; t.textContent = '🚇'; ln.appendChild(t); S.lnA = a; S.lnB = b; moveTr();
+}
+function moveTr() { const e = $('trI'); if (!e) return; const p = S.seg === 'go' ? S.at + clamp(S.segT / 3.6, 0, 1) : S.at; e.style.left = ((p - S.lnA) / (S.lnB - S.lnA) * 100) + '%'; $('lineTxt').textContent = S.seg === 'stop' ? `🚉 এখন: ${STN[S.at]}` + (S.at === S.to ? ' (আপনার স্টেশন!)' : '') : `পরবর্তী: ${STN[S.at + 1]} · আপনার: ${STN[S.to]} (আর ${bn(S.to - S.at)} স্টেশন)`; }
+function stepRide(dt) {
+  S.segT += dt;
+  if (S.seg === 'go') { const T = 3.6, u = S.segT / T; S.v = Math.sin(Math.PI * clamp(u, 0, 1)); cityT.offset.x += S.v * dt * .35; if (rumble) rumble.g.gain.value = .05 + S.v * .1;
+    if (u > .7 && !S.ann) { S.ann = true; SFX.chime(); say('পরবর্তী স্টেশন ' + STN[S.at + 1], '#fde047', 1500); }
+    if (u >= 1) { S.at++; S.seg = 'stop'; S.segT = 0; S.ann = false; winMat.map = stnT; drawStn(STN[S.at]); drawLed(STN[S.at] + ' · দরজা খুলছে'); SFX.door(); drawLine(); if (S.elder === S.at && S.seated) { $('seatq').hidden = false; S.elderT = 0; } } }
+  else { if (rumble) rumble.g.gain.value = .03;
+    if (S.segT > 3.4) { if (S.at >= 15) return tripDone(S.at === S.to ? 'ok' : 'late');
+      if (S.at === S.to) { S.late = true; SFX.bad(); say('আপনার স্টেশন পার হয়ে গেল! 😱', '#fca5a5', 1600); talk('পরের স্টেশনে নেমে উল্টো ট্রেনে আসতে হবে…', '😓 মনে মনে'); }
+      if (S.at > S.to + 1) return tripDone('late');
+      S.seg = 'go'; S.segT = 0; winMat.map = cityT; drawLed('পরবর্তী স্টেশন: ' + STN[S.at + 1]); SFX.door(); } }
+  if (!$('seatq').hidden && (S.elderT = (S.elderT || 0) + dt) > 7) { $('seatq').hidden = true; S.score -= 20; S.elder = -1; talk('অন্য যাত্রীরা আপনার দিকে তাকাচ্ছে…', '👀'); hud(); }
+  moveTr();
+}
+function getOff() {
+  if (!S || S.phase !== 'ride') return;
+  if (S.seg !== 'stop') { say('ট্রেন চলছে! থামলে নামুন', '#fde047'); return; }
+  if (S.at === S.to) tripDone('ok'); else if (S.late && S.at === S.to + 1) tripDone('late'); else tripDone('wrong');
+}
+function tripDone(kind) {
+  S.phase = 'done'; $('seatq').hidden = true; show([]);
+  if (kind === 'ok') { S.okN++; S.score += 150; SFX.good(); say('ঠিক স্টেশনে নেমেছেন! ✅', '#86efac'); }
+  else if (kind === 'late') { S.score += 20; SFX.bad(); say('দেরিতে পৌঁছালেন 😓', '#fde047'); }
+  else { S.score -= 80; SFX.bad(); say(`ভুল করে ${STN[S.at]}-এ নেমে গেলেন!`, '#fca5a5', 1700); }
+  hud(); S.trip++;
+  setTimeout(() => { if (!S || S.over) return; fade(1); setTimeout(() => { if (!S || S.over) return; if (S.trip >= 3) { fade(0); endGame(); } else { winMat.map = cityT; newTrip(); fade(0); } }, 400); }, 1500);
+}
+$('seatB').onclick = e => { e.stopPropagation(); if (!S || $('seatq').hidden) return; $('seatq').hidden = true; S.seated = false; S.score += 60; SFX.good(); pop('সিট ছেড়ে দিলেন +৬০ 💚', 'good'); talk('আল্লাহ তোমার ভালো করুক, বাবা।', '👴 চাচা'); S.elder = -1; hud(); };
+
+const TIPS = ['জানেন কি? ঢাকার মেট্রোরেল (এমআরটি লাইন-৬) উত্তরা থেকে মতিঝিল পর্যন্ত, পুরো পথ যেতে লাগে প্রায় ৪০ মিনিট।', 'জানেন কি? মেট্রোতে আগে নামতে দিন, তারপর উঠুন; দরজায় দাঁড়িয়ে থাকলে সবারই দেরি হয়।', 'জানেন কি? মেট্রোরেলের প্ল্যাটফর্মে কাচের স্ক্রিন ডোর থাকে, যাতে কেউ লাইনে পড়ে না যায়।', 'জানেন কি? প্ল্যাটফর্মের হলুদ খসখসে দাগ দৃষ্টিপ্রতিবন্ধীদের পথ দেখায়; এর উপর দাঁড়িয়ে থাকবেন না।'];
+function endGame() {
+  if (S.over) return; S.over = true; show([]); $('line').hidden = true; $('tbar').hidden = true; $('dls').hidden = true; scene = plat;
+  const sc = Math.max(0, Math.round(S.score - (S.pushes === 0 ? -50 : 0)));
+  $('endT').textContent = S.okN === 3 ? 'তিন যাত্রাই নিখুঁত! 🚇' : S.okN ? `${bn(S.okN)}টা যাত্রা ঠিকঠাক` : 'আজ মেট্রো আপনার না 😅';
+  $('endTitle').textContent = S.okN === 3 && !S.miss ? (S.pushes ? 'দক্ষ যাত্রী' : 'ভদ্র মেট্রো যাত্রী 👑') : S.miss ? 'দরজা বন্ধের শিকার' : 'নিয়মিত যাত্রী';
+  $('endLine').textContent = `${bn(S.miss)} বার ট্রেন মিস, ${S.pushes ? bn(S.pushes) + ' বার ধাক্কা দিয়েছেন' : 'একবারও ধাক্কা দেননি (+৫০)'}। সময়: ${LV[lv].n}।`;
+  $('eS').textContent = bn(sc); $('eOk').textContent = bn(S.okN); $('eMiss').textContent = bn(S.miss); $('eTip').textContent = pick(TIPS);
+  setTimeout(() => { $('endO').hidden = false; if (S.okN === 3 && window.KHViral) KHViral.confetti(); }, 400);
+  SH.saveScore(sc); lastScore = sc; if (rumble) rumble.g.gain.value = 0;
+}
+
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 72 : 58; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+const v3 = new THREE.Vector3();
+function labels() {
+  if (!S || !S.D || $('dls').hidden) return;
+  S.D.forEach((d, i) => { const e = DL[i], mine = i === S.door; v3.set(DOFF[i], 2.35, EDGE).project(cam); let x = (v3.x + 1) / 2 * W, y = (1 - v3.y) / 2 * H; const edge = x < 50 || x > W - 50 || v3.z > 1; if (v3.z > 1) x = DOFF[i] < S.camX ? 0 : W; x = clamp(x, 52, W - 52); y = clamp(y, 70, H - 60);
+    e.style.left = x + 'px'; e.style.top = y + 'px'; const full = d.sp <= 0; e.className = 'dl' + (mine ? ' me' : '') + (full ? ' full' : '') + (edge ? ' edge' : '');
+    const arrow = edge ? (DOFF[i] < S.camX ? '◀ ' : '') : '', arrowR = edge && DOFF[i] > S.camX ? ' ▶' : '';
+    e.innerHTML = `<b>${arrow}দরজা ${bn(i + 1)}${arrowR}</b>${mine && !S.moving ? `সামনে ${bn(S.ahead)} জন` : `লাইনে ${bn(d.q)} জন`}<br>${full ? '❌ জায়গা নেই' : `ভেতরে জায়গা ${bn(d.sp)}`}`; });
+  const L = LV[lv]; if (S.phase === 'open') { $('tTxt').textContent = `⏱️ দরজা খোলা ${bn(Math.max(0, Math.ceil(L.open - S.openT)))} সে`; $('doorBar').style.width = (100 * (1 - S.openT / L.open)) + '%'; $('doorBar').style.background = L.open - S.openT < 3 ? '#ef4444' : '#22c55e'; } else if (S.phase === 'wait') { $('tTxt').textContent = '🚇 ট্রেন আসছে…'; $('doorBar').style.width = (100 * Math.min(1, S.trainT / 5.8)) + '%'; $('doorBar').style.background = '#38bdf8'; }
+}
+function loop(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  if (S && S.started && !S.over) { if (S.phase === 'ride') stepRide(dt); else if (['wait', 'open', 'close', 'board'].includes(S.phase)) stepPlat(dt); }
+  if (scene === plat) {
+    for (const p of POOL) { if (!p.vis) continue; const mv = Math.hypot(p.tx - p.x, p.tz - p.z) > .03; p.x += (p.tx - p.x) * Math.min(1, dt * 2.5); p.z += (p.tz - p.z) * Math.min(1, dt * 2.5); p.h.root.position.set(p.x, 0, p.z); p.h.update(dt, mv, 1); }
+    if (S && S.started && !S.over && S.D) { S.camX += (DOFF[S.door] - S.camX) * Math.min(1, dt * 3.5); const ahead = S.moving ? 3 : S.ahead; let z = EDGE + .75 * (ahead + 1) + 1.0; if (S.phase === 'board' || S.phase === 'toride') z = Math.max(EDGE - 1.2, z - (S.dep + 1.2) * 2.4); const port = W / H < .8; cam.position.set(S.camX + .25, 1.72, z + (port ? 1.2 : .5)); cam.lookAt(S.camX, 1.25, TZ - 2); }
+    else { const a = T0 * .06; cam.position.set(Math.sin(a) * 7 + 2, 2.6, 6.5); cam.lookAt(0, 1.3, TZ); if (!S || !S.started) { train.position.x = ((T0 * 6) % 160) - 60; setDoors(0); } }
+    labels();
+  } else {
+    for (const p of POOL) if (p.h.root.parent === car && p.h.root.visible) p.h.update(dt, 0, 1);
+    const sw = Math.sin(T0 * 2.1) * .02 * (S ? S.v : 0); if (S && S.seated) { cam.position.set(1.0 + sw, 1.18, 4.6); cam.lookAt(-1.2, 1.3, 1.2); } else { cam.position.set(.35 + sw, 1.66, 7.8); cam.lookAt(-.1 + sw, 1.45, -10); }
+  }
+  if (crowdL && SND.ac) crowdL.g.gain.setTargetAtTime(S && S.started && !S.over && scene === plat ? .05 : 0, SND.ac.currentTime, .4);
+  if (renderer) renderer.render(scene, cam);
+  requestAnimationFrame(loop);
+}
+function start(level) { lv = level; newGame(); S.started = true; ['startO', 'endO'].forEach(i => $(i).hidden = true); SND.ac; if (!rumble) { rumble = SND.loop('lowpass', 180, .7); crowdL = SND.loop('bandpass', 900, .6); } POOL.forEach(p => p.vis = false); newTrip(); }
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = e => { e.stopPropagation(); start(+b.dataset.lv); });
+$('lB').onclick = () => S && moveTo(S.door - 1); $('rB').onclick = () => S && moveTo(S.door + 1); $('pushB').onclick = push; $('offB').onclick = getOff;
+addEventListener('keydown', e => { if (!S) return; if (e.key === 'ArrowLeft') moveTo(S.door - 1); if (e.key === 'ArrowRight') moveTo(S.door + 1); if (e.key === ' ') getOff(); });
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `মেট্রোরেল রাশে ${bn(lastScore)} পয়েন্ট পেয়েছি! 🚇 অফিস টাইমে দরজা বন্ধের আগে উঠতে পারবেন? ${location.origin}/games/metro/`; try { navigator.clipboard.writeText(t).then(() => pop('কপি হয়েছে, শেয়ার করুন!', 'good')); } catch (e) {} };
+drawSign(STN[8]); drawLed('পরবর্তী স্টেশন: আগারগাঁও'); drawStn(STN[8]);
+newGame(); resize(); last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+const MY = ['আগে নামতে দিন!', 'ভাই, একটু ভেতরে যান', 'এই ট্রেন মতিঝিল যাবে?', 'দরজায় দাঁড়াবেন না'], OP = ['ভেতরে জায়গা নাই!', 'পরের ট্রেন ৮ মিনিট পর', 'ঠেলাঠেলি কইরেন না', 'কার্ড পাঞ্চ করছেন তো?'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP), 'M3', '🧍 যাত্রী', true), 1500); } });
+window.KHG = { get S() { return S; }, start, moveTo, push, getOff, POOL };
+</script>
+<script src="/js/update.js"></script>
+</body></html>
