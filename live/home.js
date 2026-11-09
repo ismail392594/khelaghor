@@ -70,7 +70,7 @@
       // প্রিয় দল আগে, তারপর বড় দল; ক্রিকেট আগে, ফুটবল পরে। দিনের খেলা শেষ হওয়া টেস্ট লাইভে নয়
       const rk = m => (fav.has(m.a.name) || fav.has(m.b.name) ? 100 : 0) + (m.rk || (m.intl ? 2 : 1));
       const sp = m => (m.sport === 'cricket' ? 0 : 1);
-      const live = all.filter(m => m.state === 'live' && !m.pause).sort((x, y) => sp(x) - sp(y) || rk(y) - rk(x));
+      const live = all.filter(m => m.state === 'live' && !m.pause && !/stumps/i.test(m.raw || '') && !/দিন শেষ/.test(m.status || '')).sort((x, y) => sp(x) - sp(y) || rk(y) - rk(x));
       const up = all.filter(m => m.state === 'upcoming' && m.start < Date.now() + 2 * 864e5).sort((x, y) => rk(y) - rk(x) || x.start - y.start);
       const pick = live.slice(0, 6).concat(up.slice(0, Math.max(0, 6 - live.length)));
       if (!pick.length) return;

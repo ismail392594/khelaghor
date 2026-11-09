@@ -15,7 +15,7 @@ export function maxOvers(m) {
 
 // ক্রিকেট (সীমিত ওভার) আর ফুটবলের জন্য { a, b, d } (০-১), না পারলে null
 export function winProb(m) {
-  if (m.state !== 'live' || m.pause) return null;
+  if (m.state !== 'live' || m.pause || /stumps/i.test(m.raw || '')) return null;
   if (m.sport === 'football') {
     const min = Math.min(90, m.min || (m.per === 'HT' ? 45 : 0));
     const left = Math.max(0, 90 - min) / 90;

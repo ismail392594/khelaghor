@@ -11,7 +11,9 @@ const S = { feed: null, sport: 'all', filter: null, day: null, user: null, me: n
 try { S.fav = new Set(JSON.parse(localStorage.getItem('kh-live-fav') || '[]')); } catch (e) {}
 const isFav = m => S.fav.has(m.a.name) || S.fav.has(m.b.name);
 // টেস্টে দিনের খেলা শেষ (pause) হলে লাইভে না রেখে "আসন্ন"-তে দেখাই; পরদিন খেলা শুরু হলে আবার লাইভে আসবে
-const vstate = m => (m.state === 'live' && m.pause ? 'upcoming' : m.state);
+// পুরোনো ডাটায় pause না থাকলেও লেখা দেখে চিনে নিই ("Stumps" / "দিন শেষ")
+const paused = m => m.state === 'live' && (m.pause || /stumps/i.test(m.raw || '') || /দিন শেষ/.test(m.status || ''));
+const vstate = m => (paused(m) ? 'upcoming' : m.state);
 const dayKey = t => { const d = new Date(t); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
 function dayName(t) {
   const d = new Date(t), n = new Date();
@@ -71,7 +73,7 @@ function innTxt(inns, limited) {
   return parts.join(' & ') + (limited || inns.length === 1 ? `<small>(${ov(last.o)})</small>` : '');
 }
 function batSide(m) {
-  if (m.sport !== 'cricket' || m.state !== 'live' || !m.inns || !m.inns.length) return null;
+  if (m.sport !== 'cricket' || m.state !== 'live' || paused(m) || !m.inns || !m.inns.length) return null;
   return m.inns[m.inns.length - 1].side;
 }
 function scoreOf(m, side) {
@@ -115,7 +117,7 @@ function renderList() {
     daysEl.hidden = keys.length < 2;
     if (S.day) list = list.filter(m => dayKey(m.start) === S.day);
   } else { daysEl.hidden = true; daysEl.innerHTML = ''; }
-  const rk = m => (isFav(m) ? 100 : 0) + (m.rk || (m.intl ? 2 : 1)) + (m.pause ? 50 : 0);
+  const rk = m => (isFav(m) ? 100 : 0) + (m.rk || (m.intl ? 2 : 1)) + (paused(m) ? 50 : 0);
   // প্রিয় দল আর বড় দলের খেলা আগে (বাংলাদেশ সবার আগে), তারপর সময় অনুযায়ী
   list.sort((x, y) => (rk(y) - rk(x)) || (S.filter === 'done' ? y.start - x.start : x.start - y.start));
   const demoN = all.filter(m => m.demo).length;
@@ -137,9 +139,9 @@ function renderList() {
     if (S.sport === 'all') html += `<div class="sec ${sp}"><span>${sp === 'cricket' ? '🏏' : '⚽'}</span><b>${sp === 'cricket' ? 'ক্রিকেট' : 'ফুটবল'}</b><em>${bn(part.length)}টি খেলা</em></div>`;
     let lastG = null;
     for (const m of part) {
-      const g = m.pause ? '__pause' : (isFav(m) ? '__fav' : '') + m.tour;
+      const g = paused(m) ? '__pause' : (isFav(m) ? '__fav' : '') + m.tour;
       if (g !== lastG) {
-        const title = m.pause ? '⏸ আজকের খেলা শেষ, পরের দিন আবার শুরু' : (isFav(m) ? '⭐ ' : '') + (m.tour || (sp === 'cricket' ? 'ক্রিকেট' : 'ফুটবল'));
+        const title = paused(m) ? '⏸ আজকের খেলা শেষ, পরের দিন আবার শুরু' : (isFav(m) ? '⭐ ' : '') + (m.tour || (sp === 'cricket' ? 'ক্রিকেট' : 'ফুটবল'));
         html += `<div class="grp">${esc(title)}</div>`; lastG = g;
       }
       html += cardHtml(m);
@@ -166,7 +168,7 @@ function cardHtml(m) {
   const dimOf = s => m.state === 'done' && m.result && m.result !== 'void' && m.result !== 'd' && m.result !== s;
   const row = s => `<div class="tm${dimOf(s) ? ' dim' : ''}">${badge(m[s])}<span class="nm">${esc(tname(m[s]))}${S.fav.has(m[s].name) ? ' <i class="star">★</i>' : ''}${bs === s ? '<span class="bat" title="ব্যাট করছে"></span>' : ''}</span><span class="sc">${scoreOf(m, s)}</span></div>`;
   let pill, foot;
-  if (m.pause) {
+  if (paused(m)) {
     pill = '<span class="pill pause">দিনের খেলা শেষ</span>';
     foot = `<span class="st">${esc(m.status || '')}</span>`;
   } else if (m.state === 'live') {
@@ -244,7 +246,7 @@ function renderDetail(m, det, votes) {
   else mid = '<div class="v">বনাম</div>';
   const team = s => `<div class="t big">${badge(m[s], true)}<b>${esc(tname(m[s]))}${bs === s ? ' 🏏' : ''}</b>${heroScore(m, s)}<button type="button" class="fav" data-fav="${esc(m[s].name)}" aria-pressed="${S.fav.has(m[s].name)}">${S.fav.has(m[s].name) ? '★ প্রিয়' : '☆ প্রিয়'}</button></div>`;
   let st;
-  if (m.pause) st = `<div class="hst">⏸ ${esc(m.status)}</div>`;
+  if (paused(m)) st = `<div class="hst">⏸ ${esc(m.status)}</div>`;
   else if (m.state === 'live') st = `<div class="hst hot">${m.sport === 'football' ? esc(m.status) + (m.min ? ` · ${bn(m.min)}'` : '') : esc(m.status)}</div>`;
   else if (m.state === 'upcoming') st = `<div class="hst">খেলা শুরু ${when(m.start)}</div><div class="hcd" data-hcd="${m.start}">${hcd(m.start)}</div>`;
   else st = `<div class="hst">${esc(m.status)}</div>`;
@@ -387,7 +389,7 @@ function renderVote(m, votes) {
     else msg = 'এবার মেলেনি, পরের ম্যাচে আবার চেষ্টা করুন';
   } else if (mine) { msg = `✓ আপনার ভোট: ${mine === 'd' ? 'ড্র' : esc(tname(m[mine]))}${scTxt}। খেলা শেষে ফল মিলিয়ে পয়েন্ট দেওয়া হবে`; cls = 'ok'; }
   else if (open) msg = m.demo ? 'নমুনা ম্যাচ: ভোট দেওয়া যায়, তবে পয়েন্ট যোগ হয় না' : (fb ? 'দল বাছাই করুন, চাইলে সঠিক স্কোরও বলুন' : 'খেলা শুরুর আগ পর্যন্ত ভোট দেওয়া যাবে');
-  else msg = m.state === 'live' ? 'খেলা শুরু হয়ে গেছে, ভোট বন্ধ' : 'ভোট বন্ধ';
+  else msg = m.state === 'live' ? (paused(m) ? 'টেস্ট চলছে, ভোট বন্ধ' : 'খেলা শুরু হয়ে গেছে, ভোট বন্ধ') : 'ভোট বন্ধ';
   html += `<div class="vmsg ${cls}" id="vMsg">${msg}${total ? ` · মোট ${bn(total)} ভোট` : ''}</div>`;
   $('vBox').innerHTML = html;
 }
