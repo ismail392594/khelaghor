@@ -509,6 +509,12 @@ async function loadMe() {
   try {
     S.me = await get('f=me', true);
     $('ptsTxt').textContent = bn(S.me.pts) + ' পয়েন্ট';
+    // আগের বারের চেয়ে পয়েন্ট বাড়লে জানানো (খেলা শেষে অনুমান মিলেছে)
+    try {
+      const key = 'kh-live-pts-' + S.user.uid, before = localStorage.getItem(key);
+      if (before != null && S.me.pts > +before) toast(`🎉 আপনার অনুমান মিলেছে! +${bn(S.me.pts - +before)} পয়েন্ট`);
+      localStorage.setItem(key, String(S.me.pts));
+    } catch (e) {}
   } catch (e) { S.me = null; }
   if (S.feed) renderList();
   if (S.open && S.det) renderVote(S.det.m, S.det.votes);
