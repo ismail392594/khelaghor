@@ -153,6 +153,11 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .stopHint{top:calc(54px + env(safe-area-inset-top,0px));font-size:.76rem}.com{top:calc(48px + env(safe-area-inset-top,0px));font-size:.74rem;max-width:40vw;left:auto;right:12px;transform:none}
 .gauge{bottom:calc(8px + env(safe-area-inset-bottom,0px));width:92px;height:92px}.gauge b{font-size:1.5rem}.stb{width:60px;height:60px}.pd{width:54px;height:80px}.swheel{width:112px;height:112px}.chost{display:none}.score b{font-size:1.5rem}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+
+/* হেল্পার/যাত্রীর কথা: পর্দার মাঝখানে না, উপরে ডানে ছোট করে (মালিকের অনুরোধ) */
+body .khViral{top:calc(64px + env(safe-area-inset-top,0px))!important;bottom:auto!important;left:auto!important;right:max(12px,env(safe-area-inset-right,0px))!important;transform:none!important;max-width:min(46vw,300px)!important;font-size:.78rem!important;padding:6px 10px!important;border-radius:12px!important;line-height:1.3!important;background:rgba(255,255,255,.92)!important}
+body .khViral small{font-size:.66rem!important}
+@media (orientation:landscape){body .khViral{top:calc(112px + env(safe-area-inset-top,0px))!important}}
 </style>
 </head><body>
 <div class="app">
@@ -884,6 +889,8 @@ const CAB_T = {
   panel: ctex(128, 128, (x, w, h) => { x.fillStyle = '#d8d2c2'; x.fillRect(0, 0, w, h); for (let i = 0; i < 700; i++) { x.fillStyle = `rgba(90,80,60,${Math.random() * .1})`; x.fillRect(Math.random() * w, Math.random() * h, 2, 2); } x.fillStyle = 'rgba(0,0,0,.18)'; x.fillRect(0, 0, w, 2); }),
   curtain: ctex(128, 256, (x, w, h) => { x.fillStyle = '#1f4f7a'; x.fillRect(0, 0, w, h); for (let xx = 0; xx < w; xx += 10) { const g = x.createLinearGradient(xx, 0, xx + 10, 0); g.addColorStop(0, 'rgba(0,0,0,.35)'); g.addColorStop(.5, 'rgba(255,255,255,.12)'); g.addColorStop(1, 'rgba(0,0,0,.35)'); x.fillStyle = g; x.fillRect(xx, 0, 10, h); } x.fillStyle = 'rgba(240,200,90,.6)'; for (let yy = 12; yy < h; yy += 40) x.fillRect(0, yy, w, 4); }),
   gauge: ctex(256, 100, (x, w, h) => { x.fillStyle = '#0c0d10'; x.fillRect(0, 0, w, h); for (const cx of [60, 196]) { x.strokeStyle = '#e8e8e8'; x.lineWidth = 3; x.beginPath(); x.arc(cx, 56, 38, Math.PI * .8, Math.PI * 2.2); x.stroke(); for (let i = 0; i <= 8; i++) { const a = Math.PI * (.8 + i * .175); x.beginPath(); x.moveTo(cx + Math.cos(a) * 30, 56 + Math.sin(a) * 30); x.lineTo(cx + Math.cos(a) * 38, 56 + Math.sin(a) * 38); x.stroke(); } x.strokeStyle = '#ff5b4a'; x.beginPath(); x.moveTo(cx, 56); x.lineTo(cx - 22, 40); x.stroke(); } x.fillStyle = '#3fd36b'; x.fillRect(118, 30, 20, 10); x.fillStyle = '#ffb020'; x.fillRect(118, 50, 20, 10); }),
+  dash: ctex(128, 128, (x, w, h) => { x.fillStyle = '#2b2e33'; x.fillRect(0, 0, w, h); for (let i = 0; i < 2500; i++) { const v = 30 + Math.random() * 30 | 0; x.fillStyle = `rgba(${v},${v},${v + 4},.5)`; x.fillRect(Math.random() * w, Math.random() * h, 1, 1); } }),
+  strip: ctex(1024, 96, (x, w, h) => { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(10,40,30,.92)'); g.addColorStop(.75, 'rgba(10,40,30,.7)'); g.addColorStop(1, 'rgba(10,40,30,0)'); x.fillStyle = g; x.fillRect(0, 0, w, h); x.fillStyle = 'rgba(255,214,90,.95)'; x.font = "800 50px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('যাত্রা শুভ হোক', w / 2, h * .42); }),
   route: ctex(1024, 96, (x, w, h) => { x.fillStyle = '#111'; x.fillRect(0, 0, w, h); x.fillStyle = '#ffd23f'; x.font = "800 58px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('ঢাকা ⇄ কুমিল্লা ⇄ চট্টগ্রাম · সিটিং সার্ভিস', w / 2, h / 2 + 4); })
 };
 CAB_T.seat.wrapS = CAB_T.seat.wrapT = THREE.RepeatWrapping;
@@ -904,7 +911,7 @@ function buildCabin(key) {
     for (let z = z0 + 1.6; z < z1 - .3; z += 1.15) { add(mFrame, B(.08, wy1 - wy0, .09), sd * (hw - .01), (wy0 + wy1) / 2, z); add(mCurt, B(.06, wy1 - wy0 - .06, .2), sd * (hw - .06), (wy0 + wy1) / 2, z + .14); } // পিলার আর গুটানো পর্দা
     add(mGlass, new THREE.PlaneGeometry(z1 - z0, wy1 - wy0), sd * (hw + .02), (wy0 + wy1) / 2, (z0 + z1) / 2, 0, Math.PI / 2);
     add(mRail, new THREE.CylinderGeometry(.018, .018, z1 - z0 - 1.5, 8), sd * .42, roof - .2, (z0 + z1) / 2 + .7, Math.PI / 2); // ছাদে ধরার রড
-    for (let z = z0 + 1.8; z < z1 - .4; z += .85) { add(mFrame, new THREE.TorusGeometry(.04, .008, 6, 14), sd * .42, roof - .36, z, 0, Math.PI / 2); add(mFrame, B(.012, .12, .012), sd * .42, roof - .26, z); }
+    for (let z = z0 + 1.8; z < z1 - .4; z += .85) { add(mFrame, new THREE.TorusGeometry(.032, .007, 6, 14), sd * .42, roof - .4, z, 0, Math.PI / 2); add(M('#e8e4d8', .9), B(.025, .16, .006), sd * .42, roof - .29, z); }
   }
   add(mPanel, B(hw * 2, .04, z1 - z0), 0, roof, (z0 + z1) / 2);
   add(mLamp, B(.14, .02, z1 - z0 - 1.6), -.85, roof - .03, (z0 + z1) / 2 + .6); add(mLamp, B(.14, .02, z1 - z0 - 1.6), .85, roof - .03, (z0 + z1) / 2 + .6);
@@ -916,24 +923,30 @@ function buildCabin(key) {
   }
   // সামনে: চালকের প্ল্যাটফর্ম আর সিট, ড্যাশবোর্ড, কাচের ফ্রেম, মাঝের খুঁটি, দরজার সিঁড়ি
   const fz = z0, dx = hw - .62;
-  add(mDash, B(hw * 2, .32, .85), 0, fy + 1.02, fz + .45, .15); add(mFrame, B(hw * 2, .06, .1), 0, fy + 1.19, fz + .86);
-  add(mFrame, B(.1, roof - fy - 1.05, .1), -hw + .05, (fy + 1.05 + roof) / 2, fz + .05); add(mFrame, B(.1, roof - fy - 1.05, .1), hw - .05, (fy + 1.05 + roof) / 2, fz + .05);
-  add(mFrame, B(.06, roof - fy - 1.12, .06), .12, (fy + 1.12 + roof) / 2 - .02, fz + .03); // দুই ভাগের কাচের মাঝের দাগ
-  add(mGlass, new THREE.PlaneGeometry(hw * 2, roof - fy - 1.12), 0, (fy + 1.12 + roof) / 2, fz - .02);
-  add(mPanel, B(hw * 2, .28, .4), 0, roof - .14, fz + .2); add(mFrame, B(.8, .03, .3), dx, roof - .3, fz + .3, .25); // সান ভাইজর (ভাঁজ করা)
+  // নিচু ড্যাশবোর্ড আর বড় কাচ (আসল বাসের মতো সামনে অনেকখানি দেখা যায়), সরু পিলার, মাঝে সরু দাগ, উপরে রঙিন কাচের ফিতা
+  const mDash2 = new THREE.MeshStandardMaterial({ map: CAB_T.dash, roughness: .85 }), mPil = M('#33373d', .6, .2), wb = fy + .92;
+  add(mDash2, B(hw * 2, .2, .62), 0, wb - .1, fz + .33, .08); add(mDash2, B(hw * 2, .04, .14), 0, wb + .01, fz + .66);
+  add(mDash2, B(.62, .12, .34), dx, wb + .04, fz + .66, -.35); // চালকের মিটারের ঢাকনা
+  add(mPil, B(.07, roof - wb, .07), -hw + .04, (wb + roof) / 2, fz + .02); add(mPil, B(.07, roof - wb, .07), hw - .04, (wb + roof) / 2, fz + .02);
+  add(mPil, B(.035, roof - wb - .05, .035), .1, (wb + roof) / 2, fz + .01); // দুই ভাগের কাচের মাঝের দাগ
+  add(mGlass, new THREE.PlaneGeometry(hw * 2, roof - wb), 0, (wb + roof) / 2, fz - .02);
+  add(mPil, B(hw * 2, .07, .07), 0, roof - .035, fz + .02); add(M('#2c2f34', .9), B(hw * 2, .03, 1.5), 0, roof - .02, fz + .75); // উপরের ফ্রেম আর সামনের ছাদের কাপড়
+  for (const sx of [-.55, .5]) add(M('#15171a', .6, .3), B(.85, .025, .025), sx, wb + .08, fz - .05, 0, 0, sx < 0 ? .22 : .18); // ওয়াইপার
+  for (const sd of [-1, 1]) { add(mPil, B(.04, .04, .55), sd * (hw + .22), roof - .32, fz - .2); add(M('#1c1f23', .4, .3), B(.2, .42, .06), sd * (hw + .32), roof - .62, fz - .45); add(new THREE.MeshStandardMaterial({ color: '#5b6b78', roughness: .08, metalness: .8 }), B(.17, .38, .01), sd * (hw + .32), roof - .62, fz - .415); } // খরগোশ-কানের মতো সামনের বড় আয়না
   add(mDash, B(.9, .3, .9), dx, fy + .15, fz + 1.3); add(mSeat, B(.5, .14, .5), dx, fy + .62, fz + 1.35); add(mSeat, B(.5, .8, .1), dx, fy + 1.05, fz + 1.62, -.12); // চালকের উঁচু সিট
   add(mFrame, B(.5, .08, hw), -hw + .5, fy - .12, fz + 1.4); add(mFrame, B(.5, .08, hw * .8), -hw + .5, fy - .3, fz + 1.4); // দরজার সিঁড়ি
   add(mRail, new THREE.CylinderGeometry(.022, .022, roof - fy, 8), -hw + .95, (fy + roof) / 2, fz + 2.1); add(mRail, new THREE.CylinderGeometry(.022, .022, roof - fy, 8), .38, (fy + roof) / 2, fz + 1.95);
   const g = new THREE.Group();
   for (const [mat, geos] of G) { const m = new THREE.Mesh(mergeGeometries(geos), mat); m.frustumCulled = false; g.add(m); }
   // রঙিন ঝালর: কাচের উপরের কিনারায় ঝুলন্ত পুঁতি (বাংলাদেশি বাসের চেনা সাজ)
-  const fr = new THREE.InstancedMesh(new THREE.ConeGeometry(.025, .09, 6).rotateX(Math.PI), new THREE.MeshStandardMaterial({ roughness: .4, metalness: .3 }), 44); const m4 = new THREE.Matrix4(), cc = new THREE.Color(), cols = ['#e63946', '#ffd23f', '#2a9d8f', '#f77f00', '#8338ec', '#ffffff'];
-  for (let i = 0; i < 44; i++) { m4.makeTranslation(-hw + .1 + i * (hw * 2 - .2) / 43, roof - .32 - (i % 2) * .05, fz + .06); fr.setMatrixAt(i, m4); fr.setColorAt(i, cc.set(cols[i % cols.length])); } g.add(fr);
+  const fr = new THREE.InstancedMesh(new THREE.ConeGeometry(.018, .07, 6).rotateX(Math.PI), new THREE.MeshStandardMaterial({ roughness: .4, metalness: .3 }), 44); const m4 = new THREE.Matrix4(), cc = new THREE.Color(), cols = ['#e63946', '#ffd23f', '#2a9d8f', '#f77f00', '#8338ec', '#ffffff'];
+  for (let i = 0; i < 44; i++) { m4.makeTranslation(-hw + .1 + i * (hw * 2 - .2) / 43, roof - .38 - (i % 2) * .04, fz + .06); fr.setMatrixAt(i, m4); fr.setColorAt(i, cc.set(cols[i % cols.length])); } g.add(fr);
   const rb = new THREE.Mesh(new THREE.PlaneGeometry(hw * 1.1, .1), new THREE.MeshBasicMaterial({ map: CAB_T.route })); rb.position.set(-.25, roof - .09, fz + .41); g.add(rb); // রুটের বোর্ড, ভেতরের দিকে মুখ
   const drv = new THREE.Mesh(new THREE.PlaneGeometry(.74, .92), new THREE.MeshStandardMaterial({ map: (() => { const t = texL.load(A + 'people_seat.webp'); t.colorSpace = THREE.SRGBColorSpace; t.repeat.set(1 / 6, 1); return t; })(), alphaTest: .5, side: THREE.DoubleSide, roughness: .9 }));
   drv.geometry.translate(0, .46, 0); drv.position.set(dx, fy + .69, fz + 1.36); g.add(drv); // চালক (পেছন থেকে)
-  const wh = new THREE.Mesh(new THREE.TorusGeometry(.24, .025, 8, 32), mDash); wh.position.set(dx, fy + 1.2, fz + 1.0); wh.rotation.x = -1.1; g.add(wh);
-  const gc = new THREE.Mesh(new THREE.PlaneGeometry(.5, .2), new THREE.MeshBasicMaterial({ map: CAB_T.gauge })); gc.position.set(dx, fy + 1.2, fz + .74); gc.rotation.x = -.5; g.add(gc); // মিটার
+  const wh = new THREE.Mesh(new THREE.TorusGeometry(.24, .025, 8, 32), mDash); wh.position.set(dx, fy + 1.0, fz + 1.02); wh.rotation.x = -1.15; g.add(wh);
+  const gc = new THREE.Mesh(new THREE.PlaneGeometry(.38, .15), new THREE.MeshBasicMaterial({ map: CAB_T.gauge })); gc.position.set(dx, fy + .97, fz + .78); gc.rotation.x = -.75; g.add(gc); // মিটার
+  const ss = new THREE.Mesh(new THREE.PlaneGeometry(hw * 2, .26), new THREE.MeshBasicMaterial({ map: CAB_T.strip, transparent: true, depthWrite: false })); ss.position.set(0, roof - .2, fz + .005); g.add(ss); // কাচের উপরের রঙিন ফিতা
   g.traverse(o => { if (o.material) bendMat(o.material); }); g.visible = false;
   return { g, drv, wh, rb, fy, roof, L, hw, dx, fz };
 }
@@ -1358,7 +1371,7 @@ function loop(ts) {
         cockWheel.visible = cockpit.visible = false; player.userData.body.visible = true; const d = doorPos();
         camPos.set(STOP_X - 5.2, 2.1, d.z + 5); camLook.set(d.x + .3, 1.1, d.z - .5); if (cam.position.distanceTo(camPos) > 30) cam.position.copy(camPos); else cam.position.lerp(camPos, Math.min(1, dt * 2.5));
       } else if (inCab) { // বাসের ভেতর: চালকের সিট থেকে, অথবা পেছন থেকে যাত্রীদের মাথার উপর দিয়ে সামনে
-        const C = cabin; if (ck) { cabW(C.dx, C.fy + 1.52, C.fz + 1.3, camPos); cabW(C.dx, C.fy + 1.1, C.fz - 40, camLook); }
+        const C = cabin; if (ck) { cabW(C.dx, C.fy + 1.42, C.fz + 1.28, camPos); cabW(C.dx, C.fy + .95, C.fz - 40, camLook); }
         else { cabW(0, C.fy + 1.78, C.L / 2 - .45, camPos); cabW(0, C.fy + 1.12, -C.L / 2 - 8, camLook); }
         cam.position.copy(camPos);
       } else if (ck) { // ড্রাইভারের সিট: বাংলাদেশে স্টিয়ারিং ডানে
@@ -1446,10 +1459,7 @@ $('modeSel').addEventListener('click', async e => {
 $('gearB').addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); toggleGear(); });
 function toggleGear() { if (!S || !S.started || !SIM) return; if (Math.abs(S.v) > 1) { pop('আগে পুরো থামুন, তারপর গিয়ার'); return; } S.gear = S.gear === 'R' ? 'D' : 'R'; $('gearL').textContent = S.gear; sfx('click'); pop(S.gear === 'R' ? '↩️ ব্যাক গিয়ার (R)' : '⬆️ সামনের গিয়ার (D)'); }
 // সিমুলেটরের নিয়ম: গতিসীমা (মহাসড়কে বাস ৮০, বাজারে ৪০), বেশি হলে হাইওয়ে পুলিশের জরিমানা
-function simRules(st, dt, inBazaar) {
-  if (!SIM) return; const lim = (inBazaar ? 40 : RIDES[rideKey].pax > 20 || /truck/.test(rideKey) ? 80 : 90) + 8, k = st.v * KMH;
-  if (k > lim) { if ((st.overT = (st.overT || 0) + dt) > 4) { st.overT = -6; const fine = 150; wallet = Math.max(0, wallet - fine); store.set('kh-racer-taka', wallet); st.fines = (st.fines || 0) + fine; shout('🚓 জরিমানা ৳' + bn(fine), '#ff6b5c'); com('fine'); sfx('siren'); } } else st.overT = Math.max(0, (st.overT || 0) - dt);
-}
+function simRules(st, dt, inBazaar) { } // মালিক বলেছেন পুলিশের জরিমানা বন্ধ (১০ নভেম্বর); গতিসীমার সাইন শুধু দেখানোর জন্য
 // 📻 বাংলা সুরের রেডিও: লোকগানের ধাঁচে নিজে তৈরি বাজনা (বাঁশি, দোতারা, ঢোল) — আসল গান বাজাতে লাইসেন্স লাগে
 let radio = null;
 function radioToggle() {
