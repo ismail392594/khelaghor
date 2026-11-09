@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>মার্বেল · খেলাঘর</title>
+<meta name="description" content="উঠানের গোল দাগে কাচের মার্বেল সাজানো। টিপ করে নিজের মার্বেল ছুড়ুন, ঠোকা দিয়ে মার্বেল গোলের বাইরে পাঠিয়ে জিতে নিন!">
+<link rel="canonical" href="https://khelaghorbd.online/games/marble/">
+<meta property="og:title" content="মার্বেল · খেলাঘর">
+<meta property="og:description" content="টিপ করো, ঠোকা দাও! বন্ধুর চেয়ে বেশি মার্বেল জিততে পারবেন?">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/marble.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/marble.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+/* মার্বেল: গোলের পাশে বসে টিপ করার চোখে দেখা। আঙুল পেছনে টেনে ছাড়লে মার্বেল ছোটে (গুলতির মতো)। */
+:root{--accent:#38bdf8}
+.turn{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:3;font-weight:800;font-size:.86rem;background:rgba(0,0,0,.5);padding:4px 12px;border-radius:999px;pointer-events:none;white-space:nowrap}
+.mv{border:0;border-radius:50%;width:56px;height:56px;font-size:1.4rem;color:#fff;background:#1c222b;border:1px solid #2b3550;cursor:pointer;touch-action:none}
+.pw{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:3;width:min(70%,300px);height:12px;border-radius:8px;background:rgba(0,0,0,.5);border:2px solid rgba(255,255,255,.6);overflow:hidden;pointer-events:none}
+.pw i{display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#facc15,#ef4444)}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="me">০</b><small>আপনার মার্বেল</small></div>
+    <div class="stat r"><b id="op">০</b><small id="opN">বন্ধুর মার্বেল</small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas class="cv" id="cv"></canvas>
+    <div class="turn" id="turn" hidden></div>
+    <div class="pw" id="pw" hidden><i id="pwI"></i></div>
+    <div class="say" id="say" hidden></div>
+    <div class="chost" id="chatHost"></div>
+
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>মার্বেল</h1>
+        <p class="story">উঠানে চক দিয়ে গোল দাগ, মাঝখানে কাচের মার্বেল সাজানো। পকেটে আপনার "গুটি" মার্বেল, বন্ধু বলছে: "আগে তুই মার!"</p>
+        <div class="rules">
+          <div>🎯 <b>টিপ:</b> পর্দায় আঙুল রেখে <b>পেছনে টানুন</b> (গুলতির মতো), দিক আর জোর দেখাবে। ছেড়ে দিলে মার্বেল ছোটে।</div>
+          <div>◀ ▶ দিয়ে গোলের চারপাশে জায়গা বদলান, যেদিক থেকে মারা সহজ।</div>
+          <div>💥 ঠোকা দিয়ে মার্বেল <b>গোলের বাইরে</b> পাঠালে সেটা আপনার, আর আবার মারার সুযোগ। না পারলে বন্ধুর পালা।</div>
+          <div>🏆 সব মার্বেল শেষ হলে যার বেশি, সে জেতে।</div>
+        </div>
+        <p>কার সাথে?</p>
+        <div class="lvl">
+          <button data-lv="0">ছোট ভাই<small>টিপ কাঁচা</small></button>
+          <button data-lv="1">পাড়ার বন্ধু<small>মাঝারি</small></button>
+          <button data-lv="2">মার্বেল ওস্তাদ<small>নিখুঁত টিপ</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">মাটি: <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a> (CC0)। মানুষ: Renderpeople (<a href="/games/racer/assets/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। মার্বেল খেলাঘরের নিজের বানানো।</p>
+      </div>
+    </div>
+
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">খেলা শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eM">০</b><span>আপনার মার্বেল</span></div><div><b id="eO">০</b><span>বন্ধুর মার্বেল</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার খেলি</button><button class="gbtn ghost" id="menuBtn">বন্ধু বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">🔮</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+  <div class="ctl"><button class="mv" id="mvL" aria-label="বামে সরুন">◀</button><div class="hint" id="hint">বন্ধু বেছে খেলা শুরু করুন</div><button class="mv" id="mvR" aria-label="ডানে সরুন">▶</button></div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { GLTFLoader } from "/js/vendor/addons/GLTFLoader.js";
+import { MeshoptDecoder } from "/js/vendor/addons/meshopt_decoder.module.js";
+import { RGBELoader } from "/js/vendor/addons/RGBELoader.js";
+import { clone as cloneSkinned } from "/js/vendor/addons/SkeletonUtils.js";
+import { TIERS, detectTier } from "/js/kh-quality.js";
+import { loadPeople } from "/js/kh-people.js";
+import { gameShell, sound, bn, pick, rnd, clamp } from "/js/kh-shell.js";
+
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'marble', name: 'মার্বেল', lbTitle: 'সেরা মার্বেলবাজ', offMsg: 'সব মার্বেল হারিয়ে গেছে, খুঁজে এনে আসছি!' });
+const SND = sound(SH);
+
+/* ================= ৩ডি উঠান ================= */
+const TIER = TIERS[detectTier()], LOW = TIER.id <= 1;
+let renderer = null; try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' }); } catch (e) {}
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(50, 1, .01, 200);
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.shadowMap.enabled = !LOW; renderer.shadowMap.type = THREE.PCFSoftShadowMap; }
+const ANISO = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1, texL = new THREE.TextureLoader(), KA = '/games/kanamachi/assets/', RA = '/games/racer/assets/';
+const tex = (u, srgb, r) => { const t = texL.load(u); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; t.repeat.set(r, r); return t; };
+const skyT = texL.load(RA + 'sky.jpg'); skyT.colorSpace = THREE.SRGBColorSpace;
+const skyG = new THREE.SphereGeometry(100, 32, 16); skyG.scale(-1, 1, 1); scene.add(new THREE.Mesh(skyG, new THREE.MeshBasicMaterial({ map: skyT, fog: false, toneMapped: false })));
+scene.add(new THREE.HemisphereLight('#fff0d6', '#5a4a30', 1.0));
+const sun = new THREE.DirectionalLight('#ffe2b4', 2.6); sun.position.set(-2, 5, 1.5); sun.castShadow = !LOW; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -1, right: 1, top: 1, bottom: -1, near: .5, far: 12 }); sun.shadow.bias = -.0004; scene.add(sun);
+// কাচের মার্বেলে আকাশের প্রতিফলন (ভালো ফোনে HDR)
+if (renderer && !LOW) new RGBELoader().load(RA + 'sky_1k.hdr', h => { const pm = new THREE.PMREMGenerator(renderer); h.mapping = THREE.EquirectangularReflectionMapping; scene.environment = pm.fromEquirectangular(h).texture; h.dispose(); pm.dispose(); }, undefined, () => {});
+const ground = new THREE.Mesh(new THREE.CircleGeometry(30, 48), new THREE.MeshStandardMaterial({ map: tex(KA + 'ground_diff.jpg', true, 40), normalMap: tex(KA + 'ground_nor.jpg', false, 40), roughnessMap: tex(KA + 'ground_arm.jpg', false, 40), roughness: 1, envMapIntensity: .3 }));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+const RING = .36, MR = .011; // গোলের ব্যাসার্ধ ৪২ সেমি, মার্বেল ১.৮ সেমি
+const chalkT = (() => { const c = document.createElement('canvas'); c.width = 512; c.height = 512; const x = c.getContext('2d'); for (let k = 0; k < 3; k++) { x.strokeStyle = `rgba(245,242,230,${.5 + k * .15})`; x.lineWidth = 7 - k * 2; x.beginPath(); for (let a = 0; a <= 6.3; a += .05) { const r = 236 + Math.sin(a * 6 + k) * 2.5 + (Math.random() - .5) * 2; a ? x.lineTo(256 + Math.cos(a) * r, 256 + Math.sin(a) * r) : x.moveTo(256 + r, 256); } x.stroke(); } const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+const ringM = new THREE.Mesh(new THREE.PlaneGeometry(RING * 2 * 256 / 236, RING * 2 * 256 / 236), new THREE.MeshStandardMaterial({ map: chalkT, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, roughness: 1 })); ringM.rotation.x = -Math.PI / 2; ringM.position.y = .002; scene.add(ringM);
+// মার্বেল: কাচের ভেতরে রঙিন প্যাঁচ (বিড়ালের চোখ)
+function swirlTex(c1, c2) { const c = document.createElement('canvas'); c.width = 128; c.height = 64; const x = c.getContext('2d'); x.fillStyle = 'rgba(220,235,240,1)'; x.fillRect(0, 0, 128, 64); for (let k = 0; k < 3; k++) { x.fillStyle = k % 2 ? c2 : c1; x.beginPath(); const o = k * 42; x.moveTo(o, 64); x.bezierCurveTo(o + 18, 40, o + 6, 20, o + 22, 0); x.lineTo(o + 34, 0); x.bezierCurveTo(o + 20, 22, o + 30, 42, o + 14, 64); x.closePath(); x.fill(); } const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; }
+const MCOL = [['#2563eb', '#fbbf24'], ['#dc2626', '#22c55e'], ['#16a34a', '#f97316'], ['#9333ea', '#38bdf8'], ['#f59e0b', '#1d4ed8'], ['#0d9488', '#e11d48']];
+const marbleMats = MCOL.map(([a, b]) => new THREE.MeshPhysicalMaterial({ map: swirlTex(a, b), roughness: .05, metalness: 0, clearcoat: 1, clearcoatRoughness: .02, envMapIntensity: 1.4 }));
+const shooterMats = [new THREE.MeshPhysicalMaterial({ color: '#f5f5f5', map: swirlTex('#111827', '#ef4444'), roughness: .04, clearcoat: 1 }), new THREE.MeshPhysicalMaterial({ map: swirlTex('#7c2d12', '#fde047'), roughness: .04, clearcoat: 1 })];
+const MG = new THREE.SphereGeometry(MR, 24, 16), SG = new THREE.SphereGeometry(MR * 1.15, 24, 16);
+function mkMarble(mat, big) { const m = new THREE.Mesh(big ? SG : MG, mat); m.castShadow = true; scene.add(m); return m; }
+
+/* ================= মানুষ: পাশে বসা বন্ধু ================= */
+let FRIEND = null;
+loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned).then(P => { FRIEND = P.make(1, { scale: .82, shadow: !LOW }); scene.add(FRIEND.root); }).catch(() => {});
+
+/* ================= শব্দ ================= */
+const SFX = {
+  clack(v) { SND.tone(2800 + Math.random() * 600, .05, 'sine', .12 + v * .3); SND.tone(4200, .03, 'sine', .06 + v * .15); },
+  flick() { SND.noise(.04, .5, 2500, 'highpass'); },
+  roll() { SND.noise(.15, .08, 600); },
+  out() { [880, 1175].forEach((f, i) => SND.tone(f, .12, 'triangle', .22, 0, i * .08)); },
+  miss() { SND.tone(330, .2, 'triangle', .15, 260); },
+  win() { [523, 659, 784, 1047].forEach((f, i) => SND.tone(f, .2, 'triangle', .28, 0, i * .1)); },
+  lose() { [392, 330, 262].forEach((f, i) => SND.tone(f, .25, 'triangle', .22, 0, i * .15)); }
+};
+
+/* ================= পদার্থবিদ্যা (মাটিতে গড়ানো, ঠোকাঠুকি) ================= */
+// সব মার্বেল একই ভরের ধরা; গুটিটা একটু ভারী। মাটির ঘষায় সমান হারে গতি কমে।
+const BALLS = []; let shooter = null;
+const MU = .55, E = .92;
+function physics(dt) {
+  const n = 4, h = dt / n;
+  for (let s = 0; s < n; s++) {
+    for (const b of BALLS) { if (!b.alive) continue; const v = Math.hypot(b.vx, b.vz); if (v > 0) { const nv = Math.max(0, v - MU * h); b.vx *= nv / v; b.vz *= nv / v; b.x += b.vx * h; b.z += b.vz * h; b.rot += v * h / b.r; } }
+    for (let i = 0; i < BALLS.length; i++) for (let j = i + 1; j < BALLS.length; j++) {
+      const a = BALLS[i], c = BALLS[j]; if (!a.alive || !c.alive) continue; const dx = c.x - a.x, dz = c.z - a.z, d = Math.hypot(dx, dz), md = a.r + c.r;
+      if (d < md && d > 1e-6) { const nx = dx / d, nz = dz / d, rv = (c.vx - a.vx) * nx + (c.vz - a.vz) * nz, ov = md - d, ia = 1 / a.m, ic = 1 / c.m;
+        a.x -= nx * ov * ia / (ia + ic); a.z -= nz * ov * ia / (ia + ic); c.x += nx * ov * ic / (ia + ic); c.z += nz * ov * ic / (ia + ic);
+        if (rv < 0) { const j2 = -(1 + E) * rv / (ia + ic); a.vx -= j2 * ia * nx; a.vz -= j2 * ia * nz; c.vx += j2 * ic * nx; c.vz += j2 * ic * nz; SFX.clack(Math.min(1, -rv / 2)); if (a.shooter || c.shooter) S.touched = true; } }
+    }
+  }
+  for (const b of BALLS) if (b.alive && !b.shooter && !b.gone && Math.hypot(b.x, b.z) > RING + b.r) { b.gone = true; S.outNow.push(b); }
+  // গুটি অনেক দূরে চলে গেলে থামানো
+  if (shooter && Math.hypot(shooter.x, shooter.z) > RING * 2.5) { shooter.vx = shooter.vz = 0; }
+  return BALLS.some(b => b.alive && Math.hypot(b.vx, b.vz) > .004);
+}
+
+/* ================= খেলা ================= */
+const NM = 13;
+const LV = [{ n: 'ছোট ভাই', err: .14, pow: [.55, .9] }, { n: 'পাড়ার বন্ধু', err: .07, pow: [.7, 1] }, { n: 'মার্বেল ওস্তাদ', err: .025, pow: [.8, 1] }];
+const OPN = ['ছোট ভাই', 'রনি', 'বিল্লাল ভাই'];
+let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0;
+function newGame() {
+  BALLS.forEach(b => scene.remove(b.mesh)); BALLS.length = 0;
+  // মাঝখানে যোগ চিহ্নের মতো সাজানো (দেশি নিয়মে "ঘর")
+  const pts = [[0, 0]]; for (let k = 1; k <= 3; k++) for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) pts.push([a * k * .052, b * k * .052]);
+  pts.forEach(([x, z], i) => BALLS.push({ x: x + rnd(-.003, .003), z: z + rnd(-.003, .003), vx: 0, vz: 0, r: MR, m: 1, rot: 0, alive: true, mesh: mkMarble(marbleMats[i % marbleMats.length]) }));
+  shooter = { x: 0, z: RING + .05, vx: 0, vz: 0, r: MR * 1.15, m: 1.5, rot: 0, alive: false, shooter: true, mesh: mkMarble(shooterMats[0], true) }; BALLS.push(shooter); shooter.mesh.visible = false;
+  S = { me: 0, op: 0, turn: 'me', phase: 'idle', pos: Math.PI / 2, over: false, started: false, outNow: [], shots: 0, tries: 0 }; hud();
+}
+function say(t, col) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, 1400); }
+function pop(t, cls) { const e = document.createElement('div'); e.className = 'pop ' + (cls || ''); e.textContent = t; $('stage').appendChild(e); setTimeout(() => e.remove(), 1200); }
+function hud() { $('me').textContent = bn(S.me); $('op').textContent = bn(S.op); $('opN').textContent = OPN[lv] + '-এর মার্বেল'; }
+const left = () => BALLS.filter(b => !b.shooter && b.alive && !b.gone).length;
+function placeShooter(a) { S.pos = a; shooter.x = Math.cos(a) * (RING + .04); shooter.z = Math.sin(a) * (RING + .04); shooter.vx = shooter.vz = 0; shooter.alive = true; shooter.mesh.visible = true; }
+function beginTurn(who) {
+  S.turn = who; S.outNow = []; S.touched = false; shooter.mesh.material = shooterMats[who === 'me' ? 0 : 1];
+  $('turn').hidden = false; $('turn').textContent = who === 'me' ? '🎯 আপনার পালা' : '🧒 ' + OPN[lv] + '-এর পালা';
+  if (who === 'me') { placeShooter(S.pos); S.phase = 'aim'; $('hint').textContent = 'আঙুল রেখে পেছনে টানুন, ছেড়ে দিন · ◀ ▶ জায়গা বদল'; }
+  else { S.phase = 'ai'; $('hint').textContent = OPN[lv] + ' টিপ করছে…'; setTimeout(aiShoot, 1300); }
+}
+function shoot(dx, dz, power) { const v = .5 + power * 2.3; shooter.vx = dx * v; shooter.vz = dz * v; S.phase = 'roll'; S.shots++; SFX.flick(); $('pw').hidden = true; }
+function aiShoot() {
+  if (!S || S.over) return; const L = LV[lv], tg = BALLS.filter(b => !b.shooter && b.alive && !b.gone);
+  if (!tg.length) return endGame();
+  // কিনারার কাছের মার্বেল বেছে, তার উল্টো দিক থেকে মারে, যাতে বাইরে যায়
+  const t = tg.sort((a, b) => Math.hypot(b.x, b.z) - Math.hypot(a.x, a.z))[Math.random() < .7 ? 0 : Math.floor(Math.random() * Math.min(3, tg.length))];
+  const ta = Math.atan2(t.z, t.x) + rnd(-.25, .25); placeShooter(ta + Math.PI);
+  let dx = t.x - shooter.x, dz = t.z - shooter.z; const d = Math.hypot(dx, dz), e = rnd(-L.err, L.err); dx /= d; dz /= d; const c = Math.cos(e), s = Math.sin(e); [dx, dz] = [dx * c - dz * s, dx * s + dz * c];
+  setTimeout(() => { if (!S.over) shoot(dx, dz, rnd(L.pow[0], L.pow[1])); }, 700);
+}
+function turnDone() {
+  const got = S.outNow.length; S.outNow.forEach(b => { b.alive = false; b.mesh.visible = false; });
+  if (got) { if (S.turn === 'me') { S.me += got; say('+' + bn(got) + ' মার্বেল! আবার মারুন', '#86efac'); } else { S.op += got; say(OPN[lv] + ' পেল ' + bn(got) + 'টা', '#fca5a5'); if (window.KHViral) KHViral.pop(pick(['হা হা! এটা আমার!', 'দেখলি টিপ!', 'পকেটে ঢুকলো!']), 'M3', '🧒 ' + OPN[lv]); } SFX.out(); }
+  else { SFX.miss(); say(S.turn === 'me' ? (S.touched ? 'লাগল, কিন্তু বাইরে গেল না' : 'ফসকে গেল!') : OPN[lv] + ' ফসকালো', '#fde68a'); }
+  hud();
+  if (!left()) return setTimeout(endGame, 800);
+  const next = got ? S.turn : (S.turn === 'me' ? 'op' : 'me');
+  // গুটি গোলের ভেতর থাকলে সরিয়ে নেওয়া (পরের মার আবার কিনারা থেকে)
+  setTimeout(() => { if (!S.over) beginTurn(next); }, 1200);
+}
+const TIPS = ['জানেন কি? দুটো সমান মার্বেল সোজাসুজি ঠোকা খেলে প্রথমটা থেমে যায় আর দ্বিতীয়টা পুরো গতি নিয়ে চলে যায়। একে বলে ভরবেগের সংরক্ষণ।', 'জানেন কি? মার্বেল একটু তেরছা করে ঠোকা দিলে দুটো মার্বেল প্রায় সমকোণে দুদিকে ছিটকে যায়, ক্যারম আর বিলিয়ার্ডেও এটাই হয়।', 'জানেন কি? ছোট বাচ্চারা মার্বেল মুখে দিতে পারে, গলায় আটকে বিপদ হয়। তাই ছোটদের কাছে মার্বেল রাখবেন না।'];
+function endGame() {
+  if (S.over) return; S.over = true; $('turn').hidden = true; const win = S.me > S.op, sc = S.me * 60 + (win ? 200 + lv * 100 : 0) + Math.max(0, 40 - S.shots) * 3;
+  $('endT').textContent = win ? 'আপনি জিতেছেন! 🏆' : S.me === S.op ? 'সমান সমান! 🤝' : OPN[lv] + ' জিতেছে 😅';
+  const titles = [[1100, 'মার্বেল সম্রাট 👑'], [800, 'পাকা টিপবাজ'], [500, 'পাড়ার চ্যাম্পিয়ন'], [250, 'উঠতি খেলোয়াড়'], [0, 'মার্বেল শিখছি']];
+  $('endTitle').textContent = titles.find(x => sc >= x[0])[1];
+  $('endLine').textContent = `${bn(NM)}টা মার্বেলের মধ্যে আপনি ${bn(S.me)}টা, ${OPN[lv]} ${bn(S.op)}টা জিতেছে। মোট ${bn(S.shots)} বার মারা হয়েছে।`;
+  $('eS').textContent = bn(sc); $('eM').textContent = bn(S.me); $('eO').textContent = bn(S.op); $('eTip').textContent = pick(TIPS);
+  setTimeout(() => { $('endO').hidden = false; win ? SFX.win() : SFX.lose(); if (win && window.KHViral) KHViral.confetti(); }, 600);
+  SH.saveScore(sc); lastScore = sc;
+}
+/* টিপ: গুলতির মতো টেনে ছাড়া */
+let drag = null; const aimDir = { x: 0, z: -1, p: 0 };
+function camDirs() { const f = new THREE.Vector3(); cam.getWorldDirection(f); f.y = 0; f.normalize(); return { fx: f.x, fz: f.z, rx: -f.z, rz: f.x }; }
+$('stage').addEventListener('pointerdown', e => { if (e.target.closest('.over,.chost,button,a') || !S || S.phase !== 'aim') return; SND.ac; drag = { x: e.clientX, y: e.clientY }; $('pw').hidden = false; });
+addEventListener('pointermove', e => { if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y, L = Math.hypot(dx, dy), p = clamp(L / (Math.min(W, H) * .4), 0, 1), D = camDirs();
+  if (L > 6) { const ux = -dx / L, uy = dy / L; aimDir.x = D.rx * ux + D.fx * uy; aimDir.z = D.rz * ux + D.fz * uy; const n = Math.hypot(aimDir.x, aimDir.z); aimDir.x /= n; aimDir.z /= n; } aimDir.p = p; $('pwI').style.width = Math.round(p * 100) + '%'; });
+addEventListener('pointerup', () => { if (!drag) return; drag = null; if (S.phase === 'aim' && aimDir.p > .06) shoot(aimDir.x, aimDir.z, aimDir.p); else $('pw').hidden = true; aimDir.p = 0; });
+const moveBy = d => { if (S && S.phase === 'aim') { placeShooter(S.pos + d); SFX.roll(); } };
+$('mvL').addEventListener('pointerdown', e => { e.preventDefault(); moveBy(.18); }); $('mvR').addEventListener('pointerdown', e => { e.preventDefault(); moveBy(-.18); });
+addEventListener('keydown', e => { if (e.key === 'ArrowLeft') moveBy(.18); if (e.key === 'ArrowRight') moveBy(-.18); });
+// টিপের দাগ (ছোট ডোরাকাটা লাইন)
+const aimLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), new THREE.LineDashedMaterial({ color: '#facc15', dashSize: .015, gapSize: .01 })); scene.add(aimLine);
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 62 : 46; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+const _cp = new THREE.Vector3(), _cl = new THREE.Vector3();
+function loop(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  if (S && S.started && !S.over) { const moving = physics(dt); if (S.phase === 'roll' && !moving) { S.phase = 'wait'; setTimeout(turnDone, 400); } }
+  for (const b of BALLS) { if (!b.mesh.visible) continue; b.mesh.position.set(b.x, b.r, b.z); const v = Math.hypot(b.vx, b.vz); if (v > 1e-4) { b.mesh.rotation.x += b.vz * dt / b.r; b.mesh.rotation.z -= b.vx * dt / b.r; } }
+  if (FRIEND) { const a = S ? S.pos + Math.PI * .75 : 2; FRIEND.root.position.set(Math.cos(a) * (RING + .45), 0, Math.sin(a) * (RING + .45)); FRIEND.root.rotation.y = Math.atan2(-FRIEND.root.position.x, -FRIEND.root.position.z); FRIEND.update(dt, false); }
+  aimLine.visible = !!(S && S.phase === 'aim' && drag && aimDir.p > .06); if (aimLine.visible) { const p = aimLine.geometry.attributes.position, l = .08 + aimDir.p * .5; p.setXYZ(0, shooter.x, .006, shooter.z); p.setXYZ(1, shooter.x + aimDir.x * l, .006, shooter.z + aimDir.z * l); p.needsUpdate = true; aimLine.computeLineDistances(); }
+  // ক্যামেরা: গুটির পেছনে নিচু হয়ে বসা; গড়ানোর সময় একটু উপরে
+  if (S && S.started) { const a = S.pos, back = S.phase === 'roll' || S.phase === 'wait' ? .42 : .26, hgt = S.phase === 'roll' || S.phase === 'wait' ? .42 : .2; _cp.set(Math.cos(a) * (RING + back), hgt, Math.sin(a) * (RING + back)); _cl.set(Math.cos(a) * RING * .45, 0, Math.sin(a) * RING * .45); cam.position.lerp(_cp, Math.min(1, dt * 4)); cam.lookAt(_cl); }
+  else { const a = T0 * .15; cam.position.set(Math.cos(a) * .8, .45, Math.sin(a) * .8); cam.lookAt(0, 0, 0); }
+  if (renderer) renderer.render(scene, cam);
+  requestAnimationFrame(loop);
+}
+function start(level) { lv = level; newGame(); S.started = true; ['startO', 'endO'].forEach(i => $(i).hidden = true); SND.ac; beginTurn('me'); setTimeout(() => { if (window.KHViral) KHViral.pop('আগে তুই মার, দেখি টিপ কেমন!', 'M3', '🧒 ' + OPN[lv]); }, 700); }
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = e => { e.stopPropagation(); start(+b.dataset.lv); });
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `মার্বেলে ${bn(S ? S.me : 0)}টা মার্বেল জিতেছি, ${bn(lastScore)} পয়েন্ট! 🔮 আপনার টিপ কেমন? ${location.origin}/games/marble/`; try { navigator.clipboard.writeText(t).then(() => pop('কপি হয়েছে, শেয়ার করুন!', 'good')); } catch (e) {} };
+newGame(); resize(); last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+const MY = ['এইবার একসাথে দুইটা ফেলবো!', 'তোর টিপ কাঁচা!', 'আমার গুটি বেশি ভারী!', 'আরেকটু সর, জায়গা দে!'], OP = ['দেখি পারিস কিনা!', 'হাত কাঁপতেছে নাকি?', 'আমার পালায় সব নিয়ে নিবো!', 'জোরে মারিস না, গোল থেকে বের হয়ে যাবে!'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP), 'M3', '🧒 ' + OPN[lv], true), 1600); } });
+window.KHMarble = { get S() { return S; }, BALLS, get shooter() { return shooter; }, start, shoot, placeShooter, tick: n => { for (let i = 0; i < n; i++) if (S && S.started && !S.over) { const m = physics(1 / 30); if (S.phase === 'roll' && !m) { S.phase = 'wait'; turnDone(); } } } };
+</script>
+<script src="/js/update.js"></script>
+</body></html>
