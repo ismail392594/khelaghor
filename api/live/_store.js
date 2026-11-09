@@ -69,7 +69,8 @@ export async function getFeed(now = Date.now()) {
 function plan(doc, H, now) {
   const c = doc.c || {}, f = doc.f || {};
   const cRem = remOf(doc.cq, now), fRem = remOf(doc.fq, now);
-  const cLive = (c.list || []).some(m => m.state === 'live');
+  // চলছে, অথবা শুরুর সময় পার হয়েছে কিন্তু API এখনো শুরু বলেনি: তাহলে ঘন ঘন আনি
+  const cLive = [...(c.list || []), ...(c.up || [])].some(m => (m.state === 'live' && !m.pause) || (m.state === 'upcoming' && m.start <= now && m.start > now - 3 * HOUR));
   const fAll = [...(f.day || []), ...(f.live || [])];
   const fLive = fAll.some(m => m.state === 'live' || (m.state === 'upcoming' && m.start <= now + MIN && m.start > now - 3 * HOUR));
   const stale = doc.v !== CACHE_V;
@@ -180,6 +181,10 @@ function compose(doc, now) {
   for (const m of c.list || []) map.set(m.id, m);
   for (const m of f.day || []) map.set(m.id, m);
   for (const m of f.live || []) map.set(m.id, m);
+  for (const [id, m] of Object.entries(doc.fresh || {})) {
+    const listAt = id[0] === 'c' ? (c.at || 0) : (f.at || 0);
+    if ((m._at || 0) > listAt && map.has(id)) map.set(id, m);
+  }
   return [...map.values()].filter(m =>
     m.state === 'live' ||
     (m.state === 'upcoming' && m.start > now - 12 * HOUR && m.start < now + 8 * DAY) ||
@@ -209,6 +214,11 @@ export async function getMatch(id, now = Date.now()) {
     const st = (await db.doc('liveMeta/state').get()).data() || {};
     const rem = remOf(sport === 'cricket' ? st.cq : st.fq, now);
     due = !md || now - (md.at || 0) > every(rem, now, MIN, 0.5 / liveN) * (sport === 'cricket' ? 2 : 1);
+  } else if (S.state === 'upcoming' && S.start <= now && S.start > now - 6 * HOUR) {
+    // শুরুর সময় পার, তালিকা এখনো "আসন্ন": কেউ ম্যাচটা খুললে এই ম্যাচটাই আলাদা করে আনি
+    const st = (await db.doc('liveMeta/state').get()).data() || {};
+    const rem = remOf(sport === 'cricket' ? st.cq : st.fq, now);
+    due = !md || now - (md.at || 0) > every(rem, now, 2 * MIN, 0.25);
   } else if (S.state === 'done') due = !md || !md.final;
   if (due) md = await refreshMatch(F, id, S, md, now) || md;
   // ফিড আর বিস্তারিত: যেটা নতুন সেটাই দেখাই
@@ -255,6 +265,8 @@ async function refreshMatch(F, id, S, md, now) {
       out = { at: now, until: 0, sum, det: fbDetail(r.data[0], sum), final: sum.state === 'done' };
     }
     await ref.set(out);
+    // তালিকাতেও সঙ্গে সঙ্গে নতুন স্কোর দেখাতে
+    await db.doc('liveCache/feed').set({ fresh: { [id]: { ...out.sum, _at: now } } }, { merge: true }).catch(() => {});
     return out;
   } catch (e) {
     console.error('live match', e);
