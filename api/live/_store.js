@@ -75,10 +75,12 @@ function plan(doc, H, now) {
   const fLive = fAll.some(m => m.state === 'live' || (m.state === 'upcoming' && m.start <= now + MIN && m.start > now - 3 * HOUR));
   const stale = doc.v !== CACHE_V;
   const d = {
-    cList: H.c && stale || H.c && now - (c.at || 0) > (cLive ? every(cRem, now, MIN, 0.35) : Math.max(15 * MIN, every(cRem, now, 15 * MIN, 0.1))),
-    cUp: H.c && stale || H.c && now - (c.upAt || 0) > Math.max(3 * HOUR, every(cRem, now, 3 * HOUR, 0.05)),
-    fLive: H.f && fLive && now - (f.at || 0) > every(fRem, now, MIN, 0.35),
-    fDay: H.f && stale || H.f && (now - (f.dayAt || 0) > Math.max(30 * MIN, every(fRem, now, 30 * MIN, 0.1)) || f.dayKey !== dhakaDay(now))
+    // ফ্রি প্ল্যানে সাশ্রয়: খেলা চললে বাকি ডাটার বেশিরভাগ (৬০%) তালিকায়; কিছু না চললে ঘণ্টায় একবার
+    cList: H.c && stale || H.c && now - (c.at || 0) > (cLive ? every(cRem, now, MIN, 0.6) : Math.max(60 * MIN, every(cRem, now, 60 * MIN, 0.1))),
+    // আসন্ন খেলা মূল তালিকাতেই (cricScore) আসে, তাই আলাদা তালিকা দিনে একবার যথেষ্ট
+    cUp: H.c && now - (c.upAt || 0) > 24 * HOUR,
+    fLive: H.f && fLive && now - (f.at || 0) > every(fRem, now, MIN, 0.6),
+    fDay: H.f && stale || H.f && (now - (f.dayAt || 0) > Math.max(2 * HOUR, every(fRem, now, 2 * HOUR, 0.15)) || f.dayKey !== dhakaDay(now))
   };
   d.any = d.cList || d.cUp || d.fLive || d.fDay;
   return d;
@@ -130,7 +132,7 @@ async function refresh(F, doc, due, now) {
       if (!l || !l.length) { l = await pages('currentMatches', 2); c.src = 'currentMatches'; }
       if (l) { c.list = l.sort((x, y) => (y.state === 'live') - (x.state === 'live') || (y.rk || 0) - (x.rk || 0)).slice(0, 120); c.at = now; }
     })());
-    if (due.cUp) jobs.push(pages('matches', 4).then(l => {
+    if (due.cUp) jobs.push(pages('matches', 1).then(l => {
       if (l) { c.up = l.filter(m => m.state === 'upcoming' && m.start > now - HOUR && m.start < now + 8 * DAY).sort((x, y) => (y.rk || 0) - (x.rk || 0) || x.start - y.start).slice(0, 50); c.upAt = now; }
     }));
     const lg = leagues();
