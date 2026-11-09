@@ -9,8 +9,8 @@ function sc(m, s) {
   const l = (t.inn || [])[(t.inn || []).length - 1];
   return l ? bn(l.w >= 10 ? l.r : `${l.r}/${l.w}`) : '';
 }
-export function shareHtml(m, id) {
-  const url = `https://khelaghorbd.online/live/#m=${encodeURIComponent(id)}`;
+export function shareHtml(m, id, pred = false) {
+  const url = `https://khelaghorbd.online/live/${pred ? 'predict/' : ''}#m=${encodeURIComponent(id)}`;
   let title = 'লাইভ স্কোর বাংলায় · খেলাঘর', desc = 'ক্রিকেট আর ফুটবলের লাইভ স্কোর বাংলায়, আর কে জিতবে ভোট দিয়ে পয়েন্ট জিতুন।';
   if (m) {
     const ic = m.sport === 'cricket' ? '🏏' : '⚽';

@@ -15,10 +15,12 @@
 // GET  /api/live?f=share&id=..   → শেয়ারের লিংক (প্রিভিউতে স্কোর দেখায়, তারপর ম্যাচের পাতায় নিয়ে যায়)
 // GET  /api/live?f=diag            → ডাটা ঠিকমতো আসছে কিনা দেখার ছোট রিপোর্ট (কোনো key দেখায় না)
 // POST /api/live?f=vote {id,pick}  → (লগইন) "কে জিতবে?" ভোট
+// POST /api/live?f=vote {id,mk:'ou',side:'o'|'u'} → বেশি/কম অনুমান
+// POST /api/live?f=combo {legs:[{id,mk,pick}]} → কম্বো (২-৬টা ম্যাচ, সব মিললে বোনাস)
 // POST /api/live?f=push {token,teams} → প্রিয় দলের খবর ফোনে পেতে নাম লেখানো (teams খালি = বন্ধ)
 // POST /api/live?f=react {id,e,n}  → দর্শকের ইমোজি প্রতিক্রিয়া (fire, wow, clap, sad, love)
 import { shareHtml } from './_share.js';
-import { getFeed, getMatch, vote, me, board, diag, table, react, push, HttpErr, POINTS, EXACT } from './_store.js';
+import { getFeed, getMatch, vote, combo, me, board, diag, table, react, push, HttpErr, POINTS, EXACT, COMBO } from './_store.js';
 
 const cache = (res, s, swr) => res.setHeader('Cache-Control', s ? `public, max-age=0, s-maxage=${s}, stale-while-revalidate=${swr}` : 'no-store');
 
@@ -29,6 +31,7 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       cache(res, 0);
       if (f === 'vote') return res.status(200).json(await vote(req));
+      if (f === 'combo') return res.status(200).json(await combo(req));
       if (f === 'react') return res.status(200).json(await react(req));
       if (f === 'push') return res.status(200).json(await push(req));
       throw new HttpErr(405, 'ভুল অনুরোধ');
@@ -37,7 +40,7 @@ export default async function handler(req, res) {
     if (f === 'feed') {
       const d = await getFeed();
       cache(res, 15, 45);
-      return res.status(200).json({ ...d, points: POINTS, exact: EXACT });
+      return res.status(200).json({ ...d, points: POINTS, exact: EXACT, combo: COMBO });
     }
     if (f === 'match') {
       const d = await getMatch(String(q.id || ''));
@@ -52,7 +55,7 @@ export default async function handler(req, res) {
       try { m = (await getFeed()).matches.find(x => x.id === id) || null; } catch (e) {}
       cache(res, 60, 300);
       res.setHeader('content-type', 'text/html; charset=utf-8');
-      return res.status(200).send(shareHtml(m, id));
+      return res.status(200).send(shareHtml(m, id, q.p === '1'));
     }
     if (f === 'diag') { cache(res, 0); return res.status(200).json(await diag(String(q.q || '').slice(0, 40))); }
     if (f === 'me') { cache(res, 0); return res.status(200).json(await me(req)); }

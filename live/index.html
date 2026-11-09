@@ -262,6 +262,21 @@ table.lt tr.hi td{background:rgba(255,199,39,.12);font-weight:700}
 .h2h li span:last-child{text-align:right}.h2h small{color:var(--faint)}.h2h b{font-family:var(--display)}
 .wxr{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:.84rem;color:var(--dim)}
 .wxr b{font-family:var(--display);font-size:1.25rem;color:var(--ink)}
+/* বেশি/কম আর কম্বো */
+.ouq{font-size:.84rem;font-weight:700;margin:14px 0 8px;text-align:center}
+.vbtns.ou button{flex-direction:row;justify-content:center;gap:6px;padding:9px 6px;font-size:1rem}
+.ctog{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:.8rem;color:var(--dim);background:rgba(255,199,39,.07);border:1px dashed rgba(255,199,39,.3);border-radius:12px;padding:8px 10px;cursor:pointer}
+.ctog input{width:18px;height:18px;accent-color:var(--gold)}
+.slip{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:45;width:min(560px,calc(100% - 28px))}
+.slipb{width:100%;border:0;border-radius:16px;padding:12px 16px;font-weight:800;font-size:.98rem;background:linear-gradient(135deg,#ffd75a,#f2a900);color:#2b1a00;box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.slipb small{font-size:.8rem;font-weight:700}
+.sl2 li{justify-content:space-between}
+.sl2 li div{display:flex;flex-direction:column;min-width:0}
+.sl2 li small{color:var(--gold);font-size:.8rem}
+.mycb{list-style:none;margin:0 0 6px;padding:0}
+.mycb li{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:.8rem}
+.mycb li div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.mycb b{white-space:nowrap}.mycb b.w{color:var(--gold)}.mycb b.l{color:var(--faint)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head><body>
@@ -306,6 +321,17 @@ table.lt tr.hi td{background:rgba(255,199,39,.12);font-weight:700}
 </section>
 
 <div class="burst" id="burst" hidden aria-live="assertive"></div>
+<div class="slip" id="slip" hidden></div>
+<div class="sheet" id="slipSheet" hidden>
+  <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="slipT">
+    <button class="ib xb" type="button" data-x aria-label="বন্ধ করুন">✕</button>
+    <h2 id="slipT">🎯 আমার কম্বো</h2>
+    <ol class="lb sl2" id="slipList"></ol>
+    <p class="rules" id="slipInfo"></p>
+    <div class="sact"><button type="button" class="cbtn" id="slipGo">✓ কম্বো জমা দিন</button><button type="button" class="lbtn" id="slipClear">সব মুছুন</button></div>
+    <p class="rules" style="font-size:.74rem">শুধু মজার অনুমানের খেলা, পয়েন্ট কেনা বা টাকায় বদলানো যায় না।</p>
+  </div>
+</div>
 <div class="sheet" id="lbSheet" hidden>
   <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="lbT">
     <button class="ib xb" type="button" data-x aria-label="বন্ধ করুন">✕</button>
