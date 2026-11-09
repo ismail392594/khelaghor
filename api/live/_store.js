@@ -202,7 +202,7 @@ export async function getMatch(id, now = Date.now()) {
   if (id.startsWith('d_')) {
     const x = demoMatch(id, now);
     if (!x) throw new HttpErr(404, 'ম্যাচ পাওয়া যায়নি');
-    return { m: x.m, det: x.det, votes: await votesOf(F, id) };
+    return { m: x.m, det: x.det, votes: await votesOf(F, id), react: await reactsOf(F, id) };
   }
   if (!F) throw new HttpErr(503, 'সার্ভার এখনো চালু হয়নি');
   const { db } = F;
@@ -227,7 +227,7 @@ export async function getMatch(id, now = Date.now()) {
   if (due) md = await refreshMatch(F, id, S, md, now) || md;
   // ফিড আর বিস্তারিত: যেটা নতুন সেটাই দেখাই
   const sum = md && md.sum && (md.at || 0) >= (feed.at - 2 * MIN) ? md.sum : S;
-  return { m: sum, det: (md && md.det) || null, votes: await votesOf(F, id) };
+  return { m: sum, det: (md && md.det) || null, votes: await votesOf(F, id), react: await reactsOf(F, id) };
 }
 
 async function refreshMatch(F, id, S, md, now) {
@@ -277,6 +277,23 @@ async function refreshMatch(F, id, S, md, now) {
     await ref.set({ until: 0 }, { merge: true }).catch(() => {});
     return null;
   }
+}
+
+/* ---------- দর্শকদের ইমোজি প্রতিক্রিয়া (লগইন লাগে না) ---------- */
+export const REACTS = ['fire', 'wow', 'clap', 'sad', 'love'];
+async function reactsOf(F, id) {
+  if (!F) return {};
+  const d = (await F.db.doc('liveReact/' + id).get()).data() || {};
+  return Object.fromEntries(REACTS.map(k => [k, d[k] || 0]));
+}
+export async function react(req) {
+  const b = req.body && typeof req.body === 'object' ? req.body : JSON.parse(req.body || '{}');
+  const id = String(b.id || ''), e = String(b.e || ''), n = Math.max(1, Math.min(10, Number(b.n) || 1));
+  if (!REACTS.includes(e) || !/^[a-z]_[A-Za-z0-9_-]{1,60}$/.test(id)) throw new HttpErr(400, 'ভুল');
+  const F = await fb();
+  if (!F) throw new HttpErr(503, 'সার্ভার এখনো চালু হয়নি');
+  await F.db.doc('liveReact/' + id).set({ [e]: F.FV.increment(n), at: Date.now() }, { merge: true });
+  return { ok: true };
 }
 
 async function votesOf(F, id) {

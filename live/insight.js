@@ -43,7 +43,9 @@ export function winProb(m) {
   // শেষের ওভারগুলোতে সাধারণত রান বেশি ওঠে
   const late = bLeft <= (mo === 50 ? 60 : mo === 20 ? 30 : 12);
   const b2 = late ? base * 1.18 : base;
-  const rate = (0.5 * crr + 0.5 * b2) * wf;
+  // শুরুর দিকের রান রেট কম বিশ্বাস করি (কয়েক বলের ঝড় দিয়ে পুরো খেলা বোঝা যায় না)
+  const wc = 0.5 * Math.min(1, balls(cur.o) / (mo * 3));
+  const rate = (wc * crr + (1 - wc) * b2) * wf;
   let pBat;
   if (inns.length === 1) {
     const proj = cur.r + rate * bLeft / 6;
