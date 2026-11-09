@@ -253,7 +253,14 @@ export async function getMatch(id, now = Date.now()) {
   const feed = await getFeed(now);
   const ref = db.doc('liveMatch/' + id);
   let md = (await ref.get()).data() || null;
-  let S = feed.matches.find(m => m.id === id) || (md && md.sum);
+  let S = feed.matches.find(m => m.id === id);
+  // CricketData-র ম্যাচ এখন Sportmonks থেকে আসছে (একই দুই দল): সেই ম্যাচে পাঠিয়ে দিই
+  if (!S && id[0] === 'c' && md && md.sum) {
+    const k = m => [normTeam(m.a.name), normTeam(m.b.name)].sort().join('|');
+    const twin = feed.matches.find(m => m.id[0] === 's' && k(m) === k(md.sum) && Math.abs(m.start - md.sum.start) < 8 * HOUR);
+    if (twin) { const t = await getMatch(twin.id, now); return { ...t, redirect: twin.id, from: id }; }
+  }
+  if (!S) S = md && md.sum;
   if (!S) throw new HttpErr(404, 'ম্যাচ পাওয়া যায়নি');
   const sport = id[0] === 'f' ? 'football' : 'cricket';
   const liveN = Math.max(1, feed.matches.filter(m => m.sport === sport && m.state === 'live').length);

@@ -216,6 +216,13 @@ async function loadDetail() {
   try {
     const d = await get('f=match&id=' + encodeURIComponent(id));
     if (S.open !== id) return;
+    if (d.redirect && d.redirect !== id) {
+      // একই ম্যাচ এখন দ্রুত উৎস থেকে আসছে: নতুন ঠিকানায় চলে যাই, আগের ভোটও দেখাই
+      if (S.me && S.me.picks && S.me.picks[id] && !S.me.picks[d.redirect]) S.me.picks[d.redirect] = S.me.picks[id];
+      S.open = d.redirect; S.seen = new Set();
+      try { history.replaceState(history.state && history.state.m ? { m: d.redirect } : null, '', '#m=' + d.redirect); } catch (e) {}
+      return loadDetail();
+    }
     const prevTop = S.det && S.det.id === id && S.det.det && S.det.det.comm && S.det.det.comm[0];
     d.id = id;
     S.det = d;
