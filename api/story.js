@@ -95,13 +95,16 @@ async function sendOne(res, db, id) {
 async function cron(req, db) {
   // CRON_SECRET বসানো থাকলে সেটা মিলতে হবে। না থাকলেও সমস্যা নেই: দিনে একবারের বেশি লেখা হবে না,
   // তাই কেউ বারবার এই লিংক খুললেও বাড়তি খরচ হবে না।
+  // (আগে ?manual=1 দিলে পাহারাদার এড়ানো যেত; এখন অ্যাডমিন চাইলে প্যানেলের "এখনই লেখো" ব্যবহার করবেন)
   const sec = process.env.CRON_SECRET;
-  if (sec && req.headers.authorization !== 'Bearer ' + sec && !req.query.manual) throw new HttpErr(401, 'অনুমতি নেই');
+  if (sec && req.headers.authorization !== 'Bearer ' + sec) throw new HttpErr(401, 'অনুমতি নেই');
   const c = await cfgRef(db).get(), cfg = c.exists ? c.data() : {};
   if (cfg.auto === false) return { skipped: 'অটো-লেখা বন্ধ' };
-  const empty = !(await col(db).limit(1).get()).docs.length; // একটাও লেখা না থাকলে অপেক্ষা ছাড়াই চেষ্টা
+  // কেউ বারবার লিংক খুললেও AI খরচ বাড়বে না: শেষ চেষ্টার ১ ঘণ্টার মধ্যে আবার না, আর সফল হলে ২০ ঘণ্টার মধ্যে না
+  if (Date.now() - (cfg.lastTry || 0) < 3600e3) return { skipped: 'একটু আগেই চেষ্টা হয়েছে' };
+  const empty = !(await col(db).limit(1).get()).docs.length;
   if (!empty && Date.now() - (cfg.lastCron || 0) < 20 * 3600e3) return { skipped: 'আজকের লেখা আগেই হয়ে গেছে' };
-  await cfgRef(db).set({ lastCron: Date.now() }, { merge: true });
+  await cfgRef(db).set({ lastCron: Date.now(), lastTry: Date.now() }, { merge: true });
   const n = Math.max(1, Math.min(4, cfg.perDay || 2)), made = [], errors = [];
   let ri = cfg.rot || 0;
   for (let i = 0; i < n; i++) {
@@ -111,7 +114,7 @@ async function cron(req, db) {
   }
   // একটাও না হলে আজকের পালা খরচ হবে না, আবার চেষ্টা করা যাবে
   await cfgRef(db).set({ rot: ri, lastCron: made.length ? Date.now() : (cfg.lastCron || 0) }, { merge: true });
-  return errors.length ? { made, errors } : { made };
+  return errors.length ? { made, errors: errors.length } : { made }; // ভেতরের ভুলের বিস্তারিত বাইরে দেখানো হয় না
 }
 
 /* ---------- AI দিয়ে লেখা ---------- */
