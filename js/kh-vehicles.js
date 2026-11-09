@@ -37,6 +37,39 @@ function toFloat(THREE, g, withColor) {
 }
 
 // একটা গাড়ি লোড করে অংশে ভাগ: [{geo, mat}], আর মাপ
+// খেলাঘরের নিজের বাসের রং (অন্য কোম্পানির নাম-লোগো নয়): সাদা গায়ে লাল-কমলা ঢেউ, ধূসর রেখা, "খেলাঘর পরিবহন"।
+// FLEET-এ livery: true হলে দুই পাশে আর পেছনে পাতলা ছবি গাড়ির অংশ হিসেবে যোগ হয়, তাই খেলোয়াড়ের বাস আর রাস্তার বাস দুটোতেই দেখায়।
+function canvasTex(THREE, w, h, draw) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  const paint = () => { draw(c.getContext('2d'), w, h); t.needsUpdate = true; }; paint();
+  if (document.fonts && document.fonts.load) document.fonts.load("800 40px 'Baloo Da 2'").then(paint, () => {}); // বাংলা ফন্ট এলে আবার আঁকা
+  return t;
+}
+function liveryTex(THREE, frontLeft) {
+  return canvasTex(THREE, 2048, 256, (x, w, h) => {
+    x.clearRect(0, 0, w, h); x.save(); if (!frontLeft) { x.translate(w, 0); x.scale(-1, 1); }
+    const sw = (x0, y0, len, th, c0, c1) => { const g = x.createLinearGradient(x0, 0, x0 + len, 0); g.addColorStop(0, c0); g.addColorStop(1, c1); x.fillStyle = g; x.beginPath(); x.moveTo(x0, y0); x.lineTo(x0 + len, y0 - th * 1.6); x.lineTo(x0 + len + 60, y0 - th * 1.6); x.lineTo(x0 + 60, y0 + th); x.closePath(); x.fill(); };
+    sw(60, 236, 1580, 58, 'rgba(232,56,30,.25)', '#d42a16'); sw(300, 178, 1330, 36, 'rgba(240,122,18,.2)', '#f07a12'); sw(560, 250, 1080, 20, 'rgba(107,115,128,.2)', '#5b6370'); sw(900, 140, 700, 12, 'rgba(255,200,40,.1)', '#f2b705');
+    x.strokeStyle = 'rgba(70,75,85,.65)'; x.lineWidth = 5; x.beginPath(); x.moveTo(0, 150); x.bezierCurveTo(700, 140, 1300, 90, 1700, 20); x.stroke();
+    x.restore();
+    x.fillStyle = '#16244d'; x.font = "800 italic 104px 'Baloo Da 2','Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('খেলাঘর পরিবহন', frontLeft ? 1250 : 798, 88);
+    x.fillStyle = '#c2271a'; x.font = "700 40px 'Noto Sans Bengali',sans-serif"; x.fillText('এসি সার্ভিস · ঢাকা ⇄ চট্টগ্রাম', frontLeft ? 1250 : 798, 160);
+  });
+}
+function liveryParts(THREE, parts, size) {
+  const L = size.z; let sx = 0, pz = 0;
+  for (const pt of parts) { const a = pt.geo.attributes.position; for (let i = 0; i < a.count; i++) { const y = a.getY(i), z = a.getZ(i), xx = Math.abs(a.getX(i)); if (y > .75 && y < 1.4 && Math.abs(z) < L / 2 - 1.6) sx = Math.max(sx, xx); if (Math.abs(y - 1) < .15 && xx < .4) pz = Math.max(pz, z); } }
+  if (!sx) return []; const len = L - 2.4, hgt = len / 8, out = [];
+  for (const sd of [-1, 1]) {
+    const geo = new THREE.PlaneGeometry(len, hgt); geo.rotateY(sd < 0 ? -Math.PI / 2 : Math.PI / 2); geo.translate(sd * (sx + .012), .62 + hgt / 2, .4);
+    out.push({ geo, mat: new THREE.MeshStandardMaterial({ map: liveryTex(THREE, sd < 0), transparent: true, depthWrite: false, roughness: .4, polygonOffset: true, polygonOffsetFactor: -2 }), glass: true });
+  }
+  const rt = canvasTex(THREE, 512, 96, (x, w, h) => { x.clearRect(0, 0, w, h); x.fillStyle = '#d42a16'; x.fillRect(0, h - 10, w, 6); x.fillStyle = '#16244d'; x.font = "800 italic 58px 'Baloo Da 2','Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('খেলাঘর পরিবহন', w / 2, h / 2 - 4); });
+  const rg = new THREE.PlaneGeometry(1.7, .32); rg.translate(0, 1.0, pz + .015);
+  out.push({ geo: rg, mat: new THREE.MeshStandardMaterial({ map: rt, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }), glass: true });
+  return out;
+}
+
 async function loadOne(THREE, loader, key, base, glass) {
   const conf = FLEET[key], g = await loader.loadAsync(base + key + '.glb'), root = g.scene;
   const wrap = new THREE.Group(); wrap.add(root); wrap.updateMatrixWorld(true);
@@ -69,6 +102,7 @@ async function loadOne(THREE, loader, key, base, glass) {
     else { mat = G.mat.clone(); mat.side = THREE.DoubleSide; mat.vertexColors = false; if (conf.tint && mat.color) mat.color.set(conf.tint); if (mat.transparent && mat.opacity > .95) { mat.transparent = false; mat.alphaTest = mat.alphaTest || .5; } }
     parts.push({ geo, mat, glass: gk === 'glass' });
   }
+  if (conf.livery) parts.push(...liveryParts(THREE, parts, s)); // গায়ে খেলাঘরের রং-নাম (glass: true মানে ছায়া ফেলে না)
   return { key, conf, parts, size: s };
 }
 

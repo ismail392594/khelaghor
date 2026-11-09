@@ -555,31 +555,7 @@ function fixMats(root, paintCol) {
 }
 let player = null, carSize = new THREE.Vector3(1.9, 1.3, 4.4), traffic = null, barrierGeo = null, sportModel = null;
 const sportSize = new THREE.Vector3(), rideModels = {};
-// খেলাঘরের নিজের বাসের রং (অন্য কোম্পানির নাম-লোগো নয়): সাদা গায়ে লাল-কমলা ঢেউ, ধূসর রেখা, "খেলাঘর পরিবহন"
-// গায়ের দুই পাশে পাতলা ছবি বসানো; বাসের আসল পাশের দেয়াল মডেলের শীর্ষবিন্দু থেকে মাপা হয়
-function liveryTex(frontLeft) {
-  return ctex(2048, 256, (x, w, h) => {
-    x.clearRect(0, 0, w, h); x.save(); if (!frontLeft) { x.translate(w, 0); x.scale(-1, 1); }
-    const sw = (x0, y0, len, th, c0, c1) => { const g = x.createLinearGradient(x0, 0, x0 + len, 0); g.addColorStop(0, c0); g.addColorStop(1, c1); x.fillStyle = g; x.beginPath(); x.moveTo(x0, y0); x.lineTo(x0 + len, y0 - th * 1.6); x.lineTo(x0 + len + 60, y0 - th * 1.6); x.lineTo(x0 + 60, y0 + th); x.closePath(); x.fill(); };
-    sw(60, 236, 1580, 58, 'rgba(232,56,30,.25)', '#d42a16'); sw(300, 178, 1330, 36, 'rgba(240,122,18,.2)', '#f07a12'); sw(560, 250, 1080, 20, 'rgba(107,115,128,.2)', '#5b6370'); sw(900, 140, 700, 12, 'rgba(255,200,40,.1)', '#f2b705');
-    x.strokeStyle = 'rgba(70,75,85,.65)'; x.lineWidth = 5; x.beginPath(); x.moveTo(0, 150); x.bezierCurveTo(700, 140, 1300, 90, 1700, 20); x.stroke();
-    x.restore();
-    x.fillStyle = '#16244d'; x.font = "800 italic 104px 'Baloo Da 2','Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('খেলাঘর পরিবহন', frontLeft ? 1250 : 798, 88);
-    x.fillStyle = '#c2271a'; x.font = "700 40px 'Noto Sans Bengali',sans-serif"; x.fillText('এসি সার্ভিস · ঢাকা ⇄ চট্টগ্রাম', frontLeft ? 1250 : 798, 160);
-  });
-}
-function addLivery(g, F) {
-  const L = F.size.z; let sx = 0;
-  for (const pt of F.parts) { const a = pt.geo.attributes.position; for (let i = 0; i < a.count; i++) { const y = a.getY(i), z = a.getZ(i); if (y > .75 && y < 1.4 && Math.abs(z) < L / 2 - 1.6) sx = Math.max(sx, Math.abs(a.getX(i))); } }
-  if (!sx) return; const len = L - 2.4, hgt = len / 8;
-  for (const sd of [-1, 1]) {
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(len, hgt), new THREE.MeshStandardMaterial({ map: liveryTex(sd < 0), transparent: true, depthWrite: false, roughness: .4, polygonOffset: true, polygonOffsetFactor: -2 }));
-    m.rotation.y = sd < 0 ? -Math.PI / 2 : Math.PI / 2; m.position.set(sd * (sx + .012), .62 + hgt / 2, .4); g.add(m);
-  }
-  let pz = 0; for (const pt of F.parts) { const a = pt.geo.attributes.position; for (let i = 0; i < a.count; i++) if (Math.abs(a.getY(i) - 1) < .15 && Math.abs(a.getX(i)) < .4) pz = Math.max(pz, a.getZ(i)); }
-  const rt = ctex(512, 96, (x, w, h) => { x.clearRect(0, 0, w, h); x.fillStyle = '#d42a16'; x.fillRect(0, h - 10, w, 6); x.fillStyle = '#16244d'; x.font = "800 italic 58px 'Baloo Da 2','Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('খেলাঘর পরিবহন', w / 2, h / 2 - 4); });
-  const rm = new THREE.Mesh(new THREE.PlaneGeometry(1.7, .32), new THREE.MeshStandardMaterial({ map: rt, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 })); rm.position.set(0, 1.0, pz + .015); g.add(rm); // পেছনে নাম
-}
+
 // খেলোয়াড়ের গাড়ি বদলানো: স্পোর্টস কার আলাদা মডেল (চাকা ঘোরে), বাকিগুলো ট্রাফিকের একই মডেল
 const tailMat = new THREE.MeshBasicMaterial({ color: '#ff2a12', transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, opacity: .25 });
 async function setRide(key) {
@@ -594,7 +570,6 @@ async function setRide(key) {
       const F = fleet[key], g = new THREE.Group();
       F.parts.forEach(pt => { const m = new THREE.Mesh(pt.geo, pt.mat); m.castShadow = !pt.glass; m.receiveShadow = !pt.glass; g.add(m); });
       if (F.conf.tail) for (const sd of [-1, 1]) { const q = new THREE.Mesh(new THREE.PlaneGeometry(.28, .13), tailMat); q.position.set(sd * (F.conf.w / 2 - .2), F.conf.tail, F.size.z / 2 + .02); g.add(q); }
-      if (F.conf.livery) addLivery(g, F);
       rideModels[key] = g;
     }
     body.add(rideModels[key]); bendAll(); const F = fleet[key]; carSize.set(F.conf.w / .72, F.size.y, F.size.z);
