@@ -13,6 +13,9 @@ import { fbCall, fbSummary, fbDetail, leagues } from './_football.js';
 import { demoAll, demoMatch } from './_demo.js';
 
 export const POINTS = 10; // সঠিক অনুমানে কত পয়েন্ট
+export const EXACT = 20; // ফুটবলে একদম সঠিক স্কোর বললে বাড়তি পয়েন্ট
+// সপ্তাহের নাম (ঢাকার সময়ে, সোমবার থেকে শুরু): যেমন 2026-11-09
+export const weekKey = (t = Date.now()) => { const d = new Date(t + 6 * 3600e3); const day = (d.getUTCDay() + 6) % 7; return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - day)).toISOString().slice(0, 10); };
 const CACHE_V = 3; // ক্যাশের ছাঁচ বদলালে বাড়াতে হয়, তাহলে পুরোনো ক্যাশ ফেলে সব নতুন করে আনে
 const MIN = 60e3, HOUR = 60 * MIN, DAY = 24 * HOUR;
 
@@ -274,7 +277,12 @@ async function who(F, req) {
 
 export async function vote(req, now = Date.now()) {
   const b = req.body && typeof req.body === 'object' ? req.body : JSON.parse(req.body || '{}');
-  const id = String(b.id || ''), pick = String(b.pick || '');
+  const id = String(b.id || '');
+  let pick = String(b.pick || '');
+  // ফুটবলে চাইলে সঠিক স্কোরও (০-১৫)। স্কোর দিলে বিজয়ী সেখান থেকেই ঠিক হয়
+  const ga = b.ga == null || b.ga === '' ? null : Number(b.ga), gb = b.gb == null || b.gb === '' ? null : Number(b.gb);
+  const hasScore = Number.isInteger(ga) && Number.isInteger(gb) && ga >= 0 && gb >= 0 && ga <= 15 && gb <= 15;
+  if (hasScore) pick = ga > gb ? 'a' : gb > ga ? 'b' : 'd';
   if (!['a', 'b', 'd'].includes(pick) || !/^[a-z]_[A-Za-z0-9_-]{1,60}$/.test(id)) throw new HttpErr(400, 'ভুল ভোট');
   const F = await fb();
   if (!F) throw new HttpErr(503, 'সার্ভার এখনো চালু হয়নি');
@@ -284,10 +292,11 @@ export async function vote(req, now = Date.now()) {
   if (!m) throw new HttpErr(404, 'ম্যাচ পাওয়া যায়নি');
   if (m.state !== 'upcoming' || m.start <= now) throw new HttpErr(400, 'খেলা শুরু হয়ে গেছে, এখন আর ভোট দেওয়া যাবে না');
   if (pick === 'd' && m.sport === 'cricket' && !m.test) throw new HttpErr(400, 'এই ম্যাচে ড্র হয় না');
+  if (hasScore && m.sport !== 'football') throw new HttpErr(400, 'স্কোর আন্দাজ শুধু ফুটবলে');
   const u = (await db.doc('users/' + t.uid).get()).data() || {};
   const name = String(u.username ? '@' + u.username : (u.name || t.name || 'খেলোয়াড়')).slice(0, 24);
   try {
-    await db.doc(`liveVotes/${id}/v/${t.uid}`).create({ pick, at: now, name, res: null });
+    await db.doc(`liveVotes/${id}/v/${t.uid}`).create({ pick, at: now, name, res: null, ...(hasScore ? { ga, gb } : {}) });
   } catch (e) {
     if (e.code === 6 || /already exists/i.test(e.message)) throw new HttpErr(409, 'আপনি এই ম্যাচে আগেই ভোট দিয়েছেন');
     throw e;
@@ -295,11 +304,11 @@ export async function vote(req, now = Date.now()) {
   const demo = !!m.demo;
   const bt = db.batch();
   bt.set(db.doc('liveVotes/' + id), { sport: m.sport, start: m.start, settled: demo, demo, ['c' + pick]: FV.increment(1) }, { merge: true });
-  const pu = { name, recent: { [id]: pick + '|' + m.start }, at: now };
+  const pu = { name, recent: { [id]: pick + '|' + m.start + (hasScore ? `|${ga}-${gb}` : '') }, at: now };
   if (!demo) Object.assign(pu, { n: FV.increment(1), pts: FV.increment(0), ok: FV.increment(0) });
   bt.set(db.doc('livePoints/' + t.uid), pu, { merge: true });
   await bt.commit();
-  return { ok: true, pick };
+  return { ok: true, pick, score: hasScore ? [ga, gb] : null };
 }
 
 export async function me(req, now = Date.now()) {
@@ -316,14 +325,20 @@ export async function me(req, now = Date.now()) {
     old.forEach(k => delete rec[k]);
   }
   const picks = Object.fromEntries(Object.entries(rec).map(([k, v]) => [k, String(v).split('|')[0]]));
-  return { name: d.name || null, pts: d.pts || 0, ok: d.ok || 0, n: d.n || 0, picks };
+  const scores = Object.fromEntries(Object.entries(rec).filter(([, v]) => String(v).split('|')[2]).map(([k, v]) => [k, String(v).split('|')[2].split('-').map(Number)]));
+  return { name: d.name || null, pts: d.pts || 0, ok: d.ok || 0, n: d.n || 0, ex: d.ex || 0, week: (d.wk || {})[weekKey(now)] || 0, picks, scores };
 }
 
-export async function board() {
+export async function board(period = 'all', now = Date.now()) {
   const F = await fb();
   if (!F) return { list: [] };
-  const q = await F.db.collection('livePoints').orderBy('pts', 'desc').limit(50).get();
-  return { list: q.docs.map(d => { const x = d.data(); return { name: x.name || 'খেলোয়াড়', pts: x.pts || 0, ok: x.ok || 0, n: x.n || 0 }; }) };
+  const wk = weekKey(now);
+  const field = period === 'week' ? `wk.${wk}` : 'pts';
+  const q = await F.db.collection('livePoints').orderBy(field, 'desc').limit(50).get();
+  return {
+    period, week: wk,
+    list: q.docs.map(d => { const x = d.data(); return { name: x.name || 'খেলোয়াড়', pts: period === 'week' ? ((x.wk || {})[wk] || 0) : (x.pts || 0), ok: x.ok || 0, n: x.n || 0, ex: x.ex || 0 }; })
+  };
 }
 
 /* ---------- খেলা শেষে পয়েন্ট দেওয়া ---------- */
@@ -338,7 +353,7 @@ async function settleDue(F, matches, now) {
     if ((!m || m.state !== 'done') && now - v.start > 8 * HOUR) m = await fetchResult(id) || m;
     if ((!m || m.state !== 'done') && now - v.start > 6 * DAY) m = { state: 'done', result: 'void' };
     if (!m || m.state !== 'done' || !m.result) continue;
-    await settleOne(F, id, m.result);
+    await settleOne(F, id, m.result, m.sport === 'football' && m.a && m.a.g != null ? [m.a.g, m.b.g] : null);
   }
 }
 
@@ -350,14 +365,18 @@ async function fetchResult(id) {
   return null;
 }
 
-async function settleOne({ db, FV }, id, result) {
+async function settleOne({ db, FV }, id, result, score = null) {
+  const wk = weekKey();
   for (let round = 0; round < 5; round++) {
     const q = await db.collection(`liveVotes/${id}/v`).where('res', '==', null).limit(200).get();
     const b = db.batch();
     for (const v of q.docs) {
-      const ok = result !== 'void' && v.data().pick === result;
-      b.update(v.ref, { res: result === 'void' ? 'void' : ok });
-      if (ok) b.set(db.doc('livePoints/' + v.id), { pts: FV.increment(POINTS), ok: FV.increment(1) }, { merge: true });
+      const x = v.data();
+      const ok = result !== 'void' && x.pick === result;
+      const exact = ok && score && x.ga === score[0] && x.gb === score[1];
+      const pts = (ok ? POINTS : 0) + (exact ? EXACT : 0);
+      b.update(v.ref, { res: result === 'void' ? 'void' : ok, ...(exact ? { exact: true } : {}) });
+      if (pts) b.set(db.doc('livePoints/' + v.id), { pts: FV.increment(pts), ok: FV.increment(1), ...(exact ? { ex: FV.increment(1) } : {}), wk: { [wk]: FV.increment(pts) } }, { merge: true });
     }
     if (q.size < 200) b.set(db.doc('liveVotes/' + id), { settled: true, result, settledAt: Date.now() }, { merge: true });
     await b.commit();
@@ -380,4 +399,26 @@ export async function diag(q = '', now = Date.now()) {
         .map(m => `${m.state} (${m.ms || '-'}) | ${m.a.name} v ${m.b.name} | ${m.tour} | ${new Date(m.start).toISOString().slice(0, 16)} | ${m.raw || ''}`) },
     football: { err: f.err || null, at: f.at ? new Date(f.at).toISOString() : null, day: cnt(f.day), live: cnt(f.live), left: d.fq }
   };
+}
+
+/* ---------- ফুটবল লিগের পয়েন্ট টেবিল (৬ ঘণ্টায় একবার আনা) ---------- */
+export async function table(lg, season, now = Date.now()) {
+  lg = Number(lg); season = Number(season);
+  if (!lg || !season || !process.env.FOOTBALL_API_KEY) return { groups: [] };
+  const F = await fb();
+  if (!F) return { groups: [] };
+  const ref = F.db.doc(`liveTable/${lg}_${season}`);
+  const d = (await ref.get()).data() || null;
+  if (d && now - d.at < 6 * HOUR) return { groups: d.groups || [] };
+  if (d && (d.until || 0) > now) return { groups: d.groups || [] };
+  await ref.set({ until: now + 20e3 }, { merge: true });
+  const r = await fbCall('standings', { league: lg, season });
+  if (!r.ok) { await ref.set({ until: 0, at: now - 5 * HOUR }, { merge: true }); return { groups: (d && d.groups) || [] }; }
+  const st = (((r.data[0] || {}).league || {}).standings) || [];
+  const groups = st.map(g => ({
+    name: (g[0] && g[0].group) || '',
+    rows: g.map(x => [x.rank, (x.team || {}).name || '', (x.all || {}).played || 0, (x.all || {}).win || 0, (x.all || {}).draw || 0, (x.all || {}).lose || 0, x.goalsDiff || 0, x.points || 0])
+  })).slice(0, 12);
+  await ref.set({ at: now, until: 0, groups });
+  return { groups };
 }

@@ -44,7 +44,7 @@ export function fbSummary(f) {
   const state = LIVE.includes(st) ? 'live' : DONE.includes(st) ? 'done' : 'upcoming';
   const out = {
     id: 'f_' + fx.id, sport: 'football', state, start: (fx.timestamp || 0) * 1000,
-    tour: lg.name || '', label: roundBn(lg.round), lg: lg.id, intl: national, venue: (fx.venue && fx.venue.name) || '',
+    tour: lg.name || '', label: roundBn(lg.round), lg: lg.id, season: lg.season, intl: national, venue: (fx.venue && fx.venue.name) || '',
     a, b, per: st, min: fx.status && fx.status.elapsed, status: FB_PER[st] || st
   };
   if (sc.penalty && sc.penalty.home != null) out.pen = [sc.penalty.home, sc.penalty.away];
