@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>কোরবানির হাট · খেলাঘর</title>
+<meta name="description" content="ঈদের আগে গরুর হাট! দাঁত দেখে বয়স, চোখ-নাক দেখে স্বাস্থ্য, হাঁটিয়ে দেখে মোটাতাজা করা গরু চিনুন, তারপর দরদাম করে বাজেটের মধ্যে সেরা গরু কিনুন।">
+<link rel="canonical" href="https://khelaghorbd.online/games/haat/">
+<meta property="og:title" content="কোরবানির হাট · খেলাঘর">
+<meta property="og:description" content="ভাই, দাম কত? বাজেটে সেরা গরু কিনতে পারবেন তো?">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/haat.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/haat.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+:root{--accent:#f59e0b}
+.cinfo{position:absolute;left:10px;right:10px;top:10px;z-index:3;background:rgba(15,12,8,.84);border:1px solid #4b3a22;border-radius:14px;padding:8px 10px;pointer-events:none;font-size:.78rem}
+.cinfo h3{margin:0;font:800 1rem var(--display);display:flex;justify-content:space-between;gap:8px}
+.cinfo h3 small{font:700 .72rem var(--body);color:#fcd34d}
+.cinfo .ask{font:800 1.05rem var(--display);color:#fde68a}
+.cinfo .chk{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:3px;color:#cbd5e1}
+.cinfo .sold{color:#fca5a5;font-weight:800}
+.acts2{position:absolute;left:8px;right:8px;bottom:62px;z-index:3;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.acts2 button,.deal button{border:0;border-radius:12px;padding:8px 2px;font:800 .74rem var(--body);color:#fff;background:rgba(40,30,18,.92);box-shadow:0 3px 0 rgba(0,0,0,.4);cursor:pointer;line-height:1.2}
+.acts2 button span{display:block;font-size:1.25rem}
+.acts2 button.done{background:rgba(20,83,45,.92)}
+.acts2 button.money{background:#b45309}
+.deal{position:absolute;left:8px;right:8px;bottom:62px;z-index:4;background:rgba(15,12,8,.94);border:1px solid #57401f;border-radius:14px;padding:10px;text-align:center}
+.deal .row{display:flex;align-items:center;justify-content:center;gap:10px;margin:6px 0}
+.deal .row b{font:800 1.35rem var(--display);min-width:130px}
+.deal .row button{width:52px;font-size:1.2rem}
+.deal .bt{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.deal .bt button.go{background:#15803d}.deal .bt button.ok{background:#b45309}
+.deal .pat{font-size:.72rem;color:#9aa4b2}
+.clock{font-variant-numeric:tabular-nums}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="bud">৳০</b><small>আপনার বাজেট</small></div>
+    <div class="stat r"><b class="clock" id="clock">বিকেল ৪:০০</b><small>হাট বন্ধ রাত ১০টায়</small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas class="cv" id="cv"></canvas>
+    <div class="cinfo" id="cinfo" hidden></div>
+    <div class="acts2" id="acts" hidden>
+      <button data-a="teeth"><span>🦷</span>দাঁত দেখি</button>
+      <button data-a="eyes"><span>👀</span>চোখ-নাক</button>
+      <button data-a="walk"><span>🚶</span>হাঁটিয়ে দেখি</button>
+      <button data-a="deal" class="money"><span>💰</span>দরদাম</button>
+    </div>
+    <div class="deal" id="deal" hidden>
+      <div id="dTxt">আপনি কত দিবেন?</div>
+      <div class="row"><button id="dMinus">−</button><b id="dOffer">৳০</b><button id="dPlus">+</button></div>
+      <div class="bt"><button class="go" id="dSay">🗣️ এই দাম বলি</button><button class="ok" id="dOk">🤝 আপনার দামে রাজি</button><button id="dBack">↩ পরে</button></div>
+      <div class="pat" id="dPat"></div>
+    </div>
+    <div class="say" id="say" hidden></div>
+    <div class="chost" id="chatHost"></div>
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>কোরবানির হাট</h1>
+        <p class="story">ঈদের দুই দিন আগে, গাবতলীর গরুর হাট। কাদা, খড়ের গন্ধ, ব্যাপারীদের হাঁকডাক: "আসেন ভাই, দেখেন! একদম দেশি গরু!" বাজেট হাতে, রাত ১০টার আগেই ভালো গরু কিনতে হবে।</p>
+        <div class="rules">
+          <div>🦷 <b>দাঁত</b> দেখে বয়স: অন্তত ২টা স্থায়ী দাঁত না থাকলে কোরবানি হয় না।</div>
+          <div>👀 <b>চোখ-নাক</b>: উজ্জ্বল চোখ আর ভেজা নাক = সুস্থ। 🚶 <b>হাঁটা</b>: ফোলা শরীর, হাঁপায়, হাঁটতে কষ্ট = ইনজেকশনে মোটাতাজা করা।</div>
+          <div>💰 ব্যাপারী শুরুতে অনেক বেশি চায়। দাম বলুন, পাল্টা দাম শুনুন। বেশি কম বললে রেগে যায়! রাত বাড়লে দাম কমে, কিন্তু ভালো গরু বিক্রি হয়ে যায়।</div>
+        </div>
+        <div class="lvl">
+          <button data-lv="0">ছোট গরু<small>বাজেট ৳১.১ লাখ</small></button>
+          <button data-lv="1">মাঝারি<small>বাজেট ৳১.৬ লাখ</small></button>
+          <button data-lv="2">বড় গরু<small>বাজেট ৳২.৪ লাখ</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">গরু-ছাগল: Sketchfab-এর শিল্পী Mily, stealth86, Rukh3D, kunyong_Chen, iRahulRajput (<a href="/games/haat/assets/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। মানুষ: Renderpeople (CC-BY 4.0)। মাটি, আকাশ: Poly Haven (CC0)।</p>
+      </div>
+    </div>
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">হাট শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="ePrice">—</b><span>কেনা দাম</span></div><div><b id="eSave">—</b><span>লাভ/লস</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার হাটে যাই</button><button class="gbtn ghost" id="menuBtn">বাজেট বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">🐄</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+  <div class="ctl">
+    <button class="ab gbtn ghost" id="lB" aria-label="আগের গরু" hidden style="width:64px">◀</button>
+    <div class="hint" id="hint">বাজেট বেছে হাটে ঢুকুন</div>
+    <button class="ab gbtn ghost" id="rB" aria-label="পরের গরু" hidden style="width:64px">▶</button>
+  </div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { GLTFLoader } from "/js/vendor/addons/GLTFLoader.js";
+import { RGBELoader } from "/js/vendor/addons/RGBELoader.js";
+import { MeshoptDecoder } from "/js/vendor/addons/meshopt_decoder.module.js";
+import { clone as cloneSkinned } from "/js/vendor/addons/SkeletonUtils.js";
+import { TIERS, detectTier } from "/js/kh-quality.js";
+import { loadPeople } from "/js/kh-people.js";
+import { gameShell, sound, bn, pick, rnd, clamp } from "/js/kh-shell.js";
+
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'haat', name: 'কোরবানির হাট', lbTitle: 'সেরা ক্রেতা', offMsg: 'বৃষ্টিতে হাটে হাঁটু কাদা, আজ হাট বন্ধ! পরে আসেন।' });
+const SND = sound(SH);
+const TIER = TIERS[detectTier()], LOW = TIER.id <= 1;
+let renderer = null; try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' }); } catch (e) {}
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(55, 1, .05, 300);
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.shadowMap.enabled = !LOW; }
+const ANISO = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1, texL = new THREE.TextureLoader(), RA = '/games/racer/assets/', KA = '/games/kanamachi/assets/', HA = '/games/haat/assets/';
+const tex = (u, srgb, rx, ry) => { const t = texL.load(u); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; t.repeat.set(rx, ry ?? rx); return t; };
+const cvTex = (w, h, draw, rx = 1, ry = 1) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.anisotropy = ANISO; return t; };
+const M = o => new THREE.MeshStandardMaterial(o);
+if (renderer && TIER.id >= 1) new RGBELoader().load(RA + 'sky_1k.hdr', h => { const pm = new THREE.PMREMGenerator(renderer); h.mapping = THREE.EquirectangularReflectionMapping; scene.environment = pm.fromEquirectangular(h).texture; scene.environmentIntensity = .5; h.dispose(); pm.dispose(); }, undefined, () => {});
+const taka = n => '৳' + bn(Math.round(n).toLocaleString('en-IN'));
+
+/* ---------- হাটের মাঠ ---------- */
+const skyT = texL.load(RA + 'sky.jpg'); skyT.colorSpace = THREE.SRGBColorSpace;
+{ const g = new THREE.SphereGeometry(150, 32, 16); g.scale(-1, 1, 1); scene.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: skyT, color: '#ffd2a8', fog: false, toneMapped: false }))); }
+scene.fog = new THREE.Fog('#c8a888', 14, 70);
+scene.add(new THREE.HemisphereLight('#ffe4c8', '#4d3a28', 1.1));
+const sun = new THREE.DirectionalLight('#ffc48a', 2.0); sun.position.set(-8, 9, 10); sun.castShadow = !LOW; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -14, right: 14, top: 8, bottom: -8, far: 40 }); scene.add(sun); scene.add(sun.target);
+{ const g = new THREE.Mesh(new THREE.PlaneGeometry(90, 90), M({ map: tex(KA + 'mud_diff.jpg', true, 22), normalMap: tex(KA + 'mud_nor.jpg', false, 22), roughnessMap: tex(KA + 'mud_arm.jpg', false, 22), color: '#cbbba5', roughness: 1 })); g.rotation.x = -Math.PI / 2; g.receiveShadow = true; scene.add(g); }
+// খড়ের গাদা, বাঁশ, ত্রিপল
+const hayT = cvTex(256, 256, (x, w, h) => { x.fillStyle = '#c9a54e'; x.fillRect(0, 0, w, h); for (let i = 0; i < 1600; i++) { x.strokeStyle = `rgba(${rnd(150, 230)},${rnd(120, 190)},${rnd(40, 90)},${rnd(.3, .8)})`; x.lineWidth = rnd(.5, 1.6); x.beginPath(); const a = rnd(0, w), b = rnd(0, h), an = rnd(-.5, .5); x.moveTo(a, b); x.lineTo(a + Math.cos(an) * 26, b + Math.sin(an) * 26); x.stroke(); } }, 2, 1);
+const hayM = M({ map: hayT, roughness: 1 });
+const bambooM = M({ color: '#b89a5e', roughness: .7 }), ropeM = M({ color: '#8a6b3d', roughness: 1 });
+const tarpT = cvTex(256, 256, (x, w, h) => { for (let i = 0; i < 8; i++) { x.fillStyle = i % 2 ? '#1d4ed8' : '#e5e7eb'; x.fillRect(i * 32, 0, 32, h); } x.fillStyle = 'rgba(0,0,0,.08)'; for (let i = 0; i < 300; i++) x.fillRect(rnd(0, w), rnd(0, h), 2, 2); }, 4, 1);
+const SPACE = 3.6, NC = 6, X0 = -(NC - 1) * SPACE / 2;
+for (let i = 0; i <= NC; i++) { const x = X0 + (i - .5) * SPACE; for (const z of [-1.6, 1.4]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(.05, .06, z < 0 ? 3.4 : 2.9, 8), bambooM); p.position.set(x, z < 0 ? 1.7 : 1.45, z); p.castShadow = true; scene.add(p); } }
+{ const t = new THREE.Mesh(new THREE.PlaneGeometry(NC * SPACE + 1, 3.3), M({ map: tarpT, side: THREE.DoubleSide, roughness: .8 })); t.rotation.x = -Math.PI / 2 + .16; t.position.set(0, 3.15, -.1); t.castShadow = !LOW; t.receiveShadow = true; scene.add(t);
+  const r = new THREE.Mesh(new THREE.CylinderGeometry(.015, .015, NC * SPACE + 1, 6), ropeM); r.rotation.z = Math.PI / 2; r.position.set(0, .95, -1.6); scene.add(r); }
+for (let i = 0; i < NC; i++) { const hg = new THREE.ConeGeometry(.6, .42, 14, 3); const pa = hg.attributes.position; for (let k = 0; k < pa.count; k++) pa.setY(k, pa.getY(k) + rnd(-.03, .03)); hg.computeVertexNormals(); const h = new THREE.Mesh(hg, hayM); h.scale.set(1.2, .6, .9); h.position.set(X0 + i * SPACE + 1.25, .12, -1.15); h.receiveShadow = true; scene.add(h); }
+{ const bulbM = new THREE.MeshBasicMaterial({ color: '#ffe9b5' }); for (let i = 0; i < 40; i++) { const b = new THREE.Mesh(new THREE.SphereGeometry(.035, 8, 6), bulbM); b.position.set(X0 - 2 + i * .6, 2.75 + Math.sin(i * .7) * .06, 1.35); scene.add(b); } }
+// পেছনের সারির ত্রিপল আর মানুষের ভিড় (দূরে)
+for (let i = 0; i < 7; i++) { const t = new THREE.Mesh(new THREE.BoxGeometry(5, .1, 3), M({ map: tarpT, roughness: .8 })); t.position.set(-15 + i * 5.2, 3.2, -9 - (i % 2) * 2); scene.add(t); for (const dx of [-2.3, 2.3]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(.05, .05, 3.2, 6), bambooM); p.position.set(-15 + i * 5.2 + dx, 1.6, -8 - (i % 2) * 2); scene.add(p); } }
+
+/* ---------- গরু ---------- */
+const TYPES = [
+  { k: 'cow_zebu', name: 'দেশি ষাঁড়', yaw: 0 },
+  { k: 'cow_bull', name: 'কালো ষাঁড়', yaw: -Math.PI / 2 },
+  { k: 'cow_holstein', name: 'ফ্রিজিয়ান ষাঁড়', yaw: 0 },
+  { k: 'cow_brahman', v: 0, name: 'লাল শাহীওয়াল', yaw: 0 },
+  { k: 'cow_brahman', v: 1, name: 'সাদা ষাঁড়', yaw: 0 },
+  { k: 'cow_brahman', v: 2, name: 'ধূসর ষাঁড়', yaw: 0 }];
+const GL = {}, loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+const loadAll = Promise.all(['cow_zebu', 'cow_bull', 'cow_holstein', 'cow_brahman', 'goat'].map(k => loader.loadAsync(HA + k + '.glb').then(g => GL[k] = g)));
+// একটা গরু বানানো: নির্দিষ্ট উচ্চতা, মুখ +z দিকে, পা মাটিতে
+function makeAnimal(T, height) {
+  const g = GL[T.k], o = cloneSkinned(g.scene); let meshes = []; o.traverse(m => { if (m.isMesh) { meshes.push(m); m.castShadow = !LOW; m.frustumCulled = false; } });
+  if (T.v !== undefined) { const sk = meshes.filter(m => m.isSkinnedMesh); sk.forEach((m, i) => m.visible = i === T.v % sk.length); }
+  const mix = new THREE.AnimationMixer(o), clips = g.animations; if (clips[0]) mix.clipAction(clips[0]).play(); mix.update(rnd(0, 2));
+  const wrap = new THREE.Group(), inner = new THREE.Group(); inner.add(o); inner.rotation.y = T.yaw; wrap.add(inner); wrap.updateMatrixWorld(true);
+  const b = new THREE.Box3(); o.traverse(m => { if (m.isMesh && m.visible) b.expandByObject(m, true); }); const sz = b.getSize(new THREE.Vector3()), c = b.getCenter(new THREE.Vector3());
+  const s = height / sz.y; inner.scale.setScalar(s); inner.position.set(-c.x * s, -b.min.y * s, -c.z * s);
+  return { root: wrap, inner, mix, clips, base: s };
+}
+
+/* ---------- খেলা ---------- */
+const SFX = {
+  moo() { const a = SND.ac; if (!a) return; SND.tone(140, 1.1, 'sawtooth', .07, 105); SND.tone(210, 1.0, 'triangle', .05, 160, .05); SND.noise(1.0, .04, 400, 'bandpass'); },
+  goodS() { [523, 659, 784].forEach((f, i) => SND.tone(f, .14, 'triangle', .2, 0, i * .08)); },
+  bad() { SND.tone(200, .35, 'sawtooth', .12, 120); },
+  tick() { SND.tone(900, .05, 'square', .05); },
+  deal() { [392, 523, 659, 784, 1046].forEach((f, i) => SND.tone(f, .2, 'triangle', .22, 0, i * .09)); }
+};
+let crowdL = null;
+const LV = [{ n: 'ছোট গরু', bud: 110000, mon: [2.4, 4.2] }, { n: 'মাঝারি', bud: 160000, mon: [3.4, 5.8] }, { n: 'বড় গরু', bud: 240000, mon: [5, 8.5] }];
+const PER_MON = 27500;
+const SELLERS = ['কুষ্টিয়ার রহিম ব্যাপারী', 'সিরাজগঞ্জের করিম মিয়া', 'পাবনার জব্বার শেখ', 'যশোরের মজিদ ভাই', 'মানিকগঞ্জের হাশেম মোল্লা', 'নাটোরের সাত্তার কাকা', 'চুয়াডাঙ্গার লতিফ মিয়া'];
+let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0, COWS = [], PEOPLE = null, sellersH = [], goats = [];
+function newGame() { S = { over: false, started: false, min: 16 * 60, sel: 0, bought: null, offer: 0 }; }
+function say(t, col, ms) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, ms || 1500); }
+function pop(t, cls) { const e = document.createElement('div'); e.className = 'pop ' + (cls || ''); e.textContent = t; $('stage').appendChild(e); setTimeout(() => e.remove(), 1100); }
+function talk(t, who, v) { if (window.KHViral) KHViral.pop(t, v || 'M1', who); }
+function clockTxt(m) { const h = Math.floor(m / 60), mm = m % 60, h12 = h > 12 ? h - 12 : h; return (h < 18 ? 'বিকেল ' : h < 19 ? 'সন্ধ্যা ' : 'রাত ') + bn(h12) + ':' + bn(String(mm).padStart(2, '0')); }
+function hud() { $('bud').textContent = taka(LV[lv].bud); $('clock').textContent = clockTxt(S.min); }
+function spend(m) { S.min += m; hud(); if (S.min >= 22 * 60 && !S.over) { say('হাট বন্ধ হয়ে গেল! 😩', '#fca5a5'); setTimeout(endGame, 900); return true; }
+  // অন্য ক্রেতারাও কিনছে
+  if (!S.night && S.min >= 20 * 60) { S.night = true; COWS.forEach(c => c.min *= .92); say('রাত হয়েছে, ব্যাপারীরা দাম কমাচ্ছে!', '#fde047'); }
+  if ((S.soldClock = (S.soldClock || 0) + m) >= 45) { S.soldClock = 0; const av = COWS.filter((c, i) => !c.sold && i !== S.sel && !c.dealing); if (av.length > 2 && Math.random() < .55) { const c = pick(av); c.sold = true; c.a.root.visible = false; say(`${bn(COWS.indexOf(c) + 1)} নম্বর গরু অন্যজন কিনে নিল!`, '#fca5a5'); } }
+  return false; }
+function newHaat() {
+  const L = LV[lv]; COWS.forEach(c => scene.remove(c.a.root)); COWS = [];
+  const types = [...TYPES].sort(() => Math.random() - .5); const sells = [...SELLERS].sort(() => Math.random() - .5);
+  for (let i = 0; i < NC; i++) {
+    const T = types[i], mon = +rnd(...L.mon).toFixed(1); let age = Math.random() < .17 ? 'young' : Math.random() < .5 ? 'two' : 'four', health = Math.random() < .15 ? 'sick' : Math.random() < .2 ? 'steroid' : 'ok';
+    if (age === 'young') health = 'ok';
+    const value = mon * PER_MON * (health === 'ok' ? 1 : .55), claim = mon + (health === 'steroid' ? rnd(1, 2) : rnd(0, 1)), ask = Math.round((claim * PER_MON * rnd(1.25, 1.5)) / 1000) * 1000;
+    const a = makeAnimal(T, (age === 'young' ? 1.15 : 1.32) + (mon - 2.4) * .07); a.root.position.set(X0 + i * SPACE, 0, -.4); a.root.rotation.y = rnd(-.25, .25); if (health === 'steroid') a.inner.scale.x *= 1.22; scene.add(a.root);
+    COWS.push({ T, mon, claim, age, health, value, ask, ask0: ask, min: Math.max(value * rnd(.88, 1.0), ask * .62), pat: 4, a, seen: {}, sold: false, angry: false, seller: sells[i], breathe: rnd(0, 6) });
+  }
+  // অন্তত দুইটা ভালো গরু যেন বাজেটে পাওয়া যায়
+  let good = COWS.filter(c => c.age !== 'young' && c.health === 'ok' && c.min <= L.bud); for (const c of COWS) { if (good.length >= 2) break; if (!good.includes(c)) { c.age = 'two'; c.health = 'ok'; c.a.inner.scale.x = c.a.inner.scale.z; c.value = c.mon * PER_MON; c.min = Math.min(L.bud * .9, c.value * .95); good.push(c); } }
+  placeSellers();
+}
+function placeSellers() { sellersH.forEach((h, i) => { h.root.visible = i < NC; h.root.position.set(X0 + i * SPACE - 1.2, 0, -.2); h.root.rotation.y = .45; }); }
+function info() {
+  const c = COWS[S.sel]; if (!c) return; const e = $('cinfo');
+  const chk = [c.seen.teeth ? (c.age === 'young' ? '🦷 দুধ দাঁত (বয়স কম!) ❌' : c.age === 'two' ? '🦷 ২ দাঁত ✅' : '🦷 ৪ দাঁত ✅') : '🦷 ?',
+    c.seen.eyes ? (c.health === 'sick' ? '👀 চোখ ঘোলা, নাক শুকনা ❌' : '👀 চোখ উজ্জ্বল, নাক ভেজা ✅') : '👀 ?',
+    c.seen.walk ? (c.health === 'steroid' ? '🚶 ফোলা, হাঁপায়, হাঁটতে কষ্ট ❌' : c.health === 'sick' ? '🚶 দুর্বল, ঝিমায় ❌' : '🚶 চটপটে হাঁটে ✅') : '🚶 ?'];
+  e.innerHTML = `<h3>${bn(S.sel + 1)}. ${c.T.name} <small>${c.seller}</small></h3>` + (c.sold ? '<div class="sold">বিক্রি হয়ে গেছে</div>' : `<div>ব্যাপারী বলছে: "${bn(c.claim.toFixed(1))} মণ মাংস হবে!" · চাইছে <span class="ask">${taka(c.ask)}</span></div><div class="chk">${chk.map(t => `<span>${t}</span>`).join('')}</div>`) + (c.angry ? '<div class="sold">ব্যাপারী রেগে গেছে, আর দরদাম করবে না</div>' : '');
+  document.querySelectorAll('#acts [data-a]').forEach(b => { const a = b.dataset.a; b.classList.toggle('done', !!c.seen[a]); b.disabled = c.sold || (a === 'deal' && c.angry); b.style.opacity = b.disabled ? .45 : 1; });
+}
+function sel(d) { if (!S || S.over || S.bought || !$('deal').hidden) return; const n = clamp(S.sel + d, 0, NC - 1); if (n === S.sel) return; S.sel = n; if (spend(5)) return; info(); SFX.tick(); if (Math.random() < .35) SFX.moo(); const c = COWS[n]; if (!c.sold && !c.greeted) { c.greeted = true; talk(pick(['আসেন ভাই, দেখেন! একদম দেশি খাবারে পালা!', 'এমন গরু পুরা হাটে নাই!', 'ভাই, একবার হাত দিয়া দেখেন, খাঁটি মাংস!', 'বাড়ির গরু, কোনো ইনজেকশন নাই!']), '🧔 ' + c.seller); } }
+function check(a) {
+  const c = COWS[S.sel]; if (!c || c.sold || S.bought) return; if (a === 'deal') return openDeal(); if (c.seen[a]) return;
+  if (spend(10)) return; c.seen[a] = true; SFX.tick();
+  if (a === 'teeth') { say(c.age === 'young' ? 'দুধ দাঁত! কোরবানি হবে না ❌' : `${c.age === 'two' ? '২' : '৪'}টা স্থায়ী দাঁত ✅`, c.age === 'young' ? '#fca5a5' : '#86efac'); if (c.age === 'young') talk('আরে না ভাই, ঠিক বয়স হইছে… (চোখ সরিয়ে নিল)', '🧔 ' + c.seller); }
+  if (a === 'eyes') { say(c.health === 'sick' ? 'চোখ ঘোলা, নাক শুকনা! অসুস্থ ❌' : 'চোখ উজ্জ্বল, নাক ভেজা ✅', c.health === 'sick' ? '#fca5a5' : '#86efac'); }
+  if (a === 'walk') { c.walkT = 2.4; if (c.a.clips[1]) { c.a.mix.stopAllAction(); c.a.mix.clipAction(c.a.clips[Math.min(c.a.clips.length - 1, 2)]).play(); } say(c.health === 'steroid' ? 'হাঁপাচ্ছে, হাঁটতে পারে না! মোটাতাজা করা ❌' : c.health === 'sick' ? 'ঝিমায়, দুর্বল ❌' : 'চটপটে, সুস্থ ✅', c.health === 'ok' ? '#86efac' : '#fca5a5', 1800); if (c.health === 'steroid') SFX.moo(); }
+  info();
+}
+function openDeal() { const c = COWS[S.sel]; if (c.angry || c.sold) return; c.dealing = true; S.offer = S.offer && S.offerFor === c ? S.offer : Math.round(c.ask * .7 / 1000) * 1000; S.offerFor = c; $('acts').hidden = true; $('deal').hidden = false; dealUI(); }
+function dealUI() { const c = COWS[S.sel]; $('dOffer').textContent = taka(S.offer); $('dTxt').textContent = `ব্যাপারী চাইছে ${taka(c.ask)}। আপনি কত দিবেন?`; $('dPat').textContent = 'ব্যাপারীর ধৈর্য: ' + '😐'.repeat(Math.max(0, c.pat)) + ' · বাজেট ' + taka(LV[lv].bud); $('dOk').disabled = c.ask > LV[lv].bud; $('dOk').style.opacity = $('dOk').disabled ? .45 : 1; }
+function closeDeal() { const c = COWS[S.sel]; if (c) c.dealing = false; $('deal').hidden = true; if (!S.bought && !S.over) $('acts').hidden = false; info(); }
+function offer() {
+  const c = COWS[S.sel], o = S.offer; if (!c || c.angry || S.bought) return; if (o > LV[lv].bud) return say('এত টাকা বাজেটে নাই!', '#fca5a5');
+  if (spend(5)) return; const who = '🧔 ' + c.seller;
+  if (o >= c.min) { talk(o >= c.ask ? 'আলহামদুলিল্লাহ! নিয়া যান!' : pick(['আচ্ছা যান, আপনার জন্য দিলাম। লস হইয়া গেল!', 'ঠিক আছে, দোয়া কইরেন।', 'নেন ভাই, বরকত হোক।']), who); return buy(o); }
+  if (o < c.min * .72) { c.pat -= 2; SFX.bad(); talk(pick(['এই দামে ছাগলও পাইবেন না!', 'মশকরা করেন নাকি ভাই?', 'যান যান, অন্য জায়গায় দেখেন!']), who); }
+  else { c.pat--; const nx = Math.max(c.min, Math.round((c.ask - (c.ask - o) * rnd(.25, .45)) / 1000) * 1000); c.ask = Math.max(nx, Math.round(c.min / 1000) * 1000); talk(pick([`শেষ কথা ${taka(c.ask)}, এর নিচে হবে না।`, `${taka(c.ask)} দেন, নিয়া যান।`, `আমার কেনাই পড়ছে বেশি, ${taka(c.ask)} দেন।`]), who); SFX.tick(); }
+  if (c.pat <= 0) { c.angry = true; say('ব্যাপারী রেগে গেছে! 😠', '#fca5a5'); closeDeal(); return; }
+  dealUI(); info();
+}
+function acceptAsk() { const c = COWS[S.sel]; if (!c || c.ask > LV[lv].bud) return; talk('এই তো বুঝদার মানুষ! নিয়া যান।', '🧔 ' + c.seller); buy(c.ask); }
+function buy(price) { const c = COWS[S.sel]; S.bought = { c, price }; c.dealing = false; $('deal').hidden = true; $('acts').hidden = true; SFX.deal(); say('গরু কেনা হলো! 🐄🎉', '#86efac', 1800); if (window.KHViral) KHViral.confetti(); setTimeout(endGame, 2200); }
+const TIPS = ['জানেন কি? কোরবানির গরুর বয়স অন্তত ২ বছর হতে হয়; দুধ দাঁত পড়ে ২টা স্থায়ী দাঁত ওঠা দেখে বোঝা যায়।', 'জানেন কি? স্টেরয়েড দিয়ে মোটা করা গরুর শরীর ফোলা থাকে, ঘন ঘন শ্বাস নেয়, আঙুলে চাপ দিলে দাবে যায়।', 'জানেন কি? সুস্থ গরুর চোখ উজ্জ্বল, নাক ভেজা থাকে আর খাবারে আগ্রহ দেখায়।', 'জানেন কি? হাটে জাল টাকার ঝুঁকি আছে; অনেক হাটে এখন জাল টাকা যাচাইয়ের বুথ আর মোবাইল ব্যাংকিং থাকে।'];
+function endGame() {
+  if (S.over) return; S.over = true; $('deal').hidden = true; $('acts').hidden = true; $('cinfo').hidden = true; ['lB', 'rB'].forEach(i => $(i).hidden = true); $('hint').textContent = 'হাট শেষ';
+  const b = S.bought; let sc = 0, title, line, T;
+  if (!b) { T = 'গরু ছাড়াই বাড়ি 😢'; title = 'আগামী বছর আবার'; line = 'রাত ১০টা বেজে গেল, কিছুই কেনা হলো না।'; }
+  else { const c = b.c, ok = c.age !== 'young' && c.health === 'ok', save = c.mon * PER_MON - b.price;
+    if (!ok) { sc = 50; T = c.age === 'young' ? 'বয়স কম গরু! কোরবানি হবে না 😱' : c.health === 'sick' ? 'অসুস্থ গরু কিনে ফেলেছেন 😱' : 'ইনজেকশনে মোটা করা গরু! 😱'; title = 'ব্যাপারীর কাছে ঠকলেন'; line = `${c.T.name}, ${taka(b.price)} দিয়ে কিনলেন, কিন্তু ${c.age === 'young' ? 'দাঁত দেখেননি!' : 'স্বাস্থ্য ভালো করে দেখেননি!'}`; }
+    else { const checks = Object.keys(c.seen).filter(k => k !== 'deal').length; sc = Math.max(100, Math.round(500 + save / 80 + checks * 40 + Math.max(0, 22 * 60 - S.min) / 3)); T = save > 0 ? 'জিতে গেছেন! সেরা দামে সেরা গরু 🐄' : 'ভালো গরু, দাম একটু বেশি পড়লো';
+      title = save > 25000 ? 'হাটের ওস্তাদ 👑' : save > 0 ? 'বুঝদার ক্রেতা' : 'দরদামে কাঁচা'; line = `${c.T.name}, আসল মাংস প্রায় ${bn(c.mon.toFixed(1))} মণ। ব্যাপারী চেয়েছিল ${taka(c.ask0)}, কিনলেন ${taka(b.price)}।`; }
+    $('ePrice').textContent = taka(b.price); const sv = Math.round(c.mon * PER_MON * (c.health === 'ok' && c.age !== 'young' ? 1 : .5) - b.price); $('eSave').textContent = (sv >= 0 ? '+' : '−') + taka(Math.abs(sv)); }
+  if (!b) { $('ePrice').textContent = '—'; $('eSave').textContent = '—'; }
+  $('endT').textContent = T; $('endTitle').textContent = title; $('endLine').textContent = line; $('eS').textContent = bn(sc); $('eTip').textContent = pick(TIPS);
+  setTimeout(() => $('endO').hidden = false, 500); SH.saveScore(sc); lastScore = sc;
+}
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 66 : 50; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+let camX = 0;
+function loop(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  for (const c of COWS) { c.a.mix.update(dt * (c.health === 'steroid' ? .6 : 1)); if (c.health === 'steroid') { c.breathe += dt * 9; c.a.root.scale.setScalar(1 + Math.sin(c.breathe) * .012); }
+    if (c.walkT > 0) { c.walkT -= dt; if (c.walkT <= 0 && c.a.clips[1]) { c.a.mix.stopAllAction(); c.a.mix.clipAction(c.a.clips[0]).play(); } } }
+  for (const g of goats) g.mix.update(dt);
+  for (const h of sellersH) h.update(dt, 0, 1);
+  if (PEOPLE) for (const w of walkers) { w.x += w.v * dt; if (w.x > 22) w.x = -22; if (w.x < -22) w.x = 22; w.h.root.position.set(w.x, 0, w.z); w.h.root.rotation.y = w.v > 0 ? Math.PI / 2 : -Math.PI / 2; w.h.update(dt, 1, 1); }
+  const port = W / H < .8;
+  if (S && S.started) { const tx = X0 + S.sel * SPACE; camX += (tx - camX) * Math.min(1, dt * 3); cam.position.set(camX + (port ? .45 : .9), 1.6, port ? 3.7 : 4.1); cam.lookAt(camX, .85, -.4); }
+  else { const a = T0 * .05; cam.position.set(Math.sin(a) * 8, 2.6, 7 + Math.cos(a) * 1.5); cam.lookAt(0, 1, -.5); }
+  if (crowdL && SND.ac) crowdL.g.gain.setTargetAtTime(S && S.started && !S.over ? .06 : 0, SND.ac.currentTime, .4);
+  if (renderer) renderer.render(scene, cam);
+  requestAnimationFrame(loop);
+}
+const walkers = [];
+loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned).then(P => { PEOPLE = P; for (let i = 0; i < NC; i++) { const h = P.make(i % 2 ? 0 : 3, { scale: rnd(.95, 1.02), shadow: !LOW }); scene.add(h.root); sellersH.push(h); } for (let i = 0; i < (LOW ? 3 : 6); i++) { const h = P.make(i + 1, { scale: rnd(.93, 1.03), shadow: false }); scene.add(h.root); walkers.push({ h, x: rnd(-20, 20), z: rnd(-6.5, -3.2), v: rnd(.7, 1.2) * (i % 2 ? 1 : -1) }); } placeSellers(); }).catch(() => {});
+loadAll.then(() => { if (!COWS.length) { lv = 1; newGame(); newHaat(); } for (let i = 0; i < 2; i++) { const g = makeAnimal({ k: 'goat', yaw: 0 }, .78); g.root.position.set(X0 - 2.6 + i * (NC * SPACE + 1.4), 0, .3); g.root.rotation.y = i ? -.6 : .6; scene.add(g.root); goats.push(g); } window.KHG.ready = true; }).catch(e => console.warn(e));
+function start(level) { lv = level; newGame(); S.started = true; newHaat(); ['startO', 'endO'].forEach(i => $(i).hidden = true); $('cinfo').hidden = false; $('acts').hidden = false; $('deal').hidden = true; ['lB', 'rB'].forEach(i => $(i).hidden = false); $('hint').textContent = '◀ ▶ গরু বদলান'; SND.ac; if (!crowdL) crowdL = SND.loop('bandpass', 700, .5); hud(); info(); setTimeout(() => SFX.moo(), 600); }
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = e => { e.stopPropagation(); if (!GL.cow_zebu) return say('গরু আসছে, একটু দাঁড়ান…'); start(+b.dataset.lv); });
+document.querySelectorAll('#acts [data-a]').forEach(b => b.onclick = () => check(b.dataset.a));
+$('lB').onclick = () => sel(-1); $('rB').onclick = () => sel(1);
+$('dMinus').onclick = () => { S.offer = Math.max(10000, S.offer - 2000); dealUI(); }; $('dPlus').onclick = () => { S.offer = Math.min(LV[lv].bud, S.offer + 2000); dealUI(); };
+$('dSay').onclick = offer; $('dOk').onclick = acceptAsk; $('dBack').onclick = closeDeal;
+addEventListener('keydown', e => { if (e.key === 'ArrowLeft') sel(-1); if (e.key === 'ArrowRight') sel(1); });
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `কোরবানির হাটে ${S && S.bought ? taka(S.bought.price) + ' দিয়ে গরু কিনলাম' : 'গরু কিনতে পারিনি'}, ${bn(lastScore)} পয়েন্ট! 🐄 আপনি পারবেন ঠিক গরু চিনতে? ${location.origin}/games/haat/`; try { navigator.clipboard.writeText(t).then(() => pop('কপি হয়েছে, শেয়ার করুন!', 'good')); } catch (e) {} };
+newGame(); resize(); last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+const MY = ['ভাই, দাম কত?', 'শেষ দাম কত বলেন', 'গরুর বয়স কত?', 'হাসিল কত দিতে হবে?'], OP = ['দেখেন ভাই, পুরা হাটে এমন গরু নাই!', 'দুই দাঁত, একদম ফিট!', 'খড়-ভুসি খাওয়াইয়া পালছি', 'হাসিল ক্রেতার, ভাই'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP), 'M1', '🧔 ব্যাপারী', true), 1500); } });
+window.KHG = { get S() { return S; }, start, sel, check, offer, acceptAsk, get COWS() { return COWS; }, setOffer(v) { S.offer = v; dealUI(); } };
+</script>
+<script src="/js/update.js"></script>
+</body></html>

@@ -1,0 +1,10 @@
+কোরবানির হাটের পশু: সব মডেল Sketchfab থেকে, লাইসেন্স CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+খেলাঘর মডেলগুলো ছোট করেছে (পলিগন কমানো, টেক্সচার webp)। টুল: tools/animal-asset.mjs
+
+cow_zebu.glb      "Zebu Bull" — Mily — https://sketchfab.com/3d-models/zebu-bull-8de29dda35fb4b4296a60908c9ff97c4
+cow_bull.glb      "Bull" — stealth86 — https://sketchfab.com/3d-models/bull-d0f2ff31252a4c9cb084b1ac3a2e4d8b
+cow_holstein.glb  "Farm Cow Animated Dairy cattle" — Rukh3D — https://sketchfab.com/3d-models/farm-cow-animated-dairy-cattle-0e780cb5ab6d457198ded7d4e191a03e
+cow_brahman.glb   "Brahman Cow" — kunyong_Chen — https://sketchfab.com/3d-models/brahman-cow-d77b862414c048728e02d66671808d13
+goat.glb          "Boer Goat 3D Model Free" — iRahulRajput — https://sketchfab.com/3d-models/boer-goat-3d-model-free-d9a3eea388624b6cb6455ddee8866104
+
+মাটি: Poly Haven (CC0)। মানুষ: Renderpeople (CC-BY 4.0), ক্রেডিট /games/racer/assets/CREDITS.txt
