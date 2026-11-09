@@ -36,6 +36,24 @@
       ]
     },
     {
+      "source": "/games/racer/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=2592000"
+        }
+      ]
+    },
+    {
+      "source": "/games/racer/assets/(.*)\\.glb",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "model/gltf-binary"
+        }
+      ]
+    },
+    {
       "source": "/icons/(.*)",
       "headers": [
         {

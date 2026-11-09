@@ -1,0 +1,15 @@
+হাইওয়ে রাজা: অ্যাসেটের উৎস আর লাইসেন্স
+
+car.glb, car_lo.glb
+  "Car Concept", Khronos Group glTF-Sample-Assets (মূল মডেল: Unity Fan, Sketchfab, CC0)
+  https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept
+  লাইসেন্স: CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+  পরিবর্তন: ভেতরের অংশ বাদ, পলিগন কমানো, টেক্সচার ছোট, Khronos লোগো আর ট্রেডমার্ক সরানো
+  (লোগো লাইসেন্সের বাইরে), নম্বরপ্লেট খেলায় আঁকা হয়।
+
+Poly Haven (https://polyhaven.com), সব CC0:
+  sky.jpg, sky_1k.hdr ........ kloofendal_48d_partly_cloudy_puresky
+  asphalt_*.jpg ............... asphalt_02
+  grass_*.jpg ................. leafy_grass
+  barrier.glb ................. concrete_road_barrier_02
+  tree1.webp, tree2.webp ...... island_tree_01, island_tree_02 (ব্রাউজারে রেন্ডার করা ছবি)
