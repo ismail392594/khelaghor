@@ -32,6 +32,8 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);paddi
 @keyframes tk{to{transform:translateX(-100%)}}
 .tabs{display:flex;gap:8px;margin:12px 0}
 .tab{flex:1;border:1px solid var(--line);background:var(--panel);color:#c9d1d9;border-radius:12px;padding:10px;font:700 .95rem var(--body);cursor:pointer}
+.fl{width:18px;height:11px;vertical-align:-1px}.n small .fl{width:15px;height:9px}
+.tab{padding:10px 4px!important;font-size:.88rem!important}
 .tab[aria-pressed="true"]{background:#e6edf3;color:#0d1117;border-color:#e6edf3}
 .list{display:flex;flex-direction:column;gap:10px}
 .n{display:grid;grid-template-columns:1fr 104px;gap:12px;align-items:start;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;color:var(--fg);text-decoration:none}
@@ -57,8 +59,9 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);paddi
   <div class="ticker" id="ticker" hidden><b>সর্বশেষ</b><div class="tk"><div id="tk"></div></div></div>
   <div class="tabs" role="tablist">
     <button class="tab" data-t="all" aria-pressed="true">সব খবর</button>
-    <button class="tab" data-t="desh" aria-pressed="false">🇧🇩 দেশ</button>
+    <button class="tab" data-t="desh" aria-pressed="false"><svg class="fl" viewBox="0 0 20 12" aria-hidden="true"><rect width="20" height="12" rx="2" fill="#006a4e"/><circle cx="9" cy="6" r="3.6" fill="#f42a41"/></svg> দেশ</button>
     <button class="tab" data-t="bidesh" aria-pressed="false">🌍 বিদেশ</button>
+    <button class="tab" data-t="more" aria-pressed="false">🔬 আরো</button>
   </div>
   <div class="list" id="list"><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
   <p class="note">শিরোনাম আর ছবি সংবাদমাধ্যমগুলোর নিজের RSS থেকে নেওয়া; চাপলে মূল খবর তাদের সাইটে খুলবে। প্রতিটা খবরের দায় সংশ্লিষ্ট সংবাদমাধ্যমের। খেলাধুলার খবর দেখুন লাইভ স্কোরে।</p>
@@ -75,7 +78,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);paddi
     document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === tab)));
     if (!data) return; const items = data.items.filter(x => tab === 'all' || x.tab === tab);
     if (!items.length) { $('list').innerHTML = '<p class="empty">এখন কোনো খবর পাওয়া যায়নি। একটু পরে ↻ চাপুন।</p>'; return; }
-    $('list').innerHTML = items.slice(0, 80).map((x, i) => `<a class="n${x.img ? '' : ' noimg'}${i === 0 && x.img ? ' big' : ''}" href="${esc(x.u)}" target="_blank" rel="noopener noreferrer"><div><h3>${esc(x.t)}</h3><small><b>${esc(x.s)}</b><span>${ago(x.d)}</span><span>${x.tab === 'bidesh' ? '🌍 বিদেশ' : '🇧🇩 দেশ'}</span></small></div>${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</a>`).join('');
+    $('list').innerHTML = items.slice(0, 80).map((x, i) => `<a class="n${x.img ? '' : ' noimg'}${i === 0 && x.img ? ' big' : ''}" href="${esc(x.u)}" target="_blank" rel="noopener noreferrer"><div><h3>${esc(x.t)}</h3><small><b>${esc(x.s)}</b><span>${ago(x.d)}</span><span>${x.tab === 'bidesh' ? '🌍 বিদেশ' : x.tab === 'more' ? '🔬 বিজ্ঞান-বিনোদন' : '<svg class="fl" viewBox="0 0 20 12" aria-hidden="true"><rect width="20" height="12" rx="2" fill="#006a4e"/><circle cx="9" cy="6" r="3.6" fill="#f42a41"/></svg> দেশ'}</span></small></div>${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</a>`).join('');
     const top = data.items.slice(0, 8); $('ticker').hidden = !top.length; $('tk').innerHTML = top.map(x => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer">${esc(x.t)}</a>`).join('');
   }
   async function load() {

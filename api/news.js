@@ -3,7 +3,7 @@
 // খেলাধুলার খবর বাদ (ওটা লাইভ স্কোরের আলাদা অংশে)।
 // কোনো key লাগে না। Vercel-এর CDN ৫ মিনিট জমা রাখে, তাই দর্শক যত বাড়ুক, RSS-এ ডাক কম।
 //
-// GET /api/news            → { at, items: [{ t, u, s, d, img, tab }] }  tab: 'desh' | 'bidesh'
+// GET /api/news            → { at, items: [{ t, u, s, d, img, tab }] }  tab: 'desh' | 'bidesh' | 'more' (বিজ্ঞান-প্রযুক্তি-বিনোদন)
 // GET /api/news?diag=1     → কোন উৎস থেকে কয়টা খবর এল (পরীক্ষার জন্য)
 
 const SOURCES = [
@@ -20,8 +20,10 @@ const SOURCES = [
   { n: 'Al Jazeera', u: 'https://www.aljazeera.com/xml/rss/all.xml', tab: 'bidesh' }
 ];
 // শিরোনামে এই শব্দ থাকলে বিদেশের খবর ধরা হয় (বাংলা মেশানো উৎসে)
-const WORLD = /যুক্তরাষ্ট্র|আমেরিকা|ট্রাম্প|ভারত|দিল্লি|কলকাতা|পশ্চিমবঙ্গ|চীন|রাশিয়া|পুতিন|ইউক্রেন|ইসরায়েল|গাজা|ফিলিস্তিন|ইরান|পাকিস্তান|আফগান|মিয়ানমার|রোহিঙ্গা রাষ্ট্র|সৌদি|দুবাই|আরব|জাতিসংঘ|ইউরোপ|যুক্তরাজ্য|ব্রিটেন|লন্ডন|জাপান|কোরিয়া|তুরস্ক|নেপাল|শ্রীলঙ্কা|মালয়েশিয়া|সিঙ্গাপুর|অস্ট্রেলিয়া|কানাডা|ফ্রান্স|জার্মানি|ইতালি|আফ্রিকা|সিরিয়া|লেবানন|ইয়েমেন|ন্যাটো|বিশ্বব্যাংক|আইএমএফ|মোদি|হোয়াইট হাউস|বেইজিং|মস্কো|কিয়েভ|তেহরান|ওয়াশিংটন/;
-const LINK_WORLD = /\/(international|world|bishwo|aantorjatik|antorjatik|international-news)\b/i;
+const WORLD = /আয়ারল্যান্ড|ডাবলিন|কপ-\d|জলবায়ু সম্মেলন|নিউইয়র্ক|প্যারিস|বার্লিন|টোকিও|সিডনি|থাইল্যান্ড|ভিয়েতনাম|ইন্দোনেশিয়া|ফিলিপাইন|মিসর|কাতার|কুয়েত|ওমান|বাহরাইন|ইরাক|লিবিয়া|সুদান|ব্রাজিল|আর্জেন্টিনা|মেক্সিকো|যুক্তরাষ্ট্র|আমেরিকা|ট্রাম্প|ভারত|দিল্লি|কলকাতা|পশ্চিমবঙ্গ|চীন|রাশিয়া|পুতিন|ইউক্রেন|ইসরায়েল|গাজা|ফিলিস্তিন|ইরান|পাকিস্তান|আফগান|মিয়ানমার|রোহিঙ্গা রাষ্ট্র|সৌদি|দুবাই|আরব|জাতিসংঘ|ইউরোপ|যুক্তরাজ্য|ব্রিটেন|লন্ডন|জাপান|কোরিয়া|তুরস্ক|নেপাল|শ্রীলঙ্কা|মালয়েশিয়া|সিঙ্গাপুর|অস্ট্রেলিয়া|কানাডা|ফ্রান্স|জার্মানি|ইতালি|আফ্রিকা|সিরিয়া|লেবানন|ইয়েমেন|ন্যাটো|বিশ্বব্যাংক|আইএমএফ|মোদি|হোয়াইট হাউস|বেইজিং|মস্কো|কিয়েভ|তেহরান|ওয়াশিংটন/;
+const LINK_WORLD = /\/(international|world|bishwo|aantorjatik|antorjatik|international-news|probash|abroad)\b/i;
+const LINK_MORE = /\/(science|technology|tech|entertainment|lifestyle|life-style|education|health|feature|religion|binodon|bigyan|projukti)\b/i; // বিজ্ঞান, প্রযুক্তি, বিনোদন, জীবনযাপন → "আরো"
+const MORE = /আইনস্টাইন|মহাকাশ|নাসা|গবেষণা|বিজ্ঞানী|টেলিস্কোপ|স্মার্টফোন|এআই|কৃত্রিম বুদ্ধিমত্তা|অ্যাপ|সিনেমা|নাটক|অভিনেতা|অভিনেত্রী|গান|শিল্পী|রেসিপি|স্বাস্থ্য|ডায়াবেটিস|হৃদ্‌রোগ|ত্বক|চুল/;
 const LINK_HOME = /\/(bangladesh|national|country|dhaka|politics|bangla|saradesh|capital|economy|business)\b/i;
 const SPORTS = /\/(sport|sports|khela|cricket|football)\b|ক্রিকেট|ফুটবল|ম্যাচ|উইকেট|গোল করে|টেস্টে|ওয়ানডে|টি-টোয়েন্টি|বিশ্বকাপ|সাকিব|তামিম|মেসি|রোনালদো|\bcricket\b|\bfootball\b|\bmatch\b/i;
 
@@ -47,8 +49,8 @@ async function grab(src) {
 }
 function tabOf(x) {
   if (x.tab !== 'auto') return x.tab;
-  if (LINK_WORLD.test(x.u)) return 'bidesh'; if (LINK_HOME.test(x.u)) return 'desh';
-  return WORLD.test(x.t) ? 'bidesh' : 'desh';
+  if (LINK_WORLD.test(x.u)) return 'bidesh'; if (LINK_MORE.test(x.u)) return 'more'; if (LINK_HOME.test(x.u)) return 'desh';
+  return WORLD.test(x.t) ? 'bidesh' : MORE.test(x.t) ? 'more' : 'desh';
 }
 
 export default async function handler(req, res) {
