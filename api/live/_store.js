@@ -18,7 +18,7 @@ export const POINTS = 10; // সঠিক অনুমানে কত পয়
 export const EXACT = 20; // ফুটবলে একদম সঠিক স্কোর বললে বাড়তি পয়েন্ট
 // সপ্তাহের নাম (ঢাকার সময়ে, সোমবার থেকে শুরু): যেমন 2026-11-09
 export const weekKey = (t = Date.now()) => { const d = new Date(t + 6 * 3600e3); const day = (d.getUTCDay() + 6) % 7; return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - day)).toISOString().slice(0, 10); };
-const CACHE_V = 4; // ক্যাশের ছাঁচ বদলালে বাড়াতে হয়, তাহলে পুরোনো ক্যাশ ফেলে সব নতুন করে আনে
+const CACHE_V = 5; // ক্যাশের ছাঁচ বদলালে বাড়াতে হয়, তাহলে পুরোনো ক্যাশ ফেলে সব নতুন করে আনে
 const MIN = 60e3, HOUR = 60 * MIN, DAY = 24 * HOUR;
 
 export class HttpErr extends Error { constructor(status, msg) { super(msg); this.status = status; } }
@@ -36,7 +36,9 @@ export async function fb() {
 
 export const _setFb = x => { _fb = x; }; // শুধু পরীক্ষার জন্য
 
-const has = () => ({ c: !!process.env.CRICKET_API_KEY, f: !!process.env.FOOTBALL_API_KEY, s: hasSm() });
+// মালিকের সিদ্ধান্ত (৯ নভেম্বর): Sportmonks চালু থাকলে CricketData বন্ধ (ধীর)। আবার চালু করতে Vercel-এ LIVE_USE_CRICKETDATA=1
+const useCd = () => !!process.env.CRICKET_API_KEY && (!hasSm() || process.env.LIVE_USE_CRICKETDATA === '1');
+const has = () => ({ c: useCd(), f: !!process.env.FOOTBALL_API_KEY, s: hasSm() });
 const utcDay = t => new Date(t).toISOString().slice(0, 10);
 const dhakaDay = t => new Date(t + 6 * HOUR).toISOString().slice(0, 10);
 
@@ -202,7 +204,7 @@ async function refresh(F, doc, due, now) {
 
 // ক্যাশ থেকে দেখানোর তালিকা: লাইভ সব, আসন্ন ৪ দিন, শেষ ৩৬ ঘণ্টা
 function compose(doc, now) {
-  const c = doc.c || {}, f = doc.f || {};
+  const c = useCd() ? (doc.c || {}) : {}, f = doc.f || {};
   const map = new Map();
   for (const m of c.up || []) map.set(m.id, m);
   for (const m of c.list || []) map.set(m.id, m);
