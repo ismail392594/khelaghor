@@ -218,6 +218,7 @@ export function cricScoreSummary(x) {
   };
   const sum = cricSummary(fake);
   sum.tour = x.series || sum.tour;
+  sum.ms = String(x.ms || '');
   if (!x.matchDesc) sum.label = fmtType(x.matchType);
   // কে ব্যাট করছে: যে দলের শেষ ইনিংস এখনো শেষ হয়নি
   if (state === 'live') {

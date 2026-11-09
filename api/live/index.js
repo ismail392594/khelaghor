@@ -37,7 +37,7 @@ export default async function handler(req, res) {
       return res.status(200).json(d);
     }
     if (f === 'board') { cache(res, 60, 120); return res.status(200).json(await board()); }
-    if (f === 'diag') { cache(res, 0); return res.status(200).json(await diag()); }
+    if (f === 'diag') { cache(res, 0); return res.status(200).json(await diag(String(q.q || '').slice(0, 40))); }
     if (f === 'me') { cache(res, 0); return res.status(200).json(await me(req)); }
     throw new HttpErr(404, 'পাওয়া যায়নি');
   } catch (e) {

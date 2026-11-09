@@ -366,7 +366,7 @@ async function settleOne({ db, FV }, id, result) {
 }
 
 /* ---------- সমস্যা খোঁজার জন্য: কোনো key বা গোপন তথ্য দেখায় না ---------- */
-export async function diag(now = Date.now()) {
+export async function diag(q = '', now = Date.now()) {
   const F = await fb();
   if (!F) return { firebase: false, keys: has() };
   const d = (await F.db.doc('liveCache/feed').get()).data() || {};
@@ -375,7 +375,9 @@ export async function diag(now = Date.now()) {
   return {
     keys: has(), v: d.v,
     cricket: { src: c.src, rawRows: c.raw, err: c.err || null, listAt: c.at ? new Date(c.at).toISOString() : null, upAt: c.upAt ? new Date(c.upAt).toISOString() : null,
-      list: cnt(c.list), up: cnt(c.up), left: d.cq, sample: (c.list || []).slice(0, 15).map(m => `${m.state} | ${m.a.name} v ${m.b.name} | ${m.tour} | ${m.raw || ''}`) },
+      list: cnt(c.list), up: cnt(c.up), left: d.cq,
+      sample: (c.list || []).filter(m => !q || (m.a.name + ' ' + m.b.name + ' ' + m.tour).toLowerCase().includes(String(q).toLowerCase())).slice(0, 20)
+        .map(m => `${m.state} (${m.ms || '-'}) | ${m.a.name} v ${m.b.name} | ${m.tour} | ${new Date(m.start).toISOString().slice(0, 16)} | ${m.raw || ''}`) },
     football: { err: f.err || null, at: f.at ? new Date(f.at).toISOString() : null, day: cnt(f.day), live: cnt(f.live), left: d.fq }
   };
 }
