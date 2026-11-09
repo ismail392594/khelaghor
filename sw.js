@@ -1,7 +1,7 @@
 // খেলাঘর service worker: পেজগুলো ক্যাশে রাখে, যাতে দুর্বল নেটেও দ্রুত খোলে।
 // নতুন ভার্সন পাবলিশ করলে VERSION বাড়ান।
-const VERSION = 'khelaghor-v110';
-const CORE = ['/js/update.js', '/', '/app/', '/games/ludo/', '/games/mosha/', '/games/jam/', '/games/bazar/', '/games/argbra/', '/games/carrom/', '/games/sholo/', '/games/bagh/', '/games/ghuri/', '/games/hadudu/', '/games/callbridge/', '/games/twentynine/', '/games/chess/', '/games/gollachut/', '/games/dariabandha/', '/games/biryani/', '/games/racer/', '/games/loadshed/', '/games/ekkadokka/', '/games/marble/', '/games/latim/', '/games/dangguli/', '/games/kanamachi/', '/news/', '/js/chess-engine.js', '/js/kh-human.js', '/js/kh-scene.js', '/js/guest.js', '/js/share-card.js', '/js/challenge.js', '/help/', '/live/', '/live/live.js', '/live/insight.js', '/offline.html', '/js/game-info.js', '/js/fun.js', '/js/voice.js', '/js/videos.js', '/js/viral.js', '/js/howto.js', '/js/stories.js', '/js/story-split.js', '/js/ludo-engine.js', '/js/vendor/three.module.min.js', '/js/online.js', '/js/firebase-config.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
+const VERSION = 'khelaghor-v113';
+const CORE = ['/js/update.js', '/', '/app/', '/games/ludo/', '/games/mosha/', '/games/jam/', '/games/bazar/', '/games/argbra/', '/games/carrom/', '/games/sholo/', '/games/bagh/', '/games/ghuri/', '/games/hadudu/', '/games/callbridge/', '/games/twentynine/', '/games/chess/', '/games/gollachut/', '/games/dariabandha/', '/games/biryani/', '/games/racer/', '/games/loadshed/', '/games/ekkadokka/', '/games/marble/', '/games/latim/', '/games/dangguli/', '/games/kanamachi/', '/news/', '/js/chess-engine.js', '/js/kh-human.js', '/js/kh-scene.js', '/js/guest.js', '/js/share-card.js', '/js/challenge.js', '/help/', '/live/', '/live/live.js', '/live/insight.js', '/offline.html', '/js/game-info.js', '/js/fun.js', '/js/voice.js', '/js/videos.js', '/js/viral.js', '/js/howto.js', '/js/stories.js', '/js/story-split.js', '/js/ludo-engine.js', '/js/vendor/three.module.min.js', '/js/online.js', '/js/firebase-config.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/live/push-config.js'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
@@ -30,4 +30,22 @@ self.addEventListener('fetch', e => {
   e.respondWith(caches.match(req).then(r => r || fetch(req).then(res => {
     const copy = res.clone(); caches.open(VERSION).then(c => c.put(req, copy)); return res;
   })));
+});
+
+// লাইভ স্কোরের নোটিফিকেশন (প্রিয় দলের খেলা শুরু, উইকেট, গোল, শেষ)। পাঠায় /api/live সার্ভার।
+self.addEventListener('push', e => {
+  let p = {};
+  try { p = e.data ? e.data.json() : {}; } catch (er) {}
+  const d = p.data || p.notification || p;
+  e.waitUntil(self.registration.showNotification(d.title || 'খেলাঘর লাইভ স্কোর', {
+    body: d.body || '', icon: '/icons/icon-192.png', badge: '/icons/icon-192.png', tag: d.tag || undefined, renotify: !!d.tag, data: { url: d.url || '/live/' }
+  }));
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || '/live/';
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+    for (const c of list) if ('focus' in c) { c.navigate(url); return c.focus(); }
+    return self.clients.openWindow(url);
+  }));
 });

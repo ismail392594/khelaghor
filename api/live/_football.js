@@ -7,10 +7,13 @@ const BASE = 'https://v3.football.api-sports.io/';
 
 // কোন কোন প্রতিযোগিতা দেখাবো (API-Football-এর লিগ নম্বর)। Vercel-এ LIVE_FB_LEAGUES দিয়ে বদলানো যায়, যেমন "1,2,39"
 const DEF_LEAGUES = [1, 2, 3, 4, 5, 6, 7, 9, 10, 15, 17, 22, 29, 30, 31, 32, 33, 34, 39, 45, 61, 78, 135, 140, 143, 848];
+// মালিকের সিদ্ধান্ত (৯ নভেম্বর রাত): পৃথিবীর সব ফুটবল খেলা। উপরের তালিকা এখন শুধু "বড় খেলা" চেনার জন্য (আগে দেখায়)।
+// শুধু কিছু লিগ চাইলে Vercel-এ LIVE_FB_LEAGUES="1,2,39" দিন।
 export const leagues = () => {
   const s = String(process.env.LIVE_FB_LEAGUES || '').split(/[,\s]+/).map(Number).filter(Boolean);
-  return s.length ? s : DEF_LEAGUES;
+  return s.length ? s : null;
 };
+export const TOP = new Set(DEF_LEAGUES);
 
 export async function fbCall(path, params = {}) {
   const key = process.env.FOOTBALL_API_KEY;
@@ -44,7 +47,8 @@ export function fbSummary(f) {
   const state = LIVE.includes(st) ? 'live' : DONE.includes(st) ? 'done' : 'upcoming';
   const out = {
     id: 'f_' + fx.id, sport: 'football', state, start: (fx.timestamp || 0) * 1000,
-    tour: lg.name || '', label: roundBn(lg.round), lg: lg.id, season: lg.season, intl: national, venue: (fx.venue && fx.venue.name) || '',
+    tour: (lg.name || '') + (lg.country && lg.country !== 'World' && !TOP.has(lg.id) ? ` (${lg.country})` : ''), label: roundBn(lg.round), lg: lg.id, season: lg.season,
+    rk: TOP.has(lg.id) ? 3 : national ? 2 : 1, intl: national, venue: (fx.venue && fx.venue.name) || '', city: (fx.venue && fx.venue.city) || '',
     a, b, per: st, min: fx.status && fx.status.elapsed, status: FB_PER[st] || st
   };
   if (sc.penalty && sc.penalty.home != null) out.pen = [sc.penalty.home, sc.penalty.away];

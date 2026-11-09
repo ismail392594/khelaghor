@@ -24,7 +24,7 @@ export async function smCall(path, params = {}) {
   } finally { clearTimeout(tm); }
 }
 
-export const LIST_INC = 'runs,localteam,visitorteam,league,stage';
+export const LIST_INC = 'runs,localteam,visitorteam,league,stage,venue';
 export const DETAIL_INC = 'runs,localteam,visitorteam,league,stage,venue,batting.batsman,batting.result,bowling.bowler,balls.score,balls.batsman,balls.bowler';
 
 const FMT = t => { const s = String(t || '').toLowerCase(); return /t20/.test(s) ? 't20' : /t10/.test(s) ? 't10' : /odi|list a|one day|50/.test(s) ? 'odi' : /test|4day|first class/.test(s) ? 'test' : s; };
@@ -59,7 +59,7 @@ export function smSummary(x) {
     id: 's_' + x.id, sport: 'cricket', src: 'sm', state, start: Date.parse(x.starting_at) || 0,
     tour: (x.league && x.league.name ? x.league.name : '') + (x.stage && x.stage.name && x.league && x.stage.name !== x.league.name ? ' · ' + x.stage.name : ''),
     label: matchLabel(x.round) || '', test: fmt === 'test', intl: national, rk: rankOf(na, nb), fmt,
-    venue: '', a, b, inns, status: st, raw: (x.note || status).slice(0, 120)
+    venue: (x.venue && x.venue.name) || '', city: (x.venue && x.venue.city) || '', a, b, inns, status: st, raw: (x.note || status).slice(0, 120)
   };
   if (state === 'live' && /stump/i.test(status)) out.pause = true;
   if (state === 'done') {

@@ -70,7 +70,7 @@ export function cricSummary(m) {
   const out = {
     id: 'c_' + m.id, sport: 'cricket', state, start, tour, label, test, intl, rk: rankOf(na, nb),
     fmt: String(m.matchType || '').toLowerCase(),
-    venue: m.venue || '', a, b,
+    venue: m.venue || '', city: String(m.venue || '').split(',').pop().trim(), a, b,
     inns: (m.score || []).map(s => ({ side: String(s.inning || '').toLowerCase().startsWith(na.toLowerCase()) ? 'a' : 'b', r: +s.r || 0, w: +s.w || 0, o: +s.o || 0 })),
     status: cricStatusBn(status, bnOf), raw: status.slice(0, 120)
   };
