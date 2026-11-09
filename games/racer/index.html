@@ -255,6 +255,7 @@ body .khViral small{font-size:.66rem!important}
         <div class="setrow"><span>শব্দ <b id="volT"></b></span><input type="range" id="sVol" min="0" max="100" step="5" aria-label="শব্দের মাত্রা"></div>
         <div class="setrow"><span>গ্রাফিক্স <small id="gfxT"></small></span><div class="seg" id="sGfx"><button data-v="auto">অটো (ফোন বুঝে)</button><button data-v="high">উঁচু</button><button data-v="mid">মাঝারি</button><button data-v="low">কম (দ্রুত)</button></div></div>
         <div class="setrow"><span>ক্যামেরা</span><div class="seg" id="sCam"><button data-v="far">পেছন থেকে</button><button data-v="near">কাছ থেকে</button><button data-v="cockpit">ড্রাইভারের সিট</button><button data-v="cabin">বাসের ভেতর</button><button data-v="top">উপর থেকে</button></div></div>
+        <div class="setrow"><span>সময় আর আবহাওয়া</span><div class="seg" id="sWx"><button data-v="auto">অটো</button><button data-v="day">দিন</button><button data-v="night">রাত</button><button data-v="rain">বৃষ্টি</button></div></div>
         <div class="acts"><button class="gbtn" id="setClose">ঠিক আছে</button><button class="gbtn ghost" id="setQuit" hidden>খেলা ছেড়ে দিই</button><a class="gbtn ghost" href="/">🏠 হাবে ফিরি</a></div>
       </div>
     </div>
@@ -396,6 +397,7 @@ const SFX = {
     else if (snd === 'moto') tone(620, t, .35, 'square', .14, 0, f);
     else { tone(415, t, .5, 'sawtooth', .22, 0, f); tone(523, t, .5, 'sawtooth', .18, 0, f); } },
   air() { const t = ac.currentTime; noise(t, .7, .45, 5200, 'highpass', 2600); }, // বাস-ট্রাকের এয়ার ব্রেক "পসস"
+  thunder() { const t = ac.currentTime; noise(t, 2.6, .9, 420, 'lowpass', 90); noise(t + .05, .5, .5, 1800, 'lowpass', 300); tone(48, t, 1.8, 'sine', .6, 32); },
   door() { const t = ac.currentTime; noise(t, .5, .32, 4200, 'highpass', 1700); noise(t + .48, .12, .6, 420, 'lowpass', 140); tone(68, t + .48, .16, 'sine', .45, 42); }, // দরজার বাতাস "ফসস" আর শেষে ধাক্কা
   revBeep() { const t = ac.currentTime; tone(1180, t, .22, 'sine', .16); },
   siren() { const t = ac.currentTime, o = ac.createOscillator(), og = ac.createGain(); o.type = 'square'; o.frequency.setValueAtTime(650, t); for (let i = 0; i < 6; i++) o.frequency.linearRampToValueAtTime(i % 2 ? 650 : 1050, t + .25 * (i + 1)); og.gain.value = .07; o.connect(og); og.connect(master); o.start(t); o.stop(t + 1.5); },
@@ -425,7 +427,7 @@ let tier = TIERS[GFX_FIX[(store.get('kh-racer-cfg', {}) || {}).gfx] ?? AUTO_TIER
 let renderer = null;
 try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: tier.aa, powerPreference: 'high-performance' }); } catch (e) {}
 const LOW = tier.id <= 1;
-const HORIZON = new THREE.Color('#9aa3b1');
+const HORIZON = new THREE.Color('#9aa3b1'); let envTex = null;
 const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(60, 1, .3, 1500); // near .৩: কম নির্ভুল ফোনেও রাস্তা-ঘাস গুলিয়ে যায় না
 scene.background = HORIZON.clone(); scene.fog = new THREE.Fog(HORIZON, 120, tier.far);
 if (renderer) {
@@ -461,7 +463,7 @@ if (renderer) {
     for (let i = 0; i < w * hh; i++) { const l = F(data[i * 4]) * .2126 + F(data[i * 4 + 1]) * .7152 + F(data[i * 4 + 2]) * .0722; if (l > best) { best = l; bi = i; } }
     const u = ((bi % w) + .5) / w, v = (Math.floor(bi / w) + .5) / hh, ph = (u - .5) * Math.PI * 2, el = (.5 - v) * Math.PI;
     if (el > .1) SUN_DIR.set(Math.cos(ph) * Math.cos(el), Math.sin(el), Math.sin(ph) * Math.cos(el)).normalize();
-    h.mapping = THREE.EquirectangularReflectionMapping; scene.environment = pm.fromEquirectangular(h).texture; h.dispose(); pm.dispose();
+    h.mapping = THREE.EquirectangularReflectionMapping; envTex = scene.environment = pm.fromEquirectangular(h).texture; h.dispose(); pm.dispose();
   });
 }
 
@@ -990,7 +992,6 @@ function buildCabin(key) {
   add(mPil, B(.035, roof - wb - .05, .035), .1, (wb + roof) / 2, fz + .01); // দুই ভাগের কাচের মাঝের দাগ
   add(mGlass, new THREE.PlaneGeometry(hw * 2, roof - wb), 0, (wb + roof) / 2, fz - .02);
   add(mPil, B(hw * 2, .07, .07), 0, roof - .035, fz + .02); add(M('#2c2f34', .9), B(hw * 2, .03, 1.5), 0, roof - .02, fz + .75); // উপরের ফ্রেম আর সামনের ছাদের কাপড়
-  for (const sx of [-.55, .5]) add(M('#15171a', .6, .3), B(.85, .025, .025), sx, wb + .08, fz - .05, 0, 0, sx < 0 ? .22 : .18); // ওয়াইপার
   for (const sd of [-1, 1]) { add(mPil, B(.04, .04, .55), sd * (hw + .22), roof - .32, fz - .2); add(M('#1c1f23', .4, .3), B(.2, .42, .06), sd * (hw + .32), roof - .62, fz - .45); add(new THREE.MeshStandardMaterial({ color: '#5b6b78', roughness: .08, metalness: .8 }), B(.17, .38, .01), sd * (hw + .32), roof - .62, fz - .415); } // খরগোশ-কানের মতো সামনের বড় আয়না
   add(mDash, B(.9, .3, .9), dx, fy + .15, fz + 1.3); add(mSeat, B(.5, .14, .5), dx, fy + .62, fz + 1.35); add(mSeat, B(.5, .8, .1), dx, fy + 1.05, fz + 1.62, -.12); // চালকের উঁচু সিট
   add(mFrame, B(.5, .08, hw), -hw + .5, fy - .12, fz + 1.4); add(mFrame, B(.5, .08, hw * .8), -hw + .5, fy - .3, fz + 1.4); // দরজার সিঁড়ি
@@ -1013,8 +1014,9 @@ function buildCabin(key) {
   const tv = new THREE.Mesh(new THREE.PlaneGeometry(.62, .36), new THREE.MeshBasicMaterial({ map: CAB_T.tv })); tv.position.set(0, roof - .32, fz + 2.3); g.add(tv); // যাত্রীদের টিভি
   const gc = new THREE.Mesh(new THREE.PlaneGeometry(.56, .22), new THREE.MeshBasicMaterial({ map: CAB_T.gauge, toneMapped: false })); gc.position.set(dx, wb + .3, fz + .74); gc.rotation.x = -.45; g.add(gc); // আলো জ্বলা মিটার (চলার সাথে কাঁটা নড়ে)
   const ss = new THREE.Mesh(new THREE.PlaneGeometry(hw * 2, .26), new THREE.MeshBasicMaterial({ map: CAB_T.strip, transparent: true, depthWrite: false })); ss.position.set(0, roof - .2, fz + .005); g.add(ss); // কাচের উপরের রঙিন ফিতা
+  const wipers = [-.98, .12].map(px => { const p = new THREE.Group(), b = new THREE.Mesh(new THREE.BoxGeometry(.9, .028, .028), M('#15171a', .6, .3)); b.position.x = .45; p.add(b); p.position.set(px, wb + .06, fz - .05); p.rotation.z = 0; g.add(p); return p; }); // ওয়াইপার (বৃষ্টিতে নড়ে)
   g.traverse(o => { if (o.material) bendMat(o.material); }); g.visible = false;
-  return { g, drv, wh, rb, fy, roof, L, hw, dx, fz };
+  return { g, drv, wh, rb, wipers, fy, roof, L, hw, dx, fz };
 }
 // ক্ষতিগ্রস্ত গাড়ি থেকে ধোঁয়া (লাইফ ৪৫%-এর নিচে), খুব কম হলে কালো ধোঁয়া
 const smokeTex = ctex(64, 64, (x, w) => { const g = x.createRadialGradient(32, 32, 2, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,.9)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, w, w); });
@@ -1411,6 +1413,86 @@ const scaler = autoScaler({
   onDrop: () => { if (tier.id > 0) setTier(tier.id - 1); },
   onRaise: () => { if (tier.id < AUTO_TIER) setTier(tier.id + 1); }
 });
+/* ================= রাত আর বৃষ্টি ================= */
+// সেটিংসে "সময়": অটো (কয়েক কিমি পরপর দিন → বৃষ্টি → রাত বদলায়), দিন, রাত, বৃষ্টি। রাতে সামনের হেডলাইট, রাস্তার বাতি,
+// অন্য গাড়ির পেছনের লাল আর উল্টো দিকের সাদা বাতি; বৃষ্টিতে ঝরা পানি, ভেজা চকচকে রাস্তা, ওয়াইপার, ঝমঝম আর মেঘের গর্জন।
+const WX = { n: 0, r: 0, tn: 0, tr: 0, nextKm: 4, flash: 0 };
+const C_DAYSKY = new THREE.Color('#ffffff'), C_NIGHTSKY = new THREE.Color('#141b2e'), C_RAINSKY = new THREE.Color('#7d848c'), C_NIGHTFOG = new THREE.Color('#0a0e16'), C_RAINFOG = new THREE.Color('#6a7178'), C_SUN = new THREE.Color('#fff1dc'), C_MOON = new THREE.Color('#9fb4d8');
+const _c1 = new THREE.Color(), _c2 = new THREE.Color();
+const glowT = ctex(64, 64, (x, w) => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.25, 'rgba(255,255,255,.55)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, w, w); });
+const GLOW_N = 420, glowGeo = new THREE.BufferGeometry(); glowGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(GLOW_N * 3), 3)); glowGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(GLOW_N * 3), 3));
+const glowMat = new THREE.PointsMaterial({ size: 2.4, map: glowT, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+const glows = new THREE.Points(glowGeo, glowMat); glows.frustumCulled = false; glows.visible = false; scene.add(glows);
+// রাস্তার মাঝের বাতির খুঁটি (মিডিয়ানে), ৫০ মিটার পরপর
+const LAMP_GAP = 50, LAMP_N = 14, lampPoles = new THREE.InstancedMesh(mergeGeometries([new THREE.CylinderGeometry(.07, .1, 9, 6).translate(0, 4.5, 0), new THREE.BoxGeometry(2.6, .1, .12).translate(0, 8.9, 0)]), M('#8c9196', .5, .6), LAMP_N);
+lampPoles.frustumCulled = false; scene.add(lampPoles);
+const poolT = ctex(128, 128, (x, w) => { const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(255,214,150,.55)'); g.addColorStop(1, 'rgba(255,214,150,0)'); x.fillStyle = g; x.fillRect(0, 0, w, w); });
+const pools = new THREE.InstancedMesh(new THREE.PlaneGeometry(16, 22).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: poolT, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0, polygonOffset: true, polygonOffsetFactor: -4 }), LAMP_N * 2);
+pools.frustumCulled = false; pools.visible = false; scene.add(pools); // রাস্তার বাতির নিচে হলুদ আলোর গোল দাগ
+// হেডলাইট: খেলোয়াড়ের গাড়ির সামনে স্পটলাইট (দিনে বন্ধ)
+const headL = new THREE.SpotLight('#fff4dc', 0, 90, .5, .55, 1.2); headL.position.set(0, 1.1, -2); scene.add(headL, headL.target);
+// বৃষ্টির ফোঁটা: ক্যামেরার চারপাশে ছোট ছোট দাগ
+const RAIN_N = 900, rainPos = new Float32Array(RAIN_N * 6), rainGeo = new THREE.BufferGeometry(); rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
+const rainMat = new THREE.LineBasicMaterial({ color: '#c9d6e3', transparent: true, opacity: 0, depthWrite: false, fog: false }); rainMat.userData.noBend = true;
+const rainL = new THREE.LineSegments(rainGeo, rainMat); rainL.frustumCulled = false; rainL.visible = false; scene.add(rainL);
+for (let i = 0; i < RAIN_N; i++) rainPos[i * 6 + 1] = -99;
+const WX_N = { auto: 'অটো', day: 'দিন', night: 'রাত', rain: 'বৃষ্টি' };
+function wxTarget(km) {
+  const m = CFG.wx || 'auto';
+  if (m === 'day') { WX.tn = 0; WX.tr = 0; return; } if (m === 'night') { WX.tn = 1; WX.tr = 0; return; } if (m === 'rain') { WX.tn = 0; WX.tr = 1; return; }
+  if (km >= WX.nextKm) { // অটো: কয়েক কিমি পরপর আবহাওয়া বদল
+    WX.nextKm = km + rnd(4, 8); const pk = pick([[0, 0], [0, 1], [1, 0], [1, 1], [1, 0]]); const wasR = WX.tr; WX.tn = pk[0]; WX.tr = pk[1];
+    if (S && S.started) { if (WX.tr && !wasR) { pop('🌧️ বৃষ্টি নামলো! আস্তে চালান'); talkT = 0; if (R.helper) KHViral.pop('ওস্তাদ, বৃষ্টি নামছে, ব্রেক বুঝে চাপেন!', 'M2', '🧑 হেল্পার'); } else if (WX.tn && !WX.tr) pop('🌙 রাত নামলো, হেডলাইট জ্বলছে'); }
+  }
+}
+let rainSnd = null;
+function wxStep(dt) {
+  const km = S ? (S.dist || 0) / 1000 : 0; wxTarget(km);
+  const sp = (CFG.wx || 'auto') === 'auto' ? 1 : 12; // সেটিংসে বেছে নিলে সাথে সাথে, অটোতে ধীরে বদলায়
+  WX.n += (WX.tn - WX.n) * Math.min(1, dt * .35 * sp); WX.r += (WX.tr - WX.r) * Math.min(1, dt * .4 * sp);
+  const n = WX.n, r = WX.r;
+  // আলো: রাতে চাঁদের নীলচে আলো, বৃষ্টিতে মেঘলা
+  sun.intensity = 2.6 * (1 - n) * (1 - .65 * r) + .22 * n; sun.color.copy(C_SUN).lerp(C_MOON, n);
+  hemi.intensity = .35 * (1 - n) + .06 * n + .25 * r * (1 - n);
+  if (renderer) renderer.toneMappingExposure = 1 - .38 * n - .12 * r * (1 - n);
+  scene.environment = n > .55 ? null : envTex;
+  _c1.copy(C_DAYSKY).lerp(C_RAINSKY, r).lerp(C_NIGHTSKY, n); dome.material.color.copy(_c1);
+  _c2.copy(HORIZON).lerp(C_RAINFOG, r).lerp(C_NIGHTFOG, n); scene.fog.color.copy(_c2); scene.background.copy(_c2); skirt.material.color.copy(_c2);
+  scene.fog.far = tier.far * (1 - .45 * r) * (1 - .35 * n);
+  roadMat.roughness = 1 - .55 * r; roadMat.color.setScalar(.73 - .25 * r); // ভেজা রাস্তা কালচে আর চকচকে
+  // বিদ্যুৎ চমক (রাতের বৃষ্টিতে)
+  if (r > .7 && Math.random() < dt * .05) { WX.flash = 1; setTimeout(() => sfx('thunder'), 400 + Math.random() * 1500); }
+  if (WX.flash > 0) { WX.flash = Math.max(0, WX.flash - dt * 3); hemi.intensity += WX.flash * 2.5 * (Math.random() < .6 ? 1 : 0); }
+  // হেডলাইট
+  const yaw = player ? player.rotation.y : 0, fz = carSize.z / 2;
+  headL.intensity = n * 2600 + r * 300; headL.position.set(S.x - Math.sin(yaw) * fz, 1.1, S.z - Math.cos(yaw) * fz); headL.target.position.set(S.x - Math.sin(yaw) * 40, 0, S.z - Math.cos(yaw) * 40);
+  if (lights.head) lights.head.emissiveIntensity = 2 + n * 6;
+  // বাতির আলো: রাস্তার বাতি, গাড়ির বাতি
+  const on = n > .05 || r > .3; glows.visible = on; lampPoles.visible = true;
+  const z0 = Math.floor(S.z / LAMP_GAP) * LAMP_GAP; for (let i = 0; i < LAMP_N; i++) { m4.makeTranslation(MED, -.3, z0 - (i - 1) * LAMP_GAP); lampPoles.setMatrixAt(i, m4); } lampPoles.instanceMatrix.needsUpdate = true;
+  pools.visible = n > .05; pools.material.opacity = n; if (pools.visible) { for (let i = 0; i < LAMP_N; i++) for (const sd of [0, 1]) { m4.makeTranslation(MED + (sd ? 5 : -5), .02, z0 - (i - 1) * LAMP_GAP); pools.setMatrixAt(i * 2 + sd, m4); } pools.instanceMatrix.needsUpdate = true; }
+  if (on) {
+    const P = glowGeo.attributes.position.array, Cc = glowGeo.attributes.color.array; let k = 0; const a = Math.max(n, r * .5);
+    const put = (x, y, z, cr, cg, cb) => { if (k >= GLOW_N) return; P[k * 3] = x; P[k * 3 + 1] = y; P[k * 3 + 2] = z; Cc[k * 3] = cr * a; Cc[k * 3 + 1] = cg * a; Cc[k * 3 + 2] = cb * a; k++; };
+    for (let i = 0; i < LAMP_N; i++) { const z = z0 - (i - 1) * LAMP_GAP; put(MED - 1.2, 8.75, z, 1, .82, .5); put(MED + 1.2, 8.75, z, 1, .82, .5); }
+    const F = fleet || {};
+    for (const c of S.cars) { if (c.z > S.z + 30 || c.z < S.z - 400) continue; const cf = F[c.type], hw = (cf ? cf.conf.w : 1.8) * .38, ty = cf ? cf.conf.tail || .9 : .9, hl = c.hl || 2.2;
+      if (c.wrong) { put(c.x - hw, .8, c.z - hl, 1, .95, .8); put(c.x + hw, .8, c.z - hl, 1, .95, .8); } else { put(c.x - hw, ty, c.z + hl, .9, .06, .03); put(c.x + hw, ty, c.z + hl, .9, .06, .03); } }
+    for (const c of S.opp) { if (c.z > S.z + 30 || c.z < S.z - 500) continue; const cf = F[c.type], hw = (cf ? cf.conf.w : 1.8) * .38, hl = c.hl || 2.2; put(c.x - hw, .85, c.z + hl, 1, .95, .82); put(c.x + hw, .85, c.z + hl, 1, .95, .82); }
+    for (; k < GLOW_N; k++) P[k * 3 + 1] = -999;
+    glowGeo.attributes.position.needsUpdate = true; glowGeo.attributes.color.needsUpdate = true;
+  }
+  // বৃষ্টি
+  rainL.visible = r > .03; rainMat.opacity = .45 * r;
+  if (rainL.visible) { const cx = cam.position.x, cy = cam.position.y, cz = cam.position.z, vz = S.v || 0;
+    for (let i = 0; i < RAIN_N; i++) { const o = i * 6; let y = rainPos[o + 1];
+      if (y < cy - 4 || y < -1) { const x = cx + rnd(-14, 14), z = cz + rnd(-34, 4); y = cy + rnd(0, 9); rainPos[o] = x; rainPos[o + 2] = z; }
+      y -= dt * 22; rainPos[o + 1] = y; rainPos[o + 2] += vz * dt * .9; rainPos[o + 3] = rainPos[o]; rainPos[o + 4] = y - .55; rainPos[o + 5] = rainPos[o + 2] - .25 - vz * .012; }
+    rainGeo.attributes.position.needsUpdate = true; }
+  if (cabin && cabin.wipers) { const t = performance.now() / 1000, on2 = r > .1, sw = on2 ? (1 - Math.cos(t * 3.4)) * .55 : 0; cabin.wipers[0].rotation.z = sw; cabin.wipers[1].rotation.z = sw; }
+  // বৃষ্টির শব্দ
+  if (ac && sndOn) { if (!rainSnd && r > .05) rainSnd = loopNoise('highpass', 1800, .4); if (rainSnd) rainSnd.g.gain.setTargetAtTime(.22 * r, ac.currentTime, .4); }
+}
 function loop(ts) {
   const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
   if (ready && S) {
@@ -1462,6 +1544,7 @@ function loop(ts) {
     world.position.z = Math.floor(S.z / SEG) * SEG; ground.position.set(Math.floor(S.x / 5) * 5, -.32, Math.floor(S.z / 5) * 5);
     dome.position.set(cam.position.x, 0, cam.position.z); skirt.position.x = cam.position.x; skirt.position.z = cam.position.z;
     sun.position.copy(SUN_DIR).multiplyScalar(80).add(v3.set(S.x, 0, S.z - 8)); sun.target.position.set(S.x, 0, S.z - 8);
+    if (S) wxStep(dt);
     drawTraffic(T0); drawTrees(); drawStopPeople(); drawPaxPeople(); smokeStep(dt); if (S.started && !S.over && (lifeHud.n = (lifeHud.n || 0) + 1) % 6 === 0) lifeHud();
     if (S.started && !S.over) { hud(); engineUpdate(S.crashed ? 0 : Math.abs(S.v), keys.b ? 0 : 1, S.crashed ? 0 : (S.skid || 0), !!S.nitroOn); }
     if (comT > 0 && (comT -= dt) <= 0) $('com').textContent = '';
@@ -1504,7 +1587,7 @@ function endRun() {
 }
 function start(level) {
   if (!ready) return; audio(); engineOn(); lv = level; store.set('kh-racer-lv', lv);
-  resetWorld(level); S.started = true; if (R.pax) loadWalkers(); S.nextKm = 5; ['startO', 'endO'].forEach(i => $(i).hidden = true); ['speedo', 'ctlL', 'ctlR', 'dist', 'keyhint', 'life'].forEach(i => $(i).hidden = false); applyCtl(); lifeHud(); drawMap(0); document.querySelector('.score').style.visibility = 'visible';
+  resetWorld(level); WX.nextKm = rnd(3, 5); WX.tn = WX.tr = 0; S.started = true; if (R.pax) loadWalkers(); S.nextKm = 5; ['startO', 'endO'].forEach(i => $(i).hidden = true); ['speedo', 'ctlL', 'ctlR', 'dist', 'keyhint', 'life'].forEach(i => $(i).hidden = false); applyCtl(); lifeHud(); drawMap(0); document.querySelector('.score').style.visibility = 'visible';
   cam.position.set(S.x, 2.6, S.z + 9); com('start'); sfx('go'); if (SIM) { S.v = 0; S.gear = 'D'; $('gearL').textContent = 'D'; pop('🚌 এক্সিলারেটর চেপে ধরে চালান'); } if (store.get('kh-racer-radio', false) && !radio) radioToggle();
 }
 document.querySelectorAll('[data-lv]').forEach(b => b.onclick = () => start(+b.dataset.lv));
@@ -1586,7 +1669,7 @@ function makeThumbs() {
 const paintBox = $('paint'); PAINTS.forEach(([c, n], i) => { const b = document.createElement('button'); b.style.background = c; b.title = n; b.setAttribute('aria-label', n); b.setAttribute('aria-pressed', String(i === store.get('kh-racer-paint', 1))); b.onclick = () => { store.set('kh-racer-paint', i); paintBox.querySelectorAll('button').forEach((x, j) => x.setAttribute('aria-pressed', String(i === j))); (lights.paint || []).forEach(m => m.color.set(c)); }; paintBox.appendChild(b); });
 
 /* ================= নিয়ন্ত্রণ আর সেটিংস ================= */
-const CFG = Object.assign({ mode: 'auto', hand: 'r', gfx: 'auto', cam: 'far' }, store.get('kh-racer-cfg', {}));
+const CFG = Object.assign({ mode: 'auto', hand: 'r', gfx: 'auto', cam: 'far', wx: 'auto' }, store.get('kh-racer-cfg', {}));
 if (!CFG.v2) { if (CFG.mode === 'btn') CFG.mode = 'auto'; CFG.v2 = 1; } // নতুন: গাড়ি বুঝে স্টিয়ারিং
 const saveCfg = () => store.set('kh-racer-cfg', CFG);
 const KM = { ArrowLeft: 'l', KeyA: 'l', ArrowRight: 'r', KeyD: 'r', ArrowDown: 'b', KeyS: 'b', Space: 'n', ArrowUp: 'n', KeyW: 'n', ShiftLeft: 'n' };
@@ -1640,10 +1723,10 @@ function applyGfx() {
   setTier(auto ? AUTO_TIER : GFX_FIX[CFG.gfx] ?? AUTO_TIER);
 }
 function drawSet() {
-  for (const [id, key] of [['sMode', 'mode'], ['sHand', 'hand'], ['sGfx', 'gfx'], ['sCam', 'cam']]) $(id).querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === CFG[key])));
+  for (const [id, key] of [['sMode', 'mode'], ['sHand', 'hand'], ['sGfx', 'gfx'], ['sCam', 'cam'], ['sWx', 'wx']]) $(id).querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === CFG[key])));
   $('sVol').value = Math.round(vol * 100); $('volT').textContent = sndOn ? bn(Math.round(vol * 100)) + '%' : '(বন্ধ)';
 }
-for (const [id, key] of [['sMode', 'mode'], ['sHand', 'hand'], ['sGfx', 'gfx'], ['sCam', 'cam']]) $(id).addEventListener('click', e => {
+for (const [id, key] of [['sMode', 'mode'], ['sHand', 'hand'], ['sGfx', 'gfx'], ['sCam', 'cam'], ['sWx', 'wx']]) $(id).addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return; CFG[key] = b.dataset.v; saveCfg(); drawSet(); sfx('click');
   if (key === 'mode' && CFG.mode === 'tilt') { tilt0 = null; askTilt(); } if (key === 'gfx') applyGfx(); applyCtl();
 });
@@ -1708,7 +1791,7 @@ async function saveScore(sc) {
 const MY_H = ['ভাই, সাইড দেন!', 'ডান লেন ফাঁকা করেন!', 'রসমালাই খাইতে কুমিল্লা যাইতেছি!', 'হর্ন শুনেন না নাকি?'];
 const OP_H = ['আস্তে চালান ভাই, জীবন একটাই!', 'এত তাড়া কিসের? প্লেন ধরবেন?', 'লেন মেনে চলেন!', 'পুলিশ সামনে, সাবধান!'];
 if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY_H, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP_H), 'M3', '🚌 পাশের ড্রাইভার', true), 2600); } });
-window.KHRacer = { dbg: { bend(x, y) { BEND.value.set(x, y); bendTo.set(x, y); bendLeft = 1e9; }, place(bz, cz) { bazaar.position.z = S.z + bz; culvert.position.z = S.z + cz; } }, dbgAudio: () => ({ state: ac && ac.state, eng: !!eng, master: master && master.gain.value, out: eng && eng.out.gain.value, road: eng && eng.road.g.gain.value }), get S() { return S; }, setRide, _scene: scene, _r: renderer, get ready() { return ready; }, start, keys, carSize, get tier() { return tier.name; }, get fleet() { return fleet; }, addTyped(type, x, dz, v) { const c = spawnCar(S, true); if (c && fleet[type]) { const F = fleet[type]; Object.assign(c, { type, kind: F.conf.kind, hl: F.size.z / 2, hw: Math.min(F.size.x, F.conf.w + .25) / 2, x, tx: x, z: S.z + dz, v, want: v, chT: 99 }); } return !!c; }, addCar(dx, dz, v) { const c = spawnCar(S, true); if (c) { c.x = c.tx = S.x + dx; c.z = S.z + dz; c.v = c.want = v; c.chT = 99; } return !!c; }, tick: n => { for (let i = 0; i < n; i++) if (S && S.started && !S.over) step(1 / 60); } };
+window.KHRacer = { dbg: { bend(x, y) { BEND.value.set(x, y); bendTo.set(x, y); bendLeft = 1e9; }, place(bz, cz) { bazaar.position.z = S.z + bz; culvert.position.z = S.z + cz; } }, dbgAudio: () => ({ state: ac && ac.state, eng: !!eng, master: master && master.gain.value, out: eng && eng.out.gain.value, road: eng && eng.road.g.gain.value }), get S() { return S; }, setRide, WX, _scene: scene, _r: renderer, get ready() { return ready; }, start, keys, carSize, get tier() { return tier.name; }, get fleet() { return fleet; }, addTyped(type, x, dz, v) { const c = spawnCar(S, true); if (c && fleet[type]) { const F = fleet[type]; Object.assign(c, { type, kind: F.conf.kind, hl: F.size.z / 2, hw: Math.min(F.size.x, F.conf.w + .25) / 2, x, tx: x, z: S.z + dz, v, want: v, chT: 99 }); } return !!c; }, addCar(dx, dz, v) { const c = spawnCar(S, true); if (c) { c.x = c.tx = S.x + dx; c.z = S.z + dz; c.v = c.want = v; c.chT = 99; } return !!c; }, tick: n => { for (let i = 0; i < n; i++) if (S && S.started && !S.over) step(1 / 60); } };
 </script>
 <script src="/js/update.js"></script>
 </body></html>
