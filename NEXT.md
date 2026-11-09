@@ -1,6 +1,13 @@
-# খেলাঘর: পরের সেশনের হ্যান্ডঅফ (শেষ হালনাগাদ ৯ নভেম্বর ২০২৬)
+# খেলাঘর: পরের সেশনের হ্যান্ডঅফ (শেষ হালনাগাদ ১০ নভেম্বর ২০২৬)
 
 নতুন সেশন খুলে আগে এই ফাইলটা পুরো পড়ুন। সাইট: https://khelaghorbd.online (Vercel, শুধু `main` ব্রাঞ্চ থেকে বানায়)।
+
+## ▶️ এখান থেকে শুরু (নতুন সেশন)
+- মালিক বলেছেন: জায়গা/স্মৃতি ভরে গেলে এই ফাইলের তথ্য নিয়ে নতুন সেশনে কাজ চালু রাখতে হবে। কিছু জিজ্ঞেস না করে সরাসরি পরের কাজ ধরুন।
+- **চলমান কাজ:** হাবের "আসছে" গেমগুলো সিরিয়ালে বানানো (৩৮ নম্বর অংশে পুরো ক্রম)। হয়েছে: কানামাছি। **পরেরটা: ডাংগুলি**, তারপর লাটিম, মার্বেল…। একটা শেষ করে push, তারপর পরেরটা।
+- প্রতিটা নতুন গেম: js/kh-shell.js + css/kh-game.css + (দরকারে) js/kh-people.js দিয়ে লিখুন (games/kanamachi/index.html নমুনা); Poly Haven-এর CC0 টেক্সচার/মডেল ছোট করে games/<key>/assets-এ; Playwright-এ বট দিয়ে খেলে দেখা; `python3 tools/add-game.py <key> "<নাম>" "<ইমোজি>" "<ছোট নাম>" "<কতজন>"`; js/howto.js আর help/index.html-এ নিয়ম; icons/shots/<key>.webp আর icons/og/<key>.jpg (খেলা থেকে তোলা ছবি); `python3 tools/check-inline-comments.py`; sw.js সংস্করণ বাড়ানো; NEXT.md; push (আগে `git fetch origin main` করে লাইভ স্কোর সেশনের কাজ মিলিয়ে নিন, সংস্করণ ওদের চেয়ে বড় রাখুন)।
+- লাইভ স্কোর/খেলাধুলা ছোঁবেন না (আরেক সেশন)। মালিকের হাতের কাজ ৪ নম্বর অংশে, জিজ্ঞেস করলে ধাপে ধাপে বলবেন।
+- চালানোর যন্ত্রপাতি: scratchpad-এ npm i @gltf-transform/core@4 @gltf-transform/extensions@4 @gltf-transform/functions@4 meshoptimizer sharp; বাংলা ফন্ট (ছবিতে লেখার জন্য) raw.githubusercontent.com/google/fonts/main/ofl/balooda2/BalooDa2[wght].ttf আর notofonts NotoSansBengali। পরীক্ষার সার্ভার: `python3 -m http.server 8811`।
 
 ---
 
