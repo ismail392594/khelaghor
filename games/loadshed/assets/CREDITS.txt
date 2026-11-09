@@ -1,0 +1,15 @@
+লোডশেডিং সারভাইভাল: অ্যাসেটের উৎস (সব CC0, Poly Haven https://polyhaven.com)
+  fan.glb ........ ceiling_fan
+  hurricane.glb .. vintage_oil_lamp
+  clock.glb ...... wall_clock
+  bed.glb ........ vintage_day_bed
+  table.glb ...... painted_wooden_table
+  chair.glb ...... plastic_monobloc_chair_01
+  jug.glb ........ jug_01
+  shelf.glb ...... wooden_bookshelf_worn
+  pillows.glb .... throw_pillows_01
+  torch.glb ...... vintage_flashlight
+  cabinet.glb .... painted_wooden_cabinet
+  floor_*.jpg .... floor_tiles_08
+  দেয়াল: /games/jam/assets/plaster_* (painted_plaster_wall)
+সব মডেল tools/racer-prop-asset.mjs দিয়ে ছোট করা (পাখা, হারিকেন, ঘড়ি KEEP=1: আলাদা নোড রেখে)।
