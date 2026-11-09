@@ -9,7 +9,8 @@ export const FLEET = {
   hiace:      { name: 'হায়েস মাইক্রোবাস', len: 4.84, flip: false, kind: 'van', tail: .95, w: 1.7 },
   hilux:      { name: 'হাইলাক্স পিকআপ', len: 5.3, flip: false, kind: 'car', tail: .95, w: 1.85 },
   bus_hino:   { name: 'হিনো বাস', len: 11.5, flip: true, kind: 'bus', tail: 1.1, w: 2.5 },
-  bus_coach:  { name: 'দূরপাল্লার কোচ', len: 12, flip: true, kind: 'bus', tail: 1.1, w: 2.5 },
+  bus_coach:  { name: 'দূরপাল্লার এসি কোচ', len: 12.2, flip: true, kind: 'bus', tail: 1.1, w: 2.5, livery: true },
+  bus_aero:   { name: 'হুন্দাই এসি কোচ', len: 12, flip: true, kind: 'bus', tail: 1.1, w: 2.5 },
   bus_mini:   { name: 'লোকাল মিনিবাস', len: 7.2, flip: true, kind: 'bus', tail: 1, w: 2.2 },
   truck_al:   { name: 'অশোক লেল্যান্ড ট্রাক', len: 7.2, flip: true, kind: 'truck', tail: .95, w: 2.35 },
   truck_tata: { name: 'টাটা ট্রাক', len: 7.6, flip: true, kind: 'truck', tail: .95, w: 2.35 },
@@ -18,9 +19,9 @@ export const FLEET = {
   rickshaw:   { name: 'রিকশা', len: 2.6, flip: true, kind: 'rickshaw', tail: 0, w: 1.15 },
   easybike:   { name: 'ইজিবাইক', len: 2.75, flip: false, kind: 'easy', tail: .6, w: 1.1, tint: '#2f7d5b' }
 };
-export const HIGHWAY = ['corolla', 'noah', 'hiace', 'hilux', 'bus_hino', 'bus_coach', 'bus_mini', 'truck_al', 'truck_tata', 'cng', 'moto'];
+export const HIGHWAY = ['corolla', 'noah', 'hiace', 'hilux', 'bus_hino', 'bus_coach', 'bus_aero', 'bus_mini', 'truck_al', 'truck_tata', 'cng', 'moto'];
 export const HIGHWAY_LITE = ['corolla', 'noah', 'hiace', 'bus_mini', 'truck_tata', 'cng']; // দুর্বল ফোনে কম ডাউনলোড
-export const CREDIT_HTML = 'গাড়ি, বাস, ট্রাক, সিএনজি: Sketchfab-এর শিল্পীরা (ItsDiyor, Nieve5677, DisneyCars, BHP3D, taeemtasbi, rmxdesignz, 119100, asrafullislamsiam, eriklys, Shivang Jindal), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0</a>, বিস্তারিত <a href="/assets/vehicles/CREDITS.txt" target="_blank" rel="noopener">এখানে</a>';
+export const CREDIT_HTML = 'গাড়ি, বাস, ট্রাক, সিএনজি: Sketchfab-এর শিল্পীরা (ItsDiyor, Nieve5677, DisneyCars, BHP3D, taeemtasbi, agungkuncoro13021986, ImperialBlue3D, 119100, asrafullislamsiam, eriklys, Shivang Jindal), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0</a>, বিস্তারিত <a href="/assets/vehicles/CREDITS.txt" target="_blank" rel="noopener">এখানে</a>';
 
 function toFloat(THREE, g, withColor) {
   const out = new THREE.BufferGeometry(), n = g.attributes.position.count;
