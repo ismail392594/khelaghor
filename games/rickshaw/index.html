@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>রিকশা ভাড়া দরদাম · খেলাঘর</title>
+<meta name="description" content="মামা, যাবেন? রিকশাওয়ালার সাথে দরদাম করে ন্যায্য ভাড়ায় রাজি করান। বেশি টানাটানি করলে মামা কিন্তু চলে যাবে!">
+<link rel="canonical" href="https://khelaghorbd.online/games/rickshaw/">
+<meta property="og:title" content="রিকশা ভাড়া দরদাম · খেলাঘর">
+<meta property="og:description" content="মামা, ৮০ টাকা? ৫০ দিবো! দরদামে কে জেতে দেখি!">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/rickshaw.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/rickshaw.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+:root{--accent:#a3e635}
+.bub{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:3;width:min(92%,380px);background:#fff;color:#111;border-radius:16px;padding:10px 14px;font-weight:700;font-size:.95rem;line-height:1.4;box-shadow:0 8px 22px rgba(0,0,0,.4)}
+.bub small{display:block;color:#6b7280;font-size:.72rem}
+.mood{position:absolute;right:12px;top:118px;z-index:3;background:rgba(0,0,0,.55);border-radius:10px;padding:5px 9px;font-size:.74rem;font-weight:700;pointer-events:none}
+.mood i{display:block;height:6px;border-radius:6px;background:rgba(255,255,255,.15);margin-top:3px;overflow:hidden}.mood i em{display:block;height:100%;background:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e)}
+.deal{display:flex;flex-direction:column;gap:6px;width:100%}
+.deal .row{display:flex;gap:6px;align-items:center;justify-content:center}
+.deal .row button{border:0;border-radius:10px;padding:9px 10px;font:800 .95rem var(--body);background:#1c222b;color:#fff;border:1px solid #2b3550;cursor:pointer;min-width:52px}
+.deal .offer{font:800 1.6rem var(--display);min-width:96px;text-align:center;color:#a3e635}
+.deal .row .go{background:#1f9d55;border-color:#1f9d55;flex:1}.deal .row .ok{background:#2563eb;border-color:#2563eb;flex:1}.deal .row .walk{background:#7f1d1d;border-color:#7f1d1d;flex:1}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="saved">৳০</b><small>মোট বাঁচানো · যাত্রা <span id="trip">১</span>/৫</small></div>
+    <div class="stat r"><b id="tm">০</b><small>দেরি (মিনিট)</small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas class="cv" id="cv"></canvas>
+    <div class="bub" id="bub" hidden></div>
+    <div class="mood" id="mood" hidden>মামার মেজাজ<i><em id="moodI"></em></i></div>
+    <div class="say" id="say" hidden></div>
+    <div class="chost" id="chatHost"></div>
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>রিকশা ভাড়া দরদাম</h1>
+        <p class="story">অফিস যাওয়ার তাড়া, মোড়ে রিকশা দাঁড়িয়ে। "মামা, যাবেন?" শুরু হলো ঢাকার সবচেয়ে পুরনো খেলা: দরদাম!</p>
+        <div class="rules">
+          <div>💬 মামা প্রথমে বেশি চাইবে। <b>−/+</b> দিয়ে আপনার দাম ঠিক করে <b>"বলি"</b> চাপুন। ন্যায্য দামে রাজি হলে যাত্রা শুরু।</div>
+          <div>😤 বেশি কম বললে বা বারবার টানাটানি করলে মামার মেজাজ খারাপ হয়, একসময় চলে যাবে, আর পরের রিকশা খুঁজতে দেরি হবে।</div>
+          <div>🚶 <b>"অন্য রিকশা দেখি"</b> চাপলে কখনো মামা পেছন থেকে ডাকে আর দাম কমায়, কখনো সত্যিই চলে যায়!</div>
+          <div>🏆 ৫টা যাত্রায় যত টাকা বাঁচাবেন আর যত কম দেরি, তত পয়েন্ট।</div>
+        </div>
+        <div class="lvl">
+          <button data-lv="0">সরল মামা<small>সহজে রাজি</small></button>
+          <button data-lv="1">ঢাকার মামা<small>মাঝারি</small></button>
+          <button data-lv="2">বৃষ্টির দিন<small>দাম আকাশছোঁয়া</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">রিকশা: Sketchfab-এর শিল্পী (<a href="/assets/vehicles/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। মানুষ: Renderpeople (CC-BY 4.0)। দেয়াল, পিচ, আকাশ: Poly Haven (CC0)।</p>
+      </div>
+    </div>
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">দিন শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eV">৳০</b><span>বাঁচানো</span></div><div><b id="eL">০</b><span>দেরি (মিনিট)</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার দরদাম</button><button class="gbtn ghost" id="menuBtn">মামা বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">🛺</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+  <div class="ctl"><div class="deal" id="deal"><div class="row"><button id="m10">−১০</button><button id="m5">−৫</button><span class="offer" id="offer">৳০</span><button id="p5">+৫</button><button id="p10">+১০</button></div><div class="row"><button class="go" id="goB">💬 এই দাম বলি</button><button class="ok" id="okB">✅ মামার দামে রাজি</button><button class="walk" id="walkB">🚶 অন্য রিকশা</button></div></div></div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { GLTFLoader } from "/js/vendor/addons/GLTFLoader.js";
+import { MeshoptDecoder } from "/js/vendor/addons/meshopt_decoder.module.js";
+import { clone as cloneSkinned } from "/js/vendor/addons/SkeletonUtils.js";
+import { TIERS, detectTier } from "/js/kh-quality.js";
+import { loadPeople } from "/js/kh-people.js";
+import { loadFleet } from "/js/kh-vehicles.js";
+import { gameShell, sound, bn, pick, rnd, clamp } from "/js/kh-shell.js";
+
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'rickshaw', name: 'রিকশা ভাড়া দরদাম', lbTitle: 'সেরা দরদামবাজ', offMsg: 'আজ রিকশা ধর্মঘট! একটু পরে আসেন।' });
+const SND = sound(SH);
+const TIER = TIERS[detectTier()], LOW = TIER.id <= 1;
+let renderer = null; try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' }); } catch (e) {}
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(55, 1, .05, 300);
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.shadowMap.enabled = !LOW; }
+const ANISO = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1, texL = new THREE.TextureLoader(), RA = '/games/racer/assets/', JA = '/games/jam/assets/';
+const tex = (u, srgb, rx, ry) => { const t = texL.load(u); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; t.repeat.set(rx, ry ?? rx); return t; };
+const skyT = texL.load(RA + 'sky.jpg'); skyT.colorSpace = THREE.SRGBColorSpace;
+const skyG = new THREE.SphereGeometry(200, 32, 16); skyG.scale(-1, 1, 1); const skyM = new THREE.MeshBasicMaterial({ map: skyT, fog: false, toneMapped: false }); scene.add(new THREE.Mesh(skyG, skyM));
+scene.fog = new THREE.Fog('#c9c4b8', 30, 120);
+const hemi = new THREE.HemisphereLight('#fff0d6', '#5a5040', 1.1); scene.add(hemi);
+const sun = new THREE.DirectionalLight('#ffe2b4', 2.2); sun.position.set(-8, 14, 6); sun.castShadow = !LOW; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -8, right: 8, top: 8, bottom: -8 }); scene.add(sun);
+const asph = ['asphalt_diff.jpg', 'asphalt_nor.jpg'].map((f, i) => tex(RA + f, i === 0, 6, 20));
+const road = new THREE.Mesh(new THREE.PlaneGeometry(24, 80), new THREE.MeshStandardMaterial({ map: asph[0], normalMap: asph[1], color: '#bbb', roughness: 1 })); road.rotation.x = -Math.PI / 2; road.receiveShadow = true; scene.add(road);
+const walkT = ['walk_diff.jpg', 'walk_nor.jpg'].map((f, i) => tex(JA + f, i === 0, 2, 40));
+const walk = new THREE.Mesh(new THREE.PlaneGeometry(4, 80), new THREE.MeshStandardMaterial({ map: walkT[0], normalMap: walkT[1], color: '#d8d2c8', roughness: 1 })); walk.rotation.x = -Math.PI / 2; walk.position.set(-5, .15, 0); walk.receiveShadow = true; scene.add(walk);
+const plaster = ['plaster_diff.jpg', 'plaster_nor.jpg'].map((f, i) => tex(JA + f, i === 0, 2, 2));
+const SHOPS = ['চা-বিস্কুট', 'মায়ের দোয়া স্টোর', 'লাইফ কেয়ার ফার্মেসি', 'মোবাইল রিচার্জ', 'কাচ্চি ঘর', 'স্টাইল সেলুন'];
+const signTex = (t, col) => { const c = document.createElement('canvas'); c.width = 512; c.height = 96; const x = c.getContext('2d'); x.fillStyle = col; x.fillRect(0, 0, 512, 96); x.fillStyle = '#fff'; x.font = "800 52px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(t, 256, 52); const tt = new THREE.CanvasTexture(c); tt.colorSpace = THREE.SRGBColorSpace; return tt; };
+for (let i = 0; i < 8; i++) { const g = new THREE.Group(), h = rnd(9, 15), w = rnd(7, 9); const b = new THREE.Mesh(new THREE.BoxGeometry(5, h, w), new THREE.MeshStandardMaterial({ map: plaster[0], normalMap: plaster[1], color: pick(['#e8dcc6', '#d9c7a8', '#c9d6cf', '#e3c9b8']), roughness: .95 })); b.position.y = h / 2; g.add(b);
+  const sg = new THREE.Mesh(new THREE.PlaneGeometry(w * .85, w * .85 * 96 / 512), new THREE.MeshBasicMaterial({ map: signTex(SHOPS[i % SHOPS.length], pick(['#b91c1c', '#15803d', '#1d4ed8', '#7c2d12'])) })); sg.rotation.y = Math.PI / 2; sg.position.set(2.55, 3.2, 0); g.add(sg);
+  g.position.set(-9.5, 0, 20 - i * 8.5); scene.add(g); }
+// রিকশা আর মামা
+let RICK = null, MAMA = null, PEOPLE = null; const rgroup = new THREE.Group(); scene.add(rgroup); rgroup.position.set(-1.6, 0, -3.2);
+loadFleet(THREE, new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), ['rickshaw']).then(f => { const F = f.rickshaw; const g = new THREE.Group(); F.parts.forEach(p => { const m = new THREE.Mesh(p.geo, p.mat); m.castShadow = true; g.add(m); }); g.rotation.y = Math.PI / 2.4; rgroup.add(g); RICK = g; }).catch(() => {});
+loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned).then(P => { PEOPLE = P; newMama(); }).catch(() => {});
+function newMama() { if (!PEOPLE) return; if (MAMA) rgroup.remove(MAMA.root); MAMA = PEOPLE.make(pick([0, 3]), { scale: .96, shadow: !LOW }); MAMA.root.position.set(1.1, 0, 1.0); MAMA.root.rotation.y = .5; rgroup.add(MAMA.root); }
+
+const SFX = {
+  bell() { [2350, 3420].forEach((f, i) => SND.tone(f, .3, 'sine', .15 / (i + 1))); SND.tone(2350, .3, 'sine', .12, 0, .16); },
+  click() { SND.tone(900, .04, 'square', .05); },
+  yes() { [659, 784, 988].forEach((f, i) => SND.tone(f, .14, 'triangle', .22, 0, i * .08)); },
+  huh() { SND.tone(300, .25, 'sawtooth', .08, 200); },
+  angry() { SND.noise(.3, .4, 600); SND.tone(160, .4, 'sawtooth', .12, 100); },
+  step() { for (let i = 0; i < 4; i++) SND.noise(.05, .3, 500, 'lowpass', i * .3); }
+};
+const DESTS = [['নিউ মার্কেট', 1.5], ['ধানমন্ডি ২৭', 2.2], ['মোহাম্মদপুর বাসস্ট্যান্ড', 3.0], ['ফার্মগেট', 2.6], ['কলাবাগান', 1.2], ['সায়েন্স ল্যাব', 1.8], ['লালবাগ কেল্লা', 3.4], ['শাহবাগ', 2.4]];
+const LV = [{ n: 'সরল মামা', mark: [1.4, 1.8], min: [.85, 1.0], pat: [4, 5], back: .7 }, { n: 'ঢাকার মামা', mark: [1.6, 2.2], min: [.95, 1.1], pat: [3, 4], back: .5 }, { n: 'বৃষ্টির দিন', mark: [2.0, 2.8], min: [1.15, 1.35], pat: [2, 3], back: .35 }];
+const ASK = ['{p} টাকা দিবেন।', 'মামা, {p} টাকা। এক টাকাও কম না!', 'রাস্তায় জ্যাম মামা, {p} লাগবো।', '{p} দেন, আরামে নিয়া যামু।'];
+const COUNTER = ['এত কম! আচ্ছা {p} দেন।', 'না মামা পোষায় না, {p}।', 'তেলের দাম বাড়ছে না? {p} টাকা।', 'আপনার জন্য {p}, শেষ কথা।'];
+const ANGRY = ['যান যান, হাইটা যান!', 'এই দামে রিকশা হয় না মামা!', 'আপনার মত প্যাসেঞ্জার লাগবো না!'];
+const AGREE = ['আচ্ছা উঠেন, চলেন!', 'ঠিক আছে মামা, উঠেন।', 'হইছে, চলেন।'];
+let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0;
+function newGame() { S = { trip: 0, saved: 0, late: 0, over: false, started: false, deals: [] }; hud(); }
+function say(t, col) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, 1400); }
+function pop(t, cls) { const e = document.createElement('div'); e.className = 'pop ' + (cls || ''); e.textContent = t; $('stage').appendChild(e); setTimeout(() => e.remove(), 1100); }
+function hud() { $('saved').textContent = '৳' + bn(Math.round(S.saved)); $('trip').textContent = bn(Math.min(5, S.trip + 1)); $('tm').textContent = bn(S.late); }
+const r5 = v => Math.round(v / 5) * 5;
+function mamaSay(t, voice) { $('bub').hidden = false; $('bub').innerHTML = '<small>🧔 রিকশাওয়ালা মামা</small>' + t; if (voice && window.KHVoice) window.KHVoice.say(t.replace(/<[^>]+>/g, ''), true, 'M3'); }
+function newTrip() {
+  const L = LV[lv], [d, km] = pick(DESTS); S.dest = d; S.fair = r5(20 + km * 18); S.ask = r5(S.fair * rnd(...L.mark)); S.min = r5(S.fair * rnd(...L.min)); S.pat = Math.round(rnd(...L.pat)); S.first = S.ask; S.offer = r5(S.fair * .7); S.phase = 'deal'; S.walks = 0;
+  newMama(); SFX.bell(); $('mood').hidden = false; mood();
+  mamaSay(`"${d}" যাবেন? ${pick(ASK).replace('{p}', '<b>৳' + bn(S.ask) + '</b>')}`, true); offerUI(); setBtns(true);
+}
+function mood() { $('moodI').style.width = clamp(S.pat / 5 * 100, 5, 100) + '%'; }
+function offerUI() { $('offer').textContent = '৳' + bn(S.offer); }
+function setBtns(on) { document.querySelectorAll('#deal button').forEach(b => b.disabled = !on); }
+function adj(d) { if (!S || S.phase !== 'deal') return; SND.ac; S.offer = clamp(S.offer + d, 10, S.ask); offerUI(); SFX.click(); }
+function offer() {
+  if (!S || S.phase !== 'deal') return; SND.ac; const o = S.offer;
+  if (o >= S.min) return agree(o);
+  const insult = o < S.min * .6; S.pat -= insult ? 2 : 1; mood();
+  if (S.pat <= 0) return leave();
+  S.ask = Math.max(S.min, r5(S.ask - (S.ask - o) * rnd(.25, .5))); SFX.huh(); mamaSay(insult ? 'কী কন মামা! এই দামে হাইটা যান! ' + pick(COUNTER).replace('{p}', '<b>৳' + bn(S.ask) + '</b>') : pick(COUNTER).replace('{p}', '<b>৳' + bn(S.ask) + '</b>'), true);
+}
+function acceptAsk() { if (!S || S.phase !== 'deal') return; SND.ac; agree(S.ask); }
+function walkAway() {
+  if (!S || S.phase !== 'deal') return; SND.ac; SFX.step(); S.walks++; setBtns(false); mamaSay('…', false);
+  setTimeout(() => { if (Math.random() < LV[lv].back / S.walks && S.ask > S.min) { S.ask = Math.max(S.min, r5((S.ask + S.min) / 2)); mamaSay(`এই মামা! আসেন আসেন, <b>৳${bn(S.ask)}</b> দিয়েন!`, true); say('কাজ হয়েছে! মামা ডাকছে 😏', '#86efac'); setBtns(true); }
+    else { mamaSay('হুহ! (মামা চলে গেল)', false); S.late += 3; pop('নতুন রিকশা খুঁজতে +৩ মিনিট', 'bad'); hud(); S.phase = 'wait'; setTimeout(() => { if (!S.over) newTrip(); }, 1400); } }, 1300);
+}
+function leave() { SFX.angry(); mamaSay(pick(ANGRY), true); S.late += 4; pop('মামা রেগে চলে গেল! +৪ মিনিট', 'bad'); hud(); S.phase = 'wait'; setBtns(false); setTimeout(() => { if (!S.over) newTrip(); }, 1700); }
+function agree(p) {
+  S.phase = 'ride'; setBtns(false); SFX.yes(); const save = S.first - p, fairD = p - S.fair; S.saved += save; S.deals.push({ p, fair: S.fair, first: S.first });
+  mamaSay(pick(AGREE) + ` <b>৳${bn(p)}</b>`, true); say(fairD <= 0 ? 'দারুণ দরদাম! 🎉' : fairD < 15 ? 'ঠিকঠাক দাম 👍' : 'একটু বেশি দিলেন 😅', fairD <= 0 ? '#86efac' : '#fde68a'); pop('বাঁচালেন ৳' + bn(save), 'good'); hud();
+  S.rideT = 2.6; S.trip++; setTimeout(() => { if (S.trip >= 5) endGame(); else newTrip(); }, 2800);
+}
+const TIPS = ['জানেন কি? দরদামের আগে মোটামুটি ন্যায্য ভাড়া জেনে নিন: ঢাকায় সাধারণত প্রথম কিলোমিটারে বেশি, পরে কম।', 'জানেন কি? রিকশাচালকেরা রোদ-বৃষ্টিতে কঠিন পরিশ্রম করেন; ন্যায্য দাম দিন আর সম্মান দিয়ে কথা বলুন।', 'জানেন কি? দরদামে শান্ত থেকে যুক্তি দিয়ে কথা বললে দুজনেই খুশি থাকে, এটাকেই বলে "উইন-উইন"।'];
+function endGame() {
+  if (S.over) return; S.over = true; $('bub').hidden = true; $('mood').hidden = true; const fairOK = S.deals.filter(d => d.p <= d.fair + 10).length;
+  const sc = Math.max(0, Math.round(S.saved * 8 + fairOK * 80 - S.late * 25 + lv * 100));
+  $('endT').textContent = `৫ যাত্রায় বাঁচালেন ৳${bn(Math.round(S.saved))}!`;
+  const titles = [[1600, 'দরদাম সম্রাট 👑'], [1100, 'ঢাকার পাকা যাত্রী'], [650, 'হিসাবি মানুষ'], [300, 'নরম মনের যাত্রী'], [0, 'মামার প্রিয় প্যাসেঞ্জার']];
+  $('endTitle').textContent = titles.find(x => sc >= x[0])[1];
+  $('endLine').textContent = `${bn(fairOK)}টা যাত্রা ন্যায্য দামে, রিকশা খুঁজতে মোট ${bn(S.late)} মিনিট দেরি।`;
+  $('eS').textContent = bn(sc); $('eV').textContent = '৳' + bn(Math.round(S.saved)); $('eL').textContent = bn(S.late); $('eTip').textContent = pick(TIPS);
+  setTimeout(() => { $('endO').hidden = false; if (sc >= 1100 && window.KHViral) KHViral.confetti(); }, 500);
+  SH.saveScore(sc); lastScore = sc;
+}
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 66 : 50; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+function loop(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  if (MAMA) MAMA.update(dt, false);
+  if (S && S.phase === 'ride' && S.rideT > 0) { S.rideT -= dt; rgroup.position.z -= dt * 3; } else if (S && S.phase === 'deal') rgroup.position.z += (-3.2 - rgroup.position.z) * Math.min(1, dt * 4);
+  if (lv === 2 && S && S.started) { hemi.intensity = .7; skyM.color.set('#8a929a'); } else { hemi.intensity = 1.1; skyM.color.set('#fff'); }
+  const port = W / H < .8; cam.position.set(port ? .2 : .4, 1.6, port ? 1.4 : .9); cam.lookAt(-1.2, 1.1, -3.4);
+  if (renderer) renderer.render(scene, cam);
+  requestAnimationFrame(loop);
+}
+function start(level) { lv = level; newGame(); S.started = true; ['startO', 'endO'].forEach(i => $(i).hidden = true); SND.ac; newTrip(); }
+[['m10', -10], ['m5', -5], ['p5', 5], ['p10', 10]].forEach(([id, d]) => $(id).addEventListener('pointerdown', e => { e.preventDefault(); adj(d); }));
+$('goB').onclick = offer; $('okB').onclick = acceptAsk; $('walkB').onclick = walkAway;
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = e => { e.stopPropagation(); start(+b.dataset.lv); });
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `রিকশা ভাড়া দরদামে ৫ যাত্রায় ৳${bn(Math.round(S ? S.saved : 0))} বাঁচিয়েছি, ${bn(lastScore)} পয়েন্ট! 🛺 মামা, যাবেন? ${location.origin}/games/rickshaw/`; try { navigator.clipboard.writeText(t).then(() => pop('কপি হয়েছে, শেয়ার করুন!', 'good')); } catch (e) {} };
+newGame(); resize(); setBtns(false); last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+window.KHG = { get S() { return S; }, start, adj, offer, acceptAsk, walkAway };
+</script>
+<script src="/js/update.js"></script>
+</body></html>
