@@ -43,7 +43,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .lrow{display:flex;gap:8px;align-items:center;margin-top:5px;font-weight:700;font-size:.8rem}.lrow b{font-family:var(--display);font-size:1rem;color:#fde68a}
 .lrow button{margin-left:auto;border:0;border-radius:9px;padding:4px 8px;font:800 .72rem var(--display);background:#f59e0b;color:#2a1a08;cursor:pointer}
 @keyframes pulse{to{filter:brightness(1.3)}}
-.stopHint{position:absolute;left:50%;top:calc(150px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:3;background:rgba(18,62,138,.88);color:#fff;font-weight:800;font-size:.86rem;padding:6px 14px;border-radius:12px;pointer-events:none;text-align:center;max-width:90vw}
+.stopHint{position:absolute;left:50%;top:calc(232px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:3;background:rgba(18,62,138,.88);color:#fff;font-weight:800;font-size:.86rem;padding:6px 14px;border-radius:12px;pointer-events:none;text-align:center;max-width:90vw}
 .stopHint .bar{height:6px;border-radius:6px;background:rgba(255,255,255,.25);margin-top:4px;overflow:hidden}.stopHint .bar i{display:block;height:100%;background:#4ade80}
 .dist svg{width:84px;height:84px;flex:none;border-radius:8px;background:rgba(0,0,0,.25)}.dist svg text{font:700 7px 'Noto Sans Bengali',sans-serif;fill:#fff;paint-order:stroke;stroke:rgba(0,0,0,.6);stroke-width:1.5px}
 .dist small{display:block;font-size:.66rem;color:#bfe8c9;margin-top:2px}
@@ -111,6 +111,9 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .paint button{width:34px;height:34px;border-radius:50%;border:3px solid transparent;cursor:pointer;box-shadow:inset -4px -5px 8px rgba(0,0,0,.35),0 2px 4px rgba(0,0,0,.5)}
 .paint button[aria-pressed="true"]{border-color:#fff;transform:scale(1.12)}
 .paint small{font-weight:700;color:var(--muted);font-size:.78rem}
+.seg button small{display:block;font-weight:600;font-size:.66rem;opacity:.8}
+.pd.nit.gas{background:linear-gradient(180deg,#4ade80,#15803d)}
+.pd.gear{width:52px;height:64px;align-self:flex-end;background:linear-gradient(180deg,#334155,#0f172a);font-size:1.3rem}.pd.gear b{font-size:.62rem}
 .pick{font-weight:700;color:var(--fg)!important;text-align:left}.pick small{color:var(--muted);font-weight:600}
 .card>*{flex-shrink:0}
 .rides{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
@@ -155,6 +158,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
       <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
       <div class="score"><b id="sc">০</b><small id="scL">পয়েন্ট</small><div><span class="combo" id="combo" hidden></span></div></div>
       <button class="hb" id="horn" aria-label="হর্ন" style="font-size:1.15rem">📯</button>
+      <button class="hb" id="radioB" aria-label="বাংলা গানের রেডিও" style="font-size:1.05rem">📻</button>
       <button class="hb" id="camB" aria-label="ক্যামেরা বদলান" style="font-size:1.05rem">🎥</button>
       <button class="hb" id="setB" aria-label="সেটিংস"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.6 7.6 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.6 7.6 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.6 7.6 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.6 7.6 0 0 0 1.7-1l2.5 1 2-3.5zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg></button>
       <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
@@ -172,7 +176,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
         <circle class="trk" cx="60" cy="60" r="50" stroke-dasharray="235.6 314.2"/><circle class="arc" id="gArc" cx="60" cy="60" r="50" stroke-dasharray="0 314.2"/><circle class="narc" id="nArc" cx="60" cy="60" r="41" stroke-dasharray="0 257.6"/></svg>
       <div><b id="kmh">০</b><small>কিমি/ঘণ্টা</small><em id="gearT">গিয়ার ১</em></div>
     </div>
-    <div class="keyhint" id="keyhint" hidden>← → সরানো · ↓ ব্রেক · স্পেস নাইট্রো · H হর্ন · Esc বিরতি</div>
+    <div class="keyhint" id="keyhint" hidden>← → স্টিয়ারিং · ↓ ব্রেক · ↑/স্পেস নাইট্রো বা এক্সিলারেটর · G গিয়ার · C ক্যামেরা · M রেডিও · R মেরামত · H হর্ন</div>
     <div class="ctl l" id="ctlL" hidden>
       <div class="swheel" id="swheel" aria-label="স্টিয়ারিং ঘোরান"><svg viewBox="0 0 120 120" id="swSvg"><defs><radialGradient id="swG" cx=".5" cy=".4" r=".6"><stop offset="0" stop-color="#4a4f57"/><stop offset="1" stop-color="#16181c"/></radialGradient></defs>
         <circle cx="60" cy="60" r="52" fill="none" stroke="#111317" stroke-width="13"/><circle cx="60" cy="60" r="52" fill="none" stroke="#2b2f36" stroke-width="9"/>
@@ -183,6 +187,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
       <button class="cb stb" id="stR" aria-label="ডানে"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4l8 8-8 8"/></svg></button>
     </div>
     <div class="ctl r" id="ctlR" hidden>
+      <button class="cb pd gear" id="gearB" aria-label="গিয়ার" hidden><span id="gearL">D</span><b>গিয়ার</b></button>
       <button class="cb pd brk" id="brk" aria-label="ব্রেক"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="6"/><path d="M12 9v3.5M12 15.2v.1M4.5 6.5a10 10 0 0 0 0 11M19.5 6.5a10 10 0 0 1 0 11"/></svg><b>ব্রেক</b><i></i></button>
       <button class="cb pd nit" id="nit" aria-label="নাইট্রো"><em id="nbar"></em><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg><b>নাইট্রো</b></button>
     </div>
@@ -198,6 +203,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
           <div>😱 অন্য গাড়ির <b>কান ঘেঁষে</b> পার হলে বোনাস, টানা করলে বোনাস দ্বিগুণ-তিনগুণ</div>
           <div>⚡ ঘণ্টায় <b>১০০ কিমির বেশি</b> গতিতে পয়েন্ট বেশি, তবে ধাক্কা লাগলেই শেষ!</div>
         </div>
+        <div class="seg" id="modeSel"><button data-m="race">🏁 রেস<br><small>গতি নিজে বাড়ে, কান ঘেঁষে পয়েন্ট</small></button><button data-m="sim">🚌 বাস সিমুলেটর<br><small>এক্সিলারেটর-ব্রেক-গিয়ার নিজে, যাত্রী আর ভাড়া</small></button></div>
         <p class="pick">কোন গাড়ি চালাবেন? <small>(এক খেলায় এক গাড়ি; ধীর গাড়িতে পয়েন্ট বেশি)</small></p>
         <div class="rides" id="rides"></div>
         <div class="paint" id="paint"><small>গাড়ির রং:</small></div>
@@ -298,10 +304,20 @@ function tone(fr, t, d, type, v, to, dest) { const o = ac.createOscillator(), g 
 let NB = null; function noiseBuf() { if (!NB) { const n = ac.sampleRate * 2; NB = ac.createBuffer(1, n, ac.sampleRate); const x = NB.getChannelData(0); for (let i = 0; i < n; i++) x[i] = Math.random() * 2 - 1; } return NB; }
 function noise(t, d, v, fr, type, to, q) { const s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain(); s.buffer = noiseBuf(); fl.type = type || 'lowpass'; fl.Q.value = q || 1; fl.frequency.setValueAtTime(fr, t); if (to) fl.frequency.exponentialRampToValueAtTime(to, t + d); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + d); s.connect(fl); fl.connect(g); g.connect(master); s.start(t, Math.random()); s.stop(t + d + .05); }
 function loopNoise(type, fr, q) { const s = ac.createBufferSource(); s.buffer = noiseBuf(); s.loop = true; const f = ac.createBiquadFilter(); f.type = type; f.frequency.value = fr; f.Q.value = q; const g = ac.createGain(); g.gain.value = 0; s.connect(f); f.connect(g); g.connect(master); s.start(); return { f, g }; }
+// প্রতিটা গাড়ির নিজস্ব ইঞ্জিন: হারমোনিক, ধকধক (lfo), ডিজেলের খটখট, সিএনজির ভটভট
+const ENG_PROF = {
+  sport: { h: [1, .7, .6, 1.6, .45, .4, .3], lfo: .25, knock: 0, base: 1 },
+  car: { h: [1, .5, .25, .5, .15, .08], lfo: .1, knock: 0, base: .9 },
+  diesel: { h: [1, .9, .8, .7, .55, .5, .45, .4, .3], lfo: .38, knock: .22, base: .8 },
+  cng: { h: [1, .2, .8, .1, .6, .1, .4], lfo: .62, knock: .12, base: 1.15 },
+  moto: { h: [1, .9, .85, .7, .6, .5, .45, .3], lfo: .3, knock: 0, base: 1.1 }
+};
 function engineOn() {
-  if (!audio() || eng) return;
+  if (!audio()) return; const prof = (R && R.snd) || 'sport';
+  if (eng && eng.prof === prof) return;
+  if (eng) { try { [eng.o1, eng.o2, eng.sub, eng.lfo, eng.tw].forEach(o => o.stop()); eng.out.disconnect(); eng.road.g.disconnect(); eng.wind.g.disconnect(); eng.skid.g.disconnect(); eng.tg.disconnect(); if (eng.kn) eng.kn.g.disconnect(); } catch (e) {} eng = null; }
   // ইঞ্জিন: ৪ সিলিন্ডারের মতো হারমোনিক সহ PeriodicWave, হালকা ডিসটরশন, তারপর ফিল্টার
-  const re = new Float32Array(24), im = new Float32Array(24); for (let h = 1; h < 24; h++) im[h] = (h % 2 ? 1 : .7) / Math.pow(h, .75) * (h === 2 || h === 4 ? 1.6 : 1);
+  const P = ENG_PROF[prof], re = new Float32Array(24), im = new Float32Array(24); for (let h = 1; h < 24; h++) im[h] = (P.h[h - 1] ?? (h % 2 ? 1 : .7) / Math.pow(h, .75) * .5);
   const wave = ac.createPeriodicWave(re, im);
   const o1 = ac.createOscillator(), o2 = ac.createOscillator(), sub = ac.createOscillator(); o1.setPeriodicWave(wave); o2.setPeriodicWave(wave); sub.type = 'triangle';
   const shaper = ac.createWaveShaper(), cv = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = i / 511.5 - 1; cv[i] = Math.tanh(x * 2.2); } shaper.curve = cv;
@@ -309,32 +325,44 @@ function engineOn() {
   const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1800; lp.Q.value = .9;
   const pk = ac.createBiquadFilter(); pk.type = 'peaking'; pk.frequency.value = 900; pk.gain.value = 6; pk.Q.value = .8;
   // সিলিন্ডারের ধকধক: অ্যাম্প্লিটিউড মডুলেশন
-  const am = ac.createGain(), lfo = ac.createOscillator(), lfoG = ac.createGain(); lfo.type = 'sine'; lfoG.gain.value = .25; lfo.connect(lfoG); lfoG.connect(am.gain); am.gain.value = .75;
+  const am = ac.createGain(), lfo = ac.createOscillator(), lfoG = ac.createGain(); lfo.type = 'sine'; lfoG.gain.value = P.lfo; lfo.connect(lfoG); lfoG.connect(am.gain); am.gain.value = .75;
   const out = ac.createGain(); out.gain.value = 0;
   o1.connect(pre); o2.connect(g2); g2.connect(pre); sub.connect(gs); gs.connect(pre); pre.connect(shaper); shaper.connect(lp); lp.connect(pk); pk.connect(am); am.connect(out); out.connect(master);
   // টার্বো/নাইট্রোর শিস
   const tw = ac.createOscillator(), tg = ac.createGain(); tw.type = 'sine'; tw.frequency.value = 2400; tg.gain.value = 0; tw.connect(tg); tg.connect(master);
   const road = loopNoise('lowpass', 380, .7), wind = loopNoise('bandpass', 1100, .4), skid = loopNoise('bandpass', 2300, 7);
+  // ডিজেলের খটখট: ব্যান্ডপাস নয়েজ, ইঞ্জিনের তালে ওঠানামা
+  let kn = null; if (P.knock) { kn = loopNoise('bandpass', 1900, 2.5); const kl = ac.createGain(); kl.gain.value = P.knock; lfo.connect(kl); kl.connect(kn.g.gain); }
   [o1, o2, sub, lfo, tw].forEach(o => o.start());
-  eng = { o1, o2, sub, lfo, lp, out, tg, tw, road, wind, skid, gear: 0 };
+  eng = { o1, o2, sub, lfo, lp, out, tg, tw, road, wind, skid, kn, prof, P, gear: 0 };
 }
 const GEARS = [0, 45, 80, 115, 150, 190, 400];
 function engineUpdate(v, thr, skidAmt, nitro) {
   // ধীর গাড়িতে গিয়ার আগে বদলায়
   if (!eng) return; const t = ac.currentTime, k = v * KMH * (R ? 205 / R.vmax : 1); let g = 0; while (k > GEARS[g + 1]) g++;
   if (g !== eng.gear) { if (g > eng.gear) { tone(220, t, .08, 'square', .05); eng.out.gain.setValueAtTime(.12, t); } eng.gear = g; } // গিয়ার বদলের ঝাঁকি
-  const rpm = clamp((k - GEARS[g]) / (GEARS[g + 1] - GEARS[g]), 0, 1), f = (70 + rpm * 120 + g * 8 + thr * 6) * (R ? R.pitch : 1); // ~৭০-২২০ হার্জ মূল সুর
+  const rpm = clamp((k - GEARS[g]) / (GEARS[g + 1] - GEARS[g]), 0, 1), f = (70 + rpm * 120 + g * 8 + thr * 6) * (R ? R.pitch : 1) * eng.P.base; // ~৭০-২২০ হার্জ মূল সুর
   eng.o1.frequency.setTargetAtTime(f, t, .04); eng.o2.frequency.setTargetAtTime(f * 1.503, t, .04); eng.sub.frequency.setTargetAtTime(f / 2, t, .04); eng.lfo.frequency.setTargetAtTime(f / 4, t, .04);
   eng.lp.frequency.setTargetAtTime(900 + rpm * 2600 + thr * 800, t, .06);
   eng.out.gain.setTargetAtTime(.32 + rpm * .12 + thr * .1, t, .08);
   eng.tg.gain.setTargetAtTime(nitro ? .035 : 0, t, .15); eng.tw.frequency.setTargetAtTime(1800 + rpm * 1500, t, .1);
   eng.road.g.gain.setTargetAtTime(Math.min(.5, k / 200 * .5), t, .2); eng.road.f.frequency.setTargetAtTime(250 + k * 2, t, .2);
   eng.wind.g.gain.setTargetAtTime(Math.min(.35, (k / 220) ** 2 * .35), t, .25);
-  eng.skid.g.gain.setTargetAtTime(skidAmt * .35, t, .04);
+  eng.skid.g.gain.setTargetAtTime(skidAmt * .42, t, .04); eng.skid.f.frequency.setTargetAtTime(1900 + Math.sin(t * 23) * 260 + skidAmt * 500, t, .02); // টায়ারের চিৎকার
+  if (eng.kn) eng.kn.g.gain.setTargetAtTime(sndOn ? .05 + thr * .06 : 0, t, .1);
 }
-function engineQuiet() { if (eng) { const t = ac.currentTime; [eng.out.gain, eng.road.g.gain, eng.wind.g.gain, eng.skid.g.gain, eng.tg.gain].forEach(g => g.setTargetAtTime(0, t, .25)); } }
+function engineQuiet() { if (eng) { const t = ac.currentTime; [eng.out.gain, eng.road.g.gain, eng.wind.g.gain, eng.skid.g.gain, eng.tg.gain].concat(eng.kn ? [eng.kn.g.gain] : []).forEach(g => g.setTargetAtTime(0, t, .25)); } }
 const SFX = {
-  horn() { const t = ac.currentTime, f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 2200; f.connect(master); tone(415, t, .5, 'sawtooth', .22, 0, f); tone(523, t, .5, 'sawtooth', .18, 0, f); },
+  horn() { // গাড়ি অনুযায়ী হর্ন: বাস-ট্রাকে ভারী এয়ার হর্ন, সিএনজিতে পিপ
+    const t = ac.currentTime, f = ac.createBiquadFilter(), snd = (R && R.snd) || 'car'; f.type = 'lowpass'; f.frequency.value = snd === 'diesel' ? 1500 : 2400; f.connect(master);
+    if (snd === 'diesel') { tone(277, t, .9, 'sawtooth', .3, 0, f); tone(349, t, .9, 'sawtooth', .26, 0, f); tone(415, t, .9, 'sawtooth', .18, 0, f); }
+    else if (snd === 'cng') { tone(740, t, .18, 'square', .14, 0, f); tone(740, t + .24, .2, 'square', .14, 0, f); }
+    else if (snd === 'moto') tone(620, t, .35, 'square', .14, 0, f);
+    else { tone(415, t, .5, 'sawtooth', .22, 0, f); tone(523, t, .5, 'sawtooth', .18, 0, f); } },
+  air() { const t = ac.currentTime; noise(t, .7, .45, 5200, 'highpass', 2600); }, // বাস-ট্রাকের এয়ার ব্রেক "পসস"
+  revBeep() { const t = ac.currentTime; tone(1180, t, .22, 'sine', .16); },
+  siren() { const t = ac.currentTime, o = ac.createOscillator(), og = ac.createGain(); o.type = 'square'; o.frequency.setValueAtTime(650, t); for (let i = 0; i < 6; i++) o.frequency.linearRampToValueAtTime(i % 2 ? 650 : 1050, t + .25 * (i + 1)); og.gain.value = .07; o.connect(og); og.connect(master); o.start(t); o.stop(t + 1.5); },
+  beep2() { const t = ac.currentTime; tone(988, t, .12, 'sine', .15); tone(1318, t + .14, .16, 'sine', .15); },
   whoosh() { const t = ac.currentTime; noise(t, .55, .7, 500, 'bandpass', 2800, 1.2); },
   pass(close) { const t = ac.currentTime; noise(t, .5, close ? .45 : .22, 1400, 'bandpass', 380, 1.5); tone(180, t, .45, 'sawtooth', close ? .05 : .025, 120); }, // পাশ কাটানোর ডপলার
   combo() { const t = ac.currentTime; [784, 988, 1319].forEach((f, i) => tone(f, t + i * .06, .16, 'triangle', .25)); },
@@ -360,7 +388,7 @@ let renderer = null;
 try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: tier.aa, powerPreference: 'high-performance' }); } catch (e) {}
 const LOW = tier.id <= 1;
 const HORIZON = new THREE.Color('#9aa3b1');
-const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(60, 1, .1, 1500);
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(60, 1, .3, 1500); // near .৩: কম নির্ভুল ফোনেও রাস্তা-ঘাস গুলিয়ে যায় না
 scene.background = HORIZON.clone(); scene.fog = new THREE.Fog(HORIZON, 120, tier.far);
 if (renderer) {
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, tier.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -418,7 +446,7 @@ const markTex = ctex(1024, 512, (x, w, h) => {
 markTex.wrapS = markTex.wrapT = THREE.RepeatWrapping; markTex.repeat.set(1, ROAD_L / SEG);
 const markMat = new THREE.MeshStandardMaterial({ map: markTex, transparent: true, roughness: .7, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
 function roadAt(cx, flip) {
-  const g = new THREE.PlaneGeometry(HALF * 2, ROAD_L, 1, 124); g.rotateX(-Math.PI / 2); g.translate(cx, 0, -ROAD_L / 2 + ROAD_BACK);
+  const g = new THREE.PlaneGeometry(HALF * 2, ROAD_L, 1, 186); g.rotateX(-Math.PI / 2); g.translate(cx, 0, -ROAD_L / 2 + ROAD_BACK);
   const r = new THREE.Mesh(g, roadMat); r.receiveShadow = true; world.add(r);
   const mg = g.clone(); if (flip) { mg.translate(-cx, 0, 0); mg.rotateY(Math.PI); mg.translate(cx, 0, 0); const uv = mg.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setY(i, 1 - uv.getY(i)); }
   const m = new THREE.Mesh(mg, markMat); m.position.y = .004; m.receiveShadow = true; world.add(m);
@@ -426,11 +454,14 @@ function roadAt(cx, flip) {
 roadAt(0, false); roadAt(OPP, true);
 // মিডিয়ান: কংক্রিটের কার্ব আর মাঝে ঘাস
 const grassT = { map: tex('grass_diff.jpg', true, [1, 1]), normalMap: tex('grass_nor.jpg', false, [1, 1]), arm: tex('grass_arm.jpg', false, [1, 1]) };
-const grassMat = new THREE.MeshStandardMaterial({ map: grassT.map, normalMap: grassT.normalMap, roughnessMap: grassT.arm, aoMap: grassT.arm, color: '#93b26c', roughness: 1 });
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(2600, 2600, 1, 160), grassMat); ground.rotation.x = -Math.PI / 2; ground.position.y = -.06; ground.receiveShadow = true; scene.add(ground);
+const grassMat = new THREE.MeshStandardMaterial({ polygonOffset: true, polygonOffsetFactor: 4, polygonOffsetUnits: 4, map: grassT.map, normalMap: grassT.normalMap, roughnessMap: grassT.arm, aoMap: grassT.arm, color: '#93b26c', roughness: 1 });
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(2600, 2600, 1, 420), grassMat); ground.rotation.x = -Math.PI / 2; ground.position.y = -.32; // রাস্তার চেয়ে নিচে, যাতে উঁচু-নিচু বাঁকে ঘাস রাস্তার উপর না ওঠে ground.receiveShadow = true; scene.add(ground);
 [grassT.map, grassT.normalMap, grassT.arm].forEach(t => t.repeat.set(2600 / 5, 2600 / 5));
 const curbMat = new THREE.MeshStandardMaterial({ color: '#a7a49c', roughness: .9 });
 for (const cx of [HALF + .15, MED * 2 - HALF - .15]) { const c = new THREE.Mesh(new THREE.BoxGeometry(.3, .18, ROAD_L, 1, 1, 124), curbMat); c.position.set(cx, .09, -ROAD_L / 2 + ROAD_BACK); c.receiveShadow = c.castShadow = true; world.add(c); }
+// রাস্তার কিনারায় মাটির ঢাল (রাস্তা মাঠ থেকে একটু উঁচু, আসল মহাসড়কের মতো)
+{ const skM = new THREE.MeshStandardMaterial({ color: '#6d6252', roughness: 1, side: THREE.DoubleSide });
+  for (const x of [-HALF, HALF + .3, MED * 2 - HALF - .3, OPP + HALF]) { const g = new THREE.PlaneGeometry(ROAD_L, .7, 186, 1); g.rotateY(Math.PI / 2); g.rotateZ(x < MED ? .55 : -.55); g.translate(x + (x < 0 || x > OPP ? (x < 0 ? -.18 : .18) : 0), -.17, -ROAD_L / 2 + ROAD_BACK); world.add(new THREE.Mesh(g, skM)); } }
 // রেলিং (W-beam): বাইরের দুই পাশে
 const railMat = new THREE.MeshStandardMaterial({ color: '#c9ced3', metalness: .85, roughness: .38 });
 const postMat = new THREE.MeshStandardMaterial({ color: '#8f959b', metalness: .7, roughness: .5 });
@@ -561,7 +592,7 @@ function buildTrees() {
     const im = new THREE.InstancedMesh(g, m, N); im.frustumCulled = false; im.castShadow = false; scene.add(im);
     for (let i = 0; i < N; i++) {
       const side = Math.random() < .5, x = side ? -rnd(17, 90) : OPP + HALF + rnd(6, 75), h = rnd(7, 12) * (Math.abs(x) > 60 ? 1.3 : 1);
-      TREES.push({ im, i, x, z: -rnd(-40, 700), h, w: h * asp * (Math.random() < .5 ? -1 : 1) });
+      TREES.push({ im, i, x, z: -rnd(-40, 700), h: h, w: h * asp * (Math.random() < .5 ? -1 : 1) });
     }
   });
 }
@@ -584,14 +615,14 @@ const sign = new THREE.Group(); {
   const panel = new THREE.Mesh(new THREE.BoxGeometry(6.4, 2.5, .1), [M('#7a8288', .6, .7), M('#7a8288', .6, .7), M('#7a8288', .6, .7), M('#7a8288', .6, .7), new THREE.MeshStandardMaterial({ map: signTex, roughness: .55 }), M('#7a8288', .6, .7)]);
   panel.position.y = 4.4; panel.castShadow = true; sign.add(panel);
   for (const sx of [-2.4, 2.4]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(.09, .09, 5.6, 10), M('#9aa0a6', .45, .8)); p.position.set(sx, 2.8, .12); p.castShadow = true; sign.add(p); }
-  sign.position.set(-HALF - 4.2, 0, -400); scene.add(sign);
+  sign.position.set(-HALF - 4.2, -.3, -400); scene.add(sign);
 }
 const limSign = new THREE.Group(); {
   const face = ctex(256, 256, limitFace); limSign.userData.face = face;
   const d = new THREE.Mesh(new THREE.CircleGeometry(.45, 32), new THREE.MeshStandardMaterial({ map: face, roughness: .5 })); d.position.y = 2.3; limSign.add(d);
   const back = new THREE.Mesh(new THREE.CircleGeometry(.45, 32), M('#8a9096', .5, .7)); back.rotation.y = Math.PI; back.position.set(0, 2.3, -.01); limSign.add(back);
   const p = new THREE.Mesh(new THREE.CylinderGeometry(.04, .04, 2.3, 8), M('#9aa0a6', .45, .8)); p.position.y = 1.15; p.castShadow = true; limSign.add(p);
-  limSign.position.set(-HALF - 1.2, 0, -900); scene.add(limSign);
+  limSign.position.set(-HALF - 1.2, -.3, -900); scene.add(limSign);
 }
 function M(c, r, m) { return new THREE.MeshStandardMaterial({ color: c, roughness: r ?? .8, metalness: m ?? 0 }); }
 
@@ -619,8 +650,8 @@ function bendStep(st, dt) {
 const stripeTex = ctex(256, 64, (x, w, h) => { x.fillStyle = '#f2f0ea'; x.fillRect(0, 0, w, h); x.fillStyle = '#151515'; for (let i = 0; i < 8; i++) if (i % 2) x.fillRect(i * w / 8, 0, w / 8, h); for (let i = 0; i < 900; i++) { x.fillStyle = `rgba(90,80,60,${Math.random() * .15})`; x.fillRect(Math.random() * w, Math.random() * h, 2, 2); } });
 const culvert = new THREE.Group(); {
   const water = new THREE.Mesh(new THREE.PlaneGeometry(260, 7, 26, 1), new THREE.MeshStandardMaterial({ color: '#33402f', roughness: .06, metalness: .35, envMapIntensity: 1.3 }));
-  water.rotation.x = -Math.PI / 2; water.position.set(10, -.03, 0); water.receiveShadow = true; culvert.add(water);
-  for (const dz of [-4.1, 4.1]) { const bank = new THREE.Mesh(new THREE.PlaneGeometry(260, 1.4, 26, 1), M('#5a4a33', 1)); bank.rotation.x = -Math.PI / 2; bank.position.set(10, -.035, dz); culvert.add(bank); }
+  water.rotation.x = -Math.PI / 2; water.position.set(10, -.27, 0); water.receiveShadow = true; culvert.add(water);
+  for (const dz of [-4.1, 4.1]) { const bank = new THREE.Mesh(new THREE.PlaneGeometry(260, 1.4, 26, 1), M('#5a4a33', 1)); bank.rotation.x = -Math.PI / 2; bank.position.set(10, -.29, dz); culvert.add(bank); }
   const wallM = new THREE.MeshStandardMaterial({ map: stripeTex, roughness: .9 });
   for (const x of [-HALF - .45, HALF + .62, MED * 2 - HALF - .62, OPP + HALF + .45]) { const w = new THREE.Mesh(new THREE.BoxGeometry(.32, .85, 9.5), wallM); w.position.set(x, .43, 0); w.castShadow = w.receiveShadow = true; culvert.add(w); }
   culvert.position.z = -600; scene.add(culvert);
@@ -639,12 +670,12 @@ drawSignAtlas();
 const bazaarSignTex = ctex(1024, 300, () => {}), bsCtx = bazaarSignTex.image.getContext('2d'); let bazaarName = 'দাউদকান্দি';
 function drawBazaarSign() { const x = bsCtx; x.fillStyle = '#123e8a'; x.fillRect(0, 0, 1024, 300); x.strokeStyle = '#fff'; x.lineWidth = 10; x.strokeRect(14, 14, 996, 272); x.fillStyle = '#fff'; x.textAlign = 'center'; x.font = "800 104px 'Noto Sans Bengali',sans-serif"; x.fillText(bazaarName + ' বাজার', 512, 140); x.font = "700 66px 'Noto Sans Bengali',sans-serif"; x.fillStyle = '#ffd23f'; x.fillText('সামনে লোকজন, গতি কমান', 512, 240); bazaarSignTex.needsUpdate = true; }
 drawBazaarSign();
-const bazaar = new THREE.Group(); bazaar.position.z = -2000; scene.add(bazaar);
+const bazaar = new THREE.Group(); bazaar.position.set(0, -.3, -2000); scene.add(bazaar); // মাঠের উচ্চতায়
 const BZ_N = 10, BZ_LEN = 135;
 async function buildBazaar() {
   const wallT = { map: tex('wall_diff.jpg', true, [1.5, 1]), normalMap: tex('wall_nor.jpg', false, [1.5, 1]) }, tinT = { map: tex('tin_diff.jpg', true, [2, 2]), normalMap: tex('tin_nor.jpg', false, [2, 2]) };
   const spots = []; // প্রতিটা দোকান: x (সামনের দেয়াল), z, দিক (১ = সামনে +x)
-  for (const side of [-1, 1]) for (let i = 0; i < BZ_N; i++) { const face = side < 0 ? 1 : -1, x = side < 0 ? -HALF - 6.5 : OPP + HALF + 6.5; spots.push({ x, z: -i * (BZ_LEN / BZ_N) - rnd(0, 2), face, open: Math.random() < .55, sign: Math.floor(Math.random() * SHOPS.length) }); }
+  for (const side of [-1, 1]) for (let i = 0; i < BZ_N; i++) { const face = side < 0 ? 1 : -1, x = side < 0 ? -HALF - 6.5 : OPP + HALF + 6.5; spots.push({ x, z: -i * (BZ_LEN / BZ_N) - rnd(0, 2), face, open: Math.random() < .7, sign: Math.floor(Math.random() * SHOPS.length) }); }
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3(), col = new THREE.Color();
   const D = 5, H = 3.3, Wd = 11.5;
   const mk = (geo, mat, n) => { const im = new THREE.InstancedMesh(geo, mat, n); im.castShadow = im.receiveShadow = true; im.frustumCulled = false; bazaar.add(im); return im; };
@@ -662,7 +693,8 @@ async function buildBazaar() {
     for (let r = 0; r < 4; r++) { const y = 20 + r * 58; x.fillStyle = '#5d4030'; x.fillRect(0, y + 44, w, 8); for (let i = 0; i < 26; i++) { const bw = 8 + Math.random() * 14, bh = 18 + Math.random() * 24; x.fillStyle = C[Math.floor(Math.random() * C.length)]; x.fillRect(6 + i * 19 + Math.random() * 4, y + 44 - bh, bw, bh); } }
     const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(0,0,0,.35)'); g.addColorStop(1, 'rgba(0,0,0,.1)'); x.fillStyle = g; x.fillRect(0, 0, w, h); });
   const darks = mk(darkG, new THREE.MeshStandardMaterial({ map: shelfTex, roughness: .9 }), spots.length); darks.castShadow = false;
-  const sh = await load('shutter.glb'); sh.scene.updateMatrixWorld(true); let sg = null, smat = null; sh.scene.traverse(o => { if (o.isMesh && !sg) { sg = toFloat(o.geometry).applyMatrix4(o.matrixWorld); smat = o.material; } });
+  const sh = await load('shutter.glb'); sh.scene.updateMatrixWorld(true); let sg = null, smat = null, bestW = 0; // মডেলের সবচেয়ে চওড়া অংশটাই শাটার
+  sh.scene.traverse(o => { if (!o.isMesh) return; const g = toFloat(o.geometry).applyMatrix4(o.matrixWorld); g.computeBoundingBox(); const w = g.boundingBox.max.x - g.boundingBox.min.x; if (w > bestW) { bestW = w; sg = g; smat = o.material; } });
   sg.computeBoundingBox(); const sb = sg.boundingBox; sg.translate(-(sb.min.x + sb.max.x) / 2, -sb.min.y, -(sb.min.z + sb.max.z) / 2);
   smat.side = THREE.DoubleSide; const shutters = mk(sg, smat, spots.length * 2);
   let ns = 0;
@@ -673,7 +705,7 @@ async function buildBazaar() {
     e.set(0, ry, 0); q.setFromEuler(e); v.set(p.x + p.face * .03, H - .55, p.z); m4.compose(v, q, sc.set(1, 1, 1)); signs.setMatrixAt(i, m4); uvOff[i] = p.sign;
     v.set(p.x + p.face * .02, .05, p.z); m4.compose(v, q, sc.set(1, 1, 1)); darks.setMatrixAt(i, m4);
     // দুটো শাটার পাশাপাশি; খোলা দোকানে শাটার গুটানো (উপরে ছোট)
-    for (const off of [-Wd / 4, Wd / 4]) { v.set(p.x + p.face * .06, p.open ? 2.1 : .05, p.z + off); m4.compose(v, q, sc.set(Wd / 2 / 3.08 * .98, p.open ? .25 : 1.05, 1)); shutters.setMatrixAt(ns++, m4); }
+    for (const off of [-Wd / 4, Wd / 4]) { v.set(p.x + p.face * .06, p.open ? 2.1 : .05, p.z + off); m4.compose(v, q, sc.set(Wd / 2 / bestW * .98, p.open ? .25 : 1.05, 1)); shutters.setMatrixAt(ns++, m4); }
   });
   shutters.count = ns; signG.attributes.row.needsUpdate = true; [bodies, roofs, signs, darks, shutters].forEach(im => { im.instanceMatrix.needsUpdate = true; if (im.instanceColor) im.instanceColor.needsUpdate = true; });
   // চায়ের দোকানের সামনে প্লাস্টিকের চেয়ার আর কাঠের ক্রেট
@@ -696,7 +728,7 @@ function placeBazaar(st, first) {
 // মানুষ: Renderpeople-এর আসল স্ক্যান (CC-BY) আগে থেকে ছবি করা, ৩ জন × ৩ দিক = ৯ ঘরের atlas
 const pplTex = texL.load(A + 'people.webp'); pplTex.colorSpace = THREE.SRGBColorSpace;
 const PPL_H = [1.74, 1.66, 1.63], MAXW = 12;
-const stopG = new THREE.Group(); stopG.position.z = -900; scene.add(stopG);
+const stopG = new THREE.Group(); stopG.position.set(0, -.3, -900); scene.add(stopG);
 const STOP_X = -HALF - .9; // শোল্ডারে বাস থামার জায়গা (রাস্তার বাম কিনারা)
 let stopPeople = null, stopName = '', stopWait = [];
 function buildStop() {
@@ -706,7 +738,7 @@ function buildStop() {
   for (const [dx, dz] of [[-1.1, -3.2], [-1.1, 3.2], [1.1, -3.2], [1.1, 3.2]]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(.05, .05, 2.7, 8), postM); p.position.set(-HALF - 3.6 + dx, 1.35, dz); p.castShadow = true; stopG.add(p); }
   const bench = new THREE.Mesh(new THREE.BoxGeometry(.45, .08, 5), M('#7a5a3a', .8)); bench.position.set(-HALF - 4.4, .48, 0); stopG.add(bench);
   const bay = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 16), new THREE.MeshStandardMaterial({ map: ctex(64, 256, (x, w, h) => { x.strokeStyle = '#f2c230'; x.lineWidth = 5; for (let y = -64; y < h + 64; y += 22) { x.beginPath(); x.moveTo(0, y); x.lineTo(w, y + 30); x.stroke(); } }), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 }));
-  bay.rotation.x = -Math.PI / 2; bay.position.set(STOP_X, .006, 0); stopG.add(bay);
+  bay.rotation.x = -Math.PI / 2; bay.position.set(STOP_X, .306, 0); stopG.add(bay); // stopG মাঠে (-.৩), বে রাস্তায়
   const st = new THREE.Mesh(new THREE.PlaneGeometry(2.4, .7), new THREE.MeshStandardMaterial({ map: stopSignTex, roughness: .6, side: THREE.DoubleSide })); st.position.set(-HALF - 2.25, 2.35, -3.6); st.rotation.y = Math.PI / 2; stopG.add(st);
   // অপেক্ষার মানুষ: ক্যামেরার দিকে মুখ করা ছবি, atlas-এর ঘর আলাদা
   const g = new THREE.PlaneGeometry(1, 1); g.translate(0, .5, 0); g.setAttribute('cell', new THREE.InstancedBufferAttribute(new Float32Array(MAXW), 1));
@@ -727,8 +759,38 @@ function placeStop(st, first) {
 function drawStopPeople() {
   if (!stopPeople) return; const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3(), cell = stopPeople.geometry.attributes.cell;
   stopWait.forEach((p, i) => { const wx = p.walk ? p.x + (STOP_X - p.x) * p.walk : p.x, wz = stopG.position.z + p.z, h = PPL_H[Math.floor(p.cell / 3)];
-    e.set(0, Math.atan2(cam.position.x - wx, cam.position.z - wz), 0); q.setFromEuler(e); m4.compose(v.set(wx, 0, wz), q, sc.set(h * .5, h, 1)); stopPeople.setMatrixAt(i, m4); cell.setX(i, p.cell); });
+    e.set(0, Math.atan2(cam.position.x - wx, cam.position.z - wz), 0); q.setFromEuler(e); m4.compose(v.set(wx, p.walk > .7 ? 0 : -.3, wz), q, sc.set(h * .5, h, 1)); stopPeople.setMatrixAt(i, m4); cell.setX(i, p.cell); });
   stopPeople.count = stopWait.length; stopPeople.instanceMatrix.needsUpdate = true; cell.needsUpdate = true;
+}
+// গাড়ির ভেতরের যাত্রী: জানালা দিয়ে দেখা যায় (একই আসল মানুষের ছবি), যত জন উঠেছে তত জন
+let paxPeople = null; const PAX_SLOTS = 24;
+function buildPaxPeople() {
+  const g = stopPeople.geometry.clone(); g.setAttribute('cell', new THREE.InstancedBufferAttribute(new Float32Array(PAX_SLOTS), 1));
+  paxPeople = new THREE.InstancedMesh(g, stopPeople.material, PAX_SLOTS); paxPeople.frustumCulled = false; paxPeople.count = 0; scene.add(paxPeople);
+}
+function drawPaxPeople() {
+  if (!paxPeople) return; const n = (S && S.started && R.pax && CFG.cam !== 'cockpit' && !S.crashed) ? Math.min(S.paxList.length, PAX_SLOTS) : 0; paxPeople.count = n; if (!n) return;
+  const F = fleet && fleet[rideKey]; if (!F) { paxPeople.count = 0; return; }
+  const kind = F.conf.kind, floor = kind === 'bus' ? .95 : kind === 'cng' ? .32 : .5, w = F.conf.w, L = F.size.z, room = F.size.y - floor - .2;
+  const yaw = player.rotation.y, cs = Math.cos(yaw), sn = Math.sin(yaw), m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3(), cell = paxPeople.geometry.attributes.cell;
+  const cols = kind === 'cng' ? [0] : [-w * .24, w * .24], front = -L / 2 + (kind === 'bus' ? 2.2 : kind === 'cng' ? 1.5 : 1.6), step = kind === 'bus' ? .95 : .8;
+  for (let i = 0; i < n; i++) {
+    const c = cols[i % cols.length], zz = front + Math.floor(i / cols.length) * step, h = Math.min(1.7, room) * (i % 3 === 0 ? 1 : .93);
+    const wx = S.x + c * cs + zz * sn, wz = S.z - c * sn + zz * cs;
+    e.set(0, Math.atan2(cam.position.x - wx, cam.position.z - wz), 0); q.setFromEuler(e); m4.compose(v.set(wx, floor + (player.userData.body.position.y || 0), wz), q, sc.set(h * .5, h, 1));
+    paxPeople.setMatrixAt(i, m4); cell.setX(i, (i * 4 + 1) % 9);
+  }
+  paxPeople.instanceMatrix.needsUpdate = true; cell.needsUpdate = true;
+}
+// ক্ষতিগ্রস্ত গাড়ি থেকে ধোঁয়া (লাইফ ৪৫%-এর নিচে), খুব কম হলে কালো ধোঁয়া
+const smokeTex = ctex(64, 64, (x, w) => { const g = x.createRadialGradient(32, 32, 2, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,.9)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, w, w); });
+const smoke = Array.from({ length: 16 }, () => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: smokeTex, transparent: true, depthWrite: false, opacity: 0, color: '#777' })); sp.visible = false; scene.add(sp); return { sp, t: 1 }; });
+let smokeAcc = 0;
+function smokeStep(dt) {
+  const on = S && S.started && !S.over && S.hp < 45; smokeAcc += dt * (on ? (S.hp < 20 ? 14 : 7) : 0);
+  while (smokeAcc > 1) { smokeAcc--; const p = smoke.find(q => q.t >= 1); if (!p) break; const fz = -carSize.z / 2 + (carSize.y > 2.2 ? carSize.z - .4 : .6);
+    p.t = 0; p.sp.visible = true; p.sp.position.set(S.x + rnd(-.3, .3), carSize.y * .8, S.z + fz); p.sp.material.color.set(S.hp < 20 ? '#2b2b2b' : '#8a8a8a'); }
+  for (const p of smoke) { if (p.t >= 1) { p.sp.visible = false; continue; } p.t += dt * .9; p.sp.position.y += dt * 1.6; p.sp.position.z += (S ? S.v : 0) * dt * .55; const s = .6 + p.t * 2.4; p.sp.scale.set(s, s, 1); p.sp.material.opacity = (1 - p.t) * .55; }
 }
 // হেল্পার আর যাত্রীদের কথা (বুদবুদে, AI কণ্ঠে)
 const HELPER = {
@@ -750,8 +812,10 @@ function addTaka(n) { S.money += n; wallet += n; store.set('kh-racer-taka', wall
 function stopStep(st, dt) {
   const s = st.stop; if (!s) return; const dz = st.z - s.z;
   if (R.pax) {
-    if (!s.said && dz < 220 && dz > 40) { s.said = true; helperSay('near'); }
-    const atBay = Math.abs(dz) < 9 && st.x < LANES[0] + .6 && st.v < 7 / KMH && !st.crashed;
+    if (!s.said && dz < 110 && dz > 30) { s.said = true; talkT = 0; helperSay('near'); sfx('beep2'); } // ১০০ মিটার আগে সংকেত
+    if (!s.served && dz > 9 && dz < 160) { $('stopHint').hidden = false; $('stopHint').innerHTML = `🚏 ${stopName}: ${bn(Math.round(dz))} মিটার সামনে<br><small>বাম কিনারায় হলুদ দাগে ব্রেক চেপে থামুন</small>`; }
+    else if (!s.served && dz < -9 && dz > -95 && stopWait.length) { $('stopHint').hidden = false; $('stopHint').innerHTML = `↩️ স্টপেজ পার হয়ে গেছেন! থেমে ${SIM ? 'গিয়ার R দিয়ে' : 'ব্রেক চেপে ধরে'} পেছান`; }
+    const atBay = Math.abs(dz) < 9 && st.x < LANES[0] + .6 && Math.abs(st.v) < 7 / KMH && !st.crashed;
     if (atBay && !s.served) {
       s.dwell += dt; const need = 2.4, f = Math.min(1, s.dwell / need);
       $('stopHint').hidden = false; $('stopHint').innerHTML = `🚏 ${stopName}: যাত্রী ওঠানামা<div class="bar"><i style="width:${Math.round(f * 100)}%"></i></div>`;
@@ -764,9 +828,9 @@ function stopStep(st, dt) {
         pop(`${off.length ? `${bn(off.length)} জন নামল · ` : ''}${bn(on)} জন উঠল · ভাড়া ৳${bn(off.reduce((a, p) => a + p.fare, 0))}`); sfx('combo');
         st.score += (off.length * 40 + on * 20) * R.mult; helperSay(on ? (space <= on ? 'full' : 'go') : 'go'); if (on) setTimeout(() => helperSay('board'), 2500);
       }
-    } else if (!atBay) { $('stopHint').hidden = true; if (s.dwell > 0 && !s.served) s.dwell = Math.max(0, s.dwell - dt * 2); }
+    } else if (!atBay) { if (s.served || dz < -95 || dz > 160) $('stopHint').hidden = true; if (s.dwell > 0 && !s.served) s.dwell = Math.max(0, s.dwell - dt * 2); }
   }
-  if (dz < -30) { // স্টপেজ পেছনে পড়ল
+  if (dz < -95 || (s.served && dz < -30)) { // স্টপেজ অনেক পেছনে পড়ল (তার আগে পেছানো যায়)
     if (R.pax && !s.served && (stopWait.length || st.paxList.some(p => p.dest <= 0))) { helperSay('skip'); st.score = Math.max(0, st.score - 50); }
     st.paxList.forEach(p => p.dest--); $('stopHint').hidden = true; placeStop(st, false);
   }
@@ -776,6 +840,7 @@ const fixCost = () => Math.ceil((100 - S.hp) * 4);
 function hitCar(c, dz) {
   const st = S; if (st.inv > 0 || c.ghost) return; c.ghost = true;
   const rel = Math.abs(st.v - (c.wrong ? -c.v : c.v)), dmg = clamp((10 + rel * 1.4) * R.armor, 6, 70);
+  if (c.wrong) { dmg *= .35; const b = Math.round(300 * R.mult); st.score += b; pop(`🚫 উল্টো পথের শাস্তি! +${bn(b)}`); sfx('combo'); com('wrongHit'); }
   st.hp -= dmg; st.inv = 1.2; c.hit = true; c.spin = rnd(-1.4, 1.4); c.v *= .4;
   st.lat = (c.x > st.x ? -1 : 1) * rnd(3, 5.5); st.v *= dz < 0 ? .45 : .8; st.shake = .8;
   $('flash').classList.remove('go'); void $('flash').offsetWidth; $('flash').classList.add('go'); if (navigator.vibrate) try { navigator.vibrate([60, 30, 90]); } catch (e) {}
@@ -822,7 +887,7 @@ const LV = [
 let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0, ready = false;
 const keys = { l: 0, r: 0, b: 0, n: 0 }, touchSteer = new Map();
 function newState(level) {
-  return { hp: 100, inv: 0, money: 0, paxList: [], carried: 0, repairs: 0, stop: null, kmAcc: 0, wrongT: 12, lv: level, x: LANES[1], z: 0, v: 70 / KMH, lat: 0, yaw: 0, steerA: 0, dist: 0, score: 0, near: 0, combo: 0, comboT: 0, nitro: 1, t: 0, over: false, crashed: false, crashT: 0, spinV: 0, scrapeT: 0, cars: [], opp: [], nextComment: 6, fastT: 0, started: false, signKm: 249, limitKm: 0.5, shake: 0 };
+  return { gear: 'D', revT: 0, rev: false, hp: 100, inv: 0, money: 0, paxList: [], carried: 0, repairs: 0, stop: null, kmAcc: 0, wrongT: 12, lv: level, x: LANES[1], z: 0, v: 70 / KMH, lat: 0, yaw: 0, steerA: 0, dist: 0, score: 0, near: 0, combo: 0, comboT: 0, nitro: 1, t: 0, over: false, crashed: false, crashT: 0, spinV: 0, scrapeT: 0, cars: [], opp: [], nextComment: 6, fastT: 0, started: false, signKm: 249, limitKm: 0.5, shake: 0 };
 }
 function pickType(st) { // জায়গা খালি আছে এমন ধরন থেকে ওজন অনুযায়ী
   const used = {}; for (const c of st.cars.concat(st.opp)) used[c.type] = (used[c.type] || 0) + 1;
@@ -873,6 +938,8 @@ const COM = {
   brake: ['ব্রেক! বুদ্ধিমানের কাজ।', 'দেখে শুনে, তাড়াহুড়া নাই।'],
   crash: ['ধুম! গাড়ি গ্যারেজে, আপনি থানায়!', 'ঠুস! ইন্স্যুরেন্স কোম্পানি আজকে কাঁদবে!', 'হায় হায়! নতুন গাড়ির বাম্পার শেষ!', 'ধাক্কা! চট্টগ্রাম যাওয়া আজকে আর হলো না!'],
   bazaar: ['{k} বাজার! লোকজন রাস্তা পার হয়, উল্টো পথে রিকশা আসে, সাবধান!', '{k} বাজারে চায়ের দোকান, গরম সিঙ্গারা! কিন্তু থামা যাবে না!', 'সামনে {k} বাজার, হর্ন বাজান, চোখ খোলা রাখেন!'],
+  fine: ['হাইওয়ে পুলিশ ধরছে! গতিসীমা মানেন ওস্তাদ!', 'জরিমানা দিলেন, মালিক কিন্তু বেতন থেকে কাটবে!'],
+  wrongHit: ['উল্টো পথে আসছিল, এবার বুঝছে ঠ্যালা!', 'রং সাইডের শাস্তি হইল! নিয়ম মানলে এটা হইত না!'],
   wrong: ['সাবধান! উল্টো পথে আসতেছে, এই দেশে এটাই নিয়ম!', 'রং সাইডে রিকশা! হর্ন দেন, ব্রেক রেডি রাখেন!', 'উল্টো পথের সিএনজি! মামা, এটা হাইওয়ে, গলি না!'],
   sign: ['চট্টগ্রাম আর মাত্র {k} কিমি!', 'সাইনবোর্ড বলতেছে আরো {k} কিমি, আপনার গতিতে এক কাপ চায়ের সময়!']
 };
@@ -884,19 +951,21 @@ function pop(text) { const e = document.createElement('div'); e.className = 'pop
 /* ================= ধাপ (ফিজিক্স) ================= */
 // খেলোয়াড় যে গাড়ি চালাবে: সর্বোচ্চ গতি, নাইট্রো, টান, মোড় নেওয়া, পয়েন্টের গুণ, ইঞ্জিনের সুর, স্টিয়ারিং চাকা কিনা
 const RIDES = {
-  sport:      { n: 'স্পোর্টস কার', ic: '🏎️', vmax: 205, nit: 265, acc: 5.2, steer: 1, mult: 1, pitch: 1, wheel: true , pax: 0, armor: 1, helper: false },
-  corolla:    { n: 'টয়োটা করোলা', ic: '🚗', vmax: 175, nit: 215, acc: 4.6, steer: .95, mult: 1.15, pitch: .95, wheel: true , pax: 0, armor: 1, helper: false },
-  noah:       { n: 'টয়োটা নোয়া', ic: '🚙', vmax: 165, nit: 200, acc: 4.2, steer: .9, mult: 1.2, pitch: .9, wheel: true , pax: 0, armor: 0.95, helper: false },
-  hiace:      { n: 'হায়েস মাইক্রোবাস', ic: '🚐', vmax: 150, nit: 185, acc: 3.8, steer: .85, mult: 1.3, pitch: .85, wheel: true , pax: 12, armor: 0.9, helper: true },
-  hilux:      { n: 'হাইলাক্স পিকআপ', ic: '🛻', vmax: 165, nit: 200, acc: 4.4, steer: .9, mult: 1.2, pitch: .8, wheel: true , pax: 0, armor: 0.85, helper: false },
-  bus_hino:   { n: 'হিনো বাস', ic: '🚌', vmax: 115, nit: 135, acc: 2.6, steer: .6, mult: 1.8, pitch: .62, wheel: true , pax: 40, armor: 0.55, helper: true },
-  bus_coach:  { n: 'দূরপাল্লার কোচ', ic: '🚍', vmax: 120, nit: 140, acc: 2.6, steer: .6, mult: 1.8, pitch: .62, wheel: true , pax: 36, armor: 0.55, helper: true },
-  bus_mini:   { n: 'লোকাল মিনিবাস', ic: '🚎', vmax: 100, nit: 120, acc: 2.8, steer: .65, mult: 1.9, pitch: .68, wheel: true , pax: 28, armor: 0.6, helper: true },
-  truck_al:   { n: 'অশোক লেল্যান্ড ট্রাক', ic: '🚚', vmax: 95, nit: 115, acc: 2.3, steer: .55, mult: 2, pitch: .55, wheel: true , pax: 0, armor: 0.5, helper: true },
-  truck_tata: { n: 'টাটা ট্রাক', ic: '🚛', vmax: 95, nit: 115, acc: 2.3, steer: .55, mult: 2, pitch: .55, wheel: true , pax: 0, armor: 0.5, helper: true },
-  cng:        { n: 'সিএনজি', ic: '🛺', vmax: 70, nit: 85, acc: 3.2, steer: 1.1, mult: 2.4, pitch: 1.45, wheel: false , pax: 3, armor: 1.3, helper: false },
-  moto:       { n: 'মোটরসাইকেল', ic: '🏍️', vmax: 140, nit: 170, acc: 6, steer: 1.3, mult: 1.4, pitch: 1.35, wheel: false , pax: 0, armor: 1.8, helper: false }
+  sport:      { n: 'স্পোর্টস কার', ic: '🏎️', vmax: 205, nit: 265, acc: 5.2, steer: 1, mult: 1, pitch: 1, wheel: true , pax: 0, armor: 1, helper: false, snd: 'sport' },
+  corolla:    { n: 'টয়োটা করোলা', ic: '🚗', vmax: 175, nit: 215, acc: 4.6, steer: .95, mult: 1.15, pitch: .95, wheel: true , pax: 0, armor: 1, helper: false, snd: 'car' },
+  noah:       { n: 'টয়োটা নোয়া', ic: '🚙', vmax: 165, nit: 200, acc: 4.2, steer: .9, mult: 1.2, pitch: .9, wheel: true , pax: 0, armor: 0.95, helper: false, snd: 'car' },
+  hiace:      { n: 'হায়েস মাইক্রোবাস', ic: '🚐', vmax: 150, nit: 185, acc: 3.8, steer: .85, mult: 1.3, pitch: .85, wheel: true , pax: 12, armor: 0.9, helper: true, snd: 'diesel' },
+  hilux:      { n: 'হাইলাক্স পিকআপ', ic: '🛻', vmax: 165, nit: 200, acc: 4.4, steer: .9, mult: 1.2, pitch: .8, wheel: true , pax: 0, armor: 0.85, helper: false, snd: 'diesel' },
+  bus_hino:   { n: 'হিনো বাস', ic: '🚌', vmax: 115, nit: 135, acc: 2.6, steer: .6, mult: 1.8, pitch: .62, wheel: true , pax: 40, armor: 0.55, helper: true, snd: 'diesel' },
+  bus_coach:  { n: 'দূরপাল্লার কোচ', ic: '🚍', vmax: 120, nit: 140, acc: 2.6, steer: .6, mult: 1.8, pitch: .62, wheel: true , pax: 36, armor: 0.55, helper: true, snd: 'diesel' },
+  bus_mini:   { n: 'লোকাল মিনিবাস', ic: '🚎', vmax: 100, nit: 120, acc: 2.8, steer: .65, mult: 1.9, pitch: .68, wheel: true , pax: 28, armor: 0.6, helper: true, snd: 'diesel' },
+  truck_al:   { n: 'অশোক লেল্যান্ড ট্রাক', ic: '🚚', vmax: 95, nit: 115, acc: 2.3, steer: .55, mult: 2, pitch: .55, wheel: true , pax: 0, armor: 0.5, helper: true, snd: 'diesel' },
+  truck_tata: { n: 'টাটা ট্রাক', ic: '🚛', vmax: 95, nit: 115, acc: 2.3, steer: .55, mult: 2, pitch: .55, wheel: true , pax: 0, armor: 0.5, helper: true, snd: 'diesel' },
+  cng:        { n: 'সিএনজি', ic: '🛺', vmax: 70, nit: 85, acc: 3.2, steer: 1.1, mult: 2.4, pitch: 1.45, wheel: false , pax: 3, armor: 1.3, helper: false, snd: 'cng' },
+  moto:       { n: 'মোটরসাইকেল', ic: '🏍️', vmax: 140, nit: 170, acc: 6, steer: 1.3, mult: 1.4, pitch: 1.35, wheel: false , pax: 0, armor: 1.8, helper: false, snd: 'moto' }
 };
+let SIM = store.get('kh-racer-mode', 'race') === 'sim'; // বাস সিমুলেটর মোড
+const bestKey = () => SIM ? 'kh-bussim-best' : 'kh-racer-best';
 let rideKey = RIDES[store.get('kh-racer-ride', 'sport')] ? store.get('kh-racer-ride', 'sport') : 'sport', R = RIDES[rideKey];
 let VMAX = R.vmax / KMH, VNIT = R.nit / KMH; const VMIN = 25 / KMH;
 function step(dt) {
@@ -907,13 +976,24 @@ function step(dt) {
     if (st.crashT > 2.2 && !st.over) endRun();
   } else {
     const steer = clamp((keys.r ? 1 : 0) - (keys.l ? 1 : 0) + [...touchSteer.values()].reduce((a, b) => a + b, 0), -1, 1);
-    const brake = keys.b, nitro = keys.n && st.nitro > .02 && !brake;
+    const brake = keys.b, nitro = !SIM && keys.n && st.nitro > .02 && !brake;
     // গতি: অটো এক্সিলারেটর, ব্রেক, নাইট্রো
-    const vmax = nitro ? VNIT : VMAX; let acc = brake ? -11 - R.acc : (nitro ? R.acc * 1.7 : R.acc) * (1 - st.v / vmax) + (st.v > vmax ? -4 : 0);
-    st.v = clamp(st.v + acc * dt, 0, VNIT); // ব্রেক চেপে পুরো থামা যায় (স্টপেজে যাত্রী ওঠানামা)
+    const RV = 15 / KMH, was = st.v;
+    if (SIM) { // বাস সিমুলেটর: এক্সিলারেটর (keys.n), ব্রেক, গিয়ার D/R নিজে
+      const gas = keys.n, dg = st.gear === 'R' ? -1 : 1; let acc;
+      if (brake) acc = -Math.sign(st.v) * (9 + R.acc); else if (gas) acc = dg * R.acc * 1.15 * Math.max(0, 1 - Math.abs(st.v) / (dg > 0 ? VMAX : RV)); else acc = -Math.sign(st.v) * (.7 + Math.abs(st.v) * .025);
+      st.v += acc * dt; if (!gas && Math.sign(st.v) !== Math.sign(was) && was !== 0) st.v = 0; st.v = clamp(st.v, -RV, VMAX);
+    } else {
+      // রেস: অটো এক্সিলারেটর; থেমে ব্রেক চেপে ধরে রাখলে ব্যাক গিয়ার
+      if (Math.abs(st.v) < .3 && brake) { if ((st.revT += dt) > .7 && !st.rev) { st.rev = true; pop('↩️ ব্যাক গিয়ার'); } } else if (!brake) st.revT = 0;
+      if (st.rev) { if (brake) st.v = Math.max(-RV, st.v - 3.5 * dt); else { st.v = Math.min(0, st.v + 6 * dt); if (st.v >= 0) st.rev = false; } }
+      else { const vmax = nitro ? VNIT : VMAX; const acc = brake ? -11 - R.acc : (nitro ? R.acc * 1.7 : R.acc) * (1 - st.v / vmax) + (st.v > vmax ? -4 : 0); st.v = clamp(st.v + acc * dt, 0, VNIT); }
+    }
+    if (st.v < -.2 && R.snd === 'diesel' && (st.beepT = (st.beepT || 0) - dt) <= 0) { st.beepT = .7; sfx('revBeep'); } // পেছানোর বিপ
+    if (R.snd === 'diesel' && st.braking && !brake && Math.abs(st.v) < 2 && (st.airT || 0) <= st.t - 3) { st.airT = st.t; sfx('air'); } // থেমে ব্রেক ছাড়লে এয়ার ব্রেকের পসস
     if (nitro) { st.nitro = Math.max(0, st.nitro - dt / 3.2); if (!st.nitroOn) { st.nitroOn = true; sfx('nitro'); if (Math.random() < .5) com('nitro'); } } else { st.nitroOn = false; st.nitro = Math.min(1, st.nitro + dt / 26); }
     // স্টিয়ারিং: গতি বাড়লে পাশের গতি একটু বেশি, তবে মসৃণ
-    const latT = steer * (5.5 + st.v * .07) * R.steer; st.lat += (latT - st.lat) * Math.min(1, dt * 6); st.x += st.lat * dt;
+    const latT = steer * (5.5 + Math.abs(st.v) * .07) * R.steer * Math.min(1, Math.abs(st.v) / 6) * Math.sign(st.v || 1); // থামা গাড়ি পাশে সরে না st.lat += (latT - st.lat) * Math.min(1, dt * 6); st.x += st.lat * dt;
     st.steerA += (steer * .3 / (1 + st.v / 10) - st.steerA) * Math.min(1, dt * 8); // জোরে চলার সময় চাকা সামান্যই বাঁকে
     const lim = HALF - carSize.x * .36 - .25;
     if (Math.abs(st.x) > lim) { st.x = Math.sign(st.x) * lim; st.lat = -st.lat * .25; st.v *= 1 - 1.8 * dt; st.shake = .25; if (st.scrapeT <= 0) { sfx('scrape'); st.scrapeT = .35; if (Math.random() < .5) com('scrape'); st.score = Math.max(0, st.score - 25); st.hp = Math.max(1, st.hp - 2 * R.armor); pop('-২৫ ঘষা!'); } }
@@ -926,11 +1006,11 @@ function step(dt) {
     // বাঁকে গাড়ি বাইরের দিকে সরে যায়: স্টিয়ারিং দিয়ে ধরে রাখতে হয়
     bendStep(st, dt); st.x -= BEND.value.x * st.v * st.v * 1.6 * dt;
     // পয়েন্ট: দূরত্ব, ১০০+ গতিতে বেশি
-    const fast = st.v > VMAX * .58; st.score += st.v * dt * (fast ? .5 : .25) * (1 + Math.min(2, st.dist / 20000)) * R.mult;
+    const fast = st.v > VMAX * .58; st.score += Math.max(0, st.v) * dt * (SIM ? .15 : fast ? .5 : .25) * (1 + Math.min(2, st.dist / 20000)) * R.mult;
     if (fast) st.fastT += dt; else st.fastT = 0;
     if (st.fastT > 9 && Math.random() < dt * .3) { com('fast'); st.fastT = 0; }
     if (st.comboT > 0 && (st.comboT -= dt) <= 0) { st.combo = 0; $('combo').hidden = true; }
-    st.skid = Math.min(1, Math.abs(st.lat) / 9) * (st.v > 25 ? 1 : 0) * .6 + (brake && st.v > 20 ? .5 : 0);
+    st.skid = Math.min(1, Math.abs(st.lat) / 9) * (st.v > 25 ? 1 : 0) * .6 + (brake && st.v > 12 ? Math.min(.9, .25 + st.v / 50) : 0); // জোরে ব্রেকে টায়ারের চিৎকার
     if (brake && !st.braking && st.v > 25 && Math.random() < .25) com('brake'); st.braking = brake;
   }
   // ট্রাফিক
@@ -975,14 +1055,15 @@ function step(dt) {
       if (!c.ghost && dx < cw * .47 + c.hw * .92 && Math.abs(dz) < cl * .46 + c.hl * .95) { hitCar(c, dz); if (st.crashed) break; }
       if (!c.passed && dz > cl * .5 + c.hl) {
         c.passed = true;
-        if (dx < cw * .5 + c.hw + 1.0 && st.v > VMAX * .45) {
+        if (!SIM && dx < cw * .5 + c.hw + 1.0 && st.v > VMAX * .45) {
           if (Math.random() < .35) helperSay('near2'); st.combo++; st.comboT = 4; st.near++; const pts = Math.round(100 * st.combo * R.mult); st.score += pts; sfx('whoosh');
           pop(`কান ঘেঁষা! +${bn(pts)}`); if (st.combo > 1) { $('combo').hidden = false; $('combo').textContent = `কম্বো ×${bn(st.combo)}`; if (st.combo % 3 === 0) { sfx('combo'); com('combo'); shout(`×${bn(st.combo)}!`, '#ffd23f'); } } else if (Math.random() < .45) com('near');
         } else if (dx < 5.5 && st.v * KMH > 40) sfx('pass', dx < 3.5);
       }
     }
   }
-  stopStep(st, dt);
+  stopStep(st, dt); simRules(st, dt, st.z < bazaar.position.z + 120 && st.z > bazaar.position.z - BZ_LEN - 60);
+  if (st.dist >= 250000 && !st.over) { st.arrived = true; endRun(); return; } // চট্টগ্রাম পৌঁছানো
   // কালভার্ট আর বাজার পেছনে পড়লে সামনে নতুন জায়গায়
   if (culvert.position.z > st.z + 30) culvert.position.z = st.z - rnd(700, 1400);
   if (bazaar.position.z - BZ_LEN > st.z + 40) placeBazaar(st, false);
@@ -1040,14 +1121,14 @@ function drawTrees() {
   const cx = cam.position.x, cz = cam.position.z;
   for (const t of TREES) {
     if (t.z > S.z + 40) t.z -= 760; else if (t.z < S.z - 720) t.z += 760;
-    const yaw = Math.atan2(cx - t.x, cz - t.z); e3.set(0, yaw, 0); q.setFromEuler(e3); v3.set(t.x, -.1, t.z); m4.compose(v3, q, new THREE.Vector3(t.w, t.h, 1)); t.im.setMatrixAt(t.i, m4);
+    const yaw = Math.atan2(cx - t.x, cz - t.z); e3.set(0, yaw, 0); q.setFromEuler(e3); v3.set(t.x, -.4, t.z); m4.compose(v3, q, new THREE.Vector3(t.w, t.h, 1)); t.im.setMatrixAt(t.i, m4);
   }
   TREES.length && new Set(TREES.map(t => t.im)).forEach(im => im.instanceMatrix.needsUpdate = true);
 }
 function hud() {
-  const k = Math.round(S.v * KMH); $('kmh').textContent = bn(k); $('kmh').classList.toggle('fast', k > 120);
+  const k = Math.round(Math.abs(S.v) * KMH); $('kmh').textContent = bn(k); $('kmh').classList.toggle('fast', k > 120);
   $('gArc').setAttribute('stroke-dasharray', (clamp(k / (R.nit * 1.05), 0, 1) * 235.6).toFixed(1) + ' 314.2'); $('nArc').setAttribute('stroke-dasharray', (S.nitro * 192.6).toFixed(1) + ' 257.6');
-  let g = 0; const kg = k * 205 / R.vmax; while (kg > GEARS[g + 1]) g++; $('gearT').textContent = S.v < .5 ? 'N' : 'গিয়ার ' + bn(g + 1);
+  let g = 0; const kg = Math.abs(k) * 205 / R.vmax; while (kg > GEARS[g + 1]) g++; $('gearT').textContent = S.v < -.1 || (SIM && S.gear === 'R') ? 'গিয়ার R' : Math.abs(S.v) < .5 ? 'N' : 'গিয়ার ' + bn(g + 1);
   $('sc').textContent = bn(Math.floor(S.score)); $('nbar').style.height = Math.round(S.nitro * 100) + '%'; $('nit').classList.toggle('empty', S.nitro < .05);
   $('km').textContent = bn(Math.max(0, 250 - S.dist / 1000).toFixed(1)); if ((hud.n = (hud.n || 0) + 1) % 15 === 0) drawMap(S.dist / 1000);
 }
@@ -1105,11 +1186,11 @@ function loop(ts) {
     }
     if (window.__cam) { cam.position.set(...window.__cam[0]); cam.lookAt(...window.__cam[1]); cam.fov = 40; cam.updateProjectionMatrix(); } // পরীক্ষার ক্যামেরা
     // জগত সাথে সাথে চলে
-    world.position.z = Math.floor(S.z / SEG) * SEG; ground.position.set(Math.floor(S.x / 5) * 5, -.06, Math.floor(S.z / 5) * 5);
+    world.position.z = Math.floor(S.z / SEG) * SEG; ground.position.set(Math.floor(S.x / 5) * 5, -.32, Math.floor(S.z / 5) * 5);
     dome.position.set(cam.position.x, 0, cam.position.z); skirt.position.x = cam.position.x; skirt.position.z = cam.position.z;
     sun.position.copy(SUN_DIR).multiplyScalar(80).add(v3.set(S.x, 0, S.z - 8)); sun.target.position.set(S.x, 0, S.z - 8);
-    drawTraffic(T0); drawTrees(); drawStopPeople(); if (S.started && !S.over && (lifeHud.n = (lifeHud.n || 0) + 1) % 6 === 0) lifeHud();
-    if (S.started && !S.over) { hud(); engineUpdate(S.crashed ? 0 : S.v, keys.b ? 0 : 1, S.crashed ? 0 : (S.skid || 0), !!S.nitroOn); }
+    drawTraffic(T0); drawTrees(); drawStopPeople(); drawPaxPeople(); smokeStep(dt); if (S.started && !S.over && (lifeHud.n = (lifeHud.n || 0) + 1) % 6 === 0) lifeHud();
+    if (S.started && !S.over) { hud(); engineUpdate(S.crashed ? 0 : Math.abs(S.v), keys.b ? 0 : 1, S.crashed ? 0 : (S.skid || 0), !!S.nitroOn); }
     if (comT > 0 && (comT -= dt) <= 0) $('com').textContent = '';
   }
   if (renderer) renderer.render(scene, cam);
@@ -1136,13 +1217,13 @@ const TIPS = [
 ];
 const TITLES = [[0, 'নবিশ চালক'], [2500, 'লোকাল বাসের ওস্তাদ'], [6000, 'হাইওয়ের চিতা'], [12000, 'হাইওয়ে রাজা'], [22000, 'ফর্মুলা ওয়ানের নাতি']];
 function endRun() {
-  S.over = true; const sc = Math.floor(S.score); lastScore = sc; ['speedo', 'ctlL', 'ctlR', 'dist', 'keyhint', 'life', 'stopHint'].forEach(i => $(i).hidden = true);
+  S.over = true; const sc = Math.floor(S.score + (SIM ? S.money : 0)); lastScore = sc; ['speedo', 'ctlL', 'ctlR', 'dist', 'keyhint', 'life', 'stopHint'].forEach(i => $(i).hidden = true);
   $('eS').textContent = bn(sc); $('eD').textContent = bn((S.dist / 1000).toFixed(1)); $('eN').textContent = bn(S.near);
   $('eM').textContent = '৳ ' + bn(Math.round(S.money)); $('eP').textContent = bn(S.carried); $('eW').textContent = '৳ ' + bn(Math.round(wallet));
   $('endTitle').textContent = TITLES.filter(t => sc >= t[0]).pop()[1];
-  $('endT').textContent = pick(['ধুম!', 'ঠুস!', 'গেল রে!']);
+  $('endT').textContent = S.arrived ? '🎉 চট্টগ্রাম পৌঁছে গেছেন!' : S.crashed ? pick(['ধুম!', 'ঠুস!', 'গেল রে!']) : 'যাত্রা শেষ';
   $('endLine').textContent = `${LV[S.lv].n}, ${R.n}: ${bn((S.dist / 1000).toFixed(1))} কিমি গিয়ে গাড়ি অচল। চট্টগ্রাম আর ${bn(Math.max(0, 250 - S.dist / 1000).toFixed(0))} কিমি বাকি ছিল!`;
-  const best = store.get('kh-racer-best', 0); if (sc > best) store.set('kh-racer-best', sc);
+  const best = store.get(bestKey(), 0); if (sc > best) store.set(bestKey(), sc);
   $('eBest').textContent = 'আপনার সেরা: ' + bn(Math.max(best, sc)) + (sc > best && best ? ' · নতুন রেকর্ড! 🎉' : '');
   $('eTip').textContent = '🚦 ' + pick(TIPS);
   $('endO').hidden = false; if (sc > best && best && window.KHViral) KHViral.confetti();
@@ -1151,7 +1232,7 @@ function endRun() {
 function start(level) {
   if (!ready) return; audio(); engineOn(); lv = level; store.set('kh-racer-lv', lv);
   resetWorld(level); S.started = true; S.nextKm = 5; ['startO', 'endO'].forEach(i => $(i).hidden = true); ['speedo', 'ctlL', 'ctlR', 'dist', 'keyhint', 'life'].forEach(i => $(i).hidden = false); applyCtl(); lifeHud(); drawMap(0); document.querySelector('.score').style.visibility = 'visible';
-  cam.position.set(S.x, 2.6, S.z + 9); com('start'); sfx('go');
+  cam.position.set(S.x, 2.6, S.z + 9); com('start'); sfx('go'); if (SIM) { S.v = 0; S.gear = 'D'; $('gearL').textContent = 'D'; pop('🚌 এক্সিলারেটর চেপে ধরে চালান'); } if (store.get('kh-racer-radio', false) && !radio) radioToggle();
 }
 document.querySelectorAll('[data-lv]').forEach(b => b.onclick = () => start(+b.dataset.lv));
 $('againBtn').onclick = () => start(lv);
@@ -1160,10 +1241,48 @@ $('shareBtn').onclick = () => { const t = `হাইওয়ে রাজায
 $('fixB').onclick = e => { e.stopPropagation(); repair(); };
 $('camB').onclick = () => { const L = ['far', 'near', 'cockpit', 'top'], N = { far: 'পেছন থেকে', near: 'কাছ থেকে', cockpit: 'ড্রাইভারের সিট', top: 'উপর থেকে' }; CFG.cam = L[(L.indexOf(CFG.cam) + 1) % L.length]; saveCfg(); sfx('click'); pop('🎥 ' + N[CFG.cam]); };
 $('horn').onclick = () => { audio(); sfx('horn'); if (S && S.started && !S.crashed) S.cars.forEach(c => { if (c.z < S.z && c.z > S.z - 40 && Math.abs(c.x - S.x) < 2 && c.sig === 0) c.chT = 0; }); };
+// মোড: রেস না বাস সিমুলেটর (খেলা চলার সময় বদলানো যায় না)
+const PAX_RIDES = Object.keys(RIDES).filter(k => RIDES[k].pax);
+function drawMode() {
+  $('modeSel').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.m === 'sim') === SIM)));
+  $('nit').querySelector('b').textContent = SIM ? 'এক্সিলারেটর' : 'নাইট্রো'; $('nit').classList.toggle('gas', SIM); $('gearB').hidden = !SIM;
+}
+$('modeSel').addEventListener('click', async e => {
+  const b = e.target.closest('[data-m]'); if (!b || (S && S.started && !S.over)) return; SIM = b.dataset.m === 'sim'; store.set('kh-racer-mode', SIM ? 'sim' : 'race'); sfx('click');
+  if (SIM && !RIDES[rideKey].pax) await setRide('bus_hino'); drawMode(); drawRides(); subLB();
+});
+$('gearB').addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); toggleGear(); });
+function toggleGear() { if (!S || !S.started || !SIM) return; if (Math.abs(S.v) > 1) { pop('আগে পুরো থামুন, তারপর গিয়ার'); return; } S.gear = S.gear === 'R' ? 'D' : 'R'; $('gearL').textContent = S.gear; sfx('click'); pop(S.gear === 'R' ? '↩️ ব্যাক গিয়ার (R)' : '⬆️ সামনের গিয়ার (D)'); }
+// সিমুলেটরের নিয়ম: গতিসীমা (মহাসড়কে বাস ৮০, বাজারে ৪০), বেশি হলে হাইওয়ে পুলিশের জরিমানা
+function simRules(st, dt, inBazaar) {
+  if (!SIM) return; const lim = (inBazaar ? 40 : RIDES[rideKey].pax > 20 || /truck/.test(rideKey) ? 80 : 90) + 8, k = st.v * KMH;
+  if (k > lim) { if ((st.overT = (st.overT || 0) + dt) > 4) { st.overT = -6; const fine = 150; wallet = Math.max(0, wallet - fine); store.set('kh-racer-taka', wallet); st.fines = (st.fines || 0) + fine; shout('🚓 জরিমানা ৳' + bn(fine), '#ff6b5c'); com('fine'); sfx('siren'); } } else st.overT = Math.max(0, (st.overT || 0) - dt);
+}
+// 📻 বাংলা সুরের রেডিও: লোকগানের ধাঁচে নিজে তৈরি বাজনা (বাঁশি, দোতারা, ঢোল) — আসল গান বাজাতে লাইসেন্স লাগে
+let radio = null;
+function radioToggle() {
+  if (!audio()) return;
+  if (radio) { clearInterval(radio.timer); radio.g.gain.setTargetAtTime(0, ac.currentTime, .2); radio = null; $('radioB').classList.add('off'); pop('📻 রেডিও বন্ধ'); store.set('kh-racer-radio', false); return; }
+  const g = ac.createGain(); g.gain.value = .0001; g.gain.setTargetAtTime(.55, ac.currentTime, .4); g.connect(master);
+  const SC = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16], root = pick([261.6, 293.7, 246.9]), bpm = pick([92, 100, 108]), beat = 60 / bpm / 2; // ৬/৮ তালের অর্ধমাত্রা
+  let t = ac.currentTime + .15, step = 0, deg = 4;
+  const fl = (fr, at, d) => { const o = ac.createOscillator(), v = ac.createOscillator(), vg = ac.createGain(), og = ac.createGain(); o.type = 'sine'; o.frequency.value = fr; v.frequency.value = 5.5; vg.gain.value = fr * .012; v.connect(vg); vg.connect(o.frequency);
+    og.gain.setValueAtTime(.0001, at); og.gain.exponentialRampToValueAtTime(.16, at + .06); og.gain.setTargetAtTime(.0001, at + d * .8, .08); o.connect(og); og.connect(g); o.start(at); v.start(at); o.stop(at + d + .4); v.stop(at + d + .4); };
+  const pluck = (fr, at) => { const o = ac.createOscillator(), og = ac.createGain(), lp = ac.createBiquadFilter(); o.type = 'sawtooth'; o.frequency.value = fr; lp.type = 'lowpass'; lp.frequency.setValueAtTime(3200, at); lp.frequency.exponentialRampToValueAtTime(500, at + .3);
+    og.gain.setValueAtTime(.12, at); og.gain.exponentialRampToValueAtTime(.0001, at + .45); o.connect(lp); lp.connect(og); og.connect(g); o.start(at); o.stop(at + .5); };
+  const drum = (at, low) => { const o = ac.createOscillator(), og = ac.createGain(); o.frequency.setValueAtTime(low ? 95 : 190, at); o.frequency.exponentialRampToValueAtTime(low ? 55 : 120, at + .2); og.gain.setValueAtTime(low ? .5 : .22, at); og.gain.exponentialRampToValueAtTime(.0001, at + .25); o.connect(og); og.connect(g); o.start(at); o.stop(at + .3); };
+  const tick = () => { while (t < ac.currentTime + .4) { const s6 = step % 6, bar = Math.floor(step / 6);
+      if (s6 === 0) drum(t, true); if (s6 === 3) drum(t, step % 12 === 9); if (s6 === 2 || s6 === 5) drum(t, false);
+      if (s6 === 0 || s6 === 3) pluck(root / 2 * Math.pow(2, SC[[0, 4, 0, 3][bar % 4] % 7] / 12), t);
+      if (Math.random() < (s6 === 0 ? 1 : .55)) { deg = clamp(deg + pick([-2, -1, -1, 0, 1, 1, 2]), 0, SC.length - 1); if (bar % 4 === 3 && s6 > 2) deg = 0; const d = beat * (s6 === 0 && Math.random() < .5 ? 3 : 1); fl(root * 2 * Math.pow(2, SC[deg] / 12), t, d); }
+      t += beat; step++; } };
+  tick(); radio = { g, timer: setInterval(tick, 120) }; $('radioB').classList.remove('off'); pop('📻 বাংলা সুর বাজছে'); store.set('kh-racer-radio', true);
+}
+$('radioB').onclick = () => radioToggle(); $('radioB').classList.add('off');
 // গাড়ি বাছাই (খেলা চলার সময় বদলানো যায় না: শুধু শুরুর আর শেষের পাতায়)
 const THUMB = {};
 function drawRides() {
-  $('rides').innerHTML = Object.entries(RIDES).map(([k, r]) => `<button data-ride="${k}" aria-pressed="${k === rideKey}"><span class="th"${THUMB[k] ? ` style="background-image:url(${THUMB[k]})"` : ''}>${THUMB[k] ? '' : r.ic}</span>${r.n}<small>${bn(r.vmax)} কিমি · পয়েন্ট ×${bn(r.mult)}</small></button>`).join('');
+  $('rides').innerHTML = Object.entries(RIDES).filter(([k]) => !SIM || RIDES[k].pax).map(([k, r]) => `<button data-ride="${k}" aria-pressed="${k === rideKey}"><span class="th"${THUMB[k] ? ` style="background-image:url(${THUMB[k]})"` : ''}>${THUMB[k] ? '' : r.ic}</span>${r.n}<small>${bn(r.vmax)} কিমি · পয়েন্ট ×${bn(r.mult)}</small></button>`).join('');
 }
 $('rides').addEventListener('click', e => { const b = e.target.closest('[data-ride]'); if (!b || (S && S.started && !S.over)) return; sfx('click'); setRide(b.dataset.ride); });
 // ছোট ছবি: প্রতিটা গাড়ি আলাদা করে একবার আঁকা
@@ -1190,7 +1309,7 @@ const CFG = Object.assign({ mode: 'auto', hand: 'r', gfx: 'auto', cam: 'far' }, 
 if (!CFG.v2) { if (CFG.mode === 'btn') CFG.mode = 'auto'; CFG.v2 = 1; } // নতুন: গাড়ি বুঝে স্টিয়ারিং
 const saveCfg = () => store.set('kh-racer-cfg', CFG);
 const KM = { ArrowLeft: 'l', KeyA: 'l', ArrowRight: 'r', KeyD: 'r', ArrowDown: 'b', KeyS: 'b', Space: 'n', ArrowUp: 'n', KeyW: 'n', ShiftLeft: 'n' };
-addEventListener('keydown', e => { const k = KM[e.code]; if (k) { keys[k] = 1; e.preventDefault(); } if (e.code === 'KeyH') $('horn').click(); if (e.code === 'KeyR') repair(); if (e.code === 'KeyC') $('camB').click(); if (e.code === 'Escape' || e.code === 'KeyP') { $('setO').hidden ? openSet() : closeSet(); } });
+addEventListener('keydown', e => { const k = KM[e.code]; if (k) { keys[k] = 1; e.preventDefault(); } if (e.code === 'KeyH') $('horn').click(); if (e.code === 'KeyR') repair(); if (e.code === 'KeyC') $('camB').click(); if (e.code === 'KeyG') toggleGear(); if (e.code === 'KeyM') radioToggle(); if (e.code === 'Escape' || e.code === 'KeyP') { $('setO').hidden ? openSet() : closeSet(); } });
 addEventListener('keyup', e => { const k = KM[e.code]; if (k) keys[k] = 0; });
 function holdBtn(b, down, up) {
   b.addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); b.classList.add('on'); down(); try { b.setPointerCapture(e.pointerId); } catch (x) {} if (navigator.vibrate) try { navigator.vibrate(8); } catch (x) {} });
@@ -1266,9 +1385,9 @@ lv = store.get('kh-racer-lv', 1); resize();
 if (!renderer) { $('loadT').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।'; }
 else {
   buildTrees();
-  buildMap(); buildStop();
+  buildMap(); buildStop(); buildPaxPeople();
   Promise.all([buildPlayer(), buildTraffic(), buildProps(), buildBazaar()]).then(async () => {
-    ready = true; await setRide(rideKey); resetWorld(lv); bendAll(); applyGfx(); renderer.compile(scene, cam); makeThumbs();
+    ready = true; await setRide(SIM && !RIDES[rideKey].pax ? 'bus_hino' : rideKey); drawMode(); resetWorld(lv); bendAll(); applyGfx(); renderer.compile(scene, cam); makeThumbs();
     $('loadB').hidden = true; $('loadT').textContent = 'গাড়ি রেডি! কোন সময়ের রাস্তায় নামবেন?'; document.querySelectorAll('[data-lv]').forEach(b => b.disabled = false);
   }).catch(err => { console.error(err); $('loadT').textContent = 'মডেল লোড হয়নি। নেট চেক করে পেজটা আবার খুলুন।'; });
 }
@@ -1287,19 +1406,22 @@ function gate() {
 onAuthStateChanged(auth, u => {
   user = u; if (!u) { prof = null; gate(); return; }
   onSnapshot(doc(db, 'users', u.uid), s => { prof = s.exists() ? s.data() : null; gate(); }, () => { prof = null; gate(); });
-  getDoc(doc(db, 'scores', GAME, 'players', u.uid)).then(d => { if (d.exists() && d.data().score > store.get('kh-racer-best', 0)) store.set('kh-racer-best', d.data().score); drawBest(); }).catch(() => {});
+  getDoc(doc(db, 'scores', GAME, 'players', u.uid)).then(d => { if (d.exists() && d.data().score > store.get(bestKey(), 0)) store.set(bestKey(), d.data().score); drawBest(); }).catch(() => {});
 });
 onSnapshot(doc(db, 'config', 'games'), d => { gameSt = ((d.exists() && d.data().status) || {})['হাইওয়ে রাজা'] || 'live'; if (gameSt === 'soon') gameSt = 'live'; gate(); }, () => {});
 onSnapshot(doc(db, 'config', 'site'), d => { siteMaint = !!(d.exists() && d.data().maintenance); gate(); }, () => {});
-function drawBest() { const b = store.get('kh-racer-best', 0); $('bestTxt').textContent = b ? 'আপনার সেরা স্কোর: ' + bn(b) : ''; }
+function drawBest() { const b = store.get(bestKey(), 0); $('bestTxt').textContent = b ? 'আপনার সেরা স্কোর: ' + bn(b) : ''; }
 drawBest();
 $('vcred').innerHTML = CREDIT_HTML + '।';
 let top = [];
-function drawLB() { const h = top.length ? '<h3>মহাসড়কের সেরা চালক</h3>' + top.map((r, i) => `<div class="${user && r.id === user.uid ? 'me' : ''}"><em>${bn(i + 1)}</em><span>${esc(r.name)}</span><b>${bn(r.score)}</b></div>`).join('') : ''; $('lb1').innerHTML = h; $('lb2').innerHTML = h; }
-onSnapshot(query(collection(db, 'scores', GAME, 'players'), orderBy('score', 'desc'), limit(10)), s => { top = (s.docs || []).map(d => ({ id: d.id, ...d.data() })); drawLB(); }, () => {});
+function drawLB() { const h = top.length ? '<h3>' + (SIM ? 'সেরা বাস চালক' : 'মহাসড়কের সেরা চালক') + '</h3>' + top.map((r, i) => `<div class="${user && r.id === user.uid ? 'me' : ''}"><em>${bn(i + 1)}</em><span>${esc(r.name)}</span><b>${bn(r.score)}</b></div>`).join('') : ''; $('lb1').innerHTML = h; $('lb2').innerHTML = h; }
+// রেস আর বাস সিমুলেটরের আলাদা লিডারবোর্ড
+const gid = () => SIM ? 'bussim' : GAME; let lbUnsub = null;
+function subLB() { if (lbUnsub) lbUnsub(); lbUnsub = onSnapshot(query(collection(db, 'scores', gid(), 'players'), orderBy('score', 'desc'), limit(10)), s => { top = (s.docs || []).map(d => ({ id: d.id, ...d.data() })); drawLB(); }, () => {}); drawBest(); }
+subLB();
 async function saveScore(sc) {
   if (!user || !prof || sc <= 0) return;
-  try { const ref = doc(db, 'scores', GAME, 'players', user.uid), d = await getDoc(ref); if (d.exists() && d.data().score >= sc) return; await setDoc(ref, { score: Math.min(100000, Math.round(sc)), name: prof.name, username: prof.username, at: serverTimestamp() }); } catch (e) {}
+  try { const ref = doc(db, 'scores', gid(), 'players', user.uid), d = await getDoc(ref); if (d.exists() && d.data().score >= sc) return; await setDoc(ref, { score: Math.min(100000, Math.round(sc)), name: prof.name, username: prof.username, at: serverTimestamp() }); } catch (e) {}
 }
 const MY_H = ['ভাই, সাইড দেন!', 'ডান লেন ফাঁকা করেন!', 'রসমালাই খাইতে কুমিল্লা যাইতেছি!', 'হর্ন শুনেন না নাকি?'];
 const OP_H = ['আস্তে চালান ভাই, জীবন একটাই!', 'এত তাড়া কিসের? প্লেন ধরবেন?', 'লেন মেনে চলেন!', 'পুলিশ সামনে, সাবধান!'];
