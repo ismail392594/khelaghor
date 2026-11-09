@@ -455,7 +455,7 @@ roadAt(0, false); roadAt(OPP, true);
 // মিডিয়ান: কংক্রিটের কার্ব আর মাঝে ঘাস
 const grassT = { map: tex('grass_diff.jpg', true, [1, 1]), normalMap: tex('grass_nor.jpg', false, [1, 1]), arm: tex('grass_arm.jpg', false, [1, 1]) };
 const grassMat = new THREE.MeshStandardMaterial({ polygonOffset: true, polygonOffsetFactor: 4, polygonOffsetUnits: 4, map: grassT.map, normalMap: grassT.normalMap, roughnessMap: grassT.arm, aoMap: grassT.arm, color: '#93b26c', roughness: 1 });
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(2600, 2600, 1, 420), grassMat); ground.rotation.x = -Math.PI / 2; ground.position.y = -.32; // রাস্তার চেয়ে নিচে, যাতে উঁচু-নিচু বাঁকে ঘাস রাস্তার উপর না ওঠে ground.receiveShadow = true; scene.add(ground);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(2600, 2600, 1, 420), grassMat); ground.rotation.x = -Math.PI / 2; ground.position.y = -.32; ground.receiveShadow = true; scene.add(ground); // রাস্তার চেয়ে নিচে, যাতে উঁচু-নিচু বাঁকে ঘাস রাস্তার উপর না ওঠে
 [grassT.map, grassT.normalMap, grassT.arm].forEach(t => t.repeat.set(2600 / 5, 2600 / 5));
 const curbMat = new THREE.MeshStandardMaterial({ color: '#a7a49c', roughness: .9 });
 for (const cx of [HALF + .15, MED * 2 - HALF - .15]) { const c = new THREE.Mesh(new THREE.BoxGeometry(.3, .18, ROAD_L, 1, 1, 124), curbMat); c.position.set(cx, .09, -ROAD_L / 2 + ROAD_BACK); c.receiveShadow = c.castShadow = true; world.add(c); }
@@ -533,7 +533,7 @@ async function setRide(key) {
     }
     body.add(rideModels[key]); bendAll(); const F = fleet[key]; carSize.set(F.conf.w / .72, F.size.y, F.size.z);
   }
-  $('paint').hidden = key !== 'sport'; drawRides(); applyCtl();
+  $('paint').hidden = key !== 'sport'; drawRides(); applyCtl(); layoutSeats();
 }
 const wheels = [], lights = {};
 async function buildPlayer() {
@@ -762,25 +762,37 @@ function drawStopPeople() {
     e.set(0, Math.atan2(cam.position.x - wx, cam.position.z - wz), 0); q.setFromEuler(e); m4.compose(v.set(wx, p.walk > .7 ? 0 : -.3, wz), q, sc.set(h * .5, h, 1)); stopPeople.setMatrixAt(i, m4); cell.setX(i, p.cell); });
   stopPeople.count = stopWait.length; stopPeople.instanceMatrix.needsUpdate = true; cell.needsUpdate = true;
 }
-// গাড়ির ভেতরের যাত্রী: জানালা দিয়ে দেখা যায় (একই আসল মানুষের ছবি), যত জন উঠেছে তত জন
-let paxPeople = null; const PAX_SLOTS = 24;
+// গাড়ির ভেতরের যাত্রী: সিটে বসা (কোমর পর্যন্ত আসল মানুষের ছবি), সামনের দিকে মুখ করে।
+// প্রতিজনের জন্য দুটো আড়াআড়ি ছবি: পেছন থেকে (মাথার পেছন) আর পাশ থেকে, তাই যেকোনো দিক থেকে ঠিক দেখায়।
+let paxBack = null, paxSide = null, seats = []; const PAX_SLOTS = 40;
 function buildPaxPeople() {
-  const g = stopPeople.geometry.clone(); g.setAttribute('cell', new THREE.InstancedBufferAttribute(new Float32Array(PAX_SLOTS), 1));
-  paxPeople = new THREE.InstancedMesh(g, stopPeople.material, PAX_SLOTS); paxPeople.frustumCulled = false; paxPeople.count = 0; scene.add(paxPeople);
+  const t = texL.load(A + 'people_seat.webp'); t.colorSpace = THREE.SRGBColorSpace;
+  const mk = () => { const g = new THREE.PlaneGeometry(1, 1); g.translate(0, .5, 0); g.setAttribute('cell', new THREE.InstancedBufferAttribute(new Float32Array(PAX_SLOTS), 1));
+    const m = new THREE.MeshStandardMaterial({ map: t, alphaTest: .5, side: THREE.DoubleSide, roughness: .9 }); m.userData.key = 'seat';
+    m.onBeforeCompile = sh => { sh.vertexShader = 'attribute float cell;\n' + sh.vertexShader.replace('#include <uv_vertex>', '#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv = vec2((vMapUv.x + cell) / 6.0, vMapUv.y);\n#endif'); };
+    const im = new THREE.InstancedMesh(g, m, PAX_SLOTS); im.frustumCulled = false; im.count = 0; scene.add(im); return im; };
+  paxBack = mk(); paxSide = mk();
+}
+function layoutSeats() { // গাড়ি অনুযায়ী সিটের সারি: বাসে ২+২, মাঝে হাঁটার পথ; হায়েসে ২ জন করে; সিএনজিতে পেছনে ৩ জন
+  seats = []; const F = fleet && fleet[rideKey]; if (!F || !R.pax) return; const kind = F.conf.kind, L = F.size.z, w = F.conf.w;
+  const floor = kind === 'bus' ? 1.0 : kind === 'cng' ? .38 : .52;
+  if (kind === 'cng') { for (const x of [-.36, 0, .36]) seats.push([x, floor, .25]); }
+  else { const cols = kind === 'bus' ? [-w * .34, -w * .16, w * .16, w * .34] : [-w * .2, w * .2], z0 = -L / 2 + (kind === 'bus' ? 2.4 : 1.7), z1 = L / 2 - (kind === 'bus' ? 1.2 : .9), pitch = kind === 'bus' ? .82 : .9;
+    for (let z = z0; z < z1 && seats.length < PAX_SLOTS; z += pitch) for (const x of cols) seats.push([x, floor, z]); }
+  // যাত্রীরা এলোমেলো সিটে বসে, কিন্তু খেলা জুড়ে একই সিটে
+  for (let i = seats.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [seats[i], seats[j]] = [seats[j], seats[i]]; }
+  seats.forEach((s, i) => s.push(Math.floor(Math.random() * 3), .95 + Math.random() * .1));
 }
 function drawPaxPeople() {
-  if (!paxPeople) return; const n = (S && S.started && R.pax && CFG.cam !== 'cockpit' && !S.crashed) ? Math.min(S.paxList.length, PAX_SLOTS) : 0; paxPeople.count = n; if (!n) return;
-  const F = fleet && fleet[rideKey]; if (!F) { paxPeople.count = 0; return; }
-  const kind = F.conf.kind, floor = kind === 'bus' ? .95 : kind === 'cng' ? .32 : .5, w = F.conf.w, L = F.size.z, room = F.size.y - floor - .2;
-  const yaw = player.rotation.y, cs = Math.cos(yaw), sn = Math.sin(yaw), m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3(), cell = paxPeople.geometry.attributes.cell;
-  const cols = kind === 'cng' ? [0] : [-w * .24, w * .24], front = -L / 2 + (kind === 'bus' ? 2.2 : kind === 'cng' ? 1.5 : 1.6), step = kind === 'bus' ? .95 : .8;
+  if (!paxBack) return; const n = (S && S.started && R.pax && CFG.cam !== 'cockpit' && !S.crashed) ? Math.min(S.paxList.length, seats.length) : 0; paxBack.count = paxSide.count = n; if (!n) return;
+  const yaw = player.rotation.y, body = player.userData.body, cs = Math.cos(yaw), sn = Math.sin(yaw), m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3();
+  const cb = paxBack.geometry.attributes.cell, csd = paxSide.geometry.attributes.cell, H = .92, Wd = H * .8;
   for (let i = 0; i < n; i++) {
-    const c = cols[i % cols.length], zz = front + Math.floor(i / cols.length) * step, h = Math.min(1.7, room) * (i % 3 === 0 ? 1 : .93);
-    const wx = S.x + c * cs + zz * sn, wz = S.z - c * sn + zz * cs;
-    e.set(0, Math.atan2(cam.position.x - wx, cam.position.z - wz), 0); q.setFromEuler(e); m4.compose(v.set(wx, floor + (player.userData.body.position.y || 0), wz), q, sc.set(h * .5, h, 1));
-    paxPeople.setMatrixAt(i, m4); cell.setX(i, (i * 4 + 1) % 9);
+    const [x, y, z, who, k] = seats[i], wx = S.x + x * cs + z * sn, wz = S.z - x * sn + z * cs, wy = y + body.position.y;
+    e.set(0, yaw, 0); q.setFromEuler(e); m4.compose(v.set(wx, wy, wz), q, sc.set(Wd * k, H * k, 1)); paxBack.setMatrixAt(i, m4); cb.setX(i, who * 2);
+    e.set(0, yaw + Math.PI / 2, 0); q.setFromEuler(e); m4.compose(v.set(wx, wy, wz), q, sc.set(Wd * .7 * k, H * k, 1)); paxSide.setMatrixAt(i, m4); csd.setX(i, who * 2 + 1);
   }
-  paxPeople.instanceMatrix.needsUpdate = true; cell.needsUpdate = true;
+  for (const im of [paxBack, paxSide]) { im.instanceMatrix.needsUpdate = true; im.geometry.attributes.cell.needsUpdate = true; }
 }
 // ক্ষতিগ্রস্ত গাড়ি থেকে ধোঁয়া (লাইফ ৪৫%-এর নিচে), খুব কম হলে কালো ধোঁয়া
 const smokeTex = ctex(64, 64, (x, w) => { const g = x.createRadialGradient(32, 32, 2, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,.9)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, w, w); });
@@ -993,7 +1005,8 @@ function step(dt) {
     if (R.snd === 'diesel' && st.braking && !brake && Math.abs(st.v) < 2 && (st.airT || 0) <= st.t - 3) { st.airT = st.t; sfx('air'); } // থেমে ব্রেক ছাড়লে এয়ার ব্রেকের পসস
     if (nitro) { st.nitro = Math.max(0, st.nitro - dt / 3.2); if (!st.nitroOn) { st.nitroOn = true; sfx('nitro'); if (Math.random() < .5) com('nitro'); } } else { st.nitroOn = false; st.nitro = Math.min(1, st.nitro + dt / 26); }
     // স্টিয়ারিং: গতি বাড়লে পাশের গতি একটু বেশি, তবে মসৃণ
-    const latT = steer * (5.5 + Math.abs(st.v) * .07) * R.steer * Math.min(1, Math.abs(st.v) / 6) * Math.sign(st.v || 1); // থামা গাড়ি পাশে সরে না st.lat += (latT - st.lat) * Math.min(1, dt * 6); st.x += st.lat * dt;
+    // থামা গাড়ি পাশে সরে না, পেছানোর সময় উল্টো
+    const latT = steer * (5.5 + Math.abs(st.v) * .07) * R.steer * Math.min(1, Math.abs(st.v) / 6) * Math.sign(st.v || 1); st.lat += (latT - st.lat) * Math.min(1, dt * 6); st.x += st.lat * dt;
     st.steerA += (steer * .3 / (1 + st.v / 10) - st.steerA) * Math.min(1, dt * 8); // জোরে চলার সময় চাকা সামান্যই বাঁকে
     const lim = HALF - carSize.x * .36 - .25;
     if (Math.abs(st.x) > lim) { st.x = Math.sign(st.x) * lim; st.lat = -st.lat * .25; st.v *= 1 - 1.8 * dt; st.shake = .25; if (st.scrapeT <= 0) { sfx('scrape'); st.scrapeT = .35; if (Math.random() < .5) com('scrape'); st.score = Math.max(0, st.score - 25); st.hp = Math.max(1, st.hp - 2 * R.armor); pop('-২৫ ঘষা!'); } }
@@ -1387,7 +1400,8 @@ else {
   buildTrees();
   buildMap(); buildStop(); buildPaxPeople();
   Promise.all([buildPlayer(), buildTraffic(), buildProps(), buildBazaar()]).then(async () => {
-    ready = true; await setRide(SIM && !RIDES[rideKey].pax ? 'bus_hino' : rideKey); drawMode(); resetWorld(lv); bendAll(); applyGfx(); renderer.compile(scene, cam); makeThumbs();
+    await setRide(SIM && !RIDES[rideKey].pax ? 'bus_hino' : rideKey); drawMode(); resetWorld(lv); bendAll(); applyGfx(); renderer.compile(scene, cam); makeThumbs();
+    ready = true; // সব লোড শেষে (আগে দিলে লোড শেষের resetWorld চলমান খেলা মুছে দিত)
     $('loadB').hidden = true; $('loadT').textContent = 'গাড়ি রেডি! কোন সময়ের রাস্তায় নামবেন?'; document.querySelectorAll('[data-lv]').forEach(b => b.disabled = false);
   }).catch(err => { console.error(err); $('loadT').textContent = 'মডেল লোড হয়নি। নেট চেক করে পেজটা আবার খুলুন।'; });
 }
