@@ -13,3 +13,10 @@ Poly Haven (https://polyhaven.com), সব CC0:
   grass_*.jpg ................. leafy_grass
   barrier.glb ................. concrete_road_barrier_02
   tree1.webp, tree2.webp ...... island_tree_01, island_tree_02 (ব্রাউজারে রেন্ডার করা ছবি)
+
+মানুষ (people.webp, আসল 3D স্ক্যান থেকে ছবি করা), CC-BY 4.0:
+  "Dennis Posed 004 - Male Standing Business Model" — Renderpeople — https://sketchfab.com/3d-models/dennis-posed-004-male-standing-business-model-e211ffd52a96416e89c0cc415a388d61
+  "Fabienne & Percy 001 - Mother and Child" — Renderpeople — https://sketchfab.com/3d-models/fabienne-percy-001-mother-and-child-8c9bfd4fb8a444b3a42a4fc31935a2fb
+  "Sophia Animated 003 - Animated 3D Woman" — Renderpeople — https://sketchfab.com/3d-models/sophia-animated-003-animated-3d-woman-dc448c3be0e74f96a55fb475a13433cf
+
+বাজার আর স্টপেজ: Poly Haven (CC0) — corrugated_iron_02, concrete_wall_004, rollershutter_door, plastic_monobloc_chair_01, wooden_crate_01

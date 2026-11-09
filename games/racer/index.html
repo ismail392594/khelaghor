@@ -36,6 +36,15 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .score b{display:block;font:800 2rem/1 var(--display);letter-spacing:.02em}
 .score small{font-weight:700;font-size:.72rem;color:#dbe6f3}
 .combo{display:inline-block;margin-top:4px;background:rgba(255,210,63,.9);color:#2a1d00;font:800 .8rem var(--display);padding:2px 10px;border-radius:99px}
+.life{position:absolute;left:max(12px,env(safe-area-inset-left,0px));top:calc(160px + env(safe-area-inset-top,0px));z-index:3;width:min(230px,58vw);background:rgba(10,14,20,.55);border-radius:10px;padding:6px 8px;backdrop-filter:blur(3px)}
+.hpbar{position:relative;height:16px;border-radius:8px;background:rgba(255,255,255,.15);overflow:hidden}.hpbar i{position:absolute;inset:0 auto 0 0;width:100%;background:linear-gradient(90deg,#22c55e,#a3e635);transition:width .3s}
+.hpbar i.mid{background:linear-gradient(90deg,#f59e0b,#facc15)}.hpbar i.low{background:linear-gradient(90deg,#dc2626,#f97316);animation:pulse .5s infinite alternate}
+.hpbar span{position:relative;display:block;text-align:center;font:800 .68rem/16px var(--display);text-shadow:0 1px 2px #000}
+.lrow{display:flex;gap:8px;align-items:center;margin-top:5px;font-weight:700;font-size:.8rem}.lrow b{font-family:var(--display);font-size:1rem;color:#fde68a}
+.lrow button{margin-left:auto;border:0;border-radius:9px;padding:4px 8px;font:800 .72rem var(--display);background:#f59e0b;color:#2a1a08;cursor:pointer}
+@keyframes pulse{to{filter:brightness(1.3)}}
+.stopHint{position:absolute;left:50%;top:calc(150px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:3;background:rgba(18,62,138,.88);color:#fff;font-weight:800;font-size:.86rem;padding:6px 14px;border-radius:12px;pointer-events:none;text-align:center;max-width:90vw}
+.stopHint .bar{height:6px;border-radius:6px;background:rgba(255,255,255,.25);margin-top:4px;overflow:hidden}.stopHint .bar i{display:block;height:100%;background:#4ade80}
 .dist svg{width:84px;height:84px;flex:none;border-radius:8px;background:rgba(0,0,0,.25)}.dist svg text{font:700 7px 'Noto Sans Bengali',sans-serif;fill:#fff;paint-order:stroke;stroke:rgba(0,0,0,.6);stroke-width:1.5px}
 .dist small{display:block;font-size:.66rem;color:#bfe8c9;margin-top:2px}
 .dist{display:flex;gap:8px;align-items:center;max-width:250px;position:absolute;left:max(12px,env(safe-area-inset-left,0px));top:calc(56px + env(safe-area-inset-top,0px));z-index:3;background:rgba(10,14,20,.5);border-left:4px solid #1f8a4c;border-radius:8px;padding:4px 10px;font-weight:700;font-size:.74rem;color:#e3efe6;pointer-events:none;backdrop-filter:blur(3px)}
@@ -146,9 +155,15 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
       <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
       <div class="score"><b id="sc">০</b><small id="scL">পয়েন্ট</small><div><span class="combo" id="combo" hidden></span></div></div>
       <button class="hb" id="horn" aria-label="হর্ন" style="font-size:1.15rem">📯</button>
+      <button class="hb" id="camB" aria-label="ক্যামেরা বদলান" style="font-size:1.05rem">🎥</button>
       <button class="hb" id="setB" aria-label="সেটিংস"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.6 7.6 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.6 7.6 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.6 7.6 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.6 7.6 0 0 0 1.7-1l2.5 1 2-3.5zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg></button>
       <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
     </div>
+    <div class="life" id="life" hidden>
+      <div class="hpbar"><i id="hpI"></i><span id="hpT">গাড়ির লাইফ ১০০%</span></div>
+      <div class="lrow"><b id="takaT">৳ ০</b><span id="paxT" hidden>👥 ০/৪০</span><button id="fixB" hidden>🔧 মেরামত</button></div>
+    </div>
+    <div class="stopHint" id="stopHint" hidden></div>
     <div class="dist" id="dist" hidden><svg viewBox="0 0 100 100" id="mapSvg" aria-label="ঢাকা-চট্টগ্রাম মানচিত্র"></svg><div>চট্টগ্রাম আর <b id="km">২৫০</b> কিমি<small id="mapNext"></small></div></div>
     <div class="com" id="com"></div>
     <div class="say" id="say" hidden></div>
@@ -196,7 +211,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
         <div class="acts"><button class="gbtn ghost mini" id="setB2">⚙️ নিয়ন্ত্রণ আর সেটিংস</button><a class="gbtn ghost mini" href="/">🏠 খেলা থেকে বের হই</a></div>
         <p class="small" id="bestTxt"></p>
         <div class="lb" id="lb1"></div>
-        <p class="credit"><span id="vcred"></span> আমার গাড়ি: <a href="https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept" target="_blank" rel="noopener">Car Concept</a> (Khronos Group, মূল মডেল Unity Fan), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0</a>, খেলাঘর ছোট করেছে আর লোগো সরিয়েছে। আকাশ, গাছ, ব্যারিয়ার, পিচ আর ঘাসের টেক্সচার: <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a> (CC0)।</p>
+        <p class="credit"><span id="vcred"></span> আমার গাড়ি: <a href="https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept" target="_blank" rel="noopener">Car Concept</a> (Khronos Group, মূল মডেল Unity Fan), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0</a>, খেলাঘর ছোট করেছে আর লোগো সরিয়েছে। স্টপেজের মানুষ: Renderpeople-এর 3D স্ক্যান (<a href="/games/racer/assets/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। আকাশ, গাছ, ব্যারিয়ার, বাজারের দেয়াল-টিন, পিচ আর ঘাসের টেক্সচার: <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a> (CC0)।</p>
       </div>
     </div>
 
@@ -206,6 +221,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
         <span class="title" id="endTitle"></span>
         <p class="story" id="endLine"></p>
         <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eD">০</b><span>কিমি পথ</span></div><div><b id="eN">০</b><span>কান ঘেঁষা</span></div></div>
+        <div class="stats"><div><b id="eM">৳ ০</b><span>এই খেলার আয়</span></div><div><b id="eP">০</b><span>যাত্রী পৌঁছানো</span></div><div><b id="eW">৳ ০</b><span>মোট জমা</span></div></div>
         <p class="small" id="eBest"></p>
         <p class="tip" id="eTip"></p>
         <div class="gvid"></div>
@@ -221,7 +237,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
         <div class="setrow"><span>বোতামের দিক</span><div class="seg" id="sHand"><button data-v="r">স্টিয়ারিং বামে</button><button data-v="l">স্টিয়ারিং ডানে</button></div></div>
         <div class="setrow"><span>শব্দ <b id="volT"></b></span><input type="range" id="sVol" min="0" max="100" step="5" aria-label="শব্দের মাত্রা"></div>
         <div class="setrow"><span>গ্রাফিক্স <small id="gfxT"></small></span><div class="seg" id="sGfx"><button data-v="auto">অটো (ফোন বুঝে)</button><button data-v="high">উঁচু</button><button data-v="mid">মাঝারি</button><button data-v="low">কম (দ্রুত)</button></div></div>
-        <div class="setrow"><span>ক্যামেরা</span><div class="seg" id="sCam"><button data-v="far">পেছন থেকে</button><button data-v="near">কাছ থেকে</button></div></div>
+        <div class="setrow"><span>ক্যামেরা</span><div class="seg" id="sCam"><button data-v="far">পেছন থেকে</button><button data-v="near">কাছ থেকে</button><button data-v="cockpit">ড্রাইভারের সিট</button><button data-v="top">উপর থেকে</button></div></div>
         <div class="acts"><button class="gbtn" id="setClose">ঠিক আছে</button><button class="gbtn ghost" id="setQuit" hidden>খেলা ছেড়ে দিই</button><a class="gbtn ghost" href="/">🏠 হাবে ফিরি</a></div>
       </div>
     </div>
@@ -326,7 +342,9 @@ const SFX = {
   scrape() { const t = ac.currentTime; noise(t, .35, .5, 3200, 'bandpass', 2000, 3); },
   nitro() { const t = ac.currentTime; noise(t, .8, .6, 300, 'lowpass', 2500); },
   go() { const t = ac.currentTime; [523, 784].forEach((f, i) => tone(f, t + i * .12, .3, 'triangle', .3)); },
-  click() { const t = ac.currentTime; tone(1200, t, .04, 'square', .05); }
+  click() { const t = ac.currentTime; tone(1200, t, .04, 'square', .05); },
+  bump() { const t = ac.currentTime; noise(t, .45, .8, 900, 'lowpass', 200); tone(95, t, .3, 'sine', .7, 45); for (let i = 0; i < 4; i++) tone(rnd(2000, 4000), t + .05 + i * .04, .1, 'triangle', .05); },
+  fix() { const t = ac.currentTime; for (let i = 0; i < 4; i++) { noise(t + i * .18, .08, .4, 3500, 'bandpass', 0, 6); tone(1800, t + i * .18, .05, 'square', .04); } }
 };
 function sfx(n, a) { if (!sndOn || !audio()) return; try { SFX[n](a); } catch (e) {} }
 $('snd').onclick = () => { sndOn = !sndOn; store.set('kh-sfx', sndOn); $('snd').classList.toggle('off', !sndOn); audio(); setVol(); if (sndOn && S && S.started && !S.over) engineOn(); };
@@ -674,6 +692,109 @@ function placeBazaar(st, first) {
   bazaarName = nt[0]; drawBazaarSign();
 }
 
+/* ================= বাস স্টপেজ, যাত্রী, ভাড়া ================= */
+// মানুষ: Renderpeople-এর আসল স্ক্যান (CC-BY) আগে থেকে ছবি করা, ৩ জন × ৩ দিক = ৯ ঘরের atlas
+const pplTex = texL.load(A + 'people.webp'); pplTex.colorSpace = THREE.SRGBColorSpace;
+const PPL_H = [1.74, 1.66, 1.63], MAXW = 12;
+const stopG = new THREE.Group(); stopG.position.z = -900; scene.add(stopG);
+const STOP_X = -HALF - .9; // শোল্ডারে বাস থামার জায়গা (রাস্তার বাম কিনারা)
+let stopPeople = null, stopName = '', stopWait = [];
+function buildStop() {
+  // ছাউনি: খুঁটি, টিনের চাল, বেঞ্চ; শোল্ডারে হলুদ দাগ; নামের সাইন
+  const tinM = new THREE.MeshStandardMaterial({ map: tex('tin_diff.jpg', true, [2, 1]), roughness: .5, metalness: .6, color: '#b9c3c9' }), postM = M('#58606a', .5, .7);
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(2.6, .06, 7), tinM); roof.position.set(-HALF - 3.6, 2.7, 0); roof.rotation.z = .08; roof.castShadow = true; stopG.add(roof);
+  for (const [dx, dz] of [[-1.1, -3.2], [-1.1, 3.2], [1.1, -3.2], [1.1, 3.2]]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(.05, .05, 2.7, 8), postM); p.position.set(-HALF - 3.6 + dx, 1.35, dz); p.castShadow = true; stopG.add(p); }
+  const bench = new THREE.Mesh(new THREE.BoxGeometry(.45, .08, 5), M('#7a5a3a', .8)); bench.position.set(-HALF - 4.4, .48, 0); stopG.add(bench);
+  const bay = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 16), new THREE.MeshStandardMaterial({ map: ctex(64, 256, (x, w, h) => { x.strokeStyle = '#f2c230'; x.lineWidth = 5; for (let y = -64; y < h + 64; y += 22) { x.beginPath(); x.moveTo(0, y); x.lineTo(w, y + 30); x.stroke(); } }), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 }));
+  bay.rotation.x = -Math.PI / 2; bay.position.set(STOP_X, .006, 0); stopG.add(bay);
+  const st = new THREE.Mesh(new THREE.PlaneGeometry(2.4, .7), new THREE.MeshStandardMaterial({ map: stopSignTex, roughness: .6, side: THREE.DoubleSide })); st.position.set(-HALF - 2.25, 2.35, -3.6); st.rotation.y = Math.PI / 2; stopG.add(st);
+  // অপেক্ষার মানুষ: ক্যামেরার দিকে মুখ করা ছবি, atlas-এর ঘর আলাদা
+  const g = new THREE.PlaneGeometry(1, 1); g.translate(0, .5, 0); g.setAttribute('cell', new THREE.InstancedBufferAttribute(new Float32Array(MAXW), 1));
+  const m = new THREE.MeshBasicMaterial({ map: pplTex, alphaTest: .5, side: THREE.DoubleSide, color: '#e6e2da' }); m.userData.key = 'ppl';
+  m.onBeforeCompile = sh => { sh.vertexShader = 'attribute float cell;\n' + sh.vertexShader.replace('#include <uv_vertex>', '#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv = vec2((vMapUv.x + cell) / 9.0, vMapUv.y);\n#endif'); };
+  stopPeople = new THREE.InstancedMesh(g, m, MAXW); stopPeople.frustumCulled = false; stopPeople.count = 0; scene.add(stopPeople);
+}
+const stopSignTex = ctex(512, 150, () => {}), ssCtx = stopSignTex.image.getContext('2d');
+function drawStopSign() { const x = ssCtx; x.fillStyle = '#0b5d3b'; x.fillRect(0, 0, 512, 150); x.fillStyle = '#fff'; x.textAlign = 'center'; x.font = "800 50px 'Noto Sans Bengali',sans-serif"; x.fillText('🚏 ' + stopName, 256, 70); x.font = "700 34px 'Noto Sans Bengali',sans-serif"; x.fillStyle = '#ffd23f'; x.fillText('বাস স্টপেজ', 256, 125); stopSignTex.needsUpdate = true; }
+function placeStop(st, first) {
+  stopG.position.z = st.z - (first ? rnd(420, 600) : rnd(1100, 2000));
+  const km = (st.dist + (st.z - stopG.position.z)) / 1000, nt = TOWNS.slice().sort((a, b) => Math.abs(a[1] - km) - Math.abs(b[1] - km))[0];
+  stopName = nt[0] + pick([' বাসস্ট্যান্ড', ' মোড়', ' বাজার স্টপেজ', ' কলেজ গেট']); drawStopSign();
+  const n = R.pax ? Math.min(MAXW, Math.max(1, Math.round(rnd(2, 10) * (R.pax < 5 ? .3 : 1)))) : Math.floor(rnd(1, 6));
+  stopWait = Array.from({ length: n }, (_, i) => ({ cell: Math.floor(Math.random() * 9), x: -HALF - rnd(2.6, 4.6), z: rnd(-3, 3) + (i % 2) * .4 }));
+  st.stop = { z: stopG.position.z, served: false, dwell: 0, said: false, alight: 0 };
+}
+function drawStopPeople() {
+  if (!stopPeople) return; const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3(), cell = stopPeople.geometry.attributes.cell;
+  stopWait.forEach((p, i) => { const wx = p.walk ? p.x + (STOP_X - p.x) * p.walk : p.x, wz = stopG.position.z + p.z, h = PPL_H[Math.floor(p.cell / 3)];
+    e.set(0, Math.atan2(cam.position.x - wx, cam.position.z - wz), 0); q.setFromEuler(e); m4.compose(v.set(wx, 0, wz), q, sc.set(h * .5, h, 1)); stopPeople.setMatrixAt(i, m4); cell.setX(i, p.cell); });
+  stopPeople.count = stopWait.length; stopPeople.instanceMatrix.needsUpdate = true; cell.needsUpdate = true;
+}
+// হেল্পার আর যাত্রীদের কথা (বুদবুদে, AI কণ্ঠে)
+const HELPER = {
+  near: ['ওস্তাদ, সামনে স্টপেজ, বামে চাপান!', 'বামে বামে ওস্তাদ, যাত্রী খাড়াইয়া আছে!'],
+  board: ['উঠেন উঠেন, পিছনে সিট খালি!', 'আস্তে উঠেন, বাম পা আগে!', 'ভাড়া ভাংতি রাখেন, ভাংতি নাই!'],
+  go: ['ডাবল! ওস্তাদ, ছাড়েন!', 'হইছে, টান দেন ওস্তাদ!'],
+  skip: ['ওস্তাদ, স্টপেজ ছাইড়া দিলেন! যাত্রী রাগ করতেছে!', 'থামাইলেন না? মালিক শুনলে খবর আছে!'],
+  hit: ['ওস্তাদ! ধাক্কা লাগছে, বডি গেল!', 'আল্লাহ বাঁচাইছে! ওস্তাদ, দেইখা চালান!'],
+  near2: ['ওস্তাদ, আরেকটু হইলে গেছিলাম!', 'কান ঘেঁইষা গেলাম ওস্তাদ, বুক ধড়ফড় করে!'],
+  low: ['ইঞ্জিন গরম, গাড়ি মেরামত লাগবো ওস্তাদ!', 'চাকা কাঁপতেছে, মেরামত করেন!'],
+  full: ['গাড়ি ফুল ওস্তাদ, আর উঠানো যাইবো না!']
+};
+const PAX = ['ভাই একটু আস্তে চালান, বাচ্চা আছে!', 'জানালাটা খুলেন, গরম লাগে!', 'কুমিল্লা নামবো, মনে কইরা থামাইয়েন!', 'গান বন্ধ করেন, মাথা ধরছে!', 'ড্রাইভার সাহেব, এত ব্রেক কষেন কেন?', 'ভাড়া এত বেশি কেন, গতকাল তো কম ছিল!', 'আর কতক্ষণ লাগবো ভাই?', 'সামনের সিটে একটু জায়গা দেন!'];
+let talkT = 0;
+function helperSay(k) { if (!R.helper || !window.KHViral || talkT > 0) return; talkT = 6; KHViral.pop(pick(HELPER[k]), 'M2', '🧑 হেল্পার'); }
+function paxSay() { if (!window.KHViral || talkT > 0) return; talkT = 7; KHViral.pop(pick(PAX), pick(['F2', 'C1', 'M3', 'F1']), '🧍 যাত্রী'); }
+let wallet = store.get('kh-racer-taka', 300); // জমানো টাকা (মেরামতে খরচ হয়)
+function addTaka(n) { S.money += n; wallet += n; store.set('kh-racer-taka', wallet); }
+function stopStep(st, dt) {
+  const s = st.stop; if (!s) return; const dz = st.z - s.z;
+  if (R.pax) {
+    if (!s.said && dz < 220 && dz > 40) { s.said = true; helperSay('near'); }
+    const atBay = Math.abs(dz) < 9 && st.x < LANES[0] + .6 && st.v < 7 / KMH && !st.crashed;
+    if (atBay && !s.served) {
+      s.dwell += dt; const need = 2.4, f = Math.min(1, s.dwell / need);
+      $('stopHint').hidden = false; $('stopHint').innerHTML = `🚏 ${stopName}: যাত্রী ওঠানামা<div class="bar"><i style="width:${Math.round(f * 100)}%"></i></div>`;
+      stopWait.forEach((p, i) => { p.walk = Math.min(1, f * 1.3 - i * .05); });
+      if (s.dwell >= need) { // নামা আর ওঠা
+        const off = st.paxList.filter(p => p.dest <= 0); st.paxList = st.paxList.filter(p => p.dest > 0); off.forEach(p => addTaka(p.fare)); st.carried += off.length;
+        const space = R.pax - st.paxList.length, on = Math.min(space, stopWait.length); let fares = 0;
+        for (let i = 0; i < on; i++) { const d = 1 + Math.floor(Math.random() * 4), fare = (R.pax < 5 ? 40 : 20) + d * (R.pax < 5 ? 25 : 15); st.paxList.push({ dest: d, fare }); fares += fare; }
+        stopWait = stopWait.slice(on); s.served = true; $('stopHint').hidden = true;
+        pop(`${off.length ? `${bn(off.length)} জন নামল · ` : ''}${bn(on)} জন উঠল · ভাড়া ৳${bn(off.reduce((a, p) => a + p.fare, 0))}`); sfx('combo');
+        st.score += (off.length * 40 + on * 20) * R.mult; helperSay(on ? (space <= on ? 'full' : 'go') : 'go'); if (on) setTimeout(() => helperSay('board'), 2500);
+      }
+    } else if (!atBay) { $('stopHint').hidden = true; if (s.dwell > 0 && !s.served) s.dwell = Math.max(0, s.dwell - dt * 2); }
+  }
+  if (dz < -30) { // স্টপেজ পেছনে পড়ল
+    if (R.pax && !s.served && (stopWait.length || st.paxList.some(p => p.dest <= 0))) { helperSay('skip'); st.score = Math.max(0, st.score - 50); }
+    st.paxList.forEach(p => p.dest--); $('stopHint').hidden = true; placeStop(st, false);
+  }
+}
+// গাড়ির লাইফ: ধাক্কায় কমে, শূন্য হলে খেলা শেষ; টাকা দিয়ে চলন্ত অবস্থাতেই মেরামত
+const fixCost = () => Math.ceil((100 - S.hp) * 4);
+function hitCar(c, dz) {
+  const st = S; if (st.inv > 0 || c.ghost) return; c.ghost = true;
+  const rel = Math.abs(st.v - (c.wrong ? -c.v : c.v)), dmg = clamp((10 + rel * 1.4) * R.armor, 6, 70);
+  st.hp -= dmg; st.inv = 1.2; c.hit = true; c.spin = rnd(-1.4, 1.4); c.v *= .4;
+  st.lat = (c.x > st.x ? -1 : 1) * rnd(3, 5.5); st.v *= dz < 0 ? .45 : .8; st.shake = .8;
+  $('flash').classList.remove('go'); void $('flash').offsetWidth; $('flash').classList.add('go'); if (navigator.vibrate) try { navigator.vibrate([60, 30, 90]); } catch (e) {}
+  sfx('bump'); pop(`💥 লাইফ -${bn(Math.round(dmg))}%`); helperSay('hit'); st.combo = 0; $('combo').hidden = true;
+  if (st.hp <= 0) { st.hp = 0; crash(c, dz); } else if (st.hp < 35) setTimeout(() => helperSay('low'), 3000);
+}
+function repair() {
+  if (!S || !S.started || S.over || S.hp >= 100) return; const cost = fixCost();
+  if (wallet <= 0) { pop('টাকা নেই! যাত্রী তুলে আয় করুন'); return; }
+  const pay = Math.min(wallet, cost), gain = pay / 4; wallet -= pay; store.set('kh-racer-taka', wallet); S.hp = Math.min(100, S.hp + gain); S.repairs += pay;
+  pop(`🔧 মেরামত: ৳${bn(pay)} খরচ, লাইফ ${bn(Math.round(S.hp))}%`); sfx('fix');
+}
+function lifeHud() {
+  const hp = Math.max(0, Math.round(S.hp)), i = $('hpI'); i.style.width = hp + '%'; i.className = hp < 35 ? 'low' : hp < 65 ? 'mid' : '';
+  $('hpT').textContent = 'গাড়ির লাইফ ' + bn(hp) + '%'; $('takaT').textContent = '৳ ' + bn(Math.round(wallet));
+  $('paxT').hidden = !R.pax; $('paxT').textContent = '👥 ' + bn(S.paxList.length) + '/' + bn(R.pax);
+  const fb = $('fixB'); fb.hidden = hp >= 100; fb.textContent = '🔧 মেরামত ৳' + bn(Math.min(fixCost(), Math.max(0, Math.round(wallet))));
+}
+
 /* ================= মানচিত্র (ঢাকা → চট্টগ্রাম) ================= */
 const mapXY = (lon, lat) => [6 + (lon - 90.45) / (91.88 - 90.45) * 88, 6 + (23.76 - lat) / (23.76 - 22.30) * 88];
 function buildMap() {
@@ -701,7 +822,7 @@ const LV = [
 let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0, ready = false;
 const keys = { l: 0, r: 0, b: 0, n: 0 }, touchSteer = new Map();
 function newState(level) {
-  return { wrongT: 12, lv: level, x: LANES[1], z: 0, v: 70 / KMH, lat: 0, yaw: 0, steerA: 0, dist: 0, score: 0, near: 0, combo: 0, comboT: 0, nitro: 1, t: 0, over: false, crashed: false, crashT: 0, spinV: 0, scrapeT: 0, cars: [], opp: [], nextComment: 6, fastT: 0, started: false, signKm: 249, limitKm: 0.5, shake: 0 };
+  return { hp: 100, inv: 0, money: 0, paxList: [], carried: 0, repairs: 0, stop: null, kmAcc: 0, wrongT: 12, lv: level, x: LANES[1], z: 0, v: 70 / KMH, lat: 0, yaw: 0, steerA: 0, dist: 0, score: 0, near: 0, combo: 0, comboT: 0, nitro: 1, t: 0, over: false, crashed: false, crashT: 0, spinV: 0, scrapeT: 0, cars: [], opp: [], nextComment: 6, fastT: 0, started: false, signKm: 249, limitKm: 0.5, shake: 0 };
 }
 function pickType(st) { // জায়গা খালি আছে এমন ধরন থেকে ওজন অনুযায়ী
   const used = {}; for (const c of st.cars.concat(st.opp)) used[c.type] = (used[c.type] || 0) + 1;
@@ -735,7 +856,7 @@ function resetWorld(level) {
   S = newState(level); for (let i = 0; i < LV[level].dens; i++) spawnCar(S, true); for (let i = 0; i < LV[level].opp; i++) spawnCar(S, true, true);
   S.cars.forEach((c, i) => c.z = S.z - 60 - i * (420 / LV[level].dens) - rnd(0, 15));
   S.opp.forEach(c => c.z = S.z - rnd(-60, 650));
-  culvert.position.z = S.z - 500; placeBazaar(S, true); BEND.value.set(0, 0); bendTo.set(0, 0); bendLeft = 300;
+  culvert.position.z = S.z - 500; placeBazaar(S, true); placeStop(S, true); BEND.value.set(0, 0); bendTo.set(0, 0); bendLeft = 300;
   S.signKm = .4; drawSign(S.signKm); sign.position.z = S.z - 380; limSign.position.z = S.z - 700;
   TREES.forEach(t => t.z = S.z - rnd(-40, 700));
   if (player) { player.position.set(S.x, 0, S.z); player.rotation.set(0, 0, 0); player.userData.body.rotation.set(0, 0, 0); player.userData.body.position.set(0, 0, 0); }
@@ -763,18 +884,18 @@ function pop(text) { const e = document.createElement('div'); e.className = 'pop
 /* ================= ধাপ (ফিজিক্স) ================= */
 // খেলোয়াড় যে গাড়ি চালাবে: সর্বোচ্চ গতি, নাইট্রো, টান, মোড় নেওয়া, পয়েন্টের গুণ, ইঞ্জিনের সুর, স্টিয়ারিং চাকা কিনা
 const RIDES = {
-  sport:      { n: 'স্পোর্টস কার', ic: '🏎️', vmax: 205, nit: 265, acc: 5.2, steer: 1, mult: 1, pitch: 1, wheel: true },
-  corolla:    { n: 'টয়োটা করোলা', ic: '🚗', vmax: 175, nit: 215, acc: 4.6, steer: .95, mult: 1.15, pitch: .95, wheel: true },
-  noah:       { n: 'টয়োটা নোয়া', ic: '🚙', vmax: 165, nit: 200, acc: 4.2, steer: .9, mult: 1.2, pitch: .9, wheel: true },
-  hiace:      { n: 'হায়েস মাইক্রোবাস', ic: '🚐', vmax: 150, nit: 185, acc: 3.8, steer: .85, mult: 1.3, pitch: .85, wheel: true },
-  hilux:      { n: 'হাইলাক্স পিকআপ', ic: '🛻', vmax: 165, nit: 200, acc: 4.4, steer: .9, mult: 1.2, pitch: .8, wheel: true },
-  bus_hino:   { n: 'হিনো বাস', ic: '🚌', vmax: 115, nit: 135, acc: 2.6, steer: .6, mult: 1.8, pitch: .62, wheel: true },
-  bus_coach:  { n: 'দূরপাল্লার কোচ', ic: '🚍', vmax: 120, nit: 140, acc: 2.6, steer: .6, mult: 1.8, pitch: .62, wheel: true },
-  bus_mini:   { n: 'লোকাল মিনিবাস', ic: '🚎', vmax: 100, nit: 120, acc: 2.8, steer: .65, mult: 1.9, pitch: .68, wheel: true },
-  truck_al:   { n: 'অশোক লেল্যান্ড ট্রাক', ic: '🚚', vmax: 95, nit: 115, acc: 2.3, steer: .55, mult: 2, pitch: .55, wheel: true },
-  truck_tata: { n: 'টাটা ট্রাক', ic: '🚛', vmax: 95, nit: 115, acc: 2.3, steer: .55, mult: 2, pitch: .55, wheel: true },
-  cng:        { n: 'সিএনজি', ic: '🛺', vmax: 70, nit: 85, acc: 3.2, steer: 1.1, mult: 2.4, pitch: 1.45, wheel: false },
-  moto:       { n: 'মোটরসাইকেল', ic: '🏍️', vmax: 140, nit: 170, acc: 6, steer: 1.3, mult: 1.4, pitch: 1.35, wheel: false }
+  sport:      { n: 'স্পোর্টস কার', ic: '🏎️', vmax: 205, nit: 265, acc: 5.2, steer: 1, mult: 1, pitch: 1, wheel: true , pax: 0, armor: 1, helper: false },
+  corolla:    { n: 'টয়োটা করোলা', ic: '🚗', vmax: 175, nit: 215, acc: 4.6, steer: .95, mult: 1.15, pitch: .95, wheel: true , pax: 0, armor: 1, helper: false },
+  noah:       { n: 'টয়োটা নোয়া', ic: '🚙', vmax: 165, nit: 200, acc: 4.2, steer: .9, mult: 1.2, pitch: .9, wheel: true , pax: 0, armor: 0.95, helper: false },
+  hiace:      { n: 'হায়েস মাইক্রোবাস', ic: '🚐', vmax: 150, nit: 185, acc: 3.8, steer: .85, mult: 1.3, pitch: .85, wheel: true , pax: 12, armor: 0.9, helper: true },
+  hilux:      { n: 'হাইলাক্স পিকআপ', ic: '🛻', vmax: 165, nit: 200, acc: 4.4, steer: .9, mult: 1.2, pitch: .8, wheel: true , pax: 0, armor: 0.85, helper: false },
+  bus_hino:   { n: 'হিনো বাস', ic: '🚌', vmax: 115, nit: 135, acc: 2.6, steer: .6, mult: 1.8, pitch: .62, wheel: true , pax: 40, armor: 0.55, helper: true },
+  bus_coach:  { n: 'দূরপাল্লার কোচ', ic: '🚍', vmax: 120, nit: 140, acc: 2.6, steer: .6, mult: 1.8, pitch: .62, wheel: true , pax: 36, armor: 0.55, helper: true },
+  bus_mini:   { n: 'লোকাল মিনিবাস', ic: '🚎', vmax: 100, nit: 120, acc: 2.8, steer: .65, mult: 1.9, pitch: .68, wheel: true , pax: 28, armor: 0.6, helper: true },
+  truck_al:   { n: 'অশোক লেল্যান্ড ট্রাক', ic: '🚚', vmax: 95, nit: 115, acc: 2.3, steer: .55, mult: 2, pitch: .55, wheel: true , pax: 0, armor: 0.5, helper: true },
+  truck_tata: { n: 'টাটা ট্রাক', ic: '🚛', vmax: 95, nit: 115, acc: 2.3, steer: .55, mult: 2, pitch: .55, wheel: true , pax: 0, armor: 0.5, helper: true },
+  cng:        { n: 'সিএনজি', ic: '🛺', vmax: 70, nit: 85, acc: 3.2, steer: 1.1, mult: 2.4, pitch: 1.45, wheel: false , pax: 3, armor: 1.3, helper: false },
+  moto:       { n: 'মোটরসাইকেল', ic: '🏍️', vmax: 140, nit: 170, acc: 6, steer: 1.3, mult: 1.4, pitch: 1.35, wheel: false , pax: 0, armor: 1.8, helper: false }
 };
 let rideKey = RIDES[store.get('kh-racer-ride', 'sport')] ? store.get('kh-racer-ride', 'sport') : 'sport', R = RIDES[rideKey];
 let VMAX = R.vmax / KMH, VNIT = R.nit / KMH; const VMIN = 25 / KMH;
@@ -789,15 +910,19 @@ function step(dt) {
     const brake = keys.b, nitro = keys.n && st.nitro > .02 && !brake;
     // গতি: অটো এক্সিলারেটর, ব্রেক, নাইট্রো
     const vmax = nitro ? VNIT : VMAX; let acc = brake ? -11 - R.acc : (nitro ? R.acc * 1.7 : R.acc) * (1 - st.v / vmax) + (st.v > vmax ? -4 : 0);
-    st.v = clamp(st.v + acc * dt, Math.min(VMIN, VMAX * .4) * (brake ? .6 : 1), VNIT);
+    st.v = clamp(st.v + acc * dt, 0, VNIT); // ব্রেক চেপে পুরো থামা যায় (স্টপেজে যাত্রী ওঠানামা)
     if (nitro) { st.nitro = Math.max(0, st.nitro - dt / 3.2); if (!st.nitroOn) { st.nitroOn = true; sfx('nitro'); if (Math.random() < .5) com('nitro'); } } else { st.nitroOn = false; st.nitro = Math.min(1, st.nitro + dt / 26); }
     // স্টিয়ারিং: গতি বাড়লে পাশের গতি একটু বেশি, তবে মসৃণ
     const latT = steer * (5.5 + st.v * .07) * R.steer; st.lat += (latT - st.lat) * Math.min(1, dt * 6); st.x += st.lat * dt;
     st.steerA += (steer * .3 / (1 + st.v / 10) - st.steerA) * Math.min(1, dt * 8); // জোরে চলার সময় চাকা সামান্যই বাঁকে
     const lim = HALF - carSize.x * .36 - .25;
-    if (Math.abs(st.x) > lim) { st.x = Math.sign(st.x) * lim; st.lat = -st.lat * .25; st.v *= 1 - 1.8 * dt; st.shake = .25; if (st.scrapeT <= 0) { sfx('scrape'); st.scrapeT = .35; if (Math.random() < .5) com('scrape'); st.score = Math.max(0, st.score - 25); pop('-২৫ ঘষা!'); } }
+    if (Math.abs(st.x) > lim) { st.x = Math.sign(st.x) * lim; st.lat = -st.lat * .25; st.v *= 1 - 1.8 * dt; st.shake = .25; if (st.scrapeT <= 0) { sfx('scrape'); st.scrapeT = .35; if (Math.random() < .5) com('scrape'); st.score = Math.max(0, st.score - 25); st.hp = Math.max(1, st.hp - 2 * R.armor); pop('-২৫ ঘষা!'); } }
     st.scrapeT -= dt;
     st.z -= st.v * dt; st.dist += st.v * dt;
+    st.inv = Math.max(0, st.inv - dt); talkT -= dt;
+    // যাত্রী ছাড়া গাড়িতে কিলোমিটার প্রতি আয় (ট্রাকে মাল, কারে রাইড শেয়ার)
+    if ((st.kmAcc += st.v * dt) >= 1000) { st.kmAcc -= 1000; const r = R.pax ? 2 : /truck/.test(rideKey) ? 8 : rideKey === 'moto' ? 3 : 5; addTaka(r); }
+    if (st.paxList.length && Math.random() < dt / 28) paxSay();
     // বাঁকে গাড়ি বাইরের দিকে সরে যায়: স্টিয়ারিং দিয়ে ধরে রাখতে হয়
     bendStep(st, dt); st.x -= BEND.value.x * st.v * st.v * 1.6 * dt;
     // পয়েন্ট: দূরত্ব, ১০০+ গতিতে বেশি
@@ -847,16 +972,17 @@ function step(dt) {
     const cw = carSize.x * .72, cl = carSize.z; // আয়না বাদে আমার গাড়ির চওড়া
     for (const c of st.cars) {
       const dx = Math.abs(c.x - st.x), dz = c.z - st.z;
-      if (dx < cw * .47 + c.hw * .92 && Math.abs(dz) < cl * .46 + c.hl * .95) { crash(c, dz); break; }
+      if (!c.ghost && dx < cw * .47 + c.hw * .92 && Math.abs(dz) < cl * .46 + c.hl * .95) { hitCar(c, dz); if (st.crashed) break; }
       if (!c.passed && dz > cl * .5 + c.hl) {
         c.passed = true;
         if (dx < cw * .5 + c.hw + 1.0 && st.v > VMAX * .45) {
-          st.combo++; st.comboT = 4; st.near++; const pts = Math.round(100 * st.combo * R.mult); st.score += pts; sfx('whoosh');
+          if (Math.random() < .35) helperSay('near2'); st.combo++; st.comboT = 4; st.near++; const pts = Math.round(100 * st.combo * R.mult); st.score += pts; sfx('whoosh');
           pop(`কান ঘেঁষা! +${bn(pts)}`); if (st.combo > 1) { $('combo').hidden = false; $('combo').textContent = `কম্বো ×${bn(st.combo)}`; if (st.combo % 3 === 0) { sfx('combo'); com('combo'); shout(`×${bn(st.combo)}!`, '#ffd23f'); } } else if (Math.random() < .45) com('near');
         } else if (dx < 5.5 && st.v * KMH > 40) sfx('pass', dx < 3.5);
       }
     }
   }
+  stopStep(st, dt);
   // কালভার্ট আর বাজার পেছনে পড়লে সামনে নতুন জায়গায়
   if (culvert.position.z > st.z + 30) culvert.position.z = st.z - rnd(700, 1400);
   if (bazaar.position.z - BZ_LEN > st.z + 40) placeBazaar(st, false);
@@ -871,7 +997,7 @@ function step(dt) {
   // দূরে চলে গেলে সব কিছু পেছনে টেনে আনা (ফ্লোটিং অরিজিন), যাতে বহু দূর গেলেও কাঁপুনি না হয়
   if (st.z < -4000) rebase(4800);
 }
-function rebase(d) { culvert.position.z += d; bazaar.position.z += d; S.z += d; S.cars.forEach(c => c.z += d); S.opp.forEach(c => c.z += d); TREES.forEach(t => t.z += d); sign.position.z += d; limSign.position.z += d; camPos.z += d; camLook.z += d; cam.position.z += d; }
+function rebase(d) { stopG.position.z += d; if (S.stop) S.stop.z += d; culvert.position.z += d; bazaar.position.z += d; S.z += d; S.cars.forEach(c => c.z += d); S.opp.forEach(c => c.z += d); TREES.forEach(t => t.z += d); sign.position.z += d; limSign.position.z += d; camPos.z += d; camLook.z += d; cam.position.z += d; }
 function crash(c, dz) {
   const st = S; st.crashed = true; st.crashT = 0; c.hit = true; c.spin = rnd(-1.6, 1.6); c.v = Math.max(c.v, st.v * .8);
   st.spinV = (c.x > st.x ? -1 : 1) * rnd(1.8, 3.2); st.lat = (c.x > st.x ? -1 : 1) * rnd(2, 5); st.v *= .45; st.shake = 1;
@@ -882,6 +1008,26 @@ function crash(c, dz) {
 /* ================= আঁকা ================= */
 const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e3 = new THREE.Euler(), v3 = new THREE.Vector3(), one = new THREE.Vector3(1, 1, 1);
 const camPos = new THREE.Vector3(0, 3, 8), camLook = new THREE.Vector3(0, 1, -10);
+// ড্রাইভারের সিটের ক্যামেরায় সামনে একটা আসল আকারের স্টিয়ারিং চাকা
+const cockWheel = new THREE.Group(), cockSpin = new THREE.Group(); scene.add(cam); cam.add(cockWheel); cockWheel.add(cockSpin); cockWheel.visible = false;
+{ const wm = new THREE.MeshStandardMaterial({ color: '#17191d', roughness: .55 }), hm = new THREE.MeshStandardMaterial({ color: '#2d3138', roughness: .4, metalness: .5 });
+  cockSpin.add(new THREE.Mesh(new THREE.TorusGeometry(.19, .022, 10, 40), wm));
+  for (const a of [Math.PI / 2 + .25, Math.PI / 2 - .25 + Math.PI, -Math.PI / 2]) { const sp = new THREE.Mesh(new THREE.BoxGeometry(.17, .025, .02), wm); sp.position.set(Math.cos(a) * .09, Math.sin(a) * .09, 0); sp.rotation.z = a; cockSpin.add(sp); }
+  cockSpin.add(new THREE.Mesh(new THREE.CylinderGeometry(.055, .055, .04, 20).rotateX(Math.PI / 2), hm));
+  const col = new THREE.Mesh(new THREE.CylinderGeometry(.03, .04, .5, 10), wm); col.rotation.x = Math.PI / 2; col.position.z = -.25; cockWheel.add(col);
+  cockWheel.position.set(0, -.36, -.62); cockWheel.rotation.x = -.45; }
+// ড্রাইভারের সিটে বসার অনুভূতি: ড্যাশবোর্ড, দুই পাশের পিলার, উপরের আয়না (ক্যামেরার সাথে লাগানো)
+const cockpit = new THREE.Group(); cam.add(cockpit); cockpit.visible = false; {
+  const dm = new THREE.MeshStandardMaterial({ color: '#1b1d21', roughness: .8 }), pm = new THREE.MeshStandardMaterial({ color: '#2a2d33', roughness: .7 });
+  const dash = new THREE.Mesh(new THREE.BoxGeometry(2.6, .5, .7), dm); dash.position.set(0, -.78, -1.05); dash.rotation.x = -.12; cockpit.add(dash);
+  const lip = new THREE.Mesh(new THREE.BoxGeometry(2.6, .05, .12), pm); lip.position.set(0, -.52, -.78); cockpit.add(lip);
+  for (const sd of [-1, 1]) { const pil = new THREE.Mesh(new THREE.BoxGeometry(.09, 1.8, .09), pm); pil.position.set(sd * 1.05, .1, -1.0); pil.rotation.z = sd * .42; cockpit.add(pil); }
+  const top = new THREE.Mesh(new THREE.BoxGeometry(2.8, .14, .5), pm); top.position.set(0, .66, -1.0); cockpit.add(top);
+  const mir = new THREE.Mesh(new THREE.BoxGeometry(.32, .09, .02), new THREE.MeshStandardMaterial({ color: '#9fb3c8', roughness: .05, metalness: .9 })); mir.position.set(-.15, .5, -.95); cockpit.add(mir);
+  const gaugeT = ctex(256, 128, (x, w, h) => { x.fillStyle = '#0c0d10'; x.fillRect(0, 0, w, h); for (const cx of [70, 186]) { x.strokeStyle = '#3c8de0'; x.lineWidth = 6; x.beginPath(); x.arc(cx, 70, 46, Math.PI * .8, Math.PI * 2.2); x.stroke(); x.strokeStyle = '#ff5b4a'; x.lineWidth = 4; x.beginPath(); x.moveTo(cx, 70); x.lineTo(cx + 30, 46); x.stroke(); } });
+  const gp = new THREE.Mesh(new THREE.PlaneGeometry(.42, .21), new THREE.MeshBasicMaterial({ map: gaugeT })); gp.position.set(0, -.5, -.86); gp.rotation.x = -.35; cockpit.add(gp);
+  cockpit.traverse(o => { if (o.material) o.material.userData.noBend = true; }); cockWheel.traverse(o => { if (o.material) o.material.userData.noBend = true; });
+}
 const C_OFF = new THREE.Color('#2a0303'), C_TAIL = new THREE.Color(1.1, .08, .05), C_BRAKE = new THREE.Color(5, .25, .15), C_SIG = new THREE.Color(4, 1.6, .1), C_SIGOFF = new THREE.Color('#3a2408');
 const drawList = [];
 function drawTraffic(T0) {
@@ -941,13 +1087,20 @@ function loop(ts) {
     // ক্যামেরা
     if (S.started) {
       const k = clamp(S.v * KMH / 230, 0, 1.2), nearC = CFG.cam === 'near', back = (nearC ? (port ? 5.6 : 4.8) : (port ? 7.6 : 6.4)) + k * 1.4 + Math.max(0, carSize.z - 4.4) * .75, up = (nearC ? (port ? 2.1 : 1.7) : (port ? 2.9 : 2.25)) + k * .2 + Math.max(0, carSize.y - 1.3) * .8;
-      camPos.set(S.x * .85, up, S.z + back); camLook.set(S.x * .9, .9, S.z - 12);
-      cam.position.lerp(camPos, Math.min(1, dt * (S.crashed ? 2 : 7))); cam.position.z = S.crashed ? cam.position.z : S.z + back;
-      const fov = (port ? 66 : 56) + k * 12 + (S.nitroOn ? 6 : 0); cam.fov += (fov - cam.fov) * Math.min(1, dt * 3); cam.updateProjectionMatrix();
+      const ck = CFG.cam === 'cockpit' && !S.crashed; cockWheel.visible = ck; cockpit.visible = ck; player.userData.body.visible = !ck;
+      if (ck) { // ড্রাইভারের সিট: বাংলাদেশে স্টিয়ারিং ডানে
+        const big = carSize.y > 2.2, moto = rideKey === 'moto', yaw = player.rotation.y, side = moto ? 0 : carSize.x * .72 * .22;
+        const fz = carSize.z / 2 - (moto ? .7 : big ? 1.25 : rideKey === 'cng' ? 1.1 : 2.05), hy = moto ? 1.45 : big ? carSize.y * .66 : rideKey === 'sport' ? 1.02 : carSize.y * .72;
+        camPos.set(S.x + side * Math.cos(yaw) - fz * Math.sin(yaw), hy, S.z - fz * Math.cos(yaw) - side * Math.sin(yaw)); camLook.set(camPos.x - Math.sin(yaw) * 40, hy - 1.1, camPos.z - Math.cos(yaw) * 40);
+        cam.position.copy(camPos); cockSpin.rotation.z = -(swRot || S.steerA * 5);
+      } else if (CFG.cam === 'top') { camPos.set(S.x * .6, 24 + carSize.z, S.z + 14 + carSize.z); camLook.set(S.x * .8, 0, S.z - 16); cam.position.lerp(camPos, Math.min(1, dt * 5)); }
+      else { camPos.set(S.x * .85, up, S.z + back); camLook.set(S.x * .9, .9, S.z - 12); cam.position.lerp(camPos, Math.min(1, dt * (S.crashed ? 2 : 7))); cam.position.z = S.crashed ? cam.position.z : S.z + back; }
+      const fov = (CFG.cam === 'cockpit' ? (port ? 80 : 68) : (port ? 66 : 56)) + k * 12 + (S.nitroOn ? 6 : 0); cam.fov += (fov - cam.fov) * Math.min(1, dt * 3); cam.updateProjectionMatrix();
       S.shake = Math.max(0, S.shake - dt * 1.5); const sh = S.shake * .25 + (S.v * KMH > 150 ? (S.v * KMH - 150) / 1500 : 0);
       cam.position.x += (Math.random() - .5) * sh; cam.position.y += (Math.random() - .5) * sh;
       cam.lookAt(camLook);
-    } else { // শুরুর আগে গাড়ির চারপাশে ঘোরা ক্যামেরা
+      if (!S.started) {}
+    } else { cockWheel.visible = cockpit.visible = false; player.userData.body.visible = true; // শুরুর আগে গাড়ির চারপাশে ঘোরা ক্যামেরা
       const a = T0 * .18; cam.position.set(S.x + Math.sin(a) * 7.5, 1.6 + Math.sin(T0 * .3) * .3, S.z + Math.cos(a) * 7.5); cam.fov = W / H < .85 ? 62 : 45; cam.updateProjectionMatrix(); cam.lookAt(S.x, .7, S.z);
     }
     if (window.__cam) { cam.position.set(...window.__cam[0]); cam.lookAt(...window.__cam[1]); cam.fov = 40; cam.updateProjectionMatrix(); } // পরীক্ষার ক্যামেরা
@@ -955,7 +1108,7 @@ function loop(ts) {
     world.position.z = Math.floor(S.z / SEG) * SEG; ground.position.set(Math.floor(S.x / 5) * 5, -.06, Math.floor(S.z / 5) * 5);
     dome.position.set(cam.position.x, 0, cam.position.z); skirt.position.x = cam.position.x; skirt.position.z = cam.position.z;
     sun.position.copy(SUN_DIR).multiplyScalar(80).add(v3.set(S.x, 0, S.z - 8)); sun.target.position.set(S.x, 0, S.z - 8);
-    drawTraffic(T0); drawTrees();
+    drawTraffic(T0); drawTrees(); drawStopPeople(); if (S.started && !S.over && (lifeHud.n = (lifeHud.n || 0) + 1) % 6 === 0) lifeHud();
     if (S.started && !S.over) { hud(); engineUpdate(S.crashed ? 0 : S.v, keys.b ? 0 : 1, S.crashed ? 0 : (S.skid || 0), !!S.nitroOn); }
     if (comT > 0 && (comT -= dt) <= 0) $('com').textContent = '';
   }
@@ -983,11 +1136,12 @@ const TIPS = [
 ];
 const TITLES = [[0, 'নবিশ চালক'], [2500, 'লোকাল বাসের ওস্তাদ'], [6000, 'হাইওয়ের চিতা'], [12000, 'হাইওয়ে রাজা'], [22000, 'ফর্মুলা ওয়ানের নাতি']];
 function endRun() {
-  S.over = true; const sc = Math.floor(S.score); lastScore = sc; ['speedo', 'ctlL', 'ctlR', 'dist', 'keyhint'].forEach(i => $(i).hidden = true);
+  S.over = true; const sc = Math.floor(S.score); lastScore = sc; ['speedo', 'ctlL', 'ctlR', 'dist', 'keyhint', 'life', 'stopHint'].forEach(i => $(i).hidden = true);
   $('eS').textContent = bn(sc); $('eD').textContent = bn((S.dist / 1000).toFixed(1)); $('eN').textContent = bn(S.near);
+  $('eM').textContent = '৳ ' + bn(Math.round(S.money)); $('eP').textContent = bn(S.carried); $('eW').textContent = '৳ ' + bn(Math.round(wallet));
   $('endTitle').textContent = TITLES.filter(t => sc >= t[0]).pop()[1];
   $('endT').textContent = pick(['ধুম!', 'ঠুস!', 'গেল রে!']);
-  $('endLine').textContent = `${LV[S.lv].n}: ${bn((S.dist / 1000).toFixed(1))} কিমি গিয়ে ধাক্কা। চট্টগ্রাম আর ${bn(Math.max(0, 250 - S.dist / 1000).toFixed(0))} কিমি বাকি ছিল!`;
+  $('endLine').textContent = `${LV[S.lv].n}, ${R.n}: ${bn((S.dist / 1000).toFixed(1))} কিমি গিয়ে গাড়ি অচল। চট্টগ্রাম আর ${bn(Math.max(0, 250 - S.dist / 1000).toFixed(0))} কিমি বাকি ছিল!`;
   const best = store.get('kh-racer-best', 0); if (sc > best) store.set('kh-racer-best', sc);
   $('eBest').textContent = 'আপনার সেরা: ' + bn(Math.max(best, sc)) + (sc > best && best ? ' · নতুন রেকর্ড! 🎉' : '');
   $('eTip').textContent = '🚦 ' + pick(TIPS);
@@ -996,13 +1150,15 @@ function endRun() {
 }
 function start(level) {
   if (!ready) return; audio(); engineOn(); lv = level; store.set('kh-racer-lv', lv);
-  resetWorld(level); S.started = true; S.nextKm = 5; ['startO', 'endO'].forEach(i => $(i).hidden = true); ['speedo', 'ctlL', 'ctlR', 'dist', 'keyhint'].forEach(i => $(i).hidden = false); applyCtl(); document.querySelector('.score').style.visibility = 'visible';
+  resetWorld(level); S.started = true; S.nextKm = 5; ['startO', 'endO'].forEach(i => $(i).hidden = true); ['speedo', 'ctlL', 'ctlR', 'dist', 'keyhint', 'life'].forEach(i => $(i).hidden = false); applyCtl(); lifeHud(); drawMap(0); document.querySelector('.score').style.visibility = 'visible';
   cam.position.set(S.x, 2.6, S.z + 9); com('start'); sfx('go');
 }
 document.querySelectorAll('[data-lv]').forEach(b => b.onclick = () => start(+b.dataset.lv));
 $('againBtn').onclick = () => start(lv);
 $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; resetWorld(lv); };
 $('shareBtn').onclick = () => { const t = `হাইওয়ে রাজায় ${bn(lastScore)} পয়েন্ট! 🚗💨 ঢাকা-চট্টগ্রাম মহাসড়কে কান ঘেঁষে চালাইতে পারবা? ${location.origin}/games/racer/`; try { navigator.clipboard.writeText(t).then(() => { $('shareBtn').textContent = 'কপি হয়েছে ✓'; setTimeout(() => $('shareBtn').textContent = 'কপি করে শেয়ার', 2000); }, () => {}); } catch (e) {} };
+$('fixB').onclick = e => { e.stopPropagation(); repair(); };
+$('camB').onclick = () => { const L = ['far', 'near', 'cockpit', 'top'], N = { far: 'পেছন থেকে', near: 'কাছ থেকে', cockpit: 'ড্রাইভারের সিট', top: 'উপর থেকে' }; CFG.cam = L[(L.indexOf(CFG.cam) + 1) % L.length]; saveCfg(); sfx('click'); pop('🎥 ' + N[CFG.cam]); };
 $('horn').onclick = () => { audio(); sfx('horn'); if (S && S.started && !S.crashed) S.cars.forEach(c => { if (c.z < S.z && c.z > S.z - 40 && Math.abs(c.x - S.x) < 2 && c.sig === 0) c.chT = 0; }); };
 // গাড়ি বাছাই (খেলা চলার সময় বদলানো যায় না: শুধু শুরুর আর শেষের পাতায়)
 const THUMB = {};
@@ -1034,7 +1190,7 @@ const CFG = Object.assign({ mode: 'auto', hand: 'r', gfx: 'auto', cam: 'far' }, 
 if (!CFG.v2) { if (CFG.mode === 'btn') CFG.mode = 'auto'; CFG.v2 = 1; } // নতুন: গাড়ি বুঝে স্টিয়ারিং
 const saveCfg = () => store.set('kh-racer-cfg', CFG);
 const KM = { ArrowLeft: 'l', KeyA: 'l', ArrowRight: 'r', KeyD: 'r', ArrowDown: 'b', KeyS: 'b', Space: 'n', ArrowUp: 'n', KeyW: 'n', ShiftLeft: 'n' };
-addEventListener('keydown', e => { const k = KM[e.code]; if (k) { keys[k] = 1; e.preventDefault(); } if (e.code === 'KeyH') $('horn').click(); if (e.code === 'Escape' || e.code === 'KeyP') { $('setO').hidden ? openSet() : closeSet(); } });
+addEventListener('keydown', e => { const k = KM[e.code]; if (k) { keys[k] = 1; e.preventDefault(); } if (e.code === 'KeyH') $('horn').click(); if (e.code === 'KeyR') repair(); if (e.code === 'KeyC') $('camB').click(); if (e.code === 'Escape' || e.code === 'KeyP') { $('setO').hidden ? openSet() : closeSet(); } });
 addEventListener('keyup', e => { const k = KM[e.code]; if (k) keys[k] = 0; });
 function holdBtn(b, down, up) {
   b.addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); b.classList.add('on'); down(); try { b.setPointerCapture(e.pointerId); } catch (x) {} if (navigator.vibrate) try { navigator.vibrate(8); } catch (x) {} });
@@ -1110,7 +1266,7 @@ lv = store.get('kh-racer-lv', 1); resize();
 if (!renderer) { $('loadT').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।'; }
 else {
   buildTrees();
-  buildMap();
+  buildMap(); buildStop();
   Promise.all([buildPlayer(), buildTraffic(), buildProps(), buildBazaar()]).then(async () => {
     ready = true; await setRide(rideKey); resetWorld(lv); bendAll(); applyGfx(); renderer.compile(scene, cam); makeThumbs();
     $('loadB').hidden = true; $('loadT').textContent = 'গাড়ি রেডি! কোন সময়ের রাস্তায় নামবেন?'; document.querySelectorAll('[data-lv]').forEach(b => b.disabled = false);
