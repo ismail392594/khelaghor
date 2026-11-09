@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>নৌকা বাইচ · খেলাঘর</title>
+<meta name="description" content="নদীতে নৌকা বাইচ! ঢোলের তালে তালে বৈঠা চালিয়ে চার নৌকার দৌড়ে প্রথম হন। দুই পাড়ে মানুষের হৈ হৈ!">
+<link rel="canonical" href="https://khelaghorbd.online/games/nouka/">
+<meta property="og:title" content="নৌকা বাইচ · খেলাঘর">
+<meta property="og:description" content="হেঁইয়ো! ঢোলের তালে বৈঠা মারুন, নৌকা বাইচে প্রথম হন!">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/nouka.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/nouka.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+:root{--accent:#22d3ee}
+.beat{position:absolute;left:50%;bottom:20px;width:110px;height:110px;margin-left:-55px;z-index:3;pointer-events:none}
+.beat i{position:absolute;inset:0;border-radius:50%;border:5px solid rgba(255,255,255,.9)}
+.beat em{position:absolute;inset:30px;border-radius:50%;background:radial-gradient(circle,#fbbf24,#b45309);box-shadow:0 0 18px #fbbf24}
+.pos{position:absolute;right:10px;top:10px;z-index:3;display:flex;flex-direction:column;gap:4px;pointer-events:none}
+.pos div{display:flex;gap:6px;align-items:center;background:rgba(0,0,0,.5);border-radius:9px;padding:2px 8px;font-size:.72rem;font-weight:700}
+.pos div.me{background:rgba(34,211,238,.35)}
+.prog{position:absolute;left:12px;right:130px;top:12px;height:8px;border-radius:6px;background:rgba(0,0,0,.45);z-index:3;pointer-events:none}.prog i{display:block;height:100%;width:0;border-radius:6px;background:#22d3ee}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="sp">০</b><small>কিমি/ঘণ্টা · বাকি <span id="left">৩০০</span> মি</small></div>
+    <div class="stat r"><b id="combo">০</b><small>টানা তাল</small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas class="cv" id="cv"></canvas>
+    <div class="prog"><i id="prog"></i></div>
+    <div class="pos" id="pos"></div>
+    <div class="beat" id="beat" hidden><i id="bRing"></i><em></em></div>
+    <div class="say" id="say" hidden></div>
+    <div class="chost" id="chatHost"></div>
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>নৌকা বাইচ</h1>
+        <p class="story">ভাদ্র মাস, ভরা নদী। দুই পাড়ে হাজার মানুষ, ঢোল-করতাল বাজছে। চারটা লম্বা নৌকা দাঁড়িয়ে, আপনি "খেলাঘর বাহিনী"-র মাঝি সর্দার!</p>
+        <div class="rules">
+          <div>🥁 <b>তাল:</b> ঢোলের বাড়িতে সাদা বৃত্ত সোনালি বৃত্তে মিললে <b>"হেঁইয়ো!"</b> চাপুন, সব মাঝি একসাথে বৈঠা মারবে।</div>
+          <div>⚡ ঠিক তালে টানা মারলে নৌকা আরো জোরে ছোটে আর ঢোল দ্রুত হয়। তাল ভুল হলে মাঝিদের বৈঠা এলোমেলো, গতি কমে।</div>
+          <div>🏁 ৩০০ মিটার আগে শেষ করুন। প্রথম হলে সবচেয়ে বেশি পয়েন্ট।</div>
+        </div>
+        <div class="lvl">
+          <button data-lv="0">গ্রামের বাইচ<small>সহজ</small></button>
+          <button data-lv="1">উপজেলা কাপ<small>মাঝারি</small></button>
+          <button data-lv="2">জেলা ফাইনাল<small>কঠিন</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">মাঝি আর দর্শক: Renderpeople-এর স্ক্যান থেকে ছবি (<a href="/games/racer/assets/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। ঘাস, আকাশ, গাছ: <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a> (CC0)।</p>
+      </div>
+    </div>
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">বাইচ শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eP">০</b><span>অবস্থান</span></div><div><b id="eT">০</b><span>সময় (সে)</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার বাইচ</button><button class="gbtn ghost" id="menuBtn">প্রতিযোগিতা বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">🛶</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+  <div class="ctl"><div class="hint" id="hint">প্রতিযোগিতা বেছে নিন</div><button class="bigb" id="rowB" style="width:120px"><span>🛶</span>হেঁইয়ো!</button></div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { TIERS, detectTier } from "/js/kh-quality.js";
+import { gameShell, sound, bn, pick, rnd, clamp } from "/js/kh-shell.js";
+
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'nouka', name: 'নৌকা বাইচ', lbTitle: 'সেরা মাঝি সর্দার', offMsg: 'নদীতে জোয়ার, বাইচ একটু পরে।' });
+const SND = sound(SH);
+const TIER = TIERS[detectTier()], LOW = TIER.id <= 1;
+let renderer = null; try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' }); } catch (e) {}
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(58, 1, .1, 900);
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.shadowMap.enabled = !LOW; }
+const ANISO = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1, texL = new THREE.TextureLoader(), RA = '/games/racer/assets/';
+const tex = (u, srgb, rx, ry) => { const t = texL.load(u); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; t.repeat.set(rx, ry ?? rx); return t; };
+const skyT = texL.load(RA + 'sky.jpg'); skyT.colorSpace = THREE.SRGBColorSpace;
+const skyG = new THREE.SphereGeometry(600, 32, 16); skyG.scale(-1, 1, 1); const sky = new THREE.Mesh(skyG, new THREE.MeshBasicMaterial({ map: skyT, fog: false, toneMapped: false })); scene.add(sky);
+scene.fog = new THREE.Fog('#b9c4c8', 120, 520);
+scene.add(new THREE.HemisphereLight('#fff3dc', '#3f5a4a', 1.1));
+const sun = new THREE.DirectionalLight('#ffe2b4', 2.4); sun.position.set(-30, 40, 20); sun.castShadow = !LOW; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -20, right: 20, top: 20, bottom: -20, far: 120 }); scene.add(sun, sun.target);
+if (renderer && !LOW) { import('/js/vendor/addons/RGBELoader.js').then(({ RGBELoader }) => new RGBELoader().load(RA + 'sky_1k.hdr', h => { const pm = new THREE.PMREMGenerator(renderer); h.mapping = THREE.EquirectangularReflectionMapping; scene.environment = pm.fromEquirectangular(h).texture; h.dispose(); pm.dispose(); })); }
+// নদী: ঢেউয়ের নরমাল ম্যাপ (নিজে আঁকা নয়েজ), আকাশের প্রতিফলন
+const waveT = (() => { const N = 256, c = document.createElement('canvas'); c.width = c.height = N; const x = c.getContext('2d'), im = x.createImageData(N, N), h = new Float32Array(N * N);
+  for (let k = 0; k < 40; k++) { const fx = Math.floor(rnd(1, 6)), fy = Math.floor(rnd(1, 10)), ph = rnd(0, 6.28), a = 1 / (fx + fy); for (let y = 0; y < N; y++) for (let xx = 0; xx < N; xx++) h[y * N + xx] += Math.sin((xx * fx + y * fy) / N * Math.PI * 2 + ph) * a; }
+  for (let y = 0; y < N; y++) for (let xx = 0; xx < N; xx++) { const i = y * N + xx, dx = h[y * N + (xx + 1) % N] - h[i], dy = h[((y + 1) % N) * N + xx] - h[i]; im.data[i * 4] = 128 + dx * 160; im.data[i * 4 + 1] = 128 + dy * 160; im.data[i * 4 + 2] = 255; im.data[i * 4 + 3] = 255; }
+  x.putImageData(im, 0, 0); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(30, 120); return t; })();
+const water = new THREE.Mesh(new THREE.PlaneGeometry(120, 1200), new THREE.MeshStandardMaterial({ color: '#5b7f7a', roughness: .1, metalness: .15, normalMap: waveT, normalScale: new THREE.Vector2(.6, .6), envMapIntensity: 1.2 }));
+water.rotation.x = -Math.PI / 2; water.position.set(0, 0, -450); water.receiveShadow = true; scene.add(water);
+const gT = ['grass_diff.jpg', 'grass_nor.jpg'].map((f, i) => tex(RA + f, i === 0, 20, 200));
+for (const sd of [-1, 1]) { const bank = new THREE.Mesh(new THREE.PlaneGeometry(200, 1200), new THREE.MeshStandardMaterial({ map: gT[0], normalMap: gT[1], color: '#9fb36a', roughness: 1 })); bank.rotation.x = -Math.PI / 2; bank.position.set(sd * 160, .4, -450); scene.add(bank);
+  const slope = new THREE.Mesh(new THREE.PlaneGeometry(4, 1200), new THREE.MeshStandardMaterial({ color: '#6b5a40', roughness: 1 })); slope.rotation.set(-Math.PI / 2, sd * .2, 0); slope.position.set(sd * 59, .2, -450); scene.add(slope); }
+// পাড়ের গাছ, দর্শক (মানুষের ছবি), রঙিন পতাকা
+const treeMs = ['tree1.webp', 'tree2.webp'].map(f => { const t = texL.load(RA + f); t.colorSpace = THREE.SRGBColorSpace; return new THREE.MeshStandardMaterial({ map: t, alphaTest: .5, side: THREE.DoubleSide, roughness: 1 }); });
+const TREES = []; for (let i = 0; i < 80; i++) { const sd = i % 2 ? 1 : -1, h = rnd(9, 15); const p = new THREE.Mesh(new THREE.PlaneGeometry(h * .9, h), treeMs[i % 2]); p.geometry.translate(0, h / 2, 0); p.position.set(sd * rnd(66, 110), .4, -i * 12 + 40); scene.add(p); TREES.push(p); }
+const pplT = texL.load(RA + 'people.webp'); pplT.colorSpace = THREE.SRGBColorSpace;
+const crowdG = new THREE.PlaneGeometry(.85, 1.7); crowdG.translate(0, .85, 0); crowdG.setAttribute('cell', new THREE.InstancedBufferAttribute(new Float32Array(900).map(() => Math.floor(Math.random() * 9)), 1));
+const crowdM = new THREE.MeshBasicMaterial({ map: pplT, alphaTest: .5, side: THREE.DoubleSide, color: '#d8d4cc' }); crowdM.onBeforeCompile = sh => { sh.vertexShader = 'attribute float cell;\n' + sh.vertexShader.replace('#include <uv_vertex>', '#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv = vec2((vMapUv.x + cell) / 9.0, vMapUv.y);\n#endif'); };
+const crowd = new THREE.InstancedMesh(crowdG, crowdM, 900); { const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), v = new THREE.Vector3(), sc = new THREE.Vector3(1, 1, 1); for (let i = 0; i < 900; i++) { const sd = i % 2 ? 1 : -1; v.set(sd * rnd(61.5, 66), .4, rnd(-460, 30)); q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), sd > 0 ? -Math.PI / 2 : Math.PI / 2); sc.setScalar(rnd(.9, 1.1)); m4.compose(v, q, sc); crowd.setMatrixAt(i, m4); } } scene.add(crowd);
+for (let i = 0; i < 40; i++) { const sd = i % 2 ? 1 : -1, z = -i * 12; const pole = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, 6, 6), new THREE.MeshStandardMaterial({ color: '#8b6b3e' })); pole.position.set(sd * 60.5, 3, z); scene.add(pole); const fl = new THREE.Mesh(new THREE.PlaneGeometry(1.2, .7), new THREE.MeshStandardMaterial({ color: ['#dc2626', '#16a34a', '#f59e0b', '#2563eb'][i % 4], side: THREE.DoubleSide })); fl.position.set(sd * 60.5 + .6, 5.5, z); scene.add(fl); }
+// শেষ রেখা: দুই পাড়ে খুঁটি আর উপরে ব্যানার
+const DIST = 300;
+{ const t = (() => { const c = document.createElement('canvas'); c.width = 1024; c.height = 128; const x = c.getContext('2d'); x.fillStyle = '#b91c1c'; x.fillRect(0, 0, 1024, 128); x.fillStyle = '#fff'; x.font = "800 72px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('শেষ সীমানা · নৌকা বাইচ ২০২৬', 512, 68); const tt = new THREE.CanvasTexture(c); tt.colorSpace = THREE.SRGBColorSpace; return tt; })();
+  const b = new THREE.Mesh(new THREE.PlaneGeometry(40, 5), new THREE.MeshStandardMaterial({ map: t, side: THREE.DoubleSide })); b.position.set(0, 12, -DIST); scene.add(b); for (const sd of [-1, 1]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(.3, .3, 15, 8), new THREE.MeshStandardMaterial({ color: '#f5f5f5' })); p.position.set(sd * 20, 7, -DIST); scene.add(p); } }
+// নৌকা: লম্বা সরু বাঁকা খোল (দুই মাথা উঁচু), রঙিন পাড়, ভেতরে সারি করে বসা মাঝি (মানুষের ছবি), বৈঠা
+const seatT = texL.load(RA + 'people_seat.webp'); seatT.colorSpace = THREE.SRGBColorSpace;
+function hull(col, trim) {
+  const L = 20, g = new THREE.Group(), n = 40, shape = [];
+  // খোলের দুই পাশ: সামনে-পেছনে সরু আর উঁচু
+  const geo = new THREE.BufferGeometry(), pos = [], idx = [];
+  for (let i = 0; i <= n; i++) { const t = i / n, z = (t - .5) * L, w = Math.sin(t * Math.PI) * .75 + .02, top = .5 + Math.pow(Math.abs(t - .5) * 2, 4) * 1.6; pos.push(-w, top, z, -w * .55, -.25, z, w * .55, -.25, z, w, top, z); }
+  for (let i = 0; i < n; i++) { const a = i * 4, b = a + 4; for (let k = 0; k < 3; k++) idx.push(a + k, b + k, a + k + 1, a + k + 1, b + k, b + k + 1); }
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setIndex(idx); geo.computeVertexNormals();
+  const h = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: col, roughness: .55, side: THREE.DoubleSide })); h.castShadow = true; g.add(h);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(1, .05, 4, 40), new THREE.MeshStandardMaterial({ color: trim })); rim.scale.set(.76, L / 2, 1); rim.rotation.x = Math.PI / 2; rim.position.y = .5; g.add(rim);
+  // মাঝি: দুই সারিতে ১৪ জন, প্রত্যেকের বৈঠা
+  const rowers = [], oars = new THREE.Group(); g.add(oars);
+  const om = new THREE.MeshStandardMaterial({ color: '#7c5a32', roughness: .7 }), oarG = new THREE.CylinderGeometry(.025, .025, 1.6, 6); oarG.translate(0, -.8, 0); const blG = new THREE.BoxGeometry(.16, .4, .03); blG.translate(0, -1.55, 0);
+  for (let i = 0; i < 14; i++) { const sd = i % 2 ? 1 : -1, z = -L * .36 + Math.floor(i / 2) * 2.2, cell = Math.floor(Math.random() * 3) * 2;
+    for (const [r, cc] of [[0, cell], [Math.PI / 2, cell + 1]]) { const m = new THREE.Mesh(new THREE.PlaneGeometry(.85, .85), new THREE.MeshStandardMaterial({ map: seatT, alphaTest: .5, side: THREE.DoubleSide, roughness: .9 })); m.material.map = seatT.clone(); m.material.map.needsUpdate = true; m.material.map.repeat.set(1 / 6, 1); m.material.map.offset.set(cc / 6, 0); m.geometry.translate(0, .42, 0); m.position.set(sd * .32, .2, z); m.rotation.y = r; g.add(m); }
+    const p = new THREE.Group(); p.position.set(sd * .62, .75, z); const o = new THREE.Mesh(oarG, om), bl = new THREE.Mesh(blG, om); p.add(o, bl); p.rotation.z = sd * .55; oars.add(p); rowers.push({ p, sd }); }
+  // সামনে পতাকা
+  const fl = new THREE.Mesh(new THREE.PlaneGeometry(.9, .55), new THREE.MeshStandardMaterial({ color: trim, side: THREE.DoubleSide })); fl.position.set(.45, 2.6, -L / 2 + .3); g.add(fl); const pl = new THREE.Mesh(new THREE.CylinderGeometry(.03, .03, 1.2, 5), om); pl.position.set(0, 2.3, -L / 2 + .3); g.add(pl);
+  scene.add(g); return { g, rowers };
+}
+const TEAMS = [['খেলাঘর বাহিনী', '#7f1d1d', '#facc15'], ['মেঘনা এক্সপ্রেস', '#1e3a8a', '#f8fafc'], ['পদ্মার ঢেউ', '#14532d', '#f97316'], ['যমুনা তুফান', '#4c1d95', '#22d3ee']];
+const BOATS = TEAMS.map(([n, c, t], i) => Object.assign(hull(c, t), { name: n, x: (i - 1.5) * 9, z: 0, v: 0, phase: 0, me: i === 0, fin: 0 }));
+
+const SFX = {
+  drum(acc) { SND.tone(acc ? 95 : 120, .22, 'sine', acc ? .6 : .35, 55); SND.noise(.06, acc ? .4 : .2, 900); },
+  stroke(q) { SND.noise(.22, .25 + q * .35, 900, 'bandpass'); },
+  bad() { SND.noise(.25, .3, 300); SND.tone(160, .2, 'sawtooth', .1, 110); },
+  cheer() { for (let i = 0; i < 14; i++) SND.noise(.1, .25, 1000 + Math.random() * 1200, 'bandpass', i * .05); },
+  win() { [523, 659, 784, 1047].forEach((f, i) => SND.tone(f, .22, 'triangle', .28, 0, i * .1)); }
+};
+let crowdLoop = null;
+const LV = [{ n: 'গ্রামের বাইচ', ai: [4.2, 5.0], win: .17 }, { n: 'উপজেলা কাপ', ai: [5.0, 5.8], win: .13 }, { n: 'জেলা ফাইনাল', ai: [5.7, 6.5], win: .1 }];
+let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0;
+function newGame() { BOATS.forEach((b, i) => { b.z = 0; b.v = 0; b.fin = 0; b.ai = i ? rnd(...LV[lv].ai) : 0; b.surge = 0; }); S = { t: 0, phase: 'idle', over: false, started: false, beat: .75, bt: 0, combo: 0, maxCombo: 0, hitThis: false, countdown: 3 }; }
+function say(t, col) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, 1100); }
+function row() {
+  if (!S || !S.started || S.over || S.phase !== 'race') return; SND.ac; const L = LV[lv], off = Math.min(S.bt, S.beat - S.bt) / S.beat, me = BOATS[0];
+  if (S.hitThis) return; S.hitThis = true;
+  if (off < L.win) { const q = 1 - off / L.win; me.v += .55 + q * .55 + Math.min(10, S.combo) * .04; S.combo++; S.maxCombo = Math.max(S.maxCombo, S.combo); me.phase = 0; SFX.stroke(q); if (S.combo % 8 === 0) { say('দারুণ তাল! 🔥', '#fde68a'); if (window.KHViral) KHViral.pop(pick(['হেঁইয়ো! জোরে টান!', 'আরো জোরে ভাইয়েরা!', 'সামনে যাবো, সামনে!']), 'M2', '🛶 মাঝি'); } }
+  else { me.v *= .8; S.combo = 0; SFX.bad(); say('তাল কেটে গেল!', '#fca5a5'); }
+}
+function step(dt) {
+  const L = LV[lv];
+  if (S.phase === 'count') { S.countdown -= dt; const c = Math.ceil(S.countdown); if (c !== S.lc) { S.lc = c; if (c > 0) { say(bn(c), '#fff'); SFX.drum(true); } else { say('চলো! 🚩', '#86efac'); SFX.cheer(); } } if (S.countdown <= 0) { S.phase = 'race'; $('beat').hidden = false; } return; }
+  if (S.phase !== 'race') return;
+  S.t += dt; S.bt += dt;
+  // ঢোল: টানা তালে দ্রুত হয়
+  const want = clamp(.78 - S.combo * .012, .48, .78); if (S.bt >= S.beat) { S.bt -= S.beat; S.beat += (want - S.beat) * .5; S.hitThis = false; SFX.drum(S.combo > 4); }
+  const k = clamp(S.bt / S.beat, 0, 1), near = Math.min(k, 1 - k); $('bRing').style.transform = `scale(${.45 + Math.abs(.5 - k) * 1.3})`; $('bRing').style.borderColor = near < L.win ? '#fbbf24' : 'rgba(255,255,255,.9)';
+  for (const b of BOATS) {
+    if (!b.me && !b.fin) { if ((b.phase += dt) > .6) { b.phase = 0; b.v += b.ai * .235 * rnd(.9, 1.1); } }
+    if (b.me) b.phase += dt;
+    b.v -= b.v * .55 * dt; b.v = Math.min(b.v, 9); b.z -= b.v * dt;
+    if (!b.fin && -b.z >= DIST) { b.fin = S.t; S.order = (S.order || 0) + 1; b.place = S.order; if (b.me) { endGame(); } }
+    // বৈঠার দোল
+    const st = b.me ? clamp(b.phase / .5, 0, 1) : clamp(b.phase / .6, 0, 1); b.rowers.forEach(r => { r.p.rotation.x = Math.sin(st * Math.PI * 2) * .55; r.p.rotation.z = r.sd * (.55 + Math.sin(st * Math.PI) * .15); });
+  }
+  const me = BOATS[0]; $('sp').textContent = bn(Math.round(me.v * 3.6)); $('left').textContent = bn(Math.max(0, Math.round(DIST + me.z))); $('combo').textContent = bn(S.combo); $('prog').style.width = clamp(-me.z / DIST * 100, 0, 100) + '%';
+  if ((S.pt = (S.pt || 0) - dt) <= 0) { S.pt = .3; const ord = BOATS.slice().sort((a, b) => a.z - b.z); $('pos').innerHTML = ord.map((b, i) => `<div class="${b.me ? 'me' : ''}">${bn(i + 1)}. ${b.name}</div>`).join(''); }
+  if (S.t > 150) endGame();
+}
+const TIPS = ['জানেন কি? নৌকা বাইচ বাংলাদেশের শত বছরের ঐতিহ্য; একেকটা বাইচের নৌকা ১০০ ফুটের বেশি লম্বা হতে পারে, মাঝি থাকে ৫০ জনেরও বেশি।', 'জানেন কি? সবাই একসাথে বৈঠা মারলে নৌকা সবচেয়ে দ্রুত চলে; তাই সারিগান আর ঢোলের তালে তাল মেলানো হয়।', 'জানেন কি? নদীতে নামার আগে লাইফ জ্যাকেট পরুন; সাঁতার না জানলে পানিতে খেলবেন না।'];
+function endGame() {
+  if (S.over) return; S.over = true; $('beat').hidden = true; const me = BOATS[0]; const place = me.place || (BOATS.filter(b => b.z < me.z).length + 1);
+  const sc = Math.max(0, Math.round([900, 600, 400, 250][place - 1] + S.maxCombo * 10 + lv * 150 - S.t * 2));
+  $('endT').textContent = place === 1 ? 'প্রথম হয়েছেন! 🏆' : bn(place) + ' নম্বর হয়েছেন';
+  $('endTitle').textContent = place === 1 ? (lv === 2 ? 'জেলা চ্যাম্পিয়ন 👑' : 'বাইচের রাজা') : place === 2 ? 'দারুণ লড়াই' : 'পরের বার জিতবো';
+  $('endLine').textContent = `${LV[lv].n}: ${bn(Math.round(S.t))} সেকেন্ডে ৩০০ মিটার, টানা সর্বোচ্চ ${bn(S.maxCombo)} তাল।`;
+  $('eS').textContent = bn(sc); $('eP').textContent = bn(place); $('eT').textContent = bn(Math.round(S.t)); $('eTip').textContent = pick(TIPS);
+  place === 1 ? (SFX.win(), SFX.cheer()) : SFX.drum(false);
+  setTimeout(() => { $('endO').hidden = false; if (place === 1 && window.KHViral) KHViral.confetti(); }, 900);
+  SH.saveScore(sc); lastScore = sc;
+}
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 72 : 55; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+const _cp = new THREE.Vector3();
+function loop(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  if (S && S.started && !S.over) step(dt);
+  for (const b of BOATS) { b.g.position.set(b.x, Math.sin(T0 * 2 + b.x) * .05, b.z); b.g.rotation.z = Math.sin(T0 * 1.6 + b.x) * .015; }
+  waveT.offset.y -= dt * .02; waveT.offset.x += dt * .005;
+  const me = BOATS[0], port = W / H < .8;
+  if (S && S.started) { _cp.set(me.x + (port ? 0 : 3), port ? 7 : 5.5, me.z + (port ? 18 : 15)); cam.position.lerp(_cp, Math.min(1, dt * 3)); cam.lookAt(me.x * .6, 1, me.z - 25); }
+  else { const a = T0 * .05; cam.position.set(Math.sin(a) * 30, 9, 24 + Math.cos(a) * 8); cam.lookAt(0, 1, -10); }
+  sky.position.copy(cam.position); sun.position.set(cam.position.x - 30, 40, cam.position.z + 20); sun.target.position.set(cam.position.x, 0, cam.position.z - 20);
+  for (const t of TREES) t.rotation.y = Math.atan2(cam.position.x - t.position.x, cam.position.z - t.position.z);
+  if (crowdLoop && SND.ac) crowdLoop.g.gain.setTargetAtTime(S && S.phase === 'race' ? .05 + Math.min(.08, S.combo * .005) : .02, SND.ac.currentTime, .3);
+  if (renderer) renderer.render(scene, cam);
+  requestAnimationFrame(loop);
+}
+function start(level) { lv = level; newGame(); S.started = true; S.phase = 'count'; ['startO', 'endO'].forEach(i => $(i).hidden = true); SND.ac; if (!crowdLoop) crowdLoop = SND.loop('bandpass', 1100, .6); $('hint').textContent = 'ঢোলের বাড়িতে বৃত্ত মিললে "হেঁইয়ো!"'; }
+$('rowB').addEventListener('pointerdown', e => { e.preventDefault(); row(); });
+$('stage').addEventListener('pointerdown', e => { if (!e.target.closest('.over,.chost')) row(); });
+addEventListener('keydown', e => { if (e.key === ' ') { e.preventDefault(); row(); } });
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = e => { e.stopPropagation(); start(+b.dataset.lv); });
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `নৌকা বাইচে ${$('eP').textContent} নম্বর, ${bn(lastScore)} পয়েন্ট! 🛶 হেঁইয়ো! আপনি পারবেন? ${location.origin}/games/nouka/`; try { navigator.clipboard.writeText(t).then(() => say('কপি হয়েছে!', '#86efac')); } catch (e) {} };
+newGame(); resize(); last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+const MY = ['হেঁইয়ো! জোরে টান!', 'পেছনের নৌকা ধরে ফেলবে!', 'আল্লাহর নাম নিয়ে টান!', 'আর একটু, শেষ সীমানা!'], OP = ['খেলাঘর বাহিনী জিন্দাবাদ!', 'জোরে! আরো জোরে!', 'মেঘনা এক্সপ্রেস এগিয়ে!', 'তালে তালে, ভাইয়েরা!'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP), 'M3', '📣 পাড়ের দর্শক', true), 1500); } });
+window.KHG = { get S() { return S; }, BOATS, start, row, get win() { return LV[lv].win; } };
+</script>
+<script src="/js/update.js"></script>
+</body></html>
