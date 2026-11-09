@@ -1,0 +1,16 @@
+বাংলাদেশের রাস্তার গাড়ি: সব মডেল Sketchfab থেকে, লাইসেন্স CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+খেলাঘর মডেলগুলো ছোট করেছে (ত্রিভুজ কমানো, ভেতরের অংশ বাদ, টেক্সচার ছোট)। টুল: tools/vehicle-asset.mjs
+
+corolla.glb    "Toyota Corolla 2020" — ItsDiyor — https://sketchfab.com/3d-models/toyota-corolla-2020-6d7d34ee42734d1ab28a6b1f1c5fc4fc
+noah.glb       "Toyota Noah" — Nieve5677 — https://sketchfab.com/3d-models/toyota-noah-db6cc42de8e84c30a74cf03b19684118
+hiace.glb      "2005 Toyota Hiace" — DisneyCars — https://sketchfab.com/3d-models/2005-toyota-hiace-a066fa74844c43878f7174d3ade85773
+hilux.glb      "2022 Toyota Hilux" — BHP3D — https://sketchfab.com/3d-models/2022-toyota-hilux-82bd37c5065040098fb0b86e07fcb959
+bus_hino.glb   "Hino bus" — taeemtasbi — https://sketchfab.com/3d-models/hino-bus-f3d6c5fa61174f13a30984e98ac70af1
+bus_coach.glb  "KERALA BUS 3D MODEL" — rmxdesignz — https://sketchfab.com/3d-models/kerala-bus-3d-model-a1f06445141d4e68b500440570a72dbf
+bus_mini.glb   "hino bus" — 119100 — https://sketchfab.com/3d-models/hino-bus-4f0335863bd9464288a9f3496a5f00d0
+truck_al.glb   "Ashok Leyland" — asrafullislamsiam — https://sketchfab.com/3d-models/ashok-leyland-85acacc91d2442c785737ade35682689
+truck_tata.glb "tata bangladashi truck" — taeemtasbi — https://sketchfab.com/3d-models/tata-bangladashi-truck-1d46922d2a0b4aa688349dd005fe5ee1
+cng.glb        "CNG" — asrafullislamsiam — https://sketchfab.com/3d-models/cng-011baf8efab94b37988e16756951a2b1
+moto.glb       "Motorcycle" — eriklys — https://sketchfab.com/3d-models/motorcycle-135b505f55bb4da0b82b8987a34443b2
+rickshaw.glb   "Rickshaw" — asrafullislamsiam — https://sketchfab.com/3d-models/rickshaw-e9f24ba4a27a4072a6372ed9dc37dbba
+easybike.glb   "E Rickshaw" — Shivang Jindal — https://sketchfab.com/3d-models/e-rickshaw-23a8190b0b16412fa44751af2ea8fd98
