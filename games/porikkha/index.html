@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>পরীক্ষার আগের রাত · খেলাঘর</title>
+<meta name="description" content="কাল সকালে পরীক্ষা, সিলেবাসের অর্ধেক বাকি! রাত জেগে পড়ুন, ঘুম তাড়ান, মোবাইলের লোভ সামলান, ভুয়া প্রশ্ন ফাঁসের ফাঁদে পা দেবেন না। সকালে আসল পরীক্ষা!">
+<link rel="canonical" href="https://khelaghorbd.online/games/porikkha/">
+<meta property="og:title" content="পরীক্ষার আগের রাত · খেলাঘর">
+<meta property="og:description" content="রাত ২টা, চোখ বুজে আসছে, সিলেবাস শেষ হয়নি! A+ পাবেন তো?">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/porikkha.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/porikkha.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+:root{--accent:#a78bfa}
+.meters{position:absolute;left:10px;right:10px;top:10px;z-index:3;display:flex;flex-direction:column;gap:5px;pointer-events:none}
+.mrow{display:flex;align-items:center;gap:8px;background:rgba(5,8,18,.65);border-radius:10px;padding:4px 8px;font-size:.74rem;font-weight:700}
+.mrow .b{flex:1;height:9px;background:rgba(255,255,255,.12);border-radius:5px;overflow:hidden}.mrow .b i{display:block;height:100%;width:0}
+.mrow span{white-space:nowrap;min-width:92px}
+.fact{position:absolute;left:12px;right:12px;bottom:64px;z-index:3;background:#fffbea;color:#2a1d05;border-radius:12px;padding:10px 12px;box-shadow:0 8px 24px rgba(0,0,0,.5);pointer-events:none;font-size:.92rem;line-height:1.45}
+.fact small{display:block;color:#92400e;font-weight:800;font-size:.72rem}
+.fact b{color:#7c2d12}
+.phoneq{position:absolute;right:12px;top:84px;z-index:4;width:min(70%,260px);background:#111827;border:2px solid #374151;border-radius:16px;padding:9px 11px;font-size:.8rem;box-shadow:0 8px 24px rgba(0,0,0,.6)}
+.phoneq b{display:block;color:#93c5fd;font-size:.72rem}
+.phoneq .r{display:flex;gap:6px;margin-top:7px}.phoneq button{flex:1;border:0;border-radius:9px;padding:7px 4px;font:800 .76rem var(--body);color:#fff;background:#2563eb;cursor:pointer}.phoneq button.no{background:#374151}
+.tools{display:flex;gap:8px;align-items:center;justify-content:center;flex:1}
+.tb{border:0;border-radius:14px;width:64px;height:62px;font:800 .66rem var(--body);color:#fff;background:#1f2937;box-shadow:0 4px 0 rgba(0,0,0,.4);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.tb span{font-size:1.35rem;line-height:1.1}.tb:disabled{opacity:.4}
+.readb{background:radial-gradient(circle at 40% 30%,#c4b5fd,#7c3aed 60%,#3b0764);width:96px;height:96px}
+.readb.on{transform:translateY(3px);filter:brightness(1.2)}
+.exam{position:absolute;inset:0;z-index:5;background:#f8f5ec;color:#1c1917;display:flex;flex-direction:column;padding:14px;overflow:auto}
+.exam h3{margin:0 0 2px;font:800 1.15rem var(--display);color:#7c2d12}.exam .sub{font-size:.75rem;color:#78716c;margin-bottom:10px}
+.exam .q{font:700 1.02rem var(--body);margin:6px 0 10px}
+.exam .opts{display:grid;gap:8px}.exam .opts button{border:2px solid #d6d3d1;background:#fff;border-radius:12px;padding:11px;font:700 .95rem var(--body);text-align:left;cursor:pointer;color:#1c1917}
+.exam .opts button.ok{border-color:#16a34a;background:#dcfce7}.exam .opts button.bad{border-color:#dc2626;background:#fee2e2}
+.exam .prog{font-size:.75rem;color:#78716c;margin-top:10px}
+.dark{position:absolute;inset:0;background:#000;z-index:2;pointer-events:none;opacity:0;transition:opacity .4s}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="clock">রাত ১০:০০</b><small>পরীক্ষা সকাল ১০টায়</small></div>
+    <div class="stat r"><b id="read">০/১৬</b><small>পড়া হয়েছে</small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas class="cv" id="cv"></canvas>
+    <div class="dark" id="dark"></div>
+    <div class="meters" id="meters" hidden>
+      <div class="mrow"><span>😴 ঘুম</span><div class="b"><i id="sleepB" style="background:#a78bfa"></i></div></div>
+      <div class="mrow"><span>📖 এই পাতা</span><div class="b"><i id="progB" style="background:#22c55e"></i></div></div>
+    </div>
+    <div class="fact" id="fact" hidden></div>
+    <div class="phoneq" id="phoneq" hidden><b id="phWho">📱 নোটিফিকেশন</b><div id="phTxt"></div><div class="r"><button id="phOpen">খুলে দেখি</button><button class="no" id="phNo">পরে, এখন পড়া</button></div></div>
+    <div class="exam" id="exam" hidden></div>
+    <div class="say" id="say" hidden></div>
+    <div class="chost" id="chatHost"></div>
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>পরীক্ষার আগের রাত</h1>
+        <p class="story">কাল সকাল ১০টায় পরীক্ষা: সাধারণ জ্ঞান আর বিজ্ঞান। সারা বছর পড়া হয়নি, এখন রাত ১০টা। টেবিলে বই, পাশে চায়ের কাপ, আর মোবাইলটা বারবার জ্বলে উঠছে…</p>
+        <div class="rules">
+          <div>📖 <b>পড়ো</b> চেপে ধরে রাখলে পড়া এগোয়; প্রতিটা পাতায় একটা তথ্য। মনে রাখুন, সকালে এগুলোই প্রশ্ন!</div>
+          <div>😴 ঘুম ১০০ হলে টেবিলেই ঘুমিয়ে পড়বেন, ঘণ্টা নষ্ট! ☕ চা আর 💦 মুখে পানি দিয়ে ঘুম তাড়ান।</div>
+          <div>📱 ফোনে বন্ধুর মেসেজ, ফেসবুক, "প্রশ্ন ফাঁস"! বেশিরভাগই সময় নষ্ট বা ভুয়া; মাঝে মাঝে সত্যিকারের সাজেশন।</div>
+        </div>
+        <div class="lvl">
+          <button data-lv="0">ক্লাস টেস্ট<small>আরামে</small></button>
+          <button data-lv="1">এসএসসি<small>চাপ</small></button>
+          <button data-lv="2">ভর্তি পরীক্ষা<small>মহা চাপ</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">টেবিল, চেয়ার, তাক, ঘড়ি, পাখা, হারিকেন, মেঝে: Poly Haven (CC0)। দেয়াল: Poly Haven (CC0)।</p>
+      </div>
+    </div>
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">ফলাফল</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eOk">০/১০</b><span>সঠিক উত্তর</span></div><div><b id="eG">—</b><span>গ্রেড</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার রাত জাগি</button><button class="gbtn ghost" id="menuBtn">পরীক্ষা বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">📚</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+  <div class="ctl"><div class="hint" id="hint">পরীক্ষা বেছে পড়তে বসুন</div><div class="tools" id="tools" hidden>
+    <button class="tb" id="teaB"><span>☕</span><small>চা <b id="teaN">৩</b>টা</small></button>
+    <button class="tb readb" id="readB"><span>📖</span><small>পড়ো</small></button>
+    <button class="tb" id="washB"><span>💦</span><small>মুখে পানি</small></button>
+  </div></div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { GLTFLoader } from "/js/vendor/addons/GLTFLoader.js";
+import { MeshoptDecoder } from "/js/vendor/addons/meshopt_decoder.module.js";
+import { TIERS, detectTier } from "/js/kh-quality.js";
+import { gameShell, sound, bn, pick, rnd, clamp, esc } from "/js/kh-shell.js";
+
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'porikkha', name: 'পরীক্ষার আগের রাত', lbTitle: 'সেরা রাতজাগা ছাত্র', offMsg: 'পরীক্ষা পিছিয়েছে! আজ পড়ার টেবিল বন্ধ, পরে আসেন।' });
+const SND = sound(SH);
+const TIER = TIERS[detectTier()], LOW = TIER.id <= 1;
+let renderer = null; try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' }); } catch (e) {}
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(60, 1, .03, 60);
+scene.background = new THREE.Color('#05070d');
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.shadowMap.enabled = !LOW; renderer.shadowMap.type = THREE.PCFSoftShadowMap; }
+const ANISO = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1, texL = new THREE.TextureLoader(), A = '/games/loadshed/assets/';
+const tex = (u, srgb, rx, ry) => { const t = texL.load(u); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; t.repeat.set(rx, ry); return t; };
+const ctex = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; };
+const M = (c, o) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: .85 }, o || {}));
+
+/* ---------- পড়ার ঘর ---------- */
+const RW = 4.2, RD = 3.6, RH = 3;
+{ const f = new THREE.Mesh(new THREE.PlaneGeometry(RW, RD), new THREE.MeshStandardMaterial({ map: tex(A + 'floor_diff.jpg', true, 3, 2.5), normalMap: tex(A + 'floor_nor.jpg', false, 3, 2.5), roughness: .7 })); f.rotation.x = -Math.PI / 2; f.receiveShadow = true; scene.add(f); }
+const wallM = new THREE.MeshStandardMaterial({ map: tex('/games/jam/assets/plaster_diff.jpg', true, 2, 1.5), normalMap: tex('/games/jam/assets/plaster_nor.jpg', false, 2, 1.5), color: '#d8dcef', roughness: .95 });
+{ const c = new THREE.Mesh(new THREE.PlaneGeometry(RW, RD), M('#e9e6dc')); c.rotation.x = Math.PI / 2; c.position.y = RH; scene.add(c); }
+const winW = 1.3, winH = 1.2, winY = 1.6, winX = .9;
+{ const s = new THREE.Shape(); s.moveTo(-RW / 2, 0); s.lineTo(RW / 2, 0); s.lineTo(RW / 2, RH); s.lineTo(-RW / 2, RH); s.lineTo(-RW / 2, 0); const p = new THREE.Path(); p.moveTo(winX - winW / 2, winY - winH / 2); p.lineTo(winX + winW / 2, winY - winH / 2); p.lineTo(winX + winW / 2, winY + winH / 2); p.lineTo(winX - winW / 2, winY + winH / 2); s.holes.push(p);
+  const g = new THREE.ShapeGeometry(s); const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, (uv.getX(i) + RW / 2) / RW, uv.getY(i) / RH); const b = new THREE.Mesh(g, wallM); b.position.z = -RD / 2; b.receiveShadow = true; scene.add(b); }
+for (const [w, x, ry] of [[RD, -RW / 2, Math.PI / 2], [RD, RW / 2, -Math.PI / 2]]) { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, RH), wallM); m.rotation.y = ry; m.position.set(x, RH / 2, 0); m.receiveShadow = true; scene.add(m); }
+{ const m = new THREE.Mesh(new THREE.PlaneGeometry(RW, RH), wallM); m.rotation.y = Math.PI; m.position.set(0, RH / 2, RD / 2); scene.add(m); }
+// জানালার বাইরে রাতের শহর
+const cityT = ctex(1024, 512, (x) => { const g = x.createLinearGradient(0, 0, 0, 512); g.addColorStop(0, '#081028'); g.addColorStop(1, '#1d2033'); x.fillStyle = g; x.fillRect(0, 0, 1024, 512); for (let i = 0; i < 80; i++) { x.fillStyle = `rgba(255,255,255,${Math.random() * .6})`; x.fillRect(Math.random() * 1024, Math.random() * 160, 1.5, 1.5); } x.fillStyle = '#f4f1d0'; x.beginPath(); x.arc(300, 80, 20, 0, 7); x.fill(); for (let i = 0; i < 14; i++) { const bx = i * 76 - 20 + rnd(-10, 10), w = rnd(60, 110), top = rnd(80, 260); x.fillStyle = '#10131c'; x.fillRect(bx, top, w, 512 - top); for (let y = top + 20; y < 500; y += 34) for (let xx = bx + 10; xx < bx + w - 14; xx += 24) { const r = Math.random(); x.fillStyle = r < .18 ? '#ffd889' : r < .3 ? '#cfe8ff' : '#1a1f2b'; x.fillRect(xx, y, 13, 18); } } });
+{ const c = new THREE.Mesh(new THREE.PlaneGeometry(9, 4.5), new THREE.MeshBasicMaterial({ map: cityT, toneMapped: false })); c.position.set(winX, 1.9, -RD / 2 - 2.2); scene.add(c);
+  const fm = M('#e8e3d6', { roughness: .6 }), gm = M('#2b2d31', { roughness: .4, metalness: .6 }), g = new THREE.Group(); g.position.set(winX, winY, -RD / 2);
+  for (const [w, h, x, y] of [[winW + .12, .08, 0, winH / 2 + .02], [winW + .12, .1, 0, -winH / 2 - .03], [.08, winH, -winW / 2 - .02, 0], [.08, winH, winW / 2 + .02, 0]]) { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, .2), fm); b.position.set(x, y, 0); g.add(b); }
+  for (let i = 1; i < 7; i++) { const b = new THREE.Mesh(new THREE.CylinderGeometry(.008, .008, winH, 6), gm); b.position.set(-winW / 2 + i * winW / 7, 0, .02); g.add(b); } scene.add(g); }
+// রুটিন আর পোস্টার দেয়ালে
+{ const rt = ctex(256, 340, (x, w, h) => { x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.fillStyle = '#1e3a8a'; x.fillRect(0, 0, w, 56); x.fillStyle = '#fff'; x.font = "800 34px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.fillText('পরীক্ষার রুটিন', w / 2, 40); x.fillStyle = '#222'; x.font = "600 22px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'left'; ['রবি: বাংলা', 'সোম: ইংরেজি', 'মঙ্গল: গণিত', 'বুধ: সাধারণ জ্ঞান', 'বৃহঃ: বিজ্ঞান', 'শনি: ধর্ম'].forEach((t, i) => x.fillText(t, 22, 100 + i * 40)); x.strokeStyle = '#dc2626'; x.lineWidth = 5; x.beginPath(); x.arc(110, 213, 90, 0, 7); x.stroke(); });
+  const r = new THREE.Mesh(new THREE.PlaneGeometry(.42, .56), M('#fff', { map: rt, roughness: .9 })); r.position.set(-.55, 1.6, -RD / 2 + .01); scene.add(r); }
+// আলো
+scene.add(new THREE.HemisphereLight('#b9c4e6', '#3a3328', .25));
+const lampL = new THREE.SpotLight('#ffe2b0', 9, 4, .9, .6, 1.2); lampL.castShadow = !LOW; lampL.shadow.mapSize.set(1024, 1024); scene.add(lampL); scene.add(lampL.target);
+const roomL = new THREE.PointLight('#dfe8ff', 2.5, 8, 1.5); roomL.position.set(0, 2.6, .3); scene.add(roomL);
+// টেবিল ল্যাম্প (নিজের বানানো)
+const desk = new THREE.Group(); scene.add(desk);
+const lampHead = new THREE.Mesh(new THREE.ConeGeometry(.09, .12, 20, 1, true), M('#1e3a8a', { side: THREE.DoubleSide, roughness: .5 }));
+const bulbM = new THREE.MeshBasicMaterial({ color: '#fff4d6' });
+// বই: দুই পাতা, ক্যানভাসে লেখা
+const pageT = ctex(1024, 640, () => {}), pageC = pageT.image;
+function drawPage(ch, fact, prog) { const x = pageC.getContext('2d'); x.fillStyle = '#f6efdc'; x.fillRect(0, 0, 1024, 640); x.fillStyle = 'rgba(120,90,40,.08)'; for (let i = 0; i < 1400; i++) x.fillRect(Math.random() * 1024, Math.random() * 640, 2, 2);
+  x.fillStyle = 'rgba(0,0,0,.12)'; x.fillRect(506, 0, 12, 640); x.fillStyle = '#7c2d12'; x.font = "800 40px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'left'; x.fillText(ch || 'সাধারণ জ্ঞান ও বিজ্ঞান', 40, 70);
+  x.fillStyle = '#3f3a33'; x.font = "500 26px 'Noto Sans Bengali',sans-serif"; for (let i = 0; i < 12; i++) { x.fillStyle = 'rgba(60,55,50,.35)'; x.fillRect(40, 120 + i * 40, 420 - (i % 3) * 40, 12); }
+  if (fact) { x.fillStyle = '#1c1917'; x.font = "700 36px 'Noto Sans Bengali',sans-serif"; wrap(x, fact.q, 560, 110, 420, 50); x.fillStyle = '#b91c1c'; x.font = "800 44px 'Noto Sans Bengali',sans-serif"; wrap(x, '→ ' + fact.a, 560, 330, 420, 56); x.strokeStyle = 'rgba(234,179,8,.55)'; x.lineWidth = 34; x.beginPath(); x.moveTo(560, 318); x.lineTo(560 + 420 * clamp(prog, 0, 1), 318); x.stroke(); }
+  pageT.needsUpdate = true; }
+function wrap(x, t, X, Y, w, lh) { const ws = t.split(' '); let line = '', y = Y; for (const word of ws) { const tt = line ? line + ' ' + word : word; if (x.measureText(tt).width > w && line) { x.fillText(line, X, y); line = word; y += lh; } else line = tt; } x.fillText(line, X, y); }
+const book = new THREE.Group(); { const pg = new THREE.Mesh(new THREE.PlaneGeometry(.52, .325), M('#fff', { map: pageT, roughness: .95 })); pg.rotation.x = -Math.PI / 2; pg.position.y = .025; pg.receiveShadow = true; book.add(pg); const cv = new THREE.Mesh(new THREE.BoxGeometry(.54, .02, .34), M('#7f1d1d', { roughness: .7 })); cv.position.y = .01; book.add(cv); }
+const cup = new THREE.Group(); { const c = new THREE.Mesh(new THREE.CylinderGeometry(.04, .033, .085, 20, 1, true), M('#f5f5f4', { side: THREE.DoubleSide, roughness: .3 })); c.position.y = .043; cup.add(c); const tea = new THREE.Mesh(new THREE.CircleGeometry(.038, 20), M('#7c4a1e', { roughness: .1 })); tea.rotation.x = -Math.PI / 2; tea.position.y = .07; tea.name = 'tea'; cup.add(tea); const h = new THREE.Mesh(new THREE.TorusGeometry(.022, .006, 6, 14, Math.PI), M('#f5f5f4')); h.position.set(.045, .045, 0); h.rotation.z = -Math.PI / 2; cup.add(h); }
+const phoneT = ctex(128, 256, () => {}), phoneC = phoneT.image;
+function drawPhone(on, txt) { const x = phoneC.getContext('2d'); x.fillStyle = on ? '#0f172a' : '#000'; x.fillRect(0, 0, 128, 256); if (on) { x.fillStyle = '#1d4ed8'; x.fillRect(8, 80, 112, 70); x.fillStyle = '#fff'; x.font = "700 18px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.fillText(txt || 'নতুন মেসেজ', 64, 122); } phoneT.needsUpdate = true; }
+drawPhone(false);
+const phone = new THREE.Mesh(new THREE.BoxGeometry(.075, .008, .155), [M('#111'), M('#111'), new THREE.MeshStandardMaterial({ map: phoneT, emissive: '#fff', emissiveMap: phoneT, emissiveIntensity: .9, roughness: .2 }), M('#111'), M('#111'), M('#111')]);
+let clockHands = null, fanBlades = null, flame = null, TTOP = .76, TX = -.2, TZ = -1.25;
+(async () => { const L = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder); const get = k => L.loadAsync(A + k + '.glb');
+  const put = (g, x, y, z, ry) => { const o = g.scene; o.position.set(x, y, z); o.rotation.y = ry || 0; o.traverse(m => { if (m.isMesh) { m.castShadow = !LOW; m.receiveShadow = true; } }); scene.add(o); return o; };
+  try { const [tbl, chair, shelf, clk, fan, lamp, bed, jug] = await Promise.all(['table', 'chair', 'shelf', 'clock', 'fan', 'hurricane', 'bed', 'jug'].map(get));
+    put(tbl, TX, 0, TZ, 0); const tb = new THREE.Box3().setFromObject(tbl.scene); TTOP = tb.max.y;
+    put(chair, TX, 0, TZ + .75, Math.PI * .95); put(shelf, -RW / 2 + .25, 0, .2, Math.PI / 2); put(bed, 1.25, 0, .9, -Math.PI / 2); put(jug, TX + .45, TTOP, TZ - .2, .3);
+    put(clk, -.55, 2.3, -RD / 2 + .02, 0); clockHands = { h: clk.scene.getObjectByName('wall_clock_hours_hand'), m: clk.scene.getObjectByName('wall_clock_minute_hand'), s: clk.scene.getObjectByName('wall_clock_second_hand') };
+    put(fan, 0, 0, 0); { const b = new THREE.Box3().setFromObject(fan.scene); fan.scene.position.y = RH - b.max.y; } fanBlades = fan.scene.getObjectByName('ceiling_fan_blades');
+    put(lamp, TX - .45, TTOP, TZ - .15, 0); flame = lamp.scene.getObjectByName('vintage_oil_lamp_flame'); if (flame) flame.visible = false;
+  } catch (e) { console.warn(e); }
+  book.position.set(TX + .02, TTOP, TZ + .12); scene.add(book); cup.position.set(TX + .36, TTOP, TZ + .14); scene.add(cup); phone.position.set(TX - .33, TTOP + .005, TZ + .2); phone.rotation.y = .25; scene.add(phone);
+  { const base = new THREE.Mesh(new THREE.CylinderGeometry(.07, .08, .02, 20), M('#1e3a8a', { roughness: .5 })); const arm = new THREE.Mesh(new THREE.CylinderGeometry(.008, .008, .38, 8), M('#cbd5e1', { metalness: .7, roughness: .3 })); arm.position.set(0, .2, 0); arm.rotation.z = .25; lampHead.position.set(.07, .38, .05); lampHead.rotation.set(.5, 0, -.9); const bulb = new THREE.Mesh(new THREE.SphereGeometry(.025, 10, 8), bulbM); bulb.position.copy(lampHead.position).add(new THREE.Vector3(.02, -.03, .02)); desk.add(base, arm, lampHead, bulb); desk.position.set(TX + .3, TTOP, TZ - .2); }
+  lampL.position.set(TX + .36, TTOP + .38, TZ - .15); lampL.target.position.set(TX, TTOP, TZ + .12);
+  drawPage(null, null, 0); window.KHG.ready = true; })();
+
+/* ---------- পড়ার বিষয় ---------- */
+const CH = [
+  { n: 'অধ্যায় ১: বাংলাদেশের ইতিহাস', f: [{ q: 'ভাষা আন্দোলনের দিন', a: '২১ ফেব্রুয়ারি ১৯৫২', w: ['২৬ মার্চ ১৯৭১', '১৬ ডিসেম্বর ১৯৫২', '১৪ এপ্রিল ১৯৫২'] }, { q: 'বাংলাদেশের স্বাধীনতা দিবস', a: '২৬ মার্চ', w: ['১৬ ডিসেম্বর', '২১ ফেব্রুয়ারি', '১৫ আগস্ট'] }, { q: 'বাংলাদেশের বিজয় দিবস', a: '১৬ ডিসেম্বর', w: ['২৬ মার্চ', '১৭ এপ্রিল', '৭ মার্চ'] }, { q: 'মুক্তিযুদ্ধের সময় দেশ ভাগ ছিল কয়টি সেক্টরে', a: '১১টি', w: ['৯টি', '৭টি', '১৪টি'] }] },
+  { n: 'অধ্যায় ২: বাংলাদেশের ভূগোল', f: [{ q: 'পৃথিবীর বৃহত্তম ম্যানগ্রোভ বন', a: 'সুন্দরবন', w: ['লাউয়াছড়া', 'ভাওয়াল', 'মধুপুর'] }, { q: 'বাংলাদেশে বিভাগের সংখ্যা', a: '৮টি', w: ['৭টি', '৬৪টি', '১০টি'] }, { q: 'পৃথিবীর দীর্ঘতম প্রাকৃতিক সমুদ্রসৈকত', a: 'কক্সবাজার', w: ['কুয়াকাটা', 'পতেঙ্গা', 'সেন্টমার্টিন'] }, { q: 'বাংলাদেশের বৃহত্তম হাওর', a: 'হাকালুকি', w: ['টাঙ্গুয়ার', 'হাইল', 'চলন বিল'] }] },
+  { n: 'অধ্যায় ৩: সাধারণ বিজ্ঞান', f: [{ q: 'পানির রাসায়নিক সংকেত', a: 'H₂O', w: ['CO₂', 'O₂', 'NaCl'] }, { q: 'প্রাপ্তবয়স্ক মানুষের দেহে হাড়ের সংখ্যা', a: '২০৬টি', w: ['২০০টি', '৩০৬টি', '১০৬টি'] }, { q: 'সালোকসংশ্লেষণে গাছ বাতাস থেকে নেয়', a: 'কার্বন ডাই-অক্সাইড', w: ['অক্সিজেন', 'নাইট্রোজেন', 'হাইড্রোজেন'] }, { q: 'আলোর বেগ প্রতি সেকেন্ডে প্রায়', a: '৩ লক্ষ কিলোমিটার', w: ['৩ হাজার কিলোমিটার', '৩০ কিলোমিটার', '৩ কোটি কিলোমিটার'] }] },
+  { n: 'অধ্যায় ৪: বাংলা সাহিত্য', f: [{ q: 'বাংলাদেশের জাতীয় কবি', a: 'কাজী নজরুল ইসলাম', w: ['রবীন্দ্রনাথ ঠাকুর', 'জসীমউদ্‌দীন', 'জীবনানন্দ দাশ'] }, { q: '"আমার সোনার বাংলা" গানের রচয়িতা', a: 'রবীন্দ্রনাথ ঠাকুর', w: ['কাজী নজরুল ইসলাম', 'লালন শাহ', 'ডি এল রায়'] }, { q: '"পদ্মা নদীর মাঝি" উপন্যাসের লেখক', a: 'মানিক বন্দ্যোপাধ্যায়', w: ['শরৎচন্দ্র চট্টোপাধ্যায়', 'হুমায়ূন আহমেদ', 'সৈয়দ মুজতবা আলী'] }, { q: '"কবর" কবিতার কবি', a: 'জসীমউদ্‌দীন', w: ['কাজী নজরুল ইসলাম', 'শামসুর রাহমান', 'সুকান্ত ভট্টাচার্য'] }] }];
+const ALL = CH.flatMap((c, ci) => c.f.map(f => ({ ...f, ci, ch: c.n })));
+const PH = [
+  { who: '💬 দোস্ত রাফি', t: 'দোস্ত, ফ্রি ফায়ার এক ম্যাচ? ১০ মিনিট লাগবে মাত্র!', kind: 'waste', res: 'এক ম্যাচ… দুই ম্যাচ… ঘড়িতে চোখ পড়তেই ৪০ মিনিট শেষ! 😱' },
+  { who: '📘 ফেসবুক', t: 'আপনার ৩ জন বন্ধু একটি ভিডিওতে রিঅ্যাক্ট দিয়েছে', kind: 'waste', res: 'রিলের পর রিল… ৩০ মিনিট উধাও! 😵' },
+  { who: '⚠️ অচেনা নম্বর', t: '১০০% কমন প্রশ্ন ফাঁস! ৫০০ টাকা বিকাশ করলেই পাবে', kind: 'scam', res: 'ভুয়া! প্রশ্ন ফাঁস বলে কিছু নেই, এরা প্রতারক। সময়ও গেল, মনটাও খারাপ।' },
+  { who: '💬 ক্লাসের গ্রুপ', t: 'ভাই, প্রশ্ন নাকি আউট! টেলিগ্রামে লিংক দিলাম', kind: 'scam', res: 'লিংকে ভাইরাস আর ভুয়া প্রশ্ন! ২০ মিনিট নষ্ট।' },
+  { who: '💬 ফার্স্ট বয় তানিম', t: 'স্যার ক্লাসে বলেছিলেন, {ch} থেকে বেশি প্রশ্ন আসবে!', kind: 'tip', res: 'আসল সাজেশন! ওই অধ্যায় ভালো করে পড়ো।' },
+  { who: '📞 নানু', t: 'নানুর কল: "পরীক্ষা কেমন হবে নানুভাই?"', kind: 'nanu', res: 'নানুর দোয়া নিলেন, মন ভালো হলো, ঘুমও একটু কমলো 💚' }];
+const SFX = { page() { SND.noise(.18, .2, 3000, 'bandpass'); }, buzz() { SND.tone(180, .25, 'square', .05); SND.tone(180, .25, 'square', .05, 0, .35); }, sip() { SND.noise(.4, .15, 600, 'lowpass'); }, splash() { SND.noise(.5, .25, 1500, 'lowpass'); }, ding() { [784, 1046].forEach((f, i) => SND.tone(f, .18, 'triangle', .2, 0, i * .1)); }, bad() { SND.tone(200, .35, 'sawtooth', .12, 120); }, yawn() { SND.tone(300, .9, 'sine', .06, 160); } };
+const LV = [{ n: 'ক্লাস টেস্ট', sleepUp: .65, ph: [10, 16], speed: 1.15 }, { n: 'এসএসসি', sleepUp: .85, ph: [8, 13], speed: 1 }, { n: 'ভর্তি পরীক্ষা', sleepUp: 1.05, ph: [6, 10], speed: .9 }];
+const MIN_PER_SEC = 4, END_MIN = 8 * 60;
+let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0, fanL = null;
+function newGame() { S = { over: false, started: false, min: 0, sleep: 15, prog: 0, cur: 0, seen: [], order: [], tea: 3, reading: false, act: 0, nextPh: 6, ph: null, tipCh: -1, lights: true, cutT: -1, mom: false, slept: 0, scams: 0, wasted: 0, ignored: 0 }; }
+function say(t, col, ms) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, ms || 1500); }
+function pop(t, cls) { const e = document.createElement('div'); e.className = 'pop ' + (cls || ''); e.textContent = t; $('stage').appendChild(e); setTimeout(() => e.remove(), 1100); }
+function talk(t, who, v) { if (window.KHViral) KHViral.pop(t, v || 'F2', who); }
+function clockTxt(m) { const t = 22 * 60 + m, h = Math.floor(t / 60) % 24, mm = Math.floor(t % 60), h12 = h > 12 ? h - 12 : h || 12; return (h >= 22 || h < 4 ? 'রাত ' : 'ভোর ') + bn(h12) + ':' + bn(String(mm).padStart(2, '0')); }
+function hud() { $('clock').textContent = clockTxt(S.min); $('read').textContent = bn(S.seen.length) + '/' + bn(ALL.length); $('sleepB').style.width = S.sleep + '%'; $('sleepB').style.background = S.sleep > 80 ? '#ef4444' : S.sleep > 55 ? '#f59e0b' : '#a78bfa'; $('progB').style.width = (S.prog * 100) + '%'; $('teaN').textContent = bn(S.tea); $('teaB').disabled = S.tea <= 0; }
+function curFact() { return ALL[S.order[S.cur]]; }
+function showFact() { const f = curFact(); if (!f) return; drawPage(f.ch, f, S.prog); $('fact').hidden = false; $('fact').innerHTML = `<small>${esc(f.ch)}</small>${esc(f.q)}: <b>${esc(f.a)}</b>`; }
+function spend(min) { S.min += min; if (S.min >= END_MIN) { S.min = END_MIN; toExam(); return true; } return false; }
+function step(dt) {
+  const L = LV[lv]; if (spend(dt * MIN_PER_SEC)) return;
+  if (S.act > 0) { S.act -= dt; return; }
+  const dark = !S.lights && !S.lamp;
+  S.sleep = clamp(S.sleep + dt * L.sleepUp * (S.reading ? 1.15 : .7) * (S.min > 240 ? 1.25 : 1), 0, 100);
+  if (S.reading && !dark && S.cur < S.order.length) { S.prog += dt * .2 * L.speed * (1 - S.sleep / 140); if (Math.random() < dt * .8) drawPage(curFact().ch, curFact(), S.prog);
+    if (S.prog >= 1) { S.seen.push(S.order[S.cur]); S.cur++; S.prog = 0; SFX.page(); pop('মুখস্থ ✓', 'good'); if (S.cur < S.order.length) showFact(); else { $('fact').hidden = true; say('পুরো সিলেবাস শেষ! 🎉', '#86efac'); } } }
+  if (S.reading && dark) say('অন্ধকারে পড়া যায় না! হারিকেন জ্বালাও', '#fde047');
+  if (S.sleep >= 100) { S.slept++; S.act = 2.5; S.sleep = 35; S.reading = false; $('readB').classList.remove('on'); $('dark').style.opacity = .92; SFX.yawn(); setTimeout(() => $('dark').style.opacity = 0, 2300); say('টেবিলেই ঘুমিয়ে পড়লেন! 😴 ১ ঘণ্টা শেষ', '#fca5a5', 2200); spend(60); }
+  if (S.sleep > 80 && Math.random() < dt * .4) SFX.yawn();
+  // ফোন
+  if (!S.ph && (S.nextPh -= dt) <= 0) { S.nextPh = rnd(...L.ph); const p = { ...pick(S.tipCh < 0 && Math.random() < .3 ? PH.filter(x => x.kind === 'tip') : PH) }; if (p.kind === 'tip') { p.ch = Math.floor(Math.random() * 4); p.t = p.t.replace('{ch}', CH[p.ch].n.split(': ')[1]); } S.ph = p; S.phT = 7; $('phWho').textContent = p.who; $('phTxt').textContent = p.t; $('phoneq').hidden = false; drawPhone(true, p.who.replace(/^\S+\s/, '')); SFX.buzz(); }
+  if (S.ph && (S.phT -= dt) <= 0) phone_(false);
+  // মা আসে একবার
+  if (!S.mom && S.min > 150) { S.mom = true; S.sleep = Math.max(0, S.sleep - 20); talk('আম্মু: এখনো জাগা? এক গ্লাস গরম দুধ রেখে গেলাম। বেশি রাত করিস না বাবা।', '👩 আম্মু', 'F2'); }
+  // লোডশেডিং একবার
+  if (S.cutT < 0 && S.min > 200 && Math.random() < dt * .2) { S.cutT = 0; S.lights = false; S.lamp = false; say('কারেন্ট চলে গেল! 🕯️ হারিকেন জ্বালাও', '#fde047', 2000); $('readB').innerHTML = '<span>🕯️</span><small>হারিকেন</small>'; }
+  if (!S.lights && (S.cutT += dt) > 22) { S.lights = true; say('কারেন্ট আসছে! 💡', '#86efac'); $('readB').innerHTML = '<span>📖</span><small>পড়ো</small>'; }
+  hud();
+}
+function phone_(open) {
+  const p = S.ph; if (!p) return; S.ph = null; $('phoneq').hidden = true; drawPhone(false);
+  if (!open) { S.ignored++; pop('মনোযোগ ধরে রাখলেন +', 'good'); return; }
+  if (p.kind === 'waste') { S.wasted++; say(p.res, '#fca5a5', 2200); spend(rnd(30, 40)); }
+  else if (p.kind === 'scam') { S.scams++; say(p.res, '#fca5a5', 2400); spend(20); }
+  else if (p.kind === 'tip') { S.tipCh = p.ch; say(p.res, '#86efac', 2000); SFX.ding(); const rest = S.order.slice(S.cur); rest.sort((a, b) => (ALL[b].ci === p.ch) - (ALL[a].ci === p.ch)); S.order.splice(S.cur, rest.length, ...rest); if (S.prog === 0) showFact(); }
+  else if (p.kind === 'nanu') { S.sleep = Math.max(0, S.sleep - 15); say(p.res, '#86efac', 2000); spend(8); }
+  hud();
+}
+function tea() { if (!S || S.over || S.act > 0 || S.tea <= 0 || S.phase === 'exam') return; S.tea--; S.act = 1.6; S.sleep = Math.max(0, S.sleep - 35); SFX.sip(); spend(10); pop('☕ চা খেলেন, ঘুম কমলো!', 'good'); const t = cup.getObjectByName('tea'); if (t) t.position.y = .07 - (3 - S.tea) * .018; hud(); }
+function wash() { if (!S || S.over || S.act > 0 || S.phase === 'exam') return; S.act = 1.2; S.sleep = Math.max(0, S.sleep - 18); SFX.splash(); spend(6); pop('💦 চোখে-মুখে পানি', 'good'); hud(); }
+/* ---------- সকালের পরীক্ষা ---------- */
+let EX = null;
+function toExam() {
+  if (S.phase === 'exam' || S.over) return; S.phase = 'exam'; S.reading = false; $('fact').hidden = true; $('phoneq').hidden = true; $('meters').hidden = true; $('tools').hidden = true; $('hint').hidden = false; $('hint').textContent = 'পরীক্ষার হল, সকাল ১০টা';
+  const tc = S.tipCh >= 0 ? S.tipCh : Math.floor(Math.random() * 4); const pool = ALL.map((f, i) => i).sort(() => Math.random() - .5); pool.sort((a, b) => (ALL[b].ci === tc) - (ALL[a].ci === tc) + rnd(-.6, .6));
+  EX = { qs: pool.slice(0, 10), i: 0, ok: 0, okSeen: 0 }; $('exam').hidden = false; drawQ();
+}
+function drawQ() {
+  const e = $('exam'); if (EX.i >= EX.qs.length) return endGame(); const f = ALL[EX.qs[EX.i]]; const opts = [f.a, ...f.w].sort(() => Math.random() - .5);
+  e.innerHTML = `<h3>📝 পরীক্ষার হল</h3><div class="sub">${LV[lv].n} · সাধারণ জ্ঞান ও বিজ্ঞান · প্রশ্ন ${bn(EX.i + 1)}/১০</div><div class="q">${bn(EX.i + 1)}. ${esc(f.q)} কোনটি?</div><div class="opts">${opts.map(o => `<button data-o="${esc(o)}">${esc(o)}</button>`).join('')}</div><div class="prog">${S.seen.includes(EX.qs[EX.i]) ? '💡 এটা রাতে পড়েছিলেন…' : '🤔 এটা তো পড়া হয়নি!'}</div>`;
+  e.querySelectorAll('[data-o]').forEach(b => b.onclick = () => answer(b, b.dataset.o === f.a, f));
+}
+function answer(b, ok, f) { if (EX.lock) return; EX.lock = true; b.classList.add(ok ? 'ok' : 'bad'); if (!ok) $('exam').querySelectorAll('[data-o]').forEach(x => { if (x.dataset.o === f.a) x.classList.add('ok'); }); if (ok) { EX.ok++; SFX.ding(); } else SFX.bad(); setTimeout(() => { EX.lock = false; EX.i++; drawQ(); }, ok ? 650 : 1200); }
+const TIPS = ['জানেন কি? পরীক্ষার আগের রাতে অন্তত ৬ ঘণ্টা ঘুমালে স্মৃতি ভালো কাজ করে; ঘুমের মধ্যেই মস্তিষ্ক পড়া গুছিয়ে রাখে।', 'জানেন কি? "প্রশ্ন ফাঁস" এর নামে টাকা চাওয়া প্রায় সবসময় প্রতারণা; কখনো টাকা পাঠাবেন না।', 'জানেন কি? পড়ার সময় ফোন অন্য ঘরে রাখলে মনোযোগ অনেক বাড়ে।', 'জানেন কি? প্রতিদিন একটু একটু পড়লে পরীক্ষার আগের রাতে জাগতেই হয় না!'];
+function endGame() {
+  if (S.over) return; S.over = true; $('exam').hidden = true; const ok = EX ? EX.ok : 0;
+  const grade = ok >= 9 ? 'A+' : ok >= 8 ? 'A' : ok >= 7 ? 'A-' : ok >= 6 ? 'B' : ok >= 5 ? 'C' : ok >= 4 ? 'D' : 'F';
+  const sc = Math.max(0, ok * 100 + S.seen.length * 10 + S.ignored * 10 - S.scams * 30 - S.slept * 20);
+  $('endT').textContent = grade === 'A+' ? 'গোল্ডেন A+! 🌟' : grade === 'F' ? 'ফেল! 😭' : `গ্রেড ${grade}`;
+  $('endTitle').textContent = grade === 'A+' ? 'রাতজাগা চ্যাম্পিয়ন 👑' : S.scams ? 'প্রশ্ন ফাঁসের শিকার' : S.wasted >= 2 ? 'মোবাইলে হারিয়ে যাওয়া' : ok >= 6 ? 'পাস করে গেছেন!' : 'পরের বার আগে থেকে পড়বো';
+  $('endLine').textContent = `রাতে ${bn(S.seen.length)}টা তথ্য পড়েছেন, ${bn(S.slept)} বার ঘুমিয়ে পড়েছেন, ${bn(S.ignored)} বার ফোন এড়িয়েছেন${S.scams ? `, ${bn(S.scams)} বার ভুয়া প্রশ্ন ফাঁসে ক্লিক করেছেন` : ''}।`;
+  $('eS').textContent = bn(sc); $('eOk').textContent = bn(ok) + '/১০'; $('eG').textContent = grade; $('eTip').textContent = pick(TIPS);
+  setTimeout(() => { $('endO').hidden = false; if (ok >= 8 && window.KHViral) KHViral.confetti(); }, 300); SH.saveScore(sc); lastScore = sc;
+}
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 66 : 52; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+function loop(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  if (S && S.started && !S.over && S.phase !== 'exam') step(dt);
+  const lit = !S || S.lights; lampL.intensity = lit ? 3.2 : 0; roomL.intensity = lit ? 2.5 : 0; bulbM.color.set(lit ? '#fff4d6' : '#333');
+  const kero = S && !S.lights && S.lamp; if (flame) flame.visible = !!kero; if (kero) { roomL.intensity = 1.6 + Math.sin(T0 * 13) * .2; roomL.color.set('#ff9d4a'); roomL.position.set(TX - .45, TTOP + .25, TZ - .15); } else { roomL.color.set('#dfe8ff'); roomL.position.set(0, 2.6, .3); }
+  if (fanBlades) fanBlades.rotation.y -= dt * (lit ? 14 : Math.max(0, 14 - (S ? S.cutT : 0) * 3));
+  if (clockHands && clockHands.m) { const m = 22 * 60 + (S ? S.min : 0); clockHands.m.rotation.z = -(m % 60) / 60 * Math.PI * 2; clockHands.h.rotation.z = -((m / 60) % 12) / 12 * Math.PI * 2; if (clockHands.s) clockHands.s.rotation.z = -T0 * Math.PI * 2 / 60; }
+  // চোখ ঢুলুঢুলু: ঘুম বেশি হলে ক্যামেরা নিচে নামে, দোলে
+  const sl = S ? S.sleep / 100 : 0, port = W / H < .8, nod = Math.max(0, sl - .55) * (Math.sin(T0 * 1.3) * .5 + .5);
+  if (S && S.started) { cam.position.set(TX + .02, TTOP + (port ? .78 : .55) - nod * .12, TZ + (port ? .82 : .72)); cam.lookAt(TX + .02, TTOP - nod * .1, TZ - .02); }
+  else { const a = T0 * .08; cam.position.set(Math.sin(a) * 1.2 + .3, 1.6, .9); cam.lookAt(TX, TTOP, TZ); }
+  if (renderer) renderer.render(scene, cam);
+  requestAnimationFrame(loop);
+}
+function start(level) { lv = level; newGame(); S.started = true; S.order = ALL.map((_, i) => i).sort(() => Math.random() - .5); ['startO', 'endO', 'exam'].forEach(i => $(i).hidden = true); $('meters').hidden = false; $('tools').hidden = false; $('hint').hidden = true; $('readB').innerHTML = '<span>📖</span><small>পড়ো</small>'; const t = cup.getObjectByName('tea'); if (t) t.position.y = .07; SND.ac; if (!fanL) fanL = SND.loop('lowpass', 300, .4); if (fanL) fanL.g.gain.value = .05; showFact(); hud(); talk('কাল পরীক্ষা! আজ রাতেই সব পড়ে ফেলতে হবে…', '🧑‍🎓 মনে মনে', 'M1'); }
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = e => { e.stopPropagation(); start(+b.dataset.lv); });
+const rb = $('readB'); const rOn = e => { e.preventDefault(); if (!S || S.over) return; if (!S.lights && !S.lamp) { S.lamp = true; S.act = 1; say('হারিকেন জ্বললো 🕯️', '#fde047'); rb.innerHTML = '<span>📖</span><small>পড়ো</small>'; return; } S.reading = true; rb.classList.add('on'); }, rOff = () => { if (S) S.reading = false; rb.classList.remove('on'); };
+rb.addEventListener('pointerdown', rOn); rb.addEventListener('pointerup', rOff); rb.addEventListener('pointercancel', rOff); rb.addEventListener('pointerleave', rOff);
+$('teaB').onclick = tea; $('washB').onclick = wash; $('phOpen').onclick = () => phone_(true); $('phNo').onclick = () => phone_(false);
+addEventListener('keydown', e => { if (e.key === ' ' && S && !S.reading) rOn(e); }); addEventListener('keyup', e => { if (e.key === ' ') rOff(); });
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `পরীক্ষার আগের রাত খেলে ${$('eG').textContent} পেলাম, ${bn(lastScore)} পয়েন্ট! 📚 আপনি পারবেন? ${location.origin}/games/porikkha/`; try { navigator.clipboard.writeText(t).then(() => pop('কপি হয়েছে, শেয়ার করুন!', 'good')); } catch (e) {} };
+newGame(); resize(); last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+const MY = ['আর একটা অধ্যায়, তারপর ঘুম', 'আম্মু, আরেক কাপ চা!', 'এগুলা কে মুখস্থ করে!', 'ইশ, সারা বছর পড়লে আজ এই অবস্থা হতো না'], OP = ['পড়, পড়! সকালে পরীক্ষা!', 'চা বানাচ্ছি, দাঁড়া', 'বেশি রাত করিস না', 'ভালো করে পড়লে ভালো হবে ইনশাআল্লাহ'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY, onSay: t => { KHViral.pop(t, 'M1', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP), 'F2', '👩 আম্মু', true), 1500); } });
+window.KHG = { get S() { return S; }, start, tea, wash, phone: phone_, ready: false, get EX() { return EX; }, ALL };
+</script>
+<script src="/js/update.js"></script>
+</body></html>
