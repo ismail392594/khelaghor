@@ -1,0 +1,30 @@
+<!doctype html><html><body style="margin:0;background:transparent">
+<script type="importmap">{"imports":{"three":"./three/build/three.module.js"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from './three/examples/jsm/loaders/GLTFLoader.js';
+import { RoomEnvironment } from './three/examples/jsm/environments/RoomEnvironment.js';
+const [name, yawDeg] = decodeURIComponent(location.hash.slice(1)).split('|');
+const r = new THREE.WebGLRenderer({ alpha: true, antialias: true, preserveDrawingBuffer: true });
+r.setSize(256, 512); r.setClearColor(0, 0); r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping; document.body.appendChild(r.domElement);
+const sc = new THREE.Scene(); sc.environment = new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(), .04).texture;
+sc.add(new THREE.HemisphereLight(0xdde8ff, 0x7a6a50, 1.1)); const sun = new THREE.DirectionalLight(0xfff2dd, 2.4); sun.position.set(-3, 5, 6); sc.add(sun);
+new GLTFLoader().load(`../sf/raw/${name}.glb`, g => {
+  const o = g.scene; sc.add(o); const bones = [];
+  o.traverse(b => { if (b.isBone) bones.push(b.name); if (b.isMesh) { b.material.side = THREE.DoubleSide; } });
+  // T-pose হলে হাত নামানো: upper arm বোন খুঁজে ঘোরানো
+  o.updateMatrixWorld(true);
+  o.traverse(b => {
+    if (!b.isBone) return; const n = b.name.toLowerCase();
+    if (/(left|_l\b|\.l\b|l_)?.*(upperarm|upper_arm|arm)$/.test(n) && !/fore|lower|hand/.test(n) || /^(mixamorig:)?(left|right)arm$/.test(n)) {
+      const left = /left|_l\b|\.l\b|^l_|l_upper/.test(n); b.userData.arm = left ? 1 : -1;
+    }
+  });
+  if (window.ARMS) o.traverse(b => { if (b.userData.arm) b.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), -b.userData.arm * window.ARMS); });
+  o.rotation.y = (+yawDeg || 0) * Math.PI / 180; o.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(o, true), s = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3());
+  const h = s.y / 2 * 1.02, cam = new THREE.OrthographicCamera(-h / 2, h / 2, h, -h, -100, 100); cam.position.set(c.x, c.y, c.z + 10); cam.lookAt(c);
+  r.render(sc, cam);
+  window.DONE = { bones: bones.slice(0, 80), size: [s.x, s.y, s.z], url: r.domElement.toDataURL('image/png') };
+}, undefined, e => window.DONE = { err: String(e) });
+</script></body></html>
