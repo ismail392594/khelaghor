@@ -119,5 +119,11 @@ export function fbDetail(f, sum) {
       stats.push([bn, va == null ? 0 : va, vb == null ? 0 : vb]);
     }
   }
-  return { comm: comm.reverse(), stats };
+  // একাদশ (একই ডাকেই আসে, বাড়তি খরচ নেই)
+  const lu = (f.lineups || []).map(l => ({
+    t: tnm(l.team && l.team.name), f: l.formation || '', coach: (l.coach && l.coach.name) || '',
+    xi: (l.startXI || []).map(p => [p.player && p.player.number, p.player && p.player.name, p.player && p.player.pos]),
+    sub: (l.substitutes || []).map(p => [p.player && p.player.number, p.player && p.player.name, p.player && p.player.pos])
+  })).filter(l => l.xi.length);
+  return { comm: comm.reverse(), stats, lu };
 }

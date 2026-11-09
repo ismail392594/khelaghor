@@ -27,7 +27,8 @@ export function ouLine(m) {
 const matchTotal = m => (m.sport === 'football' ? (m.a.g == null || m.b.g == null ? null : m.a.g + m.b.g) : (m.inns || []).reduce((t, i) => t + (i.r || 0), 0) || null);
 // কম্বো: সব অনুমান মিললে বোনাস পয়েন্ট (টাকা নয়, শুধু লিডারবোর্ডের জন্য)
 export const COMBO = { 2: 30, 3: 60, 4: 100, 5: 150, 6: 220 };
-export const EXACT = 20; // ফুটবলে একদম সঠিক স্কোর বললে বাড়তি পয়েন্ট
+export const EXACT = 20;
+export const CLOSE = 5; // ফুটবলে বিজয়ী আর গোলের ব্যবধান মিললে (কিন্তু একদম সঠিক স্কোর নয়) // ফুটবলে একদম সঠিক স্কোর বললে বাড়তি পয়েন্ট
 // সপ্তাহের নাম (ঢাকার সময়ে, সোমবার থেকে শুরু): যেমন 2026-11-09
 export const weekKey = (t = Date.now()) => { const d = new Date(t + 6 * 3600e3); const day = (d.getUTCDay() + 6) % 7; return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - day)).toISOString().slice(0, 10); };
 const CACHE_V = 6; // ক্যাশের ছাঁচ বদলালে বাড়াতে হয়, তাহলে পুরোনো ক্যাশ ফেলে সব নতুন করে আনে
@@ -549,7 +550,9 @@ export async function me(req, now = Date.now()) {
   const cq = await F.db.collection('liveCombo').where('uid', '==', t.uid).limit(30).get();
   const combos = cq.docs.map(d => ({ id: d.id, ...d.data() })).sort((x, y) => y.at - x.at).slice(0, 10).map(c => ({ id: c.id, legs: c.legs.map(l => ({ id: l.id, mk: l.mk, pick: l.pick, line: l.line, t: l.t, r: (c.lr || {})[l.id] ?? null })), bonus: c.bonus, res: c.res, at: c.at }));
   const scores = Object.fromEntries(Object.entries(rec).filter(([k, v]) => !k.endsWith('~ou') && String(v).split('|')[2]).map(([k, v]) => [k, String(v).split('|')[2].split('-').map(Number)]));
-  return { name: d.name || null, pts: d.pts || 0, ok: d.ok || 0, n: d.n || 0, ex: d.ex || 0, cw: d.cw || 0, week: (d.wk || {})[weekKey(now)] || 0, picks, scores, ou, combos };
+  if ((d.st || 0) > (d.best || 0)) { await ref.set({ best: d.st }, { merge: true }).catch(() => {}); d.best = d.st; }
+  const groups = d.groups || [];
+  return { groups, st: d.st || 0, best: d.best || 0, name: d.name || null, pts: d.pts || 0, ok: d.ok || 0, n: d.n || 0, ex: d.ex || 0, cw: d.cw || 0, week: (d.wk || {})[weekKey(now)] || 0, picks, scores, ou, combos };
 }
 
 export async function board(period = 'all', now = Date.now()) {
@@ -560,7 +563,7 @@ export async function board(period = 'all', now = Date.now()) {
   const q = await F.db.collection('livePoints').orderBy(field, 'desc').limit(50).get();
   return {
     period, week: wk,
-    list: q.docs.map(d => { const x = d.data(); return { name: x.name || 'খেলোয়াড়', pts: period === 'week' ? ((x.wk || {})[wk] || 0) : (x.pts || 0), ok: x.ok || 0, n: x.n || 0, ex: x.ex || 0 }; })
+    list: q.docs.map(d => { const x = d.data(); return { name: x.name || 'খেলোয়াড়', pts: period === 'week' ? ((x.wk || {})[wk] || 0) : (x.pts || 0), ok: x.ok || 0, n: x.n || 0, ex: x.ex || 0, st: x.st || 0 }; })
   };
 }
 
@@ -644,9 +647,12 @@ async function settleOne({ db, FV }, id, result, score = null, total = null) {
       const x = v.data();
       const ok = result !== 'void' && x.pick === result;
       const exact = ok && score && x.ga === score[0] && x.gb === score[1];
-      const pts = (ok ? POINTS : 0) + (exact ? EXACT : 0);
-      b.update(v.ref, { res: result === 'void' ? 'void' : ok, ...(exact ? { exact: true } : {}) });
-      if (pts) b.set(db.doc('livePoints/' + v.id), { pts: FV.increment(pts), ok: FV.increment(1), ...(exact ? { ex: FV.increment(1) } : {}), wk: { [wk]: FV.increment(pts) } }, { merge: true });
+      const close = ok && !exact && score && x.ga != null && (x.ga - x.gb) === (score[0] - score[1]);
+      const pts = (ok ? POINTS : 0) + (exact ? EXACT : 0) + (close ? CLOSE : 0);
+      b.update(v.ref, { res: result === 'void' ? 'void' : ok, ...(exact ? { exact: true } : {}), ...(close ? { close: true } : {}) });
+      // টানা সঠিক অনুমানের স্ট্রিক: মিললে বাড়ে, না মিললে শূন্য
+      if (pts) b.set(db.doc('livePoints/' + v.id), { pts: FV.increment(pts), ok: FV.increment(1), st: FV.increment(1), ...(exact ? { ex: FV.increment(1) } : {}), wk: { [wk]: FV.increment(pts) } }, { merge: true });
+      else if (result !== 'void') b.set(db.doc('livePoints/' + v.id), { st: 0 }, { merge: true });
     }
     if (q.size < 200) b.set(db.doc('liveVotes/' + id), { settled: true, result, total, settledAt: Date.now() }, { merge: true });
     await b.commit();
@@ -700,4 +706,58 @@ export async function push(req) {
   const F = await fb();
   if (!F) throw new HttpErr(503, 'সার্ভার এখনো চালু হয়নি');
   return pushSub(F, b);
+}
+
+/* ---------- বন্ধুদের গ্রুপ (নিজেদের লিডারবোর্ড) ---------- */
+const CODE_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const newCode = () => Array.from({ length: 6 }, () => CODE_ABC[Math.floor(Math.random() * CODE_ABC.length)]).join('');
+export async function group(req, now = Date.now()) {
+  const b = req.body && typeof req.body === 'object' ? req.body : JSON.parse(req.body || '{}');
+  const F = await fb();
+  if (!F) throw new HttpErr(503, 'সার্ভার এখনো চালু হয়নি');
+  const { db } = F;
+  const t = await who(F, req);
+  const meRef = db.doc('livePoints/' + t.uid);
+  const mine = ((await meRef.get()).data() || {}).groups || [];
+  const name = await nameOf(F, t);
+  if (b.act === 'create') {
+    const gname = String(b.name || '').trim().slice(0, 30);
+    if (gname.length < 2) throw new HttpErr(400, 'গ্রুপের একটা নাম দিন');
+    if (mine.length >= 10) throw new HttpErr(400, 'সর্বোচ্চ ১০টা গ্রুপে থাকা যায়');
+    let code = newCode();
+    for (let i = 0; i < 5 && (await db.doc('liveGroups/' + code).get()).exists; i++) code = newCode();
+    await db.doc('liveGroups/' + code).set({ name: gname, owner: t.uid, members: [t.uid], at: now });
+    await meRef.set({ name, groups: [...mine, { code, name: gname }].slice(-10) }, { merge: true });
+    return { ok: true, code, name: gname };
+  }
+  const code = String(b.code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+  const gref = db.doc('liveGroups/' + code);
+  const g = (await gref.get()).data();
+  if (!g) throw new HttpErr(404, 'এই কোডে কোনো গ্রুপ নেই');
+  if (b.act === 'join') {
+    if (mine.some(x => x.code === code)) return { ok: true, code, name: g.name, already: true };
+    if (mine.length >= 10) throw new HttpErr(400, 'সর্বোচ্চ ১০টা গ্রুপে থাকা যায়');
+    if ((g.members || []).length >= 100) throw new HttpErr(400, 'গ্রুপ ভর্তি (সর্বোচ্চ ১০০ জন)');
+    await gref.set({ members: [...new Set([...(g.members || []), t.uid])] }, { merge: true });
+    await meRef.set({ name, groups: [...mine, { code, name: g.name }] }, { merge: true });
+    return { ok: true, code, name: g.name };
+  }
+  if (b.act === 'leave') {
+    await gref.set({ members: (g.members || []).filter(u => u !== t.uid) }, { merge: true });
+    await meRef.set({ groups: mine.filter(x => x.code !== code) }, { merge: true });
+    return { ok: true };
+  }
+  throw new HttpErr(400, 'ভুল অনুরোধ');
+}
+export async function gboard(code, period = 'all', now = Date.now()) {
+  const F = await fb();
+  if (!F) return { list: [] };
+  code = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+  const g = (await F.db.doc('liveGroups/' + code).get()).data();
+  if (!g) throw new HttpErr(404, 'এই কোডে কোনো গ্রুপ নেই');
+  const wk = weekKey(now);
+  const docs = await Promise.all((g.members || []).slice(0, 100).map(u => F.db.doc('livePoints/' + u).get()));
+  const list = docs.map(d => d.data() || {}).map(x => ({ name: x.name || 'খেলোয়াড়', pts: period === 'week' ? ((x.wk || {})[wk] || 0) : (x.pts || 0), ok: x.ok || 0, n: x.n || 0, ex: x.ex || 0, st: x.st || 0 }))
+    .sort((p, q) => q.pts - p.pts);
+  return { name: g.name, code, n: (g.members || []).length, period, list };
 }

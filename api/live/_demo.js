@@ -26,15 +26,17 @@ function simT20(seed, A, B, pa, pb, balls) {
     const bowlers = [6, 7, 8, 9, 10].map(i => [wp[i], 0, 0, 0, 0]);
     const add = n => { const x = [bp[n], 'ব্যাট করছেন', 0, 0, 0, 0]; card.bat.push(x); return x; };
     let st = add(0), ns = add(1), next = 2, r = 0, w = 0, legal = 0;
+    const ovr = [];
+    const oAdd = (runs, wk) => { const i = Math.floor(legal / 6); while (ovr.length <= i) ovr.push([0, 0]); ovr[i][0] += runs; ovr[i][1] += wk; };
     while (legal < 120 && w < 10 && ballNo < balls) {
       const bw = bowlers[Math.floor(legal / 6) % 5];
       const o = `${Math.floor(legal / 6)}.${legal % 6 + 1}`;
       const x = R(); ballNo++;
       const tag = `${bw[0]} থেকে ${st[0]}`;
       if (x < 0.035) { // ওয়াইড
-        r++; card.ext++; bw[3]++; comm.push({ o, k: 'x', t: `ওয়াইড! অতিরিক্ত ১ রান · ${bnNum(r)}/${bnNum(w)}`, inn: ii });
+        oAdd(1, 0); r++; card.ext++; bw[3]++; comm.push({ o, k: 'x', t: `ওয়াইড! অতিরিক্ত ১ রান · ${bnNum(r)}/${bnNum(w)}`, inn: ii });
       } else {
-        legal++; st[3]++;
+        const pre = legal; legal++; st[3]++;
         let k, t, run = 0;
         if (x < 0.085) {
           w++; bw[4]++; st[1] = `b ${bw[0]}`;
@@ -45,6 +47,7 @@ function simT20(seed, A, B, pa, pb, balls) {
         else if (x < 0.81) { run = 3; k = 'r'; t = `৩ রান। ${tag}`; }
         else if (x < 0.94) { run = 4; k = '4'; t = `চার! ${gen(st[0])} দারুণ শট, ${gen(bw[0])} বলে`; st[4]++; }
         else { run = 6; k = '6'; t = `ছক্কা! ${st[0]} বল পাঠালেন মাঠের বাইরে`; st[5]++; }
+        { const i = Math.floor(pre / 6); while (ovr.length <= i) ovr.push([0, 0]); ovr[i][0] += run; if (k === 'W') ovr[i][1]++; }
         r += run; st[2] += run; bw[3] += run;
         comm.push({ o, k, t: `${t} · ${bnNum(r)}/${bnNum(w)}`, inn: ii });
         if (k === 'W' && w < 10) st = add(next++);
@@ -63,7 +66,7 @@ function simT20(seed, A, B, pa, pb, balls) {
     card.tot = { r, w, o: +ballsToOvers(legal) };
     const done = legal >= 120 || w >= 10 || !!result;
     if (done) card.bat.forEach(b => { if (b[1] === 'ব্যাট করছেন') b[1] = 'অপরাজিত'; });
-    inns.push({ side: ii === 0 ? 'a' : 'b', r, w, o: +ballsToOvers(legal), legal, card, done });
+    inns.push({ side: ii === 0 ? 'a' : 'b', r, w, o: +ballsToOvers(legal), legal, card, done, ovr, tn: bat.bn || bat.name });
     if (ii === 0) {
       target = r + 1;
       if (inns[0].done) comm.push({ o: ballsToOvers(legal), k: 'i', t: `ইনিংস শেষ। ${bat.bn} ${bnNum(r)}/${bnNum(w)}। ${gen(bowlT.bn)} লক্ষ্য ${bnNum(target)} রান`, inn: 0 });
@@ -96,7 +99,7 @@ function cricMatch(id, A, B, pa, pb, start, now, tour, label, seed) {
     m.status = `${gen(b.bn)} জিততে ${bnNum(120 - i2.legal)} বলে ${bnNum(sim.target - i2.r)} রান দরকার`;
   } else m.status = sim.inns[0] && sim.inns[0].done ? 'ইনিংস বিরতি' : `${a.bn} ব্যাট করছে`;
   m.toss = `টস: ${a.bn} (ব্যাটিং)`;
-  return { m, det: { card: sim.inns.map(x => x.card), comm: sim.comm } };
+  return { m, det: { card: sim.inns.map(x => x.card), comm: sim.comm, ov: sim.inns.map(x => ({ t: x.tn, o: x.ovr })) } };
 }
 
 /* ---------- ফুটবল: ৯০ মিনিটের নকল খেলা ---------- */
@@ -144,7 +147,10 @@ function fbMatch(id, A, B, pa, pb, start, now, tour, label, seed, national = tru
     ['ফাউল', Math.round(sh / 9), Math.round(sh / 8)]
   ];
   if (stats.length) stats[0][2] = (100 - parseInt(stats[0][1])) + '%';
-  return { m, det: { comm, stats } };
+  const pos = ['G', 'D', 'D', 'D', 'D', 'M', 'M', 'M', 'F', 'F', 'F'];
+  const xi = ps => pos.map((p, i) => [i + 1, (ps[i % ps.length] || 'খেলোয়াড়') + (i >= ps.length ? ' ' + (i + 1) : ''), p]);
+  const lu = state === 'upcoming' ? [] : [{ t: a.bn || a.name, f: '4-3-3', coach: 'নমুনা কোচ', xi: xi(pa), sub: [] }, { t: b.bn || b.name, f: '4-4-2', coach: 'নমুনা কোচ', xi: xi(pb), sub: [] }];
+  return { m, det: { comm, stats, lu } };
 }
 
 // সব নমুনা ম্যাচ (id-তে চক্র নম্বর থাকে, তাই প্রতিটা চক্রে ভোটও নতুন)

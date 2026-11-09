@@ -115,5 +115,16 @@ export function smDetail(x, sum) {
     }
     comm.push({ o, k, t });
   }
-  return { card, comm: comm.reverse().slice(0, 160) };
+  // ওভার প্রতি রান আর উইকেট (গ্রাফের জন্য), প্রতি ইনিংসে আলাদা
+  const ovMap = new Map();
+  for (const bl of balls) {
+    const sb = bl.scoreboard, s = bl.score || {};
+    if (!ovMap.has(sb)) ovMap.set(sb, []);
+    const arr = ovMap.get(sb), i = Math.floor(Number(bl.ball) + 1e-9);
+    while (arr.length <= i) arr.push([0, 0]);
+    arr[i][0] += (+s.runs || 0) + (+s.bye || 0) + (+s.leg_bye || 0) + (+s.noball_runs || 0);
+    if (s.is_wicket || s.out) arr[i][1]++;
+  }
+  const ov = [...ovMap.entries()].sort((p, q) => String(p[0]).localeCompare(String(q[0]))).map(([sb, arr]) => { const T = teamOfBoard(sb); return { t: T ? T.bn || T.name : '', o: arr }; });
+  return { card, comm: comm.reverse().slice(0, 160), ov };
 }
