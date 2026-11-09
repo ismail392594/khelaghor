@@ -18,7 +18,7 @@ export const POINTS = 10; // সঠিক অনুমানে কত পয়
 export const EXACT = 20; // ফুটবলে একদম সঠিক স্কোর বললে বাড়তি পয়েন্ট
 // সপ্তাহের নাম (ঢাকার সময়ে, সোমবার থেকে শুরু): যেমন 2026-11-09
 export const weekKey = (t = Date.now()) => { const d = new Date(t + 6 * 3600e3); const day = (d.getUTCDay() + 6) % 7; return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - day)).toISOString().slice(0, 10); };
-const CACHE_V = 3; // ক্যাশের ছাঁচ বদলালে বাড়াতে হয়, তাহলে পুরোনো ক্যাশ ফেলে সব নতুন করে আনে
+const CACHE_V = 5; // ক্যাশের ছাঁচ বদলালে বাড়াতে হয়, তাহলে পুরোনো ক্যাশ ফেলে সব নতুন করে আনে
 const MIN = 60e3, HOUR = 60 * MIN, DAY = 24 * HOUR;
 
 export class HttpErr extends Error { constructor(status, msg) { super(msg); this.status = status; } }
@@ -36,7 +36,9 @@ export async function fb() {
 
 export const _setFb = x => { _fb = x; }; // শুধু পরীক্ষার জন্য
 
-const has = () => ({ c: !!process.env.CRICKET_API_KEY, f: !!process.env.FOOTBALL_API_KEY, s: hasSm() });
+// মালিকের সিদ্ধান্ত (৯ নভেম্বর): Sportmonks চালু থাকলে CricketData বন্ধ (ধীর)। আবার চালু করতে Vercel-এ LIVE_USE_CRICKETDATA=1
+const useCd = () => !!process.env.CRICKET_API_KEY && (!hasSm() || process.env.LIVE_USE_CRICKETDATA === '1');
+const has = () => ({ c: useCd(), f: !!process.env.FOOTBALL_API_KEY, s: hasSm() });
 const utcDay = t => new Date(t).toISOString().slice(0, 10);
 const dhakaDay = t => new Date(t + 6 * HOUR).toISOString().slice(0, 10);
 
@@ -202,7 +204,7 @@ async function refresh(F, doc, due, now) {
 
 // ক্যাশ থেকে দেখানোর তালিকা: লাইভ সব, আসন্ন ৪ দিন, শেষ ৩৬ ঘণ্টা
 function compose(doc, now) {
-  const c = doc.c || {}, f = doc.f || {};
+  const c = useCd() ? (doc.c || {}) : {}, f = doc.f || {};
   const map = new Map();
   for (const m of c.up || []) map.set(m.id, m);
   for (const m of c.list || []) map.set(m.id, m);
@@ -215,11 +217,17 @@ function compose(doc, now) {
   for (const m of sm.live || []) smMap.set(m.id, m);
   if (smMap.size) {
     const keyOf = m => [normTeam(m.a.name), normTeam(m.b.name)].sort().join('|');
-    const smKeys = [...smMap.values()].map(m => [keyOf(m), m.start]);
-    for (const [id, m] of map) {
+    // খেলা কতটা এগিয়েছে: শেষ হলে সবচেয়ে বেশি, নইলে মোট কত বল হয়েছে
+    const balls = o => { const n = Number(o) || 0; const f = Math.floor(n); return f * 6 + Math.round((n - f) * 10); };
+    const prog = m => (m.state === 'done' ? 1e6 : 0) + (m.state === 'live' ? 1 : 0) + (m.inns || []).reduce((t, i) => t + balls(i.o) + (i.w || 0) * 0.01 + (i.r || 0) * 1e-4, 0);
+    for (const [id, m] of [...map]) {
       if (id[0] !== 'c') continue;
       const k = keyOf(m);
-      if (smKeys.some(([sk, st]) => sk === k && Math.abs(st - m.start) < 8 * HOUR)) map.delete(id);
+      const twin = [...smMap.values()].find(x => keyOf(x) === k && Math.abs(x.start - m.start) < 8 * HOUR);
+      if (!twin) continue;
+      map.delete(id);
+      // একই ম্যাচ দুই উৎসে: id থাকে Sportmonks-এর (ভোট যেন না হারায়), স্কোর নেওয়া হয় যেটা বেশি এগিয়ে
+      if (prog(m) > prog(twin)) smMap.set(twin.id, { ...twin, state: m.state, a: { ...twin.a, inn: m.a.inn }, b: { ...twin.b, inn: m.b.inn }, inns: m.inns, status: m.status, raw: m.raw, pause: m.pause, result: m.result ?? twin.result, via: 'c' });
     }
     for (const [id, m] of smMap) map.set(id, m);
   }
@@ -247,7 +255,14 @@ export async function getMatch(id, now = Date.now()) {
   const feed = await getFeed(now);
   const ref = db.doc('liveMatch/' + id);
   let md = (await ref.get()).data() || null;
-  let S = feed.matches.find(m => m.id === id) || (md && md.sum);
+  let S = feed.matches.find(m => m.id === id);
+  // CricketData-র ম্যাচ এখন Sportmonks থেকে আসছে (একই দুই দল): সেই ম্যাচে পাঠিয়ে দিই
+  if (!S && id[0] === 'c' && md && md.sum) {
+    const k = m => [normTeam(m.a.name), normTeam(m.b.name)].sort().join('|');
+    const twin = feed.matches.find(m => m.id[0] === 's' && k(m) === k(md.sum) && Math.abs(m.start - md.sum.start) < 8 * HOUR);
+    if (twin) { const t = await getMatch(twin.id, now); return { ...t, redirect: twin.id, from: id }; }
+  }
+  if (!S) S = md && md.sum;
   if (!S) throw new HttpErr(404, 'ম্যাচ পাওয়া যায়নি');
   const sport = id[0] === 'f' ? 'football' : 'cricket';
   const liveN = Math.max(1, feed.matches.filter(m => m.sport === sport && m.state === 'live').length);
