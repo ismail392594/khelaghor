@@ -13,6 +13,7 @@ import { fbCall, fbSummary, fbDetail, leagues } from './_football.js';
 import { demoAll, demoMatch } from './_demo.js';
 import { hasSm, smCall, smSummary, smDetail, LIST_INC, DETAIL_INC } from './_smonks.js';
 import { normTeam } from './_bn.js';
+import { pushSub, events, sendEvents } from './_push.js';
 
 export const POINTS = 10; // সঠিক অনুমানে কত পয়েন্ট
 export const EXACT = 20; // ফুটবলে একদম সঠিক স্কোর বললে বাড়তি পয়েন্ট
@@ -28,9 +29,9 @@ export async function fb() {
   if (_fb) return _fb;
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
   if (!raw) return null;
-  const [A, U, S] = await Promise.all([import('firebase-admin/app'), import('firebase-admin/auth'), import('firebase-admin/firestore')]);
+  const [A, U, S, M] = await Promise.all([import('firebase-admin/app'), import('firebase-admin/auth'), import('firebase-admin/firestore'), import('firebase-admin/messaging').catch(() => null)]);
   if (!A.getApps().length) A.initializeApp({ credential: A.cert(JSON.parse(raw)) });
-  _fb = { auth: U.getAuth(), db: S.getFirestore(), FV: S.FieldValue };
+  _fb = { auth: U.getAuth(), db: S.getFirestore(), FV: S.FieldValue, msg: M ? M.getMessaging() : null };
   return _fb;
 }
 
@@ -190,6 +191,8 @@ async function refresh(F, doc, due, now) {
     }
     const out = { v: CACHE_V, c, f, s: sm, cq, fq };
     await db.doc('liveCache/feed').set(out);
+    // প্রিয় দলের খবর ফোনে (খেলা শুরু, উইকেট, গোল, শেষ)
+    try { await sendEvents(F, events(compose(doc, now), compose(out, now))); } catch (e) { console.error('push events', e); }
     const metaUp = { until: 0, cq, fq };
     if (now - (meta.settleAt || 0) > 5 * MIN) {
       metaUp.settleAt = now;
@@ -520,4 +523,12 @@ export async function table(lg, season, now = Date.now()) {
   })).slice(0, 12);
   await ref.set({ at: now, until: 0, groups });
   return { groups };
+}
+
+/* ---------- ফোনে খবর পাওয়ার জন্য নাম লেখানো ---------- */
+export async function push(req) {
+  const b = req.body && typeof req.body === 'object' ? req.body : JSON.parse(req.body || '{}');
+  const F = await fb();
+  if (!F) throw new HttpErr(503, 'সার্ভার এখনো চালু হয়নি');
+  return pushSub(F, b);
 }

@@ -1,5 +1,6 @@
 // খেলাঘর লাইভ স্কোর: পাতার সব কাজ। ডাটা আসে শুধু আমাদের সার্ভার (/api/live) থেকে, সরাসরি কোনো API থেকে নয়।
 import { winProb, rates } from '/live/insight.js';
+import { VAPID_KEY } from '/live/push-config.js';
 const API = '/api/live';
 const $ = id => document.getElementById(id);
 const bn = v => String(v).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
@@ -400,6 +401,41 @@ function burstFor(prev, top) {
   clearTimeout(burstFor.t); burstFor.t = setTimeout(() => { b.hidden = true; }, 1900);
 }
 
+/* ---------- ফোনে নোটিফিকেশন (প্রিয় দলের খেলা শুরু, উইকেট, গোল, শেষ) ---------- */
+const pushOk = () => !!VAPID_KEY && 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+const pushTok = () => { try { return localStorage.getItem('kh-live-push') || ''; } catch (e) { return ''; } };
+async function pushSync(token) {
+  await fetch(API + '?f=push', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token, teams: [...S.fav] }) }).catch(() => {});
+}
+async function enablePush() {
+  if (!pushOk()) { toast('এই ফোন বা ব্রাউজারে নোটিফিকেশন চলে না'); return false; }
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') { toast('নোটিফিকেশনের অনুমতি দেওয়া হয়নি'); return false; }
+  try {
+    const [app, ms, cfg] = await Promise.all([
+      import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js'),
+      import('/js/firebase-config.js')
+    ]);
+    const fa = app.getApps()[0] || app.initializeApp(cfg.firebaseConfig);
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    const token = await ms.getToken(ms.getMessaging(fa), { vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+    if (!token) throw new Error('no token');
+    try { localStorage.setItem('kh-live-push', token); } catch (e) {}
+    await pushSync(token);
+    toast('🔔 চালু হলো! প্রিয় দলের খেলা শুরু, উইকেট আর গোলের খবর ফোনে পাবেন');
+    return true;
+  } catch (e) { toast('নোটিফিকেশন চালু করা গেল না, একটু পরে আবার চেষ্টা করুন'); return false; }
+}
+function pushAfterFav(added) {
+  if (!pushOk()) return;
+  const t = pushTok();
+  if (t && Notification.permission === 'granted') { pushSync(t); return; }
+  if (added && Notification.permission === 'default') {
+    setTimeout(() => { if (confirm('এই দলের খেলা শুরু, উইকেট আর গোলের খবর ফোনে পেতে চান?')) enablePush(); }, 400);
+  }
+}
+
 /* ---------- কে জিতবে? ভোট ---------- */
 function renderVote(m, votes) {
   const v = votes || { a: 0, b: 0, d: 0 };
@@ -570,6 +606,7 @@ $('pHero').addEventListener('click', e => {
   const n = b.dataset.fav;
   if (S.fav.has(n)) S.fav.delete(n); else { S.fav.add(n); toast('প্রিয় দলে যোগ হলো, এই দলের খেলা সবার উপরে দেখাবে'); }
   try { localStorage.setItem('kh-live-fav', JSON.stringify([...S.fav].slice(-30))); } catch (er) {}
+  pushAfterFav(S.fav.has(n));
   const d = S.det, m = d ? d.m : S.feed.matches.find(x => x.id === S.open);
   if (m) renderDetail(m, d ? d.det : null, d ? d.votes : null);
   renderList();
@@ -605,7 +642,8 @@ $('vBox').addEventListener('click', e => {
 });
 $('pShare').onclick = async () => {
   const m = S.det ? S.det.m : S.feed && S.feed.matches.find(x => x.id === S.open);
-  const url = location.origin + '/live/#m=' + (S.open || '');
+  // শেয়ারের লিংক এমন ঠিকানায়, যেটা ফেসবুক/হোয়াটসঅ্যাপে স্কোরসহ প্রিভিউ দেখায়
+  const url = location.origin + '/api/live?f=share&id=' + encodeURIComponent(S.open || '');
   const text = m ? `${tname(m.a)} বনাম ${tname(m.b)}: লাইভ স্কোর বাংলায়, আর কে জিতবে ভোট দিন!` : 'লাইভ স্কোর বাংলায়';
   let file = null;
   try { if (m) file = await shareImage(m); } catch (e) {}
