@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>গ্যাস সিলিন্ডার মিশন · খেলাঘর</title>
+<meta name="description" content="রান্নার মাঝখানে গ্যাস শেষ! ভারী সিলিন্ডার নিয়ে লিফট ছাড়া ৫ তলায় উঠুন, তারপর নিয়ম মেনে নিরাপদে লাগান: সাবান-পানিতে লিক পরীক্ষা, কখনো দেশলাই না!">
+<link rel="canonical" href="https://khelaghorbd.online/games/gas/">
+<meta property="og:title" content="গ্যাস সিলিন্ডার মিশন · খেলাঘর">
+<meta property="og:description" content="১৪ কেজির সিলিন্ডার, ৫ তলা, লিফট নেই! নিরাপদে লাগাতে পারবেন?">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/gas.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/gas.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+:root{--accent:#f97316}
+.meters{position:absolute;left:10px;right:10px;top:10px;z-index:3;display:flex;flex-direction:column;gap:5px;pointer-events:none}
+.mrow{display:flex;align-items:center;gap:8px;background:rgba(5,8,18,.6);border-radius:10px;padding:4px 8px;font-size:.74rem;font-weight:700}
+.mrow .b{flex:1;height:9px;background:rgba(255,255,255,.12);border-radius:5px;overflow:hidden}.mrow .b i{display:block;height:100%;width:100%}
+.mrow span{white-space:nowrap;min-width:84px}
+.feet{display:flex;gap:10px;flex:1;justify-content:center}
+.ft{border:0;border-radius:18px;width:110px;height:70px;font:800 .9rem var(--display);color:#fff;background:#374151;box-shadow:0 4px 0 rgba(0,0,0,.4);cursor:pointer;touch-action:manipulation}
+.ft span{display:block;font-size:1.4rem}.ft.next{background:radial-gradient(circle at 40% 30%,#fdba74,#ea580c 60%,#7c2d12)}
+.ft:active{transform:translateY(3px)}
+.steps{position:absolute;left:10px;right:10px;top:10px;z-index:3;background:rgba(10,12,20,.82);border-radius:12px;padding:8px 10px;font-size:.78rem;pointer-events:none}
+.steps b{display:block;font:800 .95rem var(--display);color:#fdba74;margin-bottom:3px}
+.steps div{opacity:.55}.steps div.cur{opacity:1;font-weight:800}.steps div.done{opacity:.85;color:#86efac}
+.tags{position:absolute;inset:0;z-index:3;pointer-events:none}
+.tg{position:absolute;transform:translate(-50%,-100%);background:#ea580c;color:#fff;border-radius:12px;padding:6px 10px;font:800 .8rem var(--body);white-space:nowrap;pointer-events:auto;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.5);animation:pl .5s infinite alternate}
+.tg.alt{background:#7f1d1d}
+@keyframes pl{to{transform:translate(-50%,-100%) scale(1.07)}}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="floor">নিচতলা</b><small id="floorS">আপনার বাসা ৫ তলায়</small></div>
+    <div class="stat r"><b id="time">০:০০</b><small>সময়</small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas class="cv" id="cv"></canvas>
+    <div class="meters" id="meters" hidden>
+      <div class="mrow"><span>💪 দম</span><div class="b"><i id="stamB" style="background:#22c55e"></i></div></div>
+      <div class="mrow"><span>⚖️ ভারসাম্য</span><div class="b"><i id="balB" style="background:#38bdf8"></i></div></div>
+    </div>
+    <div class="steps" id="steps" hidden></div>
+    <div class="tags" id="tags"></div>
+    <div class="say" id="say" hidden></div>
+    <div class="chost" id="chatHost"></div>
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>গ্যাস সিলিন্ডার মিশন</h1>
+        <p class="story">ভাত চুলায়, হঠাৎ গ্যাস শেষ! নিচের দোকান থেকে নতুন সিলিন্ডার এনেছেন, কিন্তু বিল্ডিংয়ে লিফট নেই, বাসা ৫ তলায়। তারপর রান্নাঘরে নিজেই লাগাতে হবে, নিরাপদে!</p>
+        <div class="rules">
+          <div>🦶 <b>বাম পা, ডান পা</b> পালা করে চাপুন, এক ধাপ করে ওঠা। একই পা দুবার চাপলে বা খুব তাড়াহুড়া করলে ভারসাম্য নষ্ট। দম শেষ হলে একটু জিরান।</div>
+          <div>🔧 রান্নাঘরে ধাপে ধাপে: চুলার নব বন্ধ, পুরনো রেগুলেটর খোলা, নতুন সিলের ঢাকনা, রেগুলেটর লাগানো, তারপর <b>লিক পরীক্ষা</b>।</div>
+          <div>🧼 লিক পরীক্ষা সবসময় <b>সাবান-পানি</b> দিয়ে। বুদবুদ উঠলে শক্ত করে লাগান। 🔥 দেশলাই দিয়ে পরীক্ষা = মারাত্মক বিপদ!</div>
+        </div>
+        <div class="lvl">
+          <button data-lv="0">১২ কেজি<small>৩ তলা</small></button>
+          <button data-lv="1">১২.৫ কেজি<small>৫ তলা</small></button>
+          <button data-lv="2">৩৫ কেজি<small>৭ তলা!</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">দেয়াল, মেঝে: Poly Haven (CC0)। সিঁড়ি, সিলিন্ডার, চুলা খেলাঘরের নিজের বানানো।</p>
+      </div>
+    </div>
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">মিশন শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eT">০</b><span>সময়</span></div><div><b id="eM">০</b><span>ভুল</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার মিশন</button><button class="gbtn ghost" id="menuBtn">সিলিন্ডার বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">🧯</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+  <div class="ctl"><div class="hint" id="hint">সিলিন্ডার বেছে মিশন শুরু করুন</div><div class="feet" id="feet" hidden><button class="ft" id="fL"><span>🦶</span>বাম পা</button><button class="ft" id="fR"><span>🦶</span>ডান পা</button></div></div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { TIERS, detectTier } from "/js/kh-quality.js";
+import { gameShell, sound, bn, pick, rnd, clamp } from "/js/kh-shell.js";
+
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'gas', name: 'গ্যাস সিলিন্ডার মিশন', lbTitle: 'সেরা সিলিন্ডার বীর', offMsg: 'দোকানে সিলিন্ডার শেষ! পরে আসেন।' });
+const SND = sound(SH);
+const TIER = TIERS[detectTier()], LOW = TIER.id <= 1;
+let renderer = null; try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' }); } catch (e) {}
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(64, 1, .03, 80);
+scene.background = new THREE.Color('#1a1d22');
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.shadowMap.enabled = !LOW; }
+const ANISO = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1, texL = new THREE.TextureLoader(), JA = '/games/jam/assets/', LA = '/games/loadshed/assets/';
+const tex = (u, srgb, rx, ry) => { const t = texL.load(u); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; t.repeat.set(rx, ry); return t; };
+const ctex = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; };
+const M = (c, o) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: .85 }, o || {}));
+const box = (w, h, d, m, x, y, z, p) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); b.castShadow = !LOW; b.receiveShadow = true; (p || scene).add(b); return b; };
+
+/* ---------- সিঁড়িঘর: প্রতি তলায় দুই ভাঁজ সিঁড়ি ---------- */
+const STEP_H = .17, STEP_D = .28, NSTEP = 9, FL_H = STEP_H * NSTEP * 2, SW = 1.1;
+const stairs = new THREE.Group(); scene.add(stairs);
+const wallM = new THREE.MeshStandardMaterial({ map: tex(JA + 'plaster_diff.jpg', true, 2, 2), normalMap: tex(JA + 'plaster_nor.jpg', false, 2, 2), color: '#d9d2c2', roughness: .95 });
+const stepM = M('#9c9a94', { roughness: .7 }), edgeM = M('#6b6a66', { roughness: .6 }), railM = M('#3b3f45', { metalness: .6, roughness: .4 });
+const PATH = [];
+function buildStairs(floors) {
+  stairs.clear(); PATH.length = 0; const run = NSTEP * STEP_D, HH = STEP_H * NSTEP;
+  for (let f = 0; f < floors; f++) for (let h = 0; h < 2; h++) { const y0 = f * FL_H + h * HH, x = h ? -SW / 2 - .05 : SW / 2 + .05;
+    for (let i = 0; i < NSTEP; i++) { const z = h ? -run + (i + .5) * STEP_D : -(i + .5) * STEP_D, top = y0 + (i + 1) * STEP_H; box(SW, top - y0 + .25, STEP_D, stepM, x, (top + y0 - .25) / 2, z, stairs); box(SW, .02, .03, edgeM, x, top + .005, z + (h ? -STEP_D / 2 : STEP_D / 2) * -1 + (h ? 0 : 0), stairs); PATH.push(new THREE.Vector3(x, top, z)); }
+    const ly = y0 + HH; box(SW * 2 + .2, .25, 1.2, stepM, 0, ly - .125, h ? .6 : -run - .6, stairs);
+    if (h) { PATH.push(new THREE.Vector3(x * .4, ly, .55)); PATH.push(new THREE.Vector3(-x * .9, ly, .5)); } else { PATH.push(new THREE.Vector3(x * .4, ly, -run - .55)); PATH.push(new THREE.Vector3(-x * .9, ly, -run - .5)); }
+    if (h) { box(.9, 2.05, .05, M(pick(['#7c4a24', '#5b3a1e', '#8b5a2b']), { roughness: .5 }), -SW / 2, ly + 1.02, 1.18, stairs); const np = new THREE.Mesh(new THREE.PlaneGeometry(.36, .12), new THREE.MeshBasicMaterial({ map: ctex(256, 86, (x) => { x.fillStyle = '#fef3c7'; x.fillRect(0, 0, 256, 86); x.fillStyle = '#1f2937'; x.font = "800 40px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.fillText(`${bn(f + 1)}/${pick(['ক', 'খ', 'গ'])} ফ্ল্যাট`, 128, 58); }) })); np.position.set(-SW / 2, ly + 1.6, 1.15); np.rotation.y = Math.PI; stairs.add(np); } }
+  const H = floors * FL_H + 3; box(.12, H, run, wallM, 0, H / 2, -run / 2, stairs);
+  for (const [w, x, z, ry] of [[3.4, 0, -run - 1.25, 0], [3.4, 0, 1.25, Math.PI], [run + 2.5, -SW - .15, -run / 2, Math.PI / 2], [run + 2.5, SW + .15, -run / 2, -Math.PI / 2]]) { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, H), wallM.clone()); m.material.map = m.material.map.clone(); m.material.map.repeat.set(w / 1.5, H / 1.5); m.material.map.needsUpdate = true; m.position.set(x, H / 2, z); m.rotation.y = ry; stairs.add(m); }
+  for (let f = 0; f <= floors * 2; f++) { const l = new THREE.PointLight('#ffe7c2', 2.2, 5, 1.6); l.position.set(f % 2 ? -.6 : .6, f * HH + 2.3, f % 2 ? .6 : -run - .6); stairs.add(l); const b = new THREE.Mesh(new THREE.SphereGeometry(.05, 10, 8), new THREE.MeshBasicMaterial({ color: '#fff3d6' })); b.position.copy(l.position); stairs.add(b); }
+}
+scene.add(new THREE.HemisphereLight('#f2ede4', '#3a342c', .7));
+// সিলিন্ডার: লাল-নীল এলপিজি, ঘাড়ে কলার
+function cylinder(col) { const g = new THREE.Group(); const pts = [[0, 0], [.14, 0], [.155, .02], [.155, .42], [.14, .48], [.09, .52], [.05, .53], [.05, .56]].map(([x, y]) => new THREE.Vector2(x, y)); const body = new THREE.Mesh(new THREE.LatheGeometry(pts, 32), M(col, { roughness: .45, metalness: .3 })); body.castShadow = true; g.add(body);
+  const lab = new THREE.Mesh(new THREE.CylinderGeometry(.157, .157, .14, 32, 1, true), new THREE.MeshStandardMaterial({ map: ctex(512, 96, (x) => { x.fillStyle = col; x.fillRect(0, 0, 512, 96); x.fillStyle = '#fff'; x.font = "800 48px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center'; x.fillText('খেলাঘর এলপি গ্যাস · ১২ কেজি', 256, 64); }), roughness: .5 })); lab.position.y = .28; g.add(lab);
+  const col2 = new THREE.Mesh(new THREE.CylinderGeometry(.11, .11, .12, 24, 1, true), M('#d1d5db', { metalness: .7, roughness: .3, side: THREE.DoubleSide })); col2.position.y = .6; g.add(col2);
+  const valve = new THREE.Mesh(new THREE.CylinderGeometry(.03, .03, .06, 12), M('#b8a46a', { metalness: .8, roughness: .3 })); valve.position.y = .58; g.add(valve); g.userData.valve = valve; return g; }
+const carry = cylinder('#b91c1c'); carry.scale.setScalar(1); scene.add(carry);
+
+/* ---------- রান্নাঘর ---------- */
+const kitchen = new THREE.Group(); kitchen.position.set(20, 0, 0); scene.add(kitchen);
+{ const fl = new THREE.Mesh(new THREE.PlaneGeometry(3, 3), new THREE.MeshStandardMaterial({ map: tex(LA + 'floor_diff.jpg', true, 2, 2), roughness: .7 })); fl.rotation.x = -Math.PI / 2; fl.receiveShadow = true; kitchen.add(fl);
+  const tileT = ctex(256, 256, (x) => { x.fillStyle = '#e8eef0'; x.fillRect(0, 0, 256, 256); x.strokeStyle = '#b8c4c8'; x.lineWidth = 3; for (let i = 0; i <= 4; i++) { x.beginPath(); x.moveTo(i * 64, 0); x.lineTo(i * 64, 256); x.moveTo(0, i * 64); x.lineTo(256, i * 64); x.stroke(); } }); tileT.wrapS = tileT.wrapT = THREE.RepeatWrapping; tileT.repeat.set(4, 4);
+  const w = new THREE.Mesh(new THREE.PlaneGeometry(3, 2.8), new THREE.MeshStandardMaterial({ map: tileT, roughness: .4 })); w.position.set(0, 1.4, -1.0); kitchen.add(w);
+  const sw = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 2.8), new THREE.MeshStandardMaterial({ map: tileT, roughness: .4 })); sw.rotation.y = Math.PI / 2; sw.position.set(-1.3, 1.4, 0); kitchen.add(sw); const sw2 = sw.clone(); sw2.rotation.y = -Math.PI / 2; sw2.position.set(1.4, 1.4, 0); kitchen.add(sw2);
+  box(2.6, .08, .65, M('#3f3f46', { roughness: .3 }), 0, .86, -.67, kitchen); box(2.6, .82, .6, M('#e5e1d8', { roughness: .7 }), 0, .41, -.67, kitchen);
+  const kl = new THREE.PointLight('#fff4e0', 6, 6, 1.4); kl.position.set(0, 2.4, .3); kl.castShadow = !LOW; kitchen.add(kl);
+  const win = new THREE.Mesh(new THREE.PlaneGeometry(.9, .7), new THREE.MeshBasicMaterial({ color: '#cfe8ff' })); win.position.set(.7, 1.75, -.99); kitchen.add(win); }
+const stove = new THREE.Group(); stove.position.set(-.1, .9, -.7); kitchen.add(stove);
+const knobs = [], flames = [];
+{ box(.78, .07, .42, M('#1f2937', { metalness: .4, roughness: .3 }), 0, .035, 0, stove); for (const sx of [-.2, .2]) { const b = new THREE.Mesh(new THREE.CylinderGeometry(.075, .085, .03, 20), M('#111')); b.position.set(sx, .085, -.02); stove.add(b); const pan = new THREE.Mesh(new THREE.TorusGeometry(.09, .008, 6, 20), M('#555', { metalness: .6 })); pan.rotation.x = Math.PI / 2; pan.position.set(sx, .1, -.02); stove.add(pan);
+    const fl = new THREE.Mesh(new THREE.ConeGeometry(.07, .08, 16, 1, true), new THREE.MeshBasicMaterial({ color: '#60a5fa', transparent: true, opacity: .75, blending: THREE.AdditiveBlending, depthWrite: false })); fl.position.set(sx, .14, -.02); fl.visible = false; stove.add(fl); flames.push(fl);
+    const k = new THREE.Mesh(new THREE.CylinderGeometry(.022, .022, .03, 14), M('#d1d5db', { metalness: .6 })); k.rotation.x = Math.PI / 2; k.position.set(sx, .035, .22); stove.add(k); knobs.push(k); }
+  const pot = new THREE.Mesh(new THREE.CylinderGeometry(.12, .1, .16, 24, 1, true), M('#a8a29e', { metalness: .8, roughness: .3, side: THREE.DoubleSide })); pot.position.set(-.2, .19, -.02); stove.add(pot); }
+const oldCyl = cylinder('#1d4ed8'); oldCyl.position.set(.62, 0, -.02); kitchen.add(oldCyl);
+const newCyl = cylinder('#b91c1c'); newCyl.position.set(1.02, 0, .25); kitchen.add(newCyl);
+const reg = new THREE.Group(); { const r = new THREE.Mesh(new THREE.CylinderGeometry(.045, .045, .05, 16), M('#f59e0b', { roughness: .4 })); reg.add(r); const knob = new THREE.Mesh(new THREE.BoxGeometry(.05, .015, .02), M('#111')); knob.position.y = .03; reg.add(knob); reg.userData.knob = knob; }
+reg.position.set(.62, .63, -.02); kitchen.add(reg);
+const capSeal = new THREE.Mesh(new THREE.CylinderGeometry(.035, .035, .03, 14), M('#16a34a')); capSeal.position.set(1.02, .62, .25); kitchen.add(capSeal);
+const hosePts = () => { const a = reg.position.clone(), b = new THREE.Vector3(.3, .9, -.75); return new THREE.CatmullRomCurve3([a, new THREE.Vector3((a.x + b.x) / 2 + .1, .3, (a.z + b.z) / 2 + .2), b]); };
+let hose = new THREE.Mesh(new THREE.TubeGeometry(hosePts(), 20, .012, 6), M('#f97316', { roughness: .6 })); kitchen.add(hose);
+function redoHose() { kitchen.remove(hose); hose = new THREE.Mesh(new THREE.TubeGeometry(hosePts(), 20, .012, 6), M('#f97316', { roughness: .6 })); kitchen.add(hose); }
+const bubbles = []; { const bm = new THREE.MeshStandardMaterial({ color: '#ffffff', transparent: true, opacity: .55, roughness: .05, metalness: .1 }); for (let i = 0; i < 14; i++) { const b = new THREE.Mesh(new THREE.SphereGeometry(.01 + Math.random() * .012, 10, 8), bm); b.visible = false; kitchen.add(b); bubbles.push(b); } }
+const soapFoam = new THREE.Mesh(new THREE.TorusGeometry(.05, .014, 8, 20), new THREE.MeshStandardMaterial({ color: '#f8fafc', transparent: true, opacity: .8, roughness: .3 })); soapFoam.rotation.x = Math.PI / 2; soapFoam.visible = false; kitchen.add(soapFoam);
+
+/* ---------- খেলা ---------- */
+const SFX = {
+  step() { SND.noise(.08, .35, 260, 'lowpass'); SND.tone(70, .1, 'sine', .15, 50); },
+  clank() { SND.noise(.12, .3, 2500, 'bandpass'); SND.tone(1200, .25, 'triangle', .05, 900); },
+  puff() { SND.noise(.25, .1, 1200, 'bandpass'); },
+  hiss() { SND.noise(1.2, .12, 5000, 'highpass'); },
+  click() { SND.tone(1600, .03, 'square', .08); },
+  fire() { SND.noise(.6, .25, 500, 'lowpass'); },
+  boom() { SND.noise(1.2, .8, 300, 'lowpass'); SND.tone(50, 1, 'sine', .4, 30); },
+  good() { [523, 659, 784, 1046].forEach((f, i) => SND.tone(f, .16, 'triangle', .22, 0, i * .08)); },
+  bad() { SND.tone(200, .35, 'sawtooth', .12, 120); }
+};
+const LV = [{ n: '১২ কেজি', floors: 3, heavy: .8 }, { n: '১২.৫ কেজি', floors: 5, heavy: 1 }, { n: '৩৫ কেজি', floors: 7, heavy: 1.5 }];
+const NEIGH = ['২/ক এর আন্টি: বাবা, সাবধানে! পইড়া যাইয়ো না!', 'বাচ্চারা: আঙ্কেল, এটা কি বোমা? 😮', 'দারোয়ান: লিফট তো আগামী বছর আসবে ভাই!', 'পাশের ফ্ল্যাটের ভাই: আমারটাও আনবেন নাকি? 😅', 'বুয়া: এত ভারী জিনিস একা নিতেছেন!'];
+let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0;
+function newGame() { S = { over: false, started: false, phase: 'stairs', t: 0, pos: 0, stam: 100, bal: 100, foot: 'L', rest: 0, slips: 0, mistakes: 0, kstep: 0, leak: false, tight: 0, lastT: 0, said: -1 }; }
+function say(t, col, ms) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, ms || 1400); }
+function pop(t, cls) { const e = document.createElement('div'); e.className = 'pop ' + (cls || ''); e.textContent = t; $('stage').appendChild(e); setTimeout(() => e.remove(), 1100); }
+function talk(t, who, v) { if (window.KHViral) KHViral.pop(t, v || 'F2', who); }
+const FLN = ['নিচতলা', '১ তলা', '২ তলা', '৩ তলা', '৪ তলা', '৫ তলা', '৬ তলা', '৭ তলা'];
+function hud() { const L = LV[lv]; $('time').textContent = bn(Math.floor(S.t / 60)) + ':' + bn(String(Math.floor(S.t % 60)).padStart(2, '0')); if (S.phase === 'stairs') { const f = Math.min(L.floors, Math.floor(S.pos / (PATH.length / L.floors))); $('floor').textContent = FLN[f]; $('floorS').textContent = `আপনার বাসা ${FLN[L.floors]}য়`; $('stamB').style.width = S.stam + '%'; $('stamB').style.background = S.stam < 25 ? '#ef4444' : '#22c55e'; $('balB').style.width = S.bal + '%'; $('balB').style.background = S.bal < 35 ? '#ef4444' : '#38bdf8'; $('fL').classList.toggle('next', S.foot === 'L'); $('fR').classList.toggle('next', S.foot === 'R'); } else { $('floor').textContent = 'রান্নাঘর'; $('floorS').textContent = 'নিরাপদে লাগান'; } }
+function stepFoot(f) {
+  if (!S || S.over || S.phase !== 'stairs') return; const L = LV[lv];
+  if (S.rest > 0) { say('একটু জিরিয়ে নিন… 😮‍💨', '#fde047'); return; }
+  const gap = S.t - S.lastT; S.lastT = S.t;
+  if (f !== S.foot) { S.bal -= 22; S.mistakes++; SFX.bad(); say('উল্টো পা! টলে গেলেন!', '#fca5a5'); }
+  else { S.foot = f === 'L' ? 'R' : 'L'; if (gap < .22) { S.bal -= 9 * L.heavy; say('আস্তে! ভারী জিনিস!', '#fde047', 700); } else S.bal = Math.min(100, S.bal + 3); S.pos++; S.stam -= 3.2 * L.heavy; SFX.step(); }
+  if (S.bal <= 0) { S.slips++; S.bal = 60; S.pos = Math.max(0, S.pos - 4); S.rest = 1.6; SFX.clank(); say('সিলিন্ডার পিছলে নিচে গড়ালো! 😱 ৪ ধাপ পিছিয়ে', '#fca5a5', 1800); }
+  if (S.stam <= 0) { S.rest = 2.2; S.stam = 0; SFX.puff(); say('হাঁপিয়ে গেছেন! একটু দাঁড়ান 😮‍💨', '#fde047'); }
+  const fl = Math.floor(S.pos / (PATH.length / L.floors)); if (fl !== S.said && fl > 0 && fl < L.floors) { S.said = fl; talk(pick(NEIGH), '🏢 প্রতিবেশী', 'F2'); }
+  if (S.pos >= PATH.length - 1) toKitchen();
+  hud();
+}
+/* রান্নাঘরের ধাপ */
+const KSTEPS = [
+  { t: 'চুলার দুই নব বন্ধ আছে কিনা দেখুন', tag: '🔘 নব বন্ধ করুন', at: () => stove.position.clone().add(new THREE.Vector3(0, .12, .25)) },
+  { t: 'পুরনো সিলিন্ডারের রেগুলেটর বন্ধ করে খুলুন', tag: '🔧 পুরনো রেগুলেটর খুলুন', at: () => reg.position.clone().add(new THREE.Vector3(0, .12, 0)) },
+  { t: 'নতুন সিলিন্ডারের সবুজ সিলের ঢাকনা খুলুন', tag: '🟢 সিলের ঢাকনা খুলুন', at: () => newCyl.position.clone().add(new THREE.Vector3(0, .75, 0)) },
+  { t: 'রেগুলেটর নতুন সিলিন্ডারে বসিয়ে চাপ দিন', tag: '🔩 রেগুলেটর লাগান', at: () => newCyl.position.clone().add(new THREE.Vector3(0, .8, 0)) },
+  { t: 'রেগুলেটরের সুইচ অন করুন', tag: '🟠 রেগুলেটর অন', at: () => reg.position.clone().add(new THREE.Vector3(0, .12, 0)) },
+  { t: 'লিক পরীক্ষা করুন', tag: null, at: () => reg.position.clone().add(new THREE.Vector3(0, .15, 0)) },
+  { t: 'চুলা জ্বালান', tag: '🔥 চুলা জ্বালান', at: () => stove.position.clone().add(new THREE.Vector3(.2, .25, 0)) }];
+function stepsUI() { $('steps').innerHTML = '<b>🔧 নিরাপদে সিলিন্ডার লাগানো</b>' + KSTEPS.map((k, i) => `<div class="${i < S.kstep ? 'done' : i === S.kstep ? 'cur' : ''}">${i < S.kstep ? '✅' : i === S.kstep ? '👉' : '▫️'} ${k.t}</div>`).join(''); }
+const TAGS = [];
+function setTags(list) { TAGS.forEach(t => t.el.remove()); TAGS.length = 0; for (const o of list) { const el = document.createElement('div'); el.className = 'tg' + (o.alt ? ' alt' : ''); el.textContent = o.text; el.onpointerdown = e => { e.stopPropagation(); o.fn(); }; $('tags').appendChild(el); TAGS.push({ el, at: o.at }); } }
+function toKitchen() { S.phase = 'kitchen'; S.kstep = 0; $('meters').hidden = true; $('feet').hidden = true; $('steps').hidden = false; $('hint').hidden = false; $('hint').textContent = 'লেখায় চেপে ধাপে ধাপে কাজ করুন'; SFX.good(); say('৫ তলায় পৌঁছে গেছেন! 💪', '#86efac'); talk('আম্মু: আসছিস! তাড়াতাড়ি লাগা, ভাত অর্ধেক সিদ্ধ!', '👩 আম্মু', 'F2'); carry.visible = false; S.leak = Math.random() < .6; kStep(); }
+function kStep() {
+  stepsUI(); hud(); const k = KSTEPS[S.kstep];
+  if (S.kstep === 5) { setTags([{ text: '🧼 সাবান-পানি দিয়ে পরীক্ষা', at: k.at, fn: soapTest }, { text: '🔥 দেশলাই দিয়ে দেখি', alt: true, at: () => k.at().add(new THREE.Vector3(0, -.22, .1)), fn: matchTest }]); return; }
+  if (S.kstep === 6) { setTags([{ text: k.tag, at: k.at, fn: () => { setTags([]); lightUp(); } }]); return; }
+  setTags([{ text: k.tag, at: k.at, fn: () => doK(S.kstep) }]);
+  // ভুল ধাপ: আগেই চুলা জ্বালানো
+  if (S.kstep > 0 && S.kstep < 6) TAGS.push(...(() => { const el = document.createElement('div'); el.className = 'tg alt'; el.textContent = '🔥 এখনই চুলা জ্বালাই'; el.onpointerdown = e => { e.stopPropagation(); S.mistakes++; SFX.bad(); say('না! আগে সব লাগিয়ে লিক পরীক্ষা করতে হবে ❌', '#fca5a5', 1800); }; $('tags').appendChild(el); return [{ el, at: () => stove.position.clone().add(new THREE.Vector3(-.25, .3, 0)) }]; })());
+}
+function doK(i) {
+  if (i !== S.kstep) return; SFX.click();
+  if (i === 0) knobs.forEach(k => k.rotation.z = 0);
+  if (i === 1) { SFX.hiss(); S.anim = { k: 'reg', t: 0, from: reg.position.clone(), to: new THREE.Vector3(.2, .9, .1) }; }
+  if (i === 2) { capSeal.visible = false; SFX.click(); }
+  if (i === 3) { SFX.clank(); S.anim = { k: 'reg', t: 0, from: reg.position.clone(), to: new THREE.Vector3(1.02, .63, .25) }; }
+  if (i === 4) { reg.userData.knob.rotation.y = Math.PI / 2; SFX.hiss(); }
+  S.kstep++; setTimeout(() => { if (S && !S.over) kStep(); }, 450);
+}
+function soapTest() { SFX.puff(); soapFoam.visible = true; soapFoam.position.copy(reg.position).add(new THREE.Vector3(0, -.03, 0));
+  if (S.leak) { S.bub = 3; say('বুদবুদ উঠছে! লিক আছে! 🫧', '#fde047', 1800); setTags([{ text: '🔩 শক্ত করে আবার লাগান', at: () => reg.position.clone().add(new THREE.Vector3(0, .15, 0)), fn: () => { SFX.clank(); S.leak = false; S.tight++; S.bub = 0; soapFoam.visible = false; say('শক্ত করে লাগালেন। আবার পরীক্ষা করুন', '#86efac'); kStep(); } }]); }
+  else { say('কোনো বুদবুদ নেই, লিক নেই ✅', '#86efac'); S.kstep = 6; setTimeout(() => { soapFoam.visible = false; if (S && !S.over) kStep(); }, 900); } }
+function matchTest() { S.mistakes += 3; SFX.boom(); setTags([]); say('দপ! আগুন! 🔥 কখনো দেশলাই দিয়ে লিক পরীক্ষা করবেন না!', '#fca5a5', 2600); S.fail = true; flames.forEach(f => { f.visible = true; f.scale.setScalar(4); f.material.color.set('#f97316'); }); setTimeout(() => endGame(false), 2200); }
+function lightUp() { flames.forEach(f => { f.visible = true; f.scale.setScalar(1); f.material.color.set('#60a5fa'); }); SFX.fire(); SFX.good(); say('নীল শিখা জ্বললো! রান্না আবার শুরু 🍚', '#86efac', 2000); talk('আম্মু: বাহ! আমার ছেলে/মেয়ে তো ইঞ্জিনিয়ার!', '👩 আম্মু', 'F2'); setTimeout(() => endGame(true), 1800); }
+const TIPS = ['জানেন কি? গ্যাসের গন্ধ পেলে সুইচ, লাইট, ফ্যান কিছুই চালু-বন্ধ করবেন না; স্পার্ক থেকে আগুন লাগতে পারে। আগে দরজা-জানালা খুলে দিন।', 'জানেন কি? এলপি গ্যাসে আলাদা করে গন্ধ মেশানো হয়, যাতে লিক হলে মানুষ টের পায়।', 'জানেন কি? সিলিন্ডার সবসময় খাড়া করে রাখবেন, চুলার চেয়ে নিচে আর বাতাস চলাচলের জায়গায়।', 'জানেন কি? রেগুলেটরের রাবারের পাইপ পুরনো হলে ফেটে যায়; বছরে অন্তত একবার বদলানো ভালো।'];
+function endGame(won) {
+  if (S.over) return; S.over = true; setTags([]); $('steps').hidden = true; $('meters').hidden = true; $('feet').hidden = true; const L = LV[lv];
+  const sc = won ? Math.max(100, Math.round(1200 + L.floors * 120 - S.t * 4 - S.mistakes * 60 - S.slips * 80 + S.tight * 40)) : 30;
+  $('endT').textContent = won ? 'মিশন সফল! চুলা জ্বলছে 🔥🍚' : 'বিপদ! দেশলাই দিয়ে লিক পরীক্ষা 😱';
+  $('endTitle').textContent = won ? (S.mistakes === 0 && S.slips === 0 ? 'নিরাপত্তার ওস্তাদ 👑' : 'সিলিন্ডার বীর') : 'নিয়ম শিখে আবার আসুন';
+  $('endLine').textContent = won ? `${L.n} সিলিন্ডার নিয়ে ${FLN[L.floors]}য় উঠলেন, ${bn(S.slips)} বার পিছলেছে, ${bn(S.mistakes)}টা ভুল।${S.tight ? ' লিক ধরে ঠিক করেছেন!' : ''}` : 'লিক থাকলে দেশলাইয়ের আগুনে বিস্ফোরণ হতে পারে। সবসময় সাবান-পানি দিয়ে পরীক্ষা করুন।';
+  $('eS').textContent = bn(sc); $('eT').textContent = bn(Math.round(S.t)) + ' সে'; $('eM').textContent = bn(S.mistakes); $('eTip').textContent = pick(TIPS);
+  setTimeout(() => { $('endO').hidden = false; if (won && window.KHViral) KHViral.confetti(); }, 600); SH.saveScore(sc); lastScore = sc;
+}
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 70 : 58; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+const v3 = new THREE.Vector3(), camP = new THREE.Vector3();
+let pf = 0;
+function loop(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  if (S && S.started && !S.over) { S.t += dt; if (S.phase === 'stairs') { if (S.rest > 0) { S.rest -= dt; S.stam = Math.min(100, S.stam + dt * 30); } else S.stam = Math.min(100, S.stam + dt * 4); S.bal = Math.min(100, S.bal + dt * 4); } if (Math.floor(S.t * 4) % 2 === 0) hud(); }
+  if (S && S.anim) { const a = S.anim; a.t += dt * 2; reg.position.lerpVectors(a.from, a.to, Math.min(1, a.t)); redoHose(); if (a.t >= 1) S.anim = null; }
+  if (S && S.bub > 0) bubbles.forEach((b, i) => { b.visible = true; const ph = (T0 * .8 + i / bubbles.length) % 1; b.position.copy(reg.position).add(v3.set(Math.sin(i * 2.3) * .05, -.02 + ph * .12, Math.cos(i * 2.3) * .05)); b.scale.setScalar(.6 + ph * 1.2); }); else bubbles.forEach(b => b.visible = false);
+  flames.forEach(f => { if (f.visible) f.scale.y = (S && S.fail ? 4 : 1) * (1 + Math.sin(T0 * 30) * .1); });
+  const port = W / H < .8;
+  if (S && S.started && S.phase === 'stairs' && PATH.length) { pf += (S.pos - pf) * Math.min(1, dt * 6); const i = Math.min(PATH.length - 2, Math.floor(pf)), u = pf - i; camP.lerpVectors(PATH[i], PATH[i + 1], u); const ahead = PATH[Math.min(PATH.length - 1, i + 3)]; const bob = Math.sin(pf * Math.PI) * .03, sway = (100 - S.bal) / 100 * Math.sin(T0 * 3) * .06;
+    const dir = v3.subVectors(ahead, camP).setY(0).normalize(); cam.position.set(camP.x - dir.x * .35 + sway, camP.y + 1.62 + bob, camP.z - dir.z * .35); cam.lookAt(ahead.x, ahead.y + 1.35, ahead.z); cam.rotateZ(sway * 1.5);
+    const fw = new THREE.Vector3(0, 0, -1).applyQuaternion(cam.quaternion), rt = new THREE.Vector3(1, 0, 0).applyQuaternion(cam.quaternion); carry.position.copy(cam.position).addScaledVector(fw, .5).addScaledVector(rt, .28).add(v3.set(0, -1.05, 0)); carry.rotation.set(0, Math.atan2(fw.x, fw.z), sway * 2); }
+  else if (S && S.phase === 'kitchen') { cam.position.set(kitchen.position.x + (port ? .25 : .3), port ? 1.9 : 1.75, port ? 1.35 : 1.15); cam.lookAt(kitchen.position.x + .3, .75, -.5); }
+  else { const a = T0 * .1; cam.position.set(Math.sin(a) * .4, 1.7, .9); cam.lookAt(0, 1.5, -2.5); }
+  for (const t of TAGS) { v3.copy(t.at()).add(kitchen.position).project(cam); t.el.style.left = clamp((v3.x + 1) / 2 * W, 80, W - 80) + 'px'; t.el.style.top = clamp((1 - v3.y) / 2 * H, 150, H - 20) + 'px'; }
+  if (renderer) renderer.render(scene, cam);
+  requestAnimationFrame(loop);
+}
+function start(level) { lv = level; newGame(); S.started = true; pf = 0; buildStairs(LV[lv].floors); carry.visible = true; reg.position.set(.62, .63, -.02); redoHose(); capSeal.visible = true; reg.userData.knob.rotation.y = 0; knobs.forEach(k => k.rotation.z = .9); flames.forEach(f => f.visible = false); soapFoam.visible = false; setTags([]); TAGS.lit = false;
+  ['startO', 'endO'].forEach(i => $(i).hidden = true); $('meters').hidden = false; $('feet').hidden = false; $('steps').hidden = true; $('hint').hidden = true; SND.ac; hud(); talk('দোকানদার: নেন ভাই, নতুন সিলিন্ডার। সিল ঠিক আছে, দেখে নেন।', '🏪 দোকান', 'M3'); }
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = e => { e.stopPropagation(); start(+b.dataset.lv); });
+$('fL').onpointerdown = e => { e.preventDefault(); stepFoot('L'); }; $('fR').onpointerdown = e => { e.preventDefault(); stepFoot('R'); };
+addEventListener('keydown', e => { if (e.key === 'ArrowLeft' || e.key === 'a') stepFoot('L'); if (e.key === 'ArrowRight' || e.key === 'd') stepFoot('R'); });
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `গ্যাস সিলিন্ডার মিশনে ${bn(lastScore)} পয়েন্ট! 🧯 লিফট ছাড়া ৫ তলা, তারপর নিরাপদে লাগানো। আপনি পারবেন? ${location.origin}/games/gas/`; try { navigator.clipboard.writeText(t).then(() => pop('কপি হয়েছে, শেয়ার করুন!', 'good')); } catch (e) {} };
+buildStairs(2); newGame(); resize(); last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+const MY = ['আম্মু, আসতেছি!', 'উফ, কত ভারী!', 'লিফট কবে হবে?', 'গ্যাসের দাম আবার বাড়ছে!'], OP = ['সাবধানে আয়!', 'ভাত পুড়ে যাচ্ছে!', 'আস্তে আস্তে ওঠো', 'দোকানদারকে টাকা দিছো?'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY, onSay: t => { KHViral.pop(t, 'M1', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP), 'F2', '👩 আম্মু', true), 1500); } });
+window.KHG = { get S() { return S; }, start, stepFoot, get TAGS() { return TAGS; }, tap(i) { const t = TAGS[i]; if (t) t.el.dispatchEvent(new PointerEvent('pointerdown')); }, ready: true };
+</script>
+<script src="/js/update.js"></script>
+</body></html>
