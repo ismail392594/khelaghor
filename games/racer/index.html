@@ -160,6 +160,25 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 body .khViral{top:calc(64px + env(safe-area-inset-top,0px))!important;bottom:auto!important;left:auto!important;right:max(12px,env(safe-area-inset-right,0px))!important;transform:none!important;max-width:min(46vw,300px)!important;font-size:.78rem!important;padding:6px 10px!important;border-radius:12px!important;line-height:1.3!important;background:rgba(255,255,255,.92)!important}
 body .khViral small{font-size:.66rem!important}
 @media (orientation:landscape){body .khViral{top:calc(112px + env(safe-area-inset-top,0px))!important}}
+
+/* আধুনিক ম্যাপ: উপরে কতটুকু গেছি, মাঝে সামনের ৩ কিমি রাস্তা (স্টপেজ, টোল, সেতু, বাজার), নিচে পরের স্টপেজ আর শহর; চাপলে বড় ম্যাপ */
+.dist.nav{pointer-events:auto;display:block;width:250px;max-width:46vw;padding:7px 9px 6px;border-left:0;border-radius:14px;background:rgba(8,12,20,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);cursor:pointer;font-weight:600}
+.nvTop{display:flex;justify-content:space-between;gap:6px;font-size:.64rem;color:#cbd5e1;white-space:nowrap}.nvTop b{font-size:.78rem;color:#fff}
+.nvBar{position:relative;height:9px;border-radius:9px;background:rgba(255,255,255,.12);margin:5px 0 6px;overflow:visible}
+.nvBar i{position:absolute;left:0;top:0;bottom:0;border-radius:9px;background:linear-gradient(90deg,#16a34a,#4ade80)}
+.nvBar svg{position:absolute;inset:0;width:100%;height:100%}
+.nvBar em{position:absolute;top:50%;width:13px;height:13px;margin:-6.5px 0 0 -6.5px;border-radius:50%;background:#fff;border:3px solid #22c55e;box-shadow:0 0 8px rgba(34,197,94,.9)}
+#navC{position:static;inset:auto;display:block;width:100%;height:auto;border-radius:9px;background:#0f1622}
+.nvRow{font-size:.66rem;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}.nvRow b{color:#fde047}
+.bigmap{position:absolute;inset:0;z-index:20;display:grid;place-items:center;background:rgba(0,0,0,.6);padding:12px}
+.bmCard{width:min(94vw,560px);max-height:92%;overflow:auto;background:#0f1622;border:1px solid #2b3550;border-radius:18px;padding:12px;display:grid;grid-template-columns:1fr;gap:10px}
+.bmHead{display:flex;justify-content:space-between;align-items:center}.bmHead button{border:0;background:rgba(255,255,255,.1);color:#fff;width:34px;height:34px;border-radius:50%;font-size:1rem;cursor:pointer}
+.bmCard #mapSvg{width:100%;height:auto;max-height:52vh;background:#0a1322;border-radius:12px}.bmCard #mapSvg text{font:700 3.6px 'Noto Sans Bengali',sans-serif;fill:#fff;paint-order:stroke;stroke:rgba(0,0,0,.7);stroke-width:.8px}
+.bmList{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;font-size:.78rem}.bmList div{background:rgba(255,255,255,.05);border-radius:10px;padding:6px 8px;display:flex;justify-content:space-between;gap:6px}.bmList div.done{opacity:.45}.bmList div.next{background:rgba(34,197,94,.18);outline:1px solid #22c55e}
+@media (orientation:landscape){.bmCard{grid-template-columns:1.2fr 1fr;width:min(96vw,820px)}.bmHead{grid-column:1/-1}}
+@media (max-height:520px){.dist.nav{width:230px;padding:5px 7px}#nvTown{display:none}.nvRow{margin-top:1px}}
+/* খাড়া ফোনে ধারাভাষ্যের লেখা ম্যাপের উপরে না পড়ে, গাড়ির উপরে মাঝখানে */
+@media (orientation:portrait){.com{top:auto;bottom:calc(330px + env(safe-area-inset-bottom,0px))}}
 </style>
 </head><body>
 <div class="app">
@@ -181,7 +200,14 @@ body .khViral small{font-size:.66rem!important}
       <div class="lrow"><b id="takaT">৳ ০</b><span id="paxT" hidden>👥 ০/৪০</span><button id="fixB" hidden>🔧 মেরামত</button></div>
     </div>
     <div class="stopHint" id="stopHint" hidden></div>
-    <div class="dist" id="dist" hidden><svg viewBox="0 0 100 100" id="mapSvg" aria-label="ঢাকা-চট্টগ্রাম মানচিত্র"></svg><div>চট্টগ্রাম আর <b id="km">২৫০</b> কিমি<small id="mapNext"></small></div></div>
+    <div class="dist nav" id="dist" hidden role="button" tabindex="0" aria-label="ম্যাপ: চাপলে বড় ম্যাপ খুলবে">
+      <div class="nvTop"><span>🧭 ঢাকা → চট্টগ্রাম</span><span><b id="kmDone">০</b> / ২৫০ কিমি</span></div>
+      <div class="nvBar"><i id="nvFill"></i><svg id="nvTicks" viewBox="0 0 250 10" preserveAspectRatio="none"></svg><em id="nvMe"></em></div>
+      <canvas id="navC" width="480" height="150" aria-hidden="true"></canvas>
+      <div class="nvRow" id="nvStop"></div><div class="nvRow" id="nvTown"></div>
+      <span hidden>চট্টগ্রাম আর <b id="km">২৫০</b> কিমি<small id="mapNext"></small></span>
+    </div>
+    <div class="bigmap" id="bigMap" hidden><div class="bmCard"><div class="bmHead"><b>🗺️ ঢাকা → চট্টগ্রাম মহাসড়ক</b><button id="bmX" aria-label="ম্যাপ বন্ধ">✕</button></div><svg viewBox="0 0 100 100" id="mapSvg" aria-label="ঢাকা-চট্টগ্রাম মানচিত্র"></svg><div class="bmList" id="bmList"></div></div></div>
     <div class="com" id="com"></div>
     <div class="say" id="say" hidden></div>
     <div class="gauge" id="speedo" hidden>
@@ -1105,19 +1131,66 @@ function lifeHud() {
 const mapXY = (lon, lat) => [6 + (lon - 90.45) / (91.88 - 90.45) * 88, 6 + (23.76 - lat) / (23.76 - 22.30) * 88];
 function buildMap() {
   const pts = TOWNS.map(t => mapXY(t[2], t[3]).map(v => v.toFixed(1)).join(',')).join(' ');
-  const lbl = TOWNS.filter(t => ['কাঁচপুর', 'কুমিল্লা', 'ফেনী', 'চট্টগ্রাম'].includes(t[0])).map(t => { const [x, y] = mapXY(t[2], t[3]); return `<circle cx="${x}" cy="${y}" r="2.6" fill="#fff"/><text x="${x - 4}" y="${y + 1.5}" text-anchor="end">${t[0] === 'কাঁচপুর' ? 'ঢাকা' : t[0]}</text>`; }).join('');
-  $('mapSvg').innerHTML = `<path d="M10 20 Q30 6 52 14 L96 40 L96 98 L58 98 Q40 76 22 60 Z" fill="rgba(46,125,50,.25)"/><path d="M60 98 Q80 78 98 72 L98 98Z" fill="rgba(30,90,160,.35)"/><polyline points="${pts}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><polyline id="mapDone" points="" fill="none" stroke="#4ade80" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>${lbl}<circle id="mapMe" r="4" fill="#ffd23f" stroke="#1a1a1a" stroke-width="1.2"/>`;
+  const lbl = TOWNS.map((t, k) => { const [x, y] = mapXY(t[2], t[3]); return `<circle cx="${x}" cy="${y}" r="1.2" fill="#fff"/><text x="${x + (k % 2 ? 2 : -2)}" y="${y + 1.2}" text-anchor="${k % 2 ? 'start' : 'end'}">${t[0]}</text>`; }).join('');
+  const brg = BRIDGES.map(B => { const p = mapPos(B.km).xy; return `<text x="${p[0] + 2}" y="${p[1] - 1.5}" style="font-size:3px">🌉</text>`; }).join('');
+  $('mapSvg').innerHTML = `<path d="M10 20 Q30 6 52 14 L96 40 L96 98 L58 98 Q40 76 22 60 Z" fill="rgba(46,125,50,.22)"/><path d="M60 98 Q80 78 98 72 L98 98Z" fill="rgba(30,90,160,.35)"/><polyline points="${pts}" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.6" stroke-linejoin="round"/><polyline id="mapDone" fill="none" stroke="#22c55e" stroke-width="1.8" stroke-linejoin="round"/>${lbl}${brg}<circle id="mapMe" r="2.2" fill="#ffd23f" stroke="#000" stroke-width=".6"/>`;
+  // উপরের অগ্রগতির দাগে শহর (সাদা) আর সেতু (নীল)
+  $('nvTicks').innerHTML = TOWNS.slice(1, -1).map(t => `<rect x="${t[1] - .4}" y="1" width=".8" height="8" fill="rgba(255,255,255,.55)"/>`).join('') + BRIDGES.map(B => `<rect x="${B.km}" y="0" width="${B.len / 1000 + .6}" height="10" fill="#38bdf8"/>`).join('');
 }
 function mapPos(km) {
   km = clamp(km, 0, 250); let i = 0; while (i < TOWNS.length - 2 && TOWNS[i + 1][1] < km) i++;
   const a = TOWNS[i], b = TOWNS[i + 1], f = (km - a[1]) / (b[1] - a[1]), lon = a[2] + (b[2] - a[2]) * f, lat = a[3] + (b[3] - a[3]) * f;
   return { xy: mapXY(lon, lat), i };
 }
+// সামনের জিনিসগুলো কত মিটার দূরে (খেলোয়াড়ের যাত্রার দূরত্বে)
+function navItems() {
+  const st = S, d0 = st.dist, out = [], at = z => d0 + (st.z - z);
+  if (st.stop && !st.stop.served) out.push({ k: 'stop', d: at(st.stop.z), name: stopName, ic: '🚏', col: '#fde047' });
+  const bs = at(bazaar.position.z); out.push({ k: 'bazaar', d: bs, d2: bs + BZ_LEN, name: bazaarName || 'বাজার', ic: '🛒', col: '#fb923c' });
+  for (const B of BRIDGES) { out.push({ k: 'toll', d: B.km * 1000 - TOLL_BACK, name: 'টোল প্লাজা', ic: '🧾', col: '#f472b6' }); out.push({ k: 'bridge', d: B.km * 1000, d2: B.km * 1000 + B.len, name: B.name, ic: '🌉', col: '#38bdf8' }); }
+  const cv = at(culvert.position.z); out.push({ k: 'culv', d: cv, name: 'কালভার্ট', ic: '〰️', col: '#94a3b8' });
+  return out.map(o => Object.assign(o, { ahead: o.d - d0, ahead2: (o.d2 || o.d) - d0 }));
+}
+const navCtx = () => { const c = $('navC'); return c && c.getContext('2d'); };
+function drawNav() {
+  const x = navCtx(); if (!x || !S) return; const w = 480, h = x.canvas.height, RANGE = 3000, X0 = 46, px = m => X0 + m / RANGE * (w - X0 - 14);
+  x.clearRect(0, 0, w, h); x.fillStyle = '#0f1622'; x.fillRect(0, 0, w, h);
+  // রাস্তা: বাম থেকে ডানে সামনে; বাঁক অনুযায়ী একটু বাঁকা
+  const by = h * .54, bend = BEND.value.x * 9e4;
+  const roadY = m => by + Math.min(26, Math.max(-26, bend * (m / RANGE) ** 2 * 60));
+  x.lineCap = 'round'; x.strokeStyle = '#2a3446'; x.lineWidth = 26; x.beginPath(); for (let m = 0; m <= RANGE; m += 150) { const X = px(m), Y = roadY(m); m ? x.lineTo(X, Y) : x.moveTo(X, Y); } x.stroke();
+  x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = 2; x.setLineDash([10, 12]); x.lineDashOffset = -((S.dist / 25) % 22); x.beginPath(); for (let m = 0; m <= RANGE; m += 150) { const X = px(m), Y = roadY(m); m ? x.lineTo(X, Y) : x.moveTo(X, Y); } x.stroke(); x.setLineDash([]);
+  // কিলোমিটার দাগ
+  x.fillStyle = 'rgba(203,213,225,.75)'; x.font = "600 19px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'center';
+  for (const m of [1000, 2000, 3000]) x.fillText(bn(m / 1000) + ' কিমি', Math.min(w - 40, px(m)), h - 6);
+  // সামনের জিনিস
+  const items = navItems().filter(o => o.ahead2 > -60 && o.ahead < RANGE).sort((a, b) => a.ahead - b.ahead); let lab = 0;
+  for (const o of items) {
+    const a = Math.max(0, o.ahead), X = px(a), Y = roadY(a);
+    if (o.d2) { x.strokeStyle = o.col; x.globalAlpha = .55; x.lineWidth = 26; x.beginPath(); x.moveTo(X, roadY(a)); x.lineTo(px(Math.min(RANGE, o.ahead2)), roadY(Math.min(RANGE, o.ahead2))); x.stroke(); x.globalAlpha = 1; }
+    x.fillStyle = o.col; x.beginPath(); x.arc(X, Y, o.k === 'stop' ? 15 : 12, 0, 7); x.fill(); x.font = (o.k === 'stop' ? 22 : 18) + "px sans-serif"; x.fillText(o.ic, X, Y + 7);
+    if (o.k === 'stop' || o.k === 'toll' || o.k === 'bridge' || lab < 2) { const up = (lab++ % 2) === 0; x.fillStyle = o.col; x.font = "700 22px 'Noto Sans Bengali',sans-serif"; const t = (o.ahead < 1000 ? bn(Math.max(0, Math.round(o.ahead))) + ' মি' : bn((o.ahead / 1000).toFixed(1)) + ' কিমি'); x.fillText(t, Math.min(w - 50, Math.max(80, X)), up ? Y - 24 : Y + 40); }
+  }
+  // আমার গাড়ি
+  x.fillStyle = '#22c55e'; x.beginPath(); x.moveTo(X0 - 4, by - 13); x.lineTo(X0 + 16, by); x.lineTo(X0 - 4, by + 13); x.lineTo(X0 + 2, by); x.closePath(); x.fill(); x.strokeStyle = '#fff'; x.lineWidth = 2; x.stroke();
+  x.fillStyle = '#fff'; x.font = "700 18px 'Noto Sans Bengali',sans-serif"; x.textAlign = 'left'; x.fillText('আপনি', 4, by - 20);
+}
 function drawMap(km) {
   const { xy, i } = mapPos(km), me = $('mapMe'); if (!me) return; me.setAttribute('cx', xy[0].toFixed(1)); me.setAttribute('cy', xy[1].toFixed(1));
   $('mapDone').setAttribute('points', TOWNS.slice(0, i + 1).map(t => mapXY(t[2], t[3]).map(v => v.toFixed(1)).join(',')).concat([xy.map(v => v.toFixed(1)).join(',')]).join(' '));
+  const pct = clamp(km / 250, 0, 1) * 100; $('nvFill').style.width = pct + '%'; $('nvMe').style.left = pct + '%'; $('kmDone').textContent = bn(km.toFixed(1));
   const nt = nextTowns(km)[0]; $('mapNext').textContent = nt ? `পরের শহর: ${nt[0]} · ${bn(Math.max(0, nt[1] - km).toFixed(1))} কিমি` : 'চট্টগ্রাম পৌঁছে গেছেন!';
+  $('nvTown').innerHTML = nt ? `🏙️ পরের শহর: <b>${nt[0]}</b> · ${bn(Math.max(0, nt[1] - km).toFixed(1))} কিমি` : '🏁 চট্টগ্রাম পৌঁছে গেছেন!';
+  const sp = S && navItems().find(o => o.k === 'stop' && o.ahead > -95);
+  $('nvStop').innerHTML = sp ? (sp.ahead >= 0 ? `🚏 পরের স্টপেজ: <b>${sp.name}</b> · ${sp.ahead < 1000 ? bn(Math.round(sp.ahead)) + ' মি' : bn((sp.ahead / 1000).toFixed(1)) + ' কিমি'}` : `↩️ <b>${sp.name}</b> পেছনে ${bn(Math.round(-sp.ahead))} মি`) : (R && R.pax ? '🚏 স্টপেজের কাজ শেষ, পরেরটা আসছে' : '🛣️ সোজা মহাসড়ক');
+  if (!$('bigMap').hidden) drawBigList(km);
 }
+function drawBigList(km) {
+  const rows = TOWNS.map(t => ({ n: t[0], k: t[1] })).concat(BRIDGES.map(B => ({ n: '🌉 ' + B.name, k: B.km }))).sort((a, b) => a.k - b.k); let nextDone = false;
+  $('bmList').innerHTML = rows.map(r => { const done = r.k < km - .05, nx = !done && !nextDone; if (nx) nextDone = true; return `<div class="${done ? 'done' : nx ? 'next' : ''}"><span>${r.n}</span><b>${done ? '✓' : bn(Math.max(0, r.k - km).toFixed(1)) + ' কিমি'}</b></div>`; }).join('');
+}
+$('dist').addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); $('bigMap').hidden = false; if (S) { drawMap(S.dist / 1000); drawBigList(S.dist / 1000); } });
+$('bigMap').addEventListener('pointerdown', e => { e.stopPropagation(); if (e.target === $('bigMap') || e.target === $('bmX')) $('bigMap').hidden = true; });
 
 /* ================= খেলার অবস্থা ================= */
 const LV = [
@@ -1373,9 +1446,11 @@ function hud() {
   $('gArc').setAttribute('stroke-dasharray', (clamp(k / (R.nit * 1.05), 0, 1) * 235.6).toFixed(1) + ' 314.2'); $('nArc').setAttribute('stroke-dasharray', (S.nitro * 192.6).toFixed(1) + ' 257.6');
   let g = 0; const kg = Math.abs(k) * 205 / R.vmax; while (kg > GEARS[g + 1]) g++; $('gearT').textContent = S.v < -.1 || (SIM && S.gear === 'R') ? 'গিয়ার R' : Math.abs(S.v) < .5 ? 'N' : 'গিয়ার ' + bn(g + 1);
   $('sc').textContent = bn(Math.floor(S.score)); $('nbar').style.height = Math.round(S.nitro * 100) + '%'; $('nit').classList.toggle('empty', S.nitro < .05);
-  $('km').textContent = bn(Math.max(0, 250 - S.dist / 1000).toFixed(1)); if ((hud.n = (hud.n || 0) + 1) % 15 === 0) drawMap(S.dist / 1000);
+  $('km').textContent = bn(Math.max(0, 250 - S.dist / 1000).toFixed(1)); hud.n = (hud.n || 0) + 1; if (hud.n % 15 === 0) drawMap(S.dist / 1000); if (hud.n % 3 === 0) drawNav();
 }
-function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.updateProjectionMatrix(); }
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.updateProjectionMatrix(); const nc = $('navC'); if (nc) nc.height = H < 520 ? 120 : 170; placeLife(); }
+// লাইফের প্যানেল সবসময় ম্যাপের নিচে
+function placeLife() { const d = $('dist'), l = $('life'); if (!d || !l || d.hidden) return; const sr = $('stage').getBoundingClientRect(), dr = d.getBoundingClientRect(); l.style.top = Math.round(dr.bottom - sr.top + 6) + 'px'; }
 addEventListener('resize', resize);
 // গ্রাফিক্সের মান বদলানো (০ খুব কম … ৩ উঁচু)
 function setTier(t) {
@@ -1630,7 +1705,7 @@ function endRun() {
 }
 function start(level) {
   if (!ready) return; audio(); engineOn(); lv = level; store.set('kh-racer-lv', lv);
-  resetWorld(level); WX.nextKm = rnd(3, 5); WX.tn = WX.tr = 0; S.started = true; if (R.pax) loadWalkers(); S.nextKm = 5; ['startO', 'endO'].forEach(i => $(i).hidden = true); ['speedo', 'ctlL', 'ctlR', 'dist', 'keyhint', 'life'].forEach(i => $(i).hidden = false); applyCtl(); lifeHud(); drawMap(0); document.querySelector('.score').style.visibility = 'visible';
+  setTimeout(placeLife, 50); resetWorld(level); WX.nextKm = rnd(3, 5); WX.tn = WX.tr = 0; S.started = true; if (R.pax) loadWalkers(); S.nextKm = 5; ['startO', 'endO'].forEach(i => $(i).hidden = true); ['speedo', 'ctlL', 'ctlR', 'dist', 'keyhint', 'life'].forEach(i => $(i).hidden = false); applyCtl(); lifeHud(); drawMap(0); document.querySelector('.score').style.visibility = 'visible';
   cam.position.set(S.x, 2.6, S.z + 9); com('start'); sfx('go'); if (SIM) { S.v = 0; S.gear = 'D'; gearUI(); pop('🚌 এক্সিলারেটর চেপে ধরে চালান'); } if (store.get('kh-racer-radio', false) && !radio) radioToggle();
 }
 document.querySelectorAll('[data-lv]').forEach(b => b.onclick = () => start(+b.dataset.lv));
