@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>ডাংগুলি · খেলাঘর</title>
+<meta name="description" content="গ্রামের মাঠে ডাংগুলি! ঠিক সময়ে গুলি তুলে ডাং দিয়ে মারুন, বন্ধুরা ক্যাচ ধরার আগে যত দূরে পাঠাতে পারেন।">
+<link rel="canonical" href="https://khelaghorbd.online/games/dangguli/">
+<meta property="og:title" content="ডাংগুলি · খেলাঘর">
+<meta property="og:description" content="গুলি তোলো, ডাং মারো! কত ডাং দূরে পাঠাতে পারবেন?">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/dangguli.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/dangguli.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+/* ডাংগুলি: প্রথম ব্যক্তির চোখে মাঠ, হাতে ডাং। নিচে সময় মেলানোর দাগ। */
+:root{--accent:#facc15}
+.meter{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:3;width:min(86%,420px);pointer-events:none}
+.meter small{display:block;text-align:center;font-weight:800;font-size:.8rem;color:#fff;text-shadow:0 1px 3px #000;margin-bottom:4px}
+.mbar{position:relative;height:18px;border-radius:10px;background:rgba(0,0,0,.55);border:2px solid rgba(255,255,255,.7);overflow:hidden}
+.mbar .z{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,rgba(34,197,94,.4),#22c55e,rgba(34,197,94,.4))}
+.mbar .z2{position:absolute;top:0;bottom:0;background:#fde047}
+.mbar b{position:absolute;top:-2px;bottom:-2px;width:6px;margin-left:-3px;border-radius:3px;background:#fff;box-shadow:0 0 8px #fff}
+.dist{position:absolute;right:12px;top:10px;z-index:3;font:800 1.1rem var(--display);background:rgba(0,0,0,.45);padding:2px 10px;border-radius:10px;text-shadow:0 1px 3px #000}
+.outs{letter-spacing:2px}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="sc">০</b><small>পয়েন্ট · মোট <span id="tot">০</span> ডাং</small></div>
+    <div class="stat r"><b class="outs" id="outs">🟢🟢🟢</b><small>বাকি সুযোগ</small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas class="cv" id="cv"></canvas>
+    <div class="dist" id="dist" hidden></div>
+    <div class="meter" id="meter" hidden><small id="mTxt"></small><div class="mbar"><i class="z" id="mZone"></i><i class="z2" id="mZone2"></i><b id="mMark"></b></div></div>
+    <div class="say" id="say" hidden></div>
+    <div class="chost" id="chatHost"></div>
+
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>ডাংগুলি</h1>
+        <p class="story">বিকেলে স্কুল ছুটির পর গ্রামের মাঠ। মাটির ছোট গর্তের উপর গুলি রাখা, হাতে বাঁশের ডাং। ওপাশে বন্ধুরা ক্যাচ ধরতে দাঁড়িয়ে!</p>
+        <div class="rules">
+          <div>🎯 <b>দিক:</b> তীর ডানে-বামে দুলছে। যেখানে বন্ধু নেই সেদিকে এলে চাপুন।</div>
+          <div>⬆️ <b>তোলা:</b> দাগ সবুজে এলে চাপুন, গুলি শূন্যে লাফিয়ে উঠবে।</div>
+          <div>💥 <b>মারা:</b> গুলি নেমে কোমরের কাছে এলে (হলুদ দাগ) আবার চাপুন। যত নিখুঁত, তত দূর!</div>
+          <div>🙌 বন্ধুরা মাটিতে পড়ার আগে ধরে ফেললে বা ফসকে গেলে <b>আউট</b>। ১০ বার মারা বা ৩ আউটে খেলা শেষ। দূরত্ব মাপা হয় ডাং দিয়ে।</div>
+        </div>
+        <p>কাদের সাথে?</p>
+        <div class="lvl">
+          <button data-lv="0">ছোটরা<small>ধীরে দৌড়ায়</small></button>
+          <button data-lv="1">সমবয়সী<small>মাঝারি</small></button>
+          <button data-lv="2">বড় ভাইয়েরা<small>ক্যাচে পাকা</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">মানুষ: Renderpeople (<a href="/games/racer/assets/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। মাঠ, আকাশ, গাছ: <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a> (CC0)।</p>
+      </div>
+    </div>
+
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">খেলা শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eD">০</b><span>মোট ডাং</span></div><div><b id="eB">০</b><span>সেরা মার (ডাং)</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার খেলি</button><button class="gbtn ghost" id="menuBtn">দল বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">🏏</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+  <div class="ctl"><div class="hint" id="hint">দল বেছে খেলা শুরু করুন</div><button class="bigb" id="tapB"><span>👆</span>চাপুন</button></div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { GLTFLoader } from "/js/vendor/addons/GLTFLoader.js";
+import { MeshoptDecoder } from "/js/vendor/addons/meshopt_decoder.module.js";
+import { clone as cloneSkinned } from "/js/vendor/addons/SkeletonUtils.js";
+import { TIERS, detectTier } from "/js/kh-quality.js";
+import { loadPeople } from "/js/kh-people.js";
+import { gameShell, sound, bn, pick, rnd, clamp } from "/js/kh-shell.js";
+
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'dangguli', name: 'ডাংগুলি', lbTitle: 'সেরা ডাংগুলি খেলোয়াড়', offMsg: 'মাঠে পানি জমেছে, একটু পরে আসেন।' });
+const SND = sound(SH);
+
+/* ================= ৩ডি মাঠ ================= */
+const TIER = TIERS[detectTier()], LOW = TIER.id <= 1;
+let renderer = null; try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' }); } catch (e) {}
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(62, 1, .03, 600);
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.shadowMap.enabled = !LOW; renderer.shadowMap.type = THREE.PCFSoftShadowMap; }
+const ANISO = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1, texL = new THREE.TextureLoader(), KA = '/games/kanamachi/assets/', RA = '/games/racer/assets/';
+const tex = (u, srgb, r) => { const t = texL.load(u); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; t.repeat.set(r, r); return t; };
+const M = (c, o) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: .85 }, o || {}));
+const skyT = texL.load(RA + 'sky.jpg'); skyT.colorSpace = THREE.SRGBColorSpace;
+const skyG = new THREE.SphereGeometry(400, 32, 16); skyG.scale(-1, 1, 1); scene.add(new THREE.Mesh(skyG, new THREE.MeshBasicMaterial({ map: skyT, fog: false, toneMapped: false })));
+scene.fog = new THREE.Fog('#cfc4a2', 60, 260);
+scene.add(new THREE.HemisphereLight('#fff1d6', '#5d5236', 1.1));
+const sun = new THREE.DirectionalLight('#ffe0b0', 2.5); sun.position.set(-20, 30, 10); sun.castShadow = !LOW; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 50, bottom: -10, far: 120 }); scene.add(sun, sun.target); sun.target.position.set(0, 0, -20);
+// মাঠ: ঘাস আর মাঝখানে খেলার জায়গায় মাটি
+const grassT = ['grass_diff.jpg', 'grass_nor.jpg', 'grass_arm.jpg'].map((f, i) => tex(RA + f, i === 0, 80));
+const field = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshStandardMaterial({ map: grassT[0], normalMap: grassT[1], roughnessMap: grassT[2], color: '#9bb46c', roughness: 1 })); field.rotation.x = -Math.PI / 2; field.receiveShadow = true; scene.add(field);
+const dirt = new THREE.Mesh(new THREE.CircleGeometry(4, 40), new THREE.MeshStandardMaterial({ map: tex(KA + 'ground_diff.jpg', true, 3), normalMap: tex(KA + 'ground_nor.jpg', false, 3), roughness: 1, polygonOffset: true, polygonOffsetFactor: -2 })); dirt.rotation.x = -Math.PI / 2; dirt.position.y = .005; dirt.receiveShadow = true; scene.add(dirt);
+// মাটির ছোট লম্বা গর্ত, তার উপর গুলি আড়াআড়ি
+const hole = new THREE.Mesh(new THREE.PlaneGeometry(.14, .34), M('#2a1d12')); hole.rotation.x = -Math.PI / 2; hole.position.set(0, .01, -1.05); scene.add(hole);
+const woodT = (() => { const c = document.createElement('canvas'); c.width = 64; c.height = 256; const x = c.getContext('2d'); x.fillStyle = '#9a6b3c'; x.fillRect(0, 0, 64, 256); for (let i = 0; i < 26; i++) { x.strokeStyle = `rgba(${60 + Math.random() * 40},${35 + Math.random() * 20},15,.5)`; x.lineWidth = 1 + Math.random() * 2; x.beginPath(); const xx = Math.random() * 64; x.moveTo(xx, 0); x.bezierCurveTo(xx + 6, 80, xx - 6, 170, xx + 3, 256); x.stroke(); } for (let y = 0; y < 256; y += 46) { x.fillStyle = 'rgba(60,40,20,.5)'; x.fillRect(0, y, 64, 4); } const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+const woodM = new THREE.MeshStandardMaterial({ map: woodT, roughness: .7 });
+// গুলি: দুই মাথা সরু ছোট কাঠি
+const guli = new THREE.Group(); { const g = new THREE.CylinderGeometry(.022, .022, .16, 10), c = new THREE.ConeGeometry(.022, .045, 10); const b = new THREE.Mesh(g, woodM); guli.add(b); for (const s of [-1, 1]) { const tip = new THREE.Mesh(c, woodM); tip.position.y = s * .102; if (s < 0) tip.rotation.x = Math.PI; guli.add(tip); } guli.traverse(o => o.castShadow = true); scene.add(guli); }
+// ডাং: হাতে লম্বা বাঁশের লাঠি (ক্যামেরার সাথে)
+const dang = new THREE.Group(); { const s = new THREE.Mesh(new THREE.CylinderGeometry(.018, .022, .78, 10), woodM); s.position.y = .39; dang.add(s); const grip = new THREE.Mesh(new THREE.CylinderGeometry(.024, .024, .14, 10), M('#3b2a1a')); grip.position.y = .05; dang.add(grip); }
+const dangPiv = new THREE.Group(); dangPiv.add(dang); cam.add(dangPiv); scene.add(cam); dangPiv.position.set(.42, -.4, -.4);
+// গ্রামের সাজ: দূরে গাছ, বাড়ি, পাড়ার দর্শক
+const treeMs = ['tree1.webp', 'tree2.webp'].map(f => { const t = texL.load(RA + f); t.colorSpace = THREE.SRGBColorSpace; return new THREE.MeshStandardMaterial({ map: t, alphaTest: .5, side: THREE.DoubleSide, roughness: 1 }); });
+const TREES = []; for (let i = 0; i < 40; i++) { const a = rnd(-Math.PI, Math.PI), r = rnd(70, 140), h = rnd(9, 15); const p = new THREE.Mesh(new THREE.PlaneGeometry(h * .9, h), treeMs[i % 2]); p.geometry.translate(0, h / 2, 0); p.position.set(Math.sin(a) * r, 0, -Math.cos(a) * r); scene.add(p); TREES.push(p); }
+{ const mud = new THREE.MeshStandardMaterial({ map: tex(KA + 'mud_diff.jpg', true, 2), color: '#f2dcc0', roughness: 1 }), tin = M('#9aa3a8', { metalness: .6, roughness: .5, side: THREE.DoubleSide });
+  for (const [x, z, ry] of [[-35, -95, .3], [30, -110, -.2], [-60, -60, .9]]) { const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; const b = new THREE.Mesh(new THREE.BoxGeometry(7, 2.6, 4), mud); b.position.y = 1.3; g.add(b); for (const s of [-1, 1]) { const r = new THREE.Mesh(new THREE.PlaneGeometry(7.6, 2.6), tin); r.position.set(0, 3.1, s * 1.05); r.rotation.x = -Math.PI / 2 + s * .6; g.add(r); } scene.add(g); } }
+
+/* ================= মানুষ: মাঠে ৩ জন ফিল্ডার, পাশে দর্শক ================= */
+const FIELD = []; let PEOPLE = null; const WATCH = [];
+const FNAMES = ['রনি', 'সাজু', 'বিল্লাল'];
+async function loadKids() {
+  PEOPLE = await loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned);
+  for (let i = 0; i < 3; i++) { const h = PEOPLE.make(i, { scale: .82, shadow: !LOW }); scene.add(h.root); FIELD.push({ h, name: FNAMES[i], x: 0, z: 0, hx: 0, hz: 0, tx: 0, tz: 0, moving: false }); }
+  for (let i = 0; i < 3; i++) { const h = PEOPLE.make(i + 3, { scale: .85, shadow: false }); h.root.position.set(-5.5 - i * .9, 0, 1.5 + i * .7); h.root.rotation.y = Math.PI / 2.2; scene.add(h.root); WATCH.push(h); }
+  homeField();
+}
+const FHOME = [[-7, -14], [2, -22], [9, -13]];
+function homeField() { const L = LV[lv]; FIELD.forEach((f, i) => { const [x, z] = FHOME[i]; f.hx = x * L.spread + rnd(-3, 3); f.hz = z * L.spread + rnd(-4, 2); f.x = f.hx; f.z = f.hz; f.tx = f.x; f.tz = f.z; f.moving = false; }); }
+
+/* ================= শব্দ ================= */
+const SFX = {
+  tick() { SND.tone(900, .04, 'square', .05); },
+  flip() { SND.noise(.06, .7, 2600, 'bandpass'); SND.tone(520, .08, 'triangle', .2, 700); },
+  hit(p) { SND.noise(.08, .9, 3200, 'bandpass'); SND.tone(420 + p * 300, .12, 'square', .18, 200); },
+  whiff() { SND.noise(.3, .4, 600, 'bandpass'); },
+  land() { SND.noise(.12, .5, 400); },
+  catch() { SND.tone(392, .25, 'triangle', .3); SND.tone(311, .4, 'triangle', .3, 0, .2); },
+  cheer() { for (let i = 0; i < 10; i++) SND.noise(.08, .3, 1200 + Math.random() * 800, 'bandpass', i * .06); [523, 659, 784].forEach((f, i) => SND.tone(f, .2, 'triangle', .2, 0, .4 + i * .1)); }
+};
+
+/* ================= খেলা ================= */
+// spread: ফিল্ডাররা কত দূরে দাঁড়ায়; spd: দৌড়; react: বল মারার পর কত দেরিতে দৌড় শুরু; reach: কত কাছে এলে ধরে
+// hands: হাতের কাছে এলে ধরার সম্ভাবনা (বাকিটা হাত ফসকে যায়)
+const LV = [{ n: 'ছোটরা', spd: 3.8, react: .6, reach: 1.1, spread: .95, meter: 1, hands: .55 }, { n: 'সমবয়সী', spd: 4.8, react: .45, reach: 1.3, spread: 1.05, meter: 1.25, hands: .72 }, { n: 'বড় ভাইয়েরা', spd: 5.8, react: .3, reach: 1.5, spread: 1.15, meter: 1.5, hands: .88 }];
+const TURNS = 10; // একটা খেলায় সর্বোচ্চ ১০ বার মারা
+const DANG = .78; // এক ডাং = ৭৮ সেমি (ডাঙের দৈর্ঘ্য)
+let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0;
+function newGame() { S = { score: 0, outs: 3, total: 0, best: 0, phase: 'idle', t: 0, over: false, started: false, streak: 0, turn: 0 }; resetBall(); hud(); }
+function resetBall() { guli.position.set(0, .03, -1.05); guli.rotation.set(0, 0, Math.PI / 2); guli.rotation.y = 0; S && (S.ball = null); }
+function say(t, col) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, 1500); }
+function pop(t, cls) { const e = document.createElement('div'); e.className = 'pop ' + (cls || ''); e.textContent = t; $('stage').appendChild(e); setTimeout(() => e.remove(), 1200); }
+function hud() { $('sc').textContent = bn(Math.round(S.score)); $('tot').textContent = bn(Math.round(S.total)); $('outs').textContent = '🟢'.repeat(S.outs) + '⚪'.repeat(3 - S.outs); }
+// ধাপ: aim (দিক দুলছে) → flip (তোলার দাগ) → air (গুলি শূন্যে, মারার জানালা) → fly (উড়ছে) → wait
+function setPhase(p) {
+  S.phase = p; S.t = 0; const m = $('meter'), L = LV[lv];
+  if (p === 'aim') { m.hidden = false; $('mTxt').textContent = '🎯 দিক ঠিক করুন: ফাঁকা জায়গায় এলে চাপুন'; $('mZone').style.cssText = 'left:0;width:0'; $('mZone2').style.cssText = 'left:0;width:0'; $('hint').textContent = 'ফিল্ডার যেদিকে নেই, সেদিকে তীর এলে চাপুন'; }
+  if (p === 'flip') { const w = 22 / L.meter, c = rnd(25, 75); S.zone = [c - w / 2, c + w / 2]; $('mZone').style.cssText = `left:${S.zone[0]}%;width:${w}%`; $('mZone2').style.cssText = `left:${c - 2}%;width:4%`; $('mTxt').textContent = '⬆️ সবুজে এলে চাপুন: গুলি তুলুন'; $('hint').textContent = 'সবুজ দাগে চাপুন, মাঝের হলুদে সবচেয়ে উঁচু'; }
+  if (p === 'air') { m.hidden = true; $('hint').textContent = 'গুলি নেমে হলুদ বৃত্তে এলে চাপুন!'; }
+  if (p === 'fly' || p === 'wait') { m.hidden = true; $('hint').textContent = p === 'fly' ? 'উড়ছে…' : 'পরের মারের জন্য তৈরি হন'; }
+}
+let markP = 0, aimA = 0;
+function tap() {
+  if (!S || !S.started || S.over) return; SND.ac;
+  if (S.phase === 'aim') { S.aim = aimA; SFX.tick(); setPhase('flip'); return; }
+  if (S.phase === 'flip') { // কতটা নিখুঁত: হলুদের যত কাছে তত উঁচু
+    const [a, b] = S.zone, c = (a + b) / 2, half = (b - a) / 2, off = Math.abs(markP - c);
+    if (off > half) { SFX.whiff(); pop('গুলি উঠল না!', 'bad'); out('গুলি গর্তেই রয়ে গেল'); return; }
+    S.q1 = 1 - off / half * .6; SFX.flip(); S.ball = { x: 0, y: .05, z: -1.05, vx: 0, vy: 2.2 + S.q1 * 2.2, vz: .25, spin: rnd(14, 22), hit: false }; dangSwing = .6; setPhase('air'); return;
+  }
+  if (S.phase === 'air') { // গুলির উচ্চতা কোমরের কাছে (০.৬-১.০ মি) হলে সবচেয়ে ভালো
+    const B = S.ball, y = B.y, good = y > .25 && y < 1.4 && B.vy < 1.5; dangSwing = 1;
+    if (!good) { SFX.whiff(); pop(y >= 1.4 ? 'আগে মেরে ফেললেন!' : 'দেরি হয়ে গেল!', 'bad'); out('ফসকে গেল!'); return; }
+    const q2 = 1 - clamp(Math.abs(y - .8) / .55, 0, 1) * .65, pw = (S.q1 * .45 + q2 * .55), sp = 6 + pw * 10.5 + rnd(-.6, .6), el = .55 + rnd(-.1, .12) + (1 - q2) * .25, a = S.aim + rnd(-.06, .06);
+    B.vx = Math.sin(a) * Math.cos(el) * sp; B.vz = -Math.cos(a) * Math.cos(el) * sp; B.vy = Math.sin(el) * sp; B.hit = true; B.q = pw; SFX.hit(pw); say(pw > .85 ? 'দারুণ মার! 💥' : pw > .6 ? 'ভালো মার!' : 'লাগল!', '#fde68a');
+    // ফিল্ডাররা দৌড় শুরু করে পড়ার জায়গার দিকে (একটু দেরিতে)
+    const g = 9.8, T = (B.vy + Math.sqrt(B.vy * B.vy + 2 * g * B.y)) / g, lx = B.x + B.vx * T, lz = B.z + B.vz * T; S.land = { x: lx, z: lz, T };
+    FIELD.forEach(f => { f.tx = lx + rnd(-.6, .6); f.tz = lz + rnd(-.6, .6); f.go = LV[lv].react + rnd(0, .25); });
+    setPhase('fly'); return;
+  }
+}
+function out(why) {
+  S.outs--; S.streak = 0; SFX.catch(); say('আউট! ' + why, '#fca5a5'); hud(); setPhase('wait');
+  setTimeout(() => { if (S.over) return; if (S.outs <= 0) endGame(); else nextTurn(); }, 1900);
+}
+function nextTurn() { if (++S.turn >= TURNS) { endGame(); return; } resetBall(); homeField(); setPhase('aim'); $('hint').textContent = `মার ${bn(S.turn + 1)}/${bn(TURNS)} · ফাঁকা জায়গায় তীর এলে চাপুন`; }
+let dangSwing = 0;
+const caught = f => { if (window.KHViral) KHViral.pop(pick(['ধরছি! আউট!', 'হা হা, ক্যাচ!', 'এত সোজা ক্যাচ!']), 'M3', '🙌 ' + f.name); };
+function step(dt) {
+  S.t += dt; const L = LV[lv];
+  if (S.phase === 'aim') { aimA = Math.sin(S.t * 1.5) * .7; }
+  if (S.phase === 'flip') { markP = (Math.sin(S.t * 3.2 * L.meter) * .5 + .5) * 100; $('mMark').style.left = markP + '%'; }
+  const B = S.ball;
+  if (B && (S.phase === 'air' || S.phase === 'fly')) {
+    B.vy -= 9.8 * dt; B.x += B.vx * dt; B.y += B.vy * dt; B.z += B.vz * dt; guli.position.set(B.x, B.y, B.z); guli.rotation.x += B.spin * dt; guli.rotation.z += B.spin * .4 * dt;
+    if (S.phase === 'air' && B.y < .04 && B.vy < 0) { SFX.land(); pop('দেরি হয়ে গেল!', 'bad'); out('গুলি মাটিতে পড়ে গেল'); return; }
+    if (S.phase === 'fly') {
+      const d = Math.hypot(B.x, B.z + 1.05); $('dist').hidden = false; $('dist').textContent = '📏 ' + bn(Math.round(d / DANG)) + ' ডাং';
+      // ক্যাচ: ফিল্ডারের কাছে আর হাতের উচ্চতায় এলে
+      for (const f of FIELD) if (!B.drop && B.y < 2.1 && B.y > .2 && Math.hypot(f.x - B.x, f.z - B.z) < L.reach) { if (Math.random() > L.hands) { B.drop = true; pop('🙌 ' + f.name + ' ক্যাচ ফেলে দিয়েছে!', 'good'); if (window.KHViral) KHViral.pop('ইশ! হাত ফসকে গেল!', 'M3', '😩 ' + f.name); break; } caught(f); S.ball = null; guli.position.set(f.x, 1.2, f.z); setTimeout(() => out(f.name + ' ক্যাচ ধরেছে'), 300); setPhase('wait'); return; }
+      if (B.y <= .02) { B.y = .02; guli.position.y = .02; landed(d); return; }
+    }
+  }
+  for (const f of FIELD) { if (f.go > 0) { f.go -= dt; continue; } const dx = f.tx - f.x, dz = f.tz - f.z, dd = Math.hypot(dx, dz); f.moving = dd > .1; if (f.moving) { const s = Math.min(dd, L.spd * dt); f.x += dx / dd * s; f.z += dz / dd * s; f.look = Math.atan2(dx, dz); } }
+}
+function landed(d) {
+  const dg = Math.round(d / DANG); S.total += dg; S.best = Math.max(S.best, dg); S.streak++;
+  const pts = dg * 10 * (1 + Math.min(5, S.streak - 1) * .1); S.score += pts; SFX.land(); if (dg >= 30) SFX.cheer();
+  say(bn(dg) + ' ডাং!', dg >= 30 ? '#86efac' : '#fff'); pop('+' + bn(Math.round(pts)), 'good'); hud(); setPhase('wait');
+  if (dg >= 30 && window.KHViral) KHViral.pop(pick(['ওরে বাবা! এত দূর!', 'গুলি তো নদীতে গেল!', 'আজকে তুই রাজা!']), 'M2', '👏 দর্শক');
+  setTimeout(() => { $('dist').hidden = true; if (!S.over) nextTurn(); }, 2200);
+}
+const TIPS = ['জানেন কি? ডাংগুলি বাংলার শত বছরের পুরনো খেলা, অনেকে একে ক্রিকেট আর বেসবলের দাদা বলে। দূরত্ব মাপা হয় ডাং (লাঠির দৈর্ঘ্য) দিয়ে।', 'জানেন কি? খেলার সময় গুলি মানুষের দিকে মারবেন না, চোখে লাগলে বড় বিপদ। মাঠ ফাঁকা দেখে খেলুন।', 'জানেন কি? ঠিক সময়ে মারা মানে চোখ আর হাতের মিল (hand-eye coordination), যা ব্যাট-বলের সব খেলায় কাজে লাগে।'];
+function endGame() {
+  if (S.over) return; S.over = true; $('meter').hidden = true; const sc = Math.round(S.score);
+  $('endT').textContent = `মোট ${bn(Math.round(S.total))} ডাং! 🏏`;
+  const titles = [[1500, 'ডাংগুলি সম্রাট 👑'], [900, 'পাড়ার সেরা মারকুটে'], [500, 'পাকা খেলোয়াড়'], [200, 'উঠতি তারকা'], [0, 'নতুন খেলোয়াড়']];
+  $('endTitle').textContent = titles.find(x => sc >= x[0])[1];
+  $('endLine').textContent = `সবচেয়ে বড় মার ${bn(S.best)} ডাং (প্রায় ${bn(Math.round(S.best * DANG))} মিটার)। ${LV[lv].n}দের সাথে দারুণ খেলেছেন!`;
+  $('eS').textContent = bn(sc); $('eD').textContent = bn(Math.round(S.total)); $('eB').textContent = bn(S.best); $('eTip').textContent = pick(TIPS);
+  setTimeout(() => { $('endO').hidden = false; if (sc >= 900 && window.KHViral) KHViral.confetti(); }, 700);
+  SH.saveScore(sc); lastScore = sc;
+}
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 74 : 60; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+const aimArrow = new THREE.Mesh(new THREE.ConeGeometry(.12, .5, 3).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: '#facc15', transparent: true, opacity: .85 })); aimArrow.position.set(0, .05, -2); scene.add(aimArrow);
+const ringM = new THREE.MeshBasicMaterial({ color: '#fde047', transparent: true, opacity: .8, side: THREE.DoubleSide }), ring = new THREE.Mesh(new THREE.RingGeometry(.16, .2, 32), ringM); ring.position.set(0, .8, -1.05); scene.add(ring);
+const _cp = new THREE.Vector3(), _cl = new THREE.Vector3();
+function loop(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  if (S && S.started && !S.over) step(dt);
+  for (const f of FIELD) { f.h.root.position.set(f.x, 0, f.z); f.h.root.rotation.y = f.moving ? f.look : Math.atan2(-f.x, -1 - f.z); f.h.update(dt, f.moving, f.moving ? 1.8 : 1); }
+  WATCH.forEach(h => h.update(dt, false));
+  aimArrow.visible = !!(S && S.phase === 'aim'); if (aimArrow.visible) { aimArrow.rotation.y = -aimA; aimArrow.position.set(Math.sin(aimA) * 2.2, .05, -1.05 - Math.cos(aimA) * 2.2); }
+  ring.visible = !!(S && S.phase === 'air'); if (ring.visible) { ring.lookAt(cam.position); const B = S.ball, ok = B && B.y > .25 && B.y < 1.4 && B.vy < 1.5; ringM.color.set(ok ? '#4ade80' : '#fde047'); ring.scale.setScalar(1 + Math.sin(T0 * 12) * .06); }
+  // ক্যামেরা: মারার আগে খেলোয়াড়ের চোখে; উড়লে গুলির পেছনে পেছনে
+  if (S && S.phase === 'fly' && S.ball) { const B = S.ball; _cp.set(B.x * .55, Math.max(2.2, B.y * .6 + 1.6), B.z * .55 + 5); _cl.set(B.x, B.y * .5, B.z); cam.position.lerp(_cp, Math.min(1, dt * 3)); cam.lookAt(_cl); }
+  else if (S && S.started) { _cp.set(.1, 1.3, .35); cam.position.lerp(_cp, Math.min(1, dt * 4)); _cl.set(0, .2, -2.6); cam.lookAt(_cl); }
+  else { const a = T0 * .07; cam.position.set(Math.sin(a) * 10, 3.5, Math.cos(a) * 10 - 8); cam.lookAt(0, 1, -10); }
+  dangPiv.visible = !!(S && S.started && S.phase !== 'fly'); dangSwing = Math.max(0, dangSwing - dt * 2.4); dangPiv.rotation.set(-1.25 - dangSwing * 1.1, .55, .7 - dangSwing * 1.2);
+  for (const t of TREES) t.rotation.y = Math.atan2(cam.position.x - t.position.x, cam.position.z - t.position.z);
+  if (renderer) renderer.render(scene, cam);
+  requestAnimationFrame(loop);
+}
+function start(level) { lv = level; newGame(); S.started = true; ['startO', 'endO'].forEach(i => $(i).hidden = true); homeField(); setPhase('aim'); SND.ac; setTimeout(() => { if (window.KHViral) KHViral.pop('মার দেখি, কত দূরে যায়!', 'M2', '🗣️ ' + FNAMES[0]); }, 800); }
+$('tapB').addEventListener('pointerdown', e => { e.preventDefault(); tap(); });
+$('stage').addEventListener('pointerdown', e => { if (e.target.closest('.over,.chost,button,a')) return; tap(); });
+addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); tap(); } });
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = e => { e.stopPropagation(); start(+b.dataset.lv); });
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `ডাংগুলিতে মোট ${bn(Math.round(S ? S.total : 0))} ডাং, ${bn(lastScore)} পয়েন্ট! 🏏 আপনি কত দূরে মারতে পারবেন? ${location.origin}/games/dangguli/`; try { navigator.clipboard.writeText(t).then(() => pop('কপি হয়েছে, শেয়ার করুন!', 'good')); } catch (e) {} };
+newGame(); resize(); last = performance.now(); requestAnimationFrame(loop);
+if (renderer) loadKids().catch(e => console.warn('kids', e)); else $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+const MY = ['এইবার ছক্কা মারবো!', 'দূরে সরে দাঁড়া!', 'ক্যাচ ধরতে পারবি না!', 'আরেকটা সুযোগ দে!'], OP = ['আয় দেখি!', 'ধরে ফেলবো কিন্তু!', 'আগে গুলি তো তোল!', 'বেশি কথা না, মার!'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP), 'M3', '🙌 ফিল্ডাররা', true), 1600); } });
+window.KHDang = { get S() { return S; }, FIELD, start, tap, tick: n => { for (let i = 0; i < n; i++) if (S && S.started && !S.over) step(1 / 30); } };
+</script>
+<script src="/js/update.js"></script>
+</body></html>
