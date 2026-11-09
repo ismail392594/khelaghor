@@ -451,6 +451,7 @@ body::before{background:var(--deep)}
 .soundBar.docked.on .sMusic{color:#3fb950}
 .soundBar.docked .sVoice.off{color:#6e7681}
 .livebtn{background:var(--panel)!important;border:1px solid var(--line)!important;box-shadow:none!important;border-radius:14px}.livebtn b{font-family:var(--body)!important;font-weight:700}
+.newsbtn{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;text-decoration:none;color:#e6edf3;background:var(--panel);border:1px solid var(--line)}.newsbtn .nwi{font-size:1.5rem;line-height:1}.newsbtn .nwt{flex:1;min-width:0;line-height:1.25}.newsbtn b{display:block;font-weight:700;font-size:1.05rem}.newsbtn small{font-size:.78rem;color:var(--muted)}.newsbtn .nwg{font-size:1.8rem;opacity:.7}
 .appb{background:var(--panel)!important;border:1px solid var(--line);box-shadow:none!important;color:#c9d1d9!important;border-radius:10px}
 .bubbles{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 .bubble{background:#e6edf3;box-shadow:0 8px 24px rgba(0,0,0,.45)}
@@ -494,6 +495,7 @@ body::before{background:var(--deep)}
       <button class="x" id="instX" aria-label="বন্ধ করুন">✕</button>
     </section>
     <section class="livebox" aria-label="লাইভ স্কোর"><a class="livebtn" href="/live/" aria-label="লাইভ স্কোর: ক্রিকেট আর ফুটবল"><span class="lvd" aria-hidden="true"></span><span class="lvt"><b>লাইভ স্কোর <span class="lvc" id="lvCount"></span></b><small>🏏 ক্রিকেট · ⚽ ফুটবল · কে জিতবে ভোট দিন</small></span><span class="lvg" aria-hidden="true">›</span></a><div class="lvstrip" id="lvStrip" hidden></div></section>
+    <a class="newsbtn" href="/news/" aria-label="লাইভ খবর: দেশ আর বিদেশ"><span class="nwi" aria-hidden="true">📰</span><span class="nwt"><b>লাইভ খবর</b><small>দেশ আর বিদেশের সর্বশেষ শিরোনাম</small></span><span class="nwg" aria-hidden="true">›</span></a>
     <div class="duo">
     <section class="daily">
       <svg class="gift" viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="18" width="36" height="26" rx="5" fill="#ff4f8b"/><rect x="4" y="12" width="40" height="10" rx="4" fill="#ff7aa8"/><rect x="21" y="12" width="6" height="32" fill="#ffc727"/><path d="M24 12c-4-8-14-8-12-2 1 3 7 3 12 2zm0 0c4-8 14-8 12-2-1 3-7 3-12 2z" fill="#ffc727"/></svg>

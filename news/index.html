@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<title>লাইভ খবর · খেলাঘর</title>
+<meta name="description" content="দেশ আর বিদেশের সর্বশেষ খবরের শিরোনাম এক জায়গায়: প্রথম আলো, বিবিসি বাংলা, ডয়চে ভেলে, দ্য ডেইলি স্টার আর আরো। চাপলে মূল খবর খোলে।">
+<link rel="canonical" href="https://khelaghorbd.online/news/">
+<meta property="og:title" content="লাইভ খবর · খেলাঘর">
+<meta property="og:description" content="দেশ আর বিদেশের সর্বশেষ শিরোনাম, প্রতি কয়েক মিনিটে নতুন।">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@700;800&family=Noto+Sans+Bengali:wght@400;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<style>
+/* লাইভ খবর: হাবের মতো গাঢ় রং। উপরে ব্রেকিং ফিতা, তারপর দেশ/বিদেশ ভাগ, নিচে শিরোনামের কার্ড। */
+:root{--bg:#0d1117;--panel:#161b22;--line:#262d38;--fg:#e6edf3;--muted:#9aa4b2;--red:#e5484d;--accent:#ffd23f;--body:'Noto Sans Bengali',system-ui,sans-serif;--display:'Baloo Da 2','Noto Sans Bengali',sans-serif;color-scheme:dark}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);padding:0 max(14px,env(safe-area-inset-right,0px)) 40px max(14px,env(safe-area-inset-left,0px))}
+.wrap{max-width:720px;margin:0 auto}
+.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 0 10px;background:rgba(13,17,23,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);margin:0 -14px;padding-left:14px;padding-right:14px}
+.back{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--panel);border:1px solid var(--line);color:var(--fg);text-decoration:none;flex:none}
+.top h1{margin:0;font:800 1.35rem var(--display);flex:1;display:flex;align-items:center;gap:8px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--red);animation:pl 1.6s infinite}@keyframes pl{0%{box-shadow:0 0 0 0 rgba(229,72,77,.6)}70%{box-shadow:0 0 0 9px rgba(229,72,77,0)}100%{box-shadow:0 0 0 0 rgba(229,72,77,0)}}
+.upd{font-size:.72rem;color:var(--muted);text-align:right;line-height:1.2}
+.rf{border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:10px;padding:6px 10px;font:700 .8rem var(--body);cursor:pointer}
+.ticker{display:flex;align-items:center;gap:0;margin:12px 0 4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.ticker b{flex:none;background:var(--red);color:#fff;font-size:.78rem;padding:8px 10px}
+.tk{flex:1;overflow:hidden;white-space:nowrap;position:relative;height:34px}
+.tk div{position:absolute;left:0;top:0;line-height:34px;font-size:.88rem;font-weight:600;animation:tk 60s linear infinite;padding-left:100%}
+.tk a{color:var(--fg);text-decoration:none;margin-right:36px}.tk a::before{content:"● ";color:var(--red)}
+@keyframes tk{to{transform:translateX(-100%)}}
+.tabs{display:flex;gap:8px;margin:12px 0}
+.tab{flex:1;border:1px solid var(--line);background:var(--panel);color:#c9d1d9;border-radius:12px;padding:10px;font:700 .95rem var(--body);cursor:pointer}
+.tab[aria-pressed="true"]{background:#e6edf3;color:#0d1117;border-color:#e6edf3}
+.list{display:flex;flex-direction:column;gap:10px}
+.n{display:grid;grid-template-columns:1fr 104px;gap:12px;align-items:start;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;color:var(--fg);text-decoration:none}
+.n.noimg{grid-template-columns:1fr}
+.n h3{margin:0 0 6px;font-size:1rem;line-height:1.45;font-weight:700}
+.n small{font-size:.74rem;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}.n small b{color:#79c0ff;font-weight:700}
+.n img{width:104px;height:72px;object-fit:cover;border-radius:10px;background:#0b0f14}
+.n:active{transform:scale(.99)}
+.n.big{grid-template-columns:1fr}.n.big img{width:100%;height:auto;aspect-ratio:16/9;order:-1}.n.big h3{font-size:1.18rem}
+.empty{color:var(--muted);text-align:center;padding:30px 10px}
+.note{font-size:.72rem;color:var(--muted);text-align:center;margin-top:16px;line-height:1.6}
+.sk{height:84px;border-radius:14px;background:linear-gradient(90deg,#161b22,#1d242e,#161b22);background-size:200% 100%;animation:sk 1.2s infinite}@keyframes sk{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head><body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <h1><span class="dot" aria-hidden="true"></span>লাইভ খবর</h1>
+    <div class="upd" id="upd"></div>
+    <button class="rf" id="rf" aria-label="আবার আনুন">↻</button>
+  </div>
+  <div class="ticker" id="ticker" hidden><b>সর্বশেষ</b><div class="tk"><div id="tk"></div></div></div>
+  <div class="tabs" role="tablist">
+    <button class="tab" data-t="all" aria-pressed="true">সব খবর</button>
+    <button class="tab" data-t="desh" aria-pressed="false">🇧🇩 দেশ</button>
+    <button class="tab" data-t="bidesh" aria-pressed="false">🌍 বিদেশ</button>
+  </div>
+  <div class="list" id="list"><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+  <p class="note">শিরোনাম আর ছবি সংবাদমাধ্যমগুলোর নিজের RSS থেকে নেওয়া; চাপলে মূল খবর তাদের সাইটে খুলবে। প্রতিটা খবরের দায় সংশ্লিষ্ট সংবাদমাধ্যমের। খেলাধুলার খবর দেখুন লাইভ স্কোরে।</p>
+</div>
+<script>
+// প্রতি ৫ মিনিটে নিজে থেকে নতুন খবর আনে; দেশ/বিদেশ বেছে দেখা যায় (পছন্দ মনে থাকে)
+(function () {
+  const $ = id => document.getElementById(id), bn = n => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+  const esc = s => String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const st = { get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+  let tab = st.get('kh-news-tab', 'all'), data = null;
+  const ago = d => { if (!d) return ''; const m = Math.max(0, Math.round((Date.now() - d) / 60000)); return m < 1 ? 'এইমাত্র' : m < 60 ? bn(m) + ' মিনিট আগে' : m < 1440 ? bn(Math.round(m / 60)) + ' ঘণ্টা আগে' : bn(Math.round(m / 1440)) + ' দিন আগে'; };
+  function draw() {
+    document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === tab)));
+    if (!data) return; const items = data.items.filter(x => tab === 'all' || x.tab === tab);
+    if (!items.length) { $('list').innerHTML = '<p class="empty">এখন কোনো খবর পাওয়া যায়নি। একটু পরে ↻ চাপুন।</p>'; return; }
+    $('list').innerHTML = items.slice(0, 80).map((x, i) => `<a class="n${x.img ? '' : ' noimg'}${i === 0 && x.img ? ' big' : ''}" href="${esc(x.u)}" target="_blank" rel="noopener noreferrer"><div><h3>${esc(x.t)}</h3><small><b>${esc(x.s)}</b><span>${ago(x.d)}</span><span>${x.tab === 'bidesh' ? '🌍 বিদেশ' : '🇧🇩 দেশ'}</span></small></div>${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</a>`).join('');
+    const top = data.items.slice(0, 8); $('ticker').hidden = !top.length; $('tk').innerHTML = top.map(x => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer">${esc(x.t)}</a>`).join('');
+  }
+  async function load() {
+    $('rf').disabled = true;
+    try { const r = await fetch('/api/news', { cache: 'no-cache' }); if (!r.ok) throw 0; data = await r.json(); $('upd').textContent = 'হালনাগাদ ' + new Date(data.at).toLocaleTimeString('bn-BD', { hour: 'numeric', minute: '2-digit' }); draw(); }
+    catch (e) { if (!data) $('list').innerHTML = '<p class="empty">খবর আনা যায়নি। ইন্টারনেট দেখে ↻ চাপুন।</p>'; }
+    $('rf').disabled = false;
+  }
+  document.querySelectorAll('.tab').forEach(b => b.onclick = () => { tab = b.dataset.t; st.set('kh-news-tab', tab); draw(); scrollTo({ top: 0, behavior: 'smooth' }); });
+  $('rf').onclick = load; load(); setInterval(load, 5 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && data && Date.now() - data.at > 5 * 60 * 1000) load(); });
+})();
+</script>
+<script src="/js/update.js"></script>
+</body></html>
