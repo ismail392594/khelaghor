@@ -131,6 +131,11 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .badge3d{display:inline-block;background:linear-gradient(135deg,#36d1c4,#3b78f0);color:#fff;border-radius:8px;padding:0 8px;font-size:1rem;vertical-align:middle;margin-left:4px}
 .how div i{font-style:normal;font-size:1.7rem;line-height:1.1}
 .no3d{background:rgba(239,79,95,.15);border:1px solid rgba(239,79,95,.5);border-radius:12px;padding:8px;color:#ffd0d6!important}
+.pick{text-align:left;margin:0}.pick small{opacity:.75;font-size:.72rem}
+.rides{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 6px;-webkit-overflow-scrolling:touch}
+.rides button{flex:none;min-width:84px;border:2px solid rgba(255,255,255,.25);border-radius:12px;background:rgba(255,255,255,.08);color:inherit;padding:6px;font:700 .74rem "Noto Sans Bengali",sans-serif;cursor:pointer;line-height:1.2}
+.rides button i{display:block;font-style:normal;font-size:1.6rem}.rides button small{display:block;opacity:.7;font-size:.62rem}
+.rides button[aria-pressed="true"]{border-color:#ffd23f;background:rgba(255,210,63,.18)}.rides button:disabled{opacity:.45}
 </style>
 </head><body>
 <div class="app">
@@ -169,6 +174,9 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
           <div><i>⛑️</i><b>হেলমেট</b>+১ জীবন</div>
         </div>
         <p><b>মিশন: বাসা 🏠 থেকে অফিস 🏢!</b> বাম কোণার ম্যাপে হলুদ দাগ ধরে চালান। মোড় কাছে এলে <b>↰ বামে / ↱ ডানে</b> বোতাম আসবে (কিবোর্ডে Q/E), চাপলে মোড়ে ঘুরবেন, না চাপলে সোজা। বামে-ডানে সোয়াইপ করুন বা স্ক্রিনের দুই পাশে চাপুন। <b>গ্যাস</b> চেপে ধরলে স্পিড বাড়ে। লাল বাতিতে <b>ব্রেক</b> চেপে ধরুন, নইলে পুলিশ মামলা দেবে! স্পিড ব্রেকারেও আস্তে চালান, রাস্তা পার হওয়া মানুষ দেখে চালান। ৩টা হেলমেট শেষ বা ৯টা বাজলে খেলা শেষ।</p>
+        <p class="pick"><b>কী চালিয়ে অফিসে যাবেন?</b> <small>(ধীর গাড়িতে পয়েন্ট বেশি, সময়ও একটু বেশি)</small></p>
+        <div class="rides" id="rides"></div>
+        <p class="small" id="vcred"></p>
         <p class="small no3d" id="no3d" hidden>আপনার ফোন বা ব্রাউজারে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।</p>
         <p class="small" id="bestTxt"></p>
 <a href="/help/#jam" style="color:inherit;opacity:.85;font-size:.85rem;font-weight:700;text-decoration:underline;align-self:center">📖 কিভাবে খেলবেন? পুরো নিয়ম পড়ুন</a>
@@ -226,6 +234,10 @@ import { firebaseConfig, ADMIN_EMAILS } from "/js/firebase-config.js";
 import { attachGameVideos } from "/js/videos.js";
 import { makeHuman } from "/js/kh-human.js";
 import { composerFor } from "/js/kh-scene.js";
+import { GLTFLoader } from "/js/vendor/addons/GLTFLoader.js";
+import { MeshoptDecoder } from "/js/vendor/addons/meshopt_decoder.module.js";
+import { loadFleet, FLEET, CREDIT_HTML } from "/js/kh-vehicles.js";
+import { TIERS, detectTier, autoScaler } from "/js/kh-quality.js";
 
 const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
 attachGameVideos(cb => onSnapshot(doc(db, 'config', 'videos'), d => cb(d.exists() ? d.data() : {}), () => {}));
@@ -349,11 +361,13 @@ const BOSS = {
 // একক: মিটার। খেলোয়াড় z=0-তে, সামনের রাস্তা −z দিকে। দুনিয়া খেলোয়াড়ের দিকে (+z) সরে আসে।
 const LANE = 2.6, LX = l => (l - 1) * LANE, ROAD_HALF = 4.2, WALK = 2.5;
 const FAR = -150, BEHIND = 16;
+// ফোন বুঝে গ্রাফিক্স (js/kh-quality.js): দুর্বল ফোনে কম রেজোলিউশন, ছায়া-গ্লো বন্ধ; খেলার সময় ফ্রেম দেখে নিজে বদলায়
+const TIER = TIERS[detectTier()];
 let renderer = null;
 try {
-  renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: true, powerPreference: 'high-performance' });
+  renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' });
 } catch (e) { renderer = null; }
-const LOWEND = (navigator.hardwareConcurrency || 4) <= 4 || /Android [4-8]\./.test(navigator.userAgent);
+const LOWEND = TIER.id <= 1;
 const scene = new THREE.Scene();
 const cam = new THREE.PerspectiveCamera(62, 1, .1, 420);
 const SKY_TOP = new THREE.Color('#79a8d8'), SKY_BOT = new THREE.Color('#f2d2a6'), RAIN_TOP = new THREE.Color('#4e5a66'), RAIN_BOT = new THREE.Color('#8c97a0');
@@ -399,7 +413,25 @@ function plane(g, w, h, x, y, z, m, ry) { const me = new THREE.Mesh(PLANE, m); m
 const wheelM = M('#1c1c1e', { roughness: .95 }), rimM = M('#b8bcc4', { metalness: .6, roughness: .35 });
 let WL = null; // নতুন গাড়ির চাকা জমা রাখি, যাতে ঘোরানো যায়
 function wheel(g, r, w, x, y, z) { const h = new THREE.Group(); h.position.set(x, y, z); g.add(h); cyl(h, r, w, 0, 0, 0, wheelM, 0, Math.PI / 2); cyl(h, r * .5, w + .02, 0, 0, 0, rimM, 0, Math.PI / 2); box(h, w + .05, r * 1.4, r * .16, 0, 0, 0, rimM, false); box(h, w + .05, r * .16, r * 1.4, 0, 0, 0, rimM, false); if (WL) WL.push([h, r]); }
-function mkV(f) { WL = []; const o = f(); o.wheels = WL; WL = null; return o; }
+function mkV(f) { WL = []; const o = f(); o.wheels = o.wheels || WL; WL = null; return o; }
+// বাংলাদেশের আসল গাড়ি (js/kh-vehicles.js): লোড হয়ে গেলে কার্টুন গাড়ির বদলে এগুলো রাস্তায় নামে
+let FL = null; const seatTex = new THREE.TextureLoader().load('/games/racer/assets/people_seat.webp'); seatTex.colorSpace = THREE.SRGBColorSpace;
+const REAL = { bus: ['bus_mini', 'bus_mini', 'bus_hino'], truck: ['truck_tata', 'truck_al'], car: ['corolla', 'noah', 'hiace', 'corolla'], cng: ['cng'], rick: ['rickshaw', 'rickshaw', 'easybike'] };
+const SEATM = []; // ৬টা ছবির জন্য ৬টা ভাগ করা ম্যাটেরিয়াল
+function seatPerson(g, x, y, z, who, scale) { // রিকশাওয়ালা/যাত্রী: আসল মানুষের ছবি (পেছন + পাশ), দুটো আড়াআড়ি
+  for (const [cell, ry, wf] of [[who * 2, 0, .8], [who * 2 + 1, Math.PI / 2, .56]]) {
+    const m = new THREE.Mesh(PLANE, SEATM[cell] || (SEATM[cell] = (() => { const t = seatTex.clone(); t.needsUpdate = true; t.repeat.set(1 / 6, 1); t.offset.set(cell / 6, 0); return new THREE.MeshStandardMaterial({ map: t, alphaTest: .5, side: THREE.DoubleSide, roughness: .9 }); })())); m.scale.set(.92 * wf * scale, .92 * scale, 1); m.position.set(x, y + .46 * scale, z); m.rotation.y = ry; g.add(m);
+  }
+}
+function mkReal(kind) {
+  const key = pick(REAL[kind].filter(k => FL[k])); if (!key) return null; const F = FL[key], g = new THREE.Group();
+  F.parts.forEach(pt => { const m = new THREE.Mesh(pt.geo, pt.mat); m.castShadow = !pt.glass && !LOWEND; m.receiveShadow = true; g.add(m); });
+  const tl = tailMat(); if (F.conf.tail) for (const sd of [-1, 1]) { const q = new THREE.Mesh(PLANE, tl); q.scale.set(.26, .12, 1); q.position.set(sd * (F.conf.w / 2 - .2), F.conf.tail, F.size.z / 2 + .02); g.add(q); }
+  if (key === 'rickshaw') { seatPerson(g, 0, .95, -.55, Math.floor(Math.random() * 3), .95); if (Math.random() < .7) seatPerson(g, 0, .72, .45, Math.floor(Math.random() * 3), 1); }
+  if (key === 'easybike') { seatPerson(g, 0, .55, -.6, 0, .95); seatPerson(g, -.25, .55, .5, 2, .95); }
+  return { g, tl, len: F.size.z, w: F.conf.w, kind, wheels: [], real: key };
+}
+const MK = {}; for (const [k, f] of Object.entries({ bus: mkBus, truck: mkTruck, car: mkCar, cng: mkCng, rick: mkRick })) MK[k] = () => (FL && mkReal(k)) || f();
 
 /* ---- রাস্তা ---- */
 const ROAD_LEN = 420, TILE = 12;
@@ -728,13 +760,52 @@ box(bikeLean, .08, .06, .06, -.2, .86, .62, blL, false); box(bikeLean, .08, .06,
 const shieldBubble = new THREE.Mesh(new THREE.SphereGeometry(1.25, 20, 14), new THREE.MeshBasicMaterial({ color: '#36d1c4', transparent: true, opacity: .16, depthWrite: false })); shieldBubble.position.y = .9; bike.add(shieldBubble); shieldBubble.visible = false;
 bike.traverse(o => { if (o.isMesh && o !== shieldBubble) o.castShadow = true; });
 
+/* ================= কী চালাবেন: মোটরসাইকেল, সিএনজি, রিকশা, ইজিবাইক, প্রাইভেট কার, লোকাল বাস ================= */
+// sp = গতির গুণ, w = অর্ধেক চওড়া (ধাক্কার হিসাব), hl = অর্ধেক দৈর্ঘ্য, mult = পয়েন্টের গুণ
+const RJ = {
+  bike: { n: 'মোটরসাইকেল', ic: '🏍️', sp: 1, w: .3, hl: .85, mult: 1 },
+  cng: { n: 'সিএনজি', ic: '🛺', sp: .82, w: .66, hl: 1.3, mult: 1.3, key: 'cng' },
+  rickshaw: { n: 'রিকশা', ic: '🛺', sp: .52, w: .58, hl: 1.3, mult: 2, key: 'rickshaw' },
+  easybike: { n: 'ইজিবাইক', ic: '🛺', sp: .66, w: .56, hl: 1.35, mult: 1.6, key: 'easybike' },
+  corolla: { n: 'প্রাইভেট কার', ic: '🚗', sp: .95, w: .9, hl: 2.3, mult: 1.2, key: 'corolla' },
+  bus_mini: { n: 'লোকাল বাস', ic: '🚌', sp: .78, w: 1.1, hl: 3.6, mult: 1.8, key: 'bus_mini' }
+};
+RJ.rickshaw.ic = '🚲'; RJ.easybike.ic = '🔋';
+let rideJ = RJ[store.get('kh-jam-ride', 'bike')] ? store.get('kh-jam-ride', 'bike') : 'bike', RD = RJ[rideJ], rideG = null;
+function setRideJ(k) {
+  if (!RJ[k] || (RJ[k].key && (!FL || !FL[RJ[k].key]))) k = 'bike';
+  rideJ = k; RD = RJ[k]; store.set('kh-jam-ride', k);
+  if (rideG) { bike.remove(rideG); rideG = null; } bikeLean.visible = k === 'bike';
+  if (k !== 'bike') { const F = FL[RD.key]; rideG = new THREE.Group(); F.parts.forEach(pt => { const m = new THREE.Mesh(pt.geo, pt.mat); m.castShadow = !pt.glass && !LOWEND; rideG.add(m); });
+    // চালক: রিকশা-ইজিবাইকে সামনে বসা, অন্যগুলোতে ভেতরে (ডানে স্টিয়ারিং)
+    if (k === 'rickshaw') seatPerson(rideG, 0, .95, -.55, 0, .95); else if (k === 'easybike' || k === 'cng') seatPerson(rideG, 0, .55, -.5, 0, .95); else seatPerson(rideG, F.conf.w * .2, k === 'bus_mini' ? 1.0 : .5, -F.size.z / 2 + (k === 'bus_mini' ? 1.2 : 2.0), 0, .95);
+    bike.add(rideG); }
+  drawRidesJ();
+}
+function drawRidesJ() {
+  const box = $('rides'); if (!box) return;
+  box.innerHTML = Object.entries(RJ).map(([k, r]) => `<button data-r="${k}" aria-pressed="${k === rideJ}" ${r.key && !(FL && FL[r.key]) ? 'disabled' : ''}><i>${r.ic}</i>${r.n}<small>পয়েন্ট ×${bn(r.mult)}</small></button>`).join('');
+}
+$('rides').addEventListener('click', e => { const b = e.target.closest('[data-r]'); if (!b || b.disabled || (S && !demo && !S.over)) return; setRideJ(b.dataset.r); });
+drawRidesJ(); $('vcred').innerHTML = 'আসল গাড়ির ৩ডি মডেল: ' + CREDIT_HTML + '। মানুষ: Renderpeople স্ক্যান (CC-BY 4.0)।';
+// আসল গাড়িগুলো পেছনে লোড হয় (দুর্বল ফোনে কম)
+if (renderer) loadFleet(THREE, new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), TIER.id === 0 ? ['bus_mini', 'corolla', 'cng', 'rickshaw', 'easybike'] : ['bus_mini', 'bus_hino', 'truck_tata', 'truck_al', 'corolla', 'noah', 'hiace', 'cng', 'rickshaw', 'easybike'])
+  .then(f => { FL = f; drawRidesJ(); if (rideJ !== 'bike') setRideJ(rideJ); }).catch(e => console.warn('fleet', e));
+
 /* ================= খেলা ================= */
 let S = null, raf = 0, last = 0, running = false, demo = true;
 let W = 0, H = 0;
 /* ================= শহরের ম্যাপ: বাসা থেকে অফিস ================= */
 const GN = 5, BLOCK = 170, JW = ROAD_HALF + WALK; // মোড়ের অর্ধেক চওড়া
-const ST_H = ['মিরপুর রোড', 'পান্থপথ', 'গ্রিন রোড', 'এলিফ্যান্ট রোড', 'কাকরাইল রোড'];
-const ST_V = ['সাত মসজিদ রোড', 'সোনারগাঁও রোড', 'কাজী নজরুল ইসলাম এভিনিউ', 'শাহবাগ রোড', 'মতিঝিল সার্কুলার রোড'];
+// ঢাকার আসল জায়গার নাম দিয়ে শহর (উত্তর উপরে): প্রতিটা মোড় একটা চেনা জায়গা
+const ST_H = ['শহীদ তাজউদ্দীন আহমদ সরণি', 'ফার্মগেট-তেজগাঁও রোড', 'পান্থপথ-মগবাজার রোড', 'এলিফ্যান্ট রোড', 'পুরানা পল্টন রোড'];
+const ST_V = ['মিরপুর রোড', 'গ্রিন রোড', 'কাজী নজরুল ইসলাম এভিনিউ', 'বীর উত্তম সি আর দত্ত সড়ক', 'প্রগতি সরণি'];
+const JN = [['আগারগাঁও', 'বিজয় সরণি', 'তেজগাঁও', 'মহাখালী', 'গুলশান-১'],
+            ['শ্যামলী', 'ফার্মগেট', 'কারওয়ান বাজার', 'সাতরাস্তা', 'বাড্ডা'],
+            ['আসাদগেট', 'পান্থপথ', 'বাংলামোটর', 'মগবাজার', 'রামপুরা'],
+            ['ধানমন্ডি ২৭', 'সায়েন্স ল্যাব', 'শাহবাগ', 'কাকরাইল', 'মালিবাগ'],
+            ['মোহাম্মদপুর', 'নিউমার্কেট', 'প্রেস ক্লাব', 'পল্টন', 'মতিঝিল']];
+const jn = n => JN[n.y] && JN[n.y][n.x] || '';
 const DIRS = [[0, -1], [1, 0], [0, 1], [-1, 0]]; // উত্তর, পূর্ব, দক্ষিণ, পশ্চিম
 const inGrid = (x, y) => x >= 0 && y >= 0 && x < GN && y < GN;
 const streetName = (n, dir) => dir % 2 === 0 ? ST_V[n.x] : ST_H[n.y];
@@ -789,7 +860,7 @@ function mkJunction(C) {
   // রাস্তার নামের সবুজ বোর্ড
   const cn = crossName(n, C.dir), sp = new THREE.Group(); sp.position.set(ROAD_HALF + .9, 0, JW + 4); g.add(sp);
   cyl(sp, .08, 5.2, 0, 2.6, 0, M('#6b7280', { metalness: .5 }));
-  const lbl = (al[-1] ? '⬅ ' : '') + cn + (al[1] ? ' ➡' : '');
+  const lbl = (al[-1] ? '⬅ ' : '') + jn(n) + ' মোড়' + (al[1] ? ' ➡' : ''); // সবুজ বোর্ডে সামনের মোড়ের আসল নাম
   plane(sp, 3.2, .8, -1.4, 4.7, 0, streetSign(lbl));
   if (!al[0]) { // সামনে রাস্তা শেষ (তে-মাথা)
     const wb = mkWallBlock(); wb.position.z = -JW - 6; g.add(wb);
@@ -826,7 +897,7 @@ function passJunction() {
   if (t !== 0) { sfx('swoosh'); turnStreet(t); }
   S.juncs.push(mkJunction(C));
   if (!demo) {
-    showStreet(streetName(C.node, C.dir));
+    showStreet(jn(C.node) + ' · ' + streetName(C.node, C.dir));
     if (adv !== null && adv !== 'office' && t !== adv) { say(pick(L.wrong), true, 'F1'); news('wrong'); S.wrongs = (S.wrongs || 0) + 1; }
     else if (adv !== null) { S.coins += 2; fc('ঠিক রাস্তা! +২', '#7be0a8', 20); }
   }
@@ -842,6 +913,10 @@ function drawMap() {
   mg.clearRect(0, 0, W2, W2); mg.fillStyle = 'rgba(20,18,40,.82)'; mg.beginPath(); mg.roundRect ? mg.roundRect(0, 0, W2, W2, 26) : mg.rect(0, 0, W2, W2); mg.fill();
   mg.strokeStyle = 'rgba(255,255,255,.28)'; mg.lineWidth = 7; mg.lineCap = 'round';
   for (let i = 0; i < GN; i++) { mg.beginPath(); mg.moveTo(...P(i, 0)); mg.lineTo(...P(i, GN - 1)); mg.stroke(); mg.beginPath(); mg.moveTo(...P(0, i)); mg.lineTo(...P(GN - 1, i)); mg.stroke(); }
+  // ধানমন্ডি লেক আর হাতিরঝিল, প্রতিটা মোড়ের ছোট নাম
+  mg.fillStyle = 'rgba(56,140,220,.55)'; mg.beginPath(); mg.ellipse(...P(.45, 3.15), cell * .16, cell * .55, -.3, 0, 7); mg.fill(); mg.beginPath(); mg.ellipse(...P(3.35, 1.55), cell * .55, cell * .14, .35, 0, 7); mg.fill();
+  mg.font = '600 15px "Noto Sans Bengali",sans-serif'; mg.textAlign = 'center'; mg.fillStyle = 'rgba(255,255,255,.62)';
+  for (let y = 0; y < GN; y++) for (let x = 0; x < GN; x++) { const [qx, qy] = P(x, y); mg.fillText(JN[y][x].split(' ')[0], qx, qy + 20); }
   // সবচেয়ে ছোট রাস্তা
   const n = nextNode(C), pr = 1 - C.segLeft / BLOCK, me = [C.node.x + DIRS[C.dir][0] * pr, C.node.y + DIRS[C.dir][1] * pr];
   const route = [me, [n.x, n.y]]; let cur = n, guard = 0;
@@ -942,8 +1017,10 @@ function resize() {
   const r = $('stage').getBoundingClientRect(); W = Math.max(1, r.width); H = Math.max(1, r.height);
   if (renderer) renderer.setSize(W, H, false); if (composer) { composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(W, H); } cam.aspect = W / H; cam.updateProjectionMatrix();
 }
-const composer = LOWEND ? null : composerFor(THREE, renderer, scene, cam, { strength: .25, radius: .5, threshold: .9 });
+const composer = TIER.id < 3 ? null : composerFor(THREE, renderer, scene, cam, { strength: .25, radius: .5, threshold: .9 });
 addEventListener('resize', resize);
+const scaler = autoScaler({ onScale: s => { if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr) * s); resize(); } }, onDrop: () => { if (renderer && renderer.shadowMap.enabled) { renderer.shadowMap.enabled = false; scene.traverse(o => { if (o.material) [].concat(o.material).forEach(m => m.needsUpdate = true); }); } } });
+if (renderer) renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr));
 function clearDyn() {
   if (!S) return;
   [...S.obs, ...S.items.map(i => ({ g: i.g })), ...S.peds, ...S.bumps, ...(S.cross || []), ...(S.walkers || [])].forEach(o => o.g && scene.remove(o.g));
@@ -983,7 +1060,7 @@ function spawnObs(z0) {
   const kinds = [['bus', .22], ['cng', .26], ['rick', .2], ['car', .12], ['truck', .06], ['hole', .08], ['water', .03 + diff * .07 + (S.rain > 0 ? .3 : 0)]];
   let r = Math.random() * kinds.reduce((s, k) => s + k[1], 0), kind = 'cng';
   for (const [k, w] of kinds) { if ((r -= w) < 0) { kind = k; break; } }
-  const o = mkV(({ bus: mkBus, truck: mkTruck, car: mkCar, cng: mkCng, rick: mkRick, hole: mkHole, water: mkWater })[kind]);
+  const o = mkV(({ bus: MK.bus, truck: MK.truck, car: MK.car, cng: MK.cng, rick: MK.rick, hole: mkHole, water: mkWater })[kind]);
   let Z = z0 !== undefined ? z0 : FAR;
   const DJ = S.juncs && S.juncs.find(j => !j.done && j.dead); if (DJ && Z < DJ.z + 14) { Z = DJ.z + 14 + o.len; if (Z > -40) return; }
   const lanes = [0, 1, 2].filter(l => !laneBusy(l, Z - o.len / 2 - 8, Z + o.len / 2 + 8));
@@ -1019,7 +1096,7 @@ function crash(o) {
   if (S.lives <= 0) endGame('crash');
 }
 function step(dt) {
-  const p = S.p; S.t += dt; if (!demo) S.clock += dt;
+  const p = S.p; S.t += dt; if (!demo) S.clock += dt * Math.max(.62, RD.sp); // ধীর গাড়িতে সময় একটু ধীরে চলে, যাতে অফিসে পৌঁছানো যায়
   p.hit = Math.max(0, p.hit - dt); p.slow = Math.max(0, p.slow - dt); p.boost = Math.max(0, p.boost - dt); p.shield = Math.max(0, p.shield - dt);
   S.shake = Math.max(0, S.shake - dt); S.flash = Math.max(0, S.flash - dt * 2);
   if (demo) { // শুরুর পর্দার পেছনে নিজে নিজে চলে
@@ -1029,7 +1106,7 @@ function step(dt) {
     const DJ2 = S.juncs.find(j => !j.done); if (DJ2 && S.city.segLeft < 40 && S.demoJ !== DJ2) { S.demoJ = DJ2; S.turnReq = pick([-1, 0, 1].filter(t => DJ2.al[t])); }
   }
   S.base = 13 + Math.min(9, S.dist / 220);
-  const target = p.brake ? 0 : S.base * (p.gas ? 1.4 : .8) * (p.boost > 0 ? 1.4 : 1) * (p.slow > 0 ? .55 : 1) * (p.hit > 1.1 ? .35 : 1) * (S.rain > 0 ? .88 : 1);
+  const target = p.brake ? 0 : S.base * (demo ? 1 : RD.sp) * (p.gas ? 1.4 : .8) * (p.boost > 0 ? 1.4 : 1) * (p.slow > 0 ? .55 : 1) * (p.hit > 1.1 ? .35 : 1) * (S.rain > 0 ? .88 : 1);
   const acc = p.brake ? 16 : target < S.speed ? 7 : p.gas ? 6.5 : 4;
   S.speed += Math.max(-acc * dt, Math.min(acc * dt, target - S.speed));
   const d = S.speed * dt; S.dist += d; engine(S.speed * 18);
@@ -1088,7 +1165,7 @@ function step(dt) {
   if (S.city.segLeft <= 0) { passJunction(); if (S.over) return; }
   // আড়াআড়ি গাড়ি (লাল বাতিতে পাশের রাস্তা দিয়ে)
   const SG = S.signal;
-  if (SG && SG.state === 'red' && SG.green > 2.2 && SG.z > -110 && SG.z < 2) { S.crossT -= dt; if (S.crossT <= 0) { S.crossT = rnd(1.2, 2.2); const sides = [-1, 1].filter(sd => SG.J.gap[sd]); if (sides.length) { const sd = pick(sides), o = mkV(pick([mkCar, mkCng, mkBus, mkRick])); o.dir = -sd; o.x = sd * 26; o.zo = sd < 0 ? 1.8 : -1.8; o.v = o.kind === 'rick' ? 3.5 : rnd(8, 11); o.g.rotation.y = o.dir > 0 ? -Math.PI / 2 : Math.PI / 2; o.jz = SG.J; scene.add(o.g); S.cross.push(o); } } }
+  if (SG && SG.state === 'red' && SG.green > 2.2 && SG.z > -110 && SG.z < 2) { S.crossT -= dt; if (S.crossT <= 0) { S.crossT = rnd(1.2, 2.2); const sides = [-1, 1].filter(sd => SG.J.gap[sd]); if (sides.length) { const sd = pick(sides), o = mkV(pick([MK.car, MK.cng, MK.bus, MK.rick])); o.dir = -sd; o.x = sd * 26; o.zo = sd < 0 ? 1.8 : -1.8; o.v = o.kind === 'rick' ? 3.5 : rnd(8, 11); o.g.rotation.y = o.dir > 0 ? -Math.PI / 2 : Math.PI / 2; o.jz = SG.J; scene.add(o.g); S.cross.push(o); } } }
   S.cross.forEach(o => {
     if (o.turning) { o.rotT += dt; const k4 = Math.min(1, o.rotT / 1.3), e = k4 * k4 * (3 - 2 * k4); o.g.rotation.y = -o.dir * Math.PI / 2 * e; o.x += o.dir * o.v * dt * e; o.zo += (-o.dir * 1.6 - o.zo) * Math.min(1, dt * 1.5); }
     else o.x += o.dir * o.v * (SG && SG.state === 'red' ? 1 : 1.8) * dt;
@@ -1138,7 +1215,7 @@ function step(dt) {
     pd.z += d; pd.x += pd.dir * pd.vx * dt * (S.signal && S.signal.state !== 'green' ? 1.3 : 1);
     pd.g.position.set(pd.x, .22 * (Math.abs(pd.x) > ROAD_HALF ? 1 : 0), pd.z); pd.umb.visible = S.rain > 0;
     const sw = Math.sin(S.t * 8 + pd.seed) * .5; pd.p.userData.lL.rotation.x = sw; pd.p.userData.lR.rotation.x = -sw;
-    if (!demo && !pd.hit && Math.abs(pd.x - p.x) < .6 && Math.abs(pd.z) < 1) { pd.hit = true; pd.vx *= 2.4;
+    if (!demo && !pd.hit && Math.abs(pd.x - p.x) < RD.w + .3 && Math.abs(pd.z) < RD.hl + .2) { pd.hit = true; pd.vx *= 2.4;
       if (p.hit <= 0) { p.hit = 1.3; S.speed *= .3; S.coins = Math.max(0, S.coins - 5); sfx('brake'); fc('সাবধানে! −৫ কয়েন', '#ff9f9f', 20); talk(pd.g, 'ped'); } }
   });
   S.peds = S.peds.filter(pd => { const k = pd.z < BEHIND && Math.abs(pd.x) < ROAD_HALF + 3; if (!k) scene.remove(pd.g); return k; });
@@ -1153,7 +1230,7 @@ function step(dt) {
     const redNear = S.signal && S.signal.state !== 'green' && S.signal.z < 0 && S.signal.z > -40;
     if (S.speed < 2 && !redNear) { S.stuckT += dt; if (S.stuckT > 2.5 && S.t - S.lastStuck > 12) { S.lastStuck = S.t; say(pick(L.stuck), false, pick(['M1', 'M3'])); fc('জ্যামে আটকা!', '#ffb627', 22); } } else S.stuckT = 0;
     // আড়াআড়ি গাড়ির সাথে ধাক্কা
-    for (const o of S.cross) { if (o.done || p.hit > 0) continue; const cz = o.jz.z + o.zo; if (Math.abs(o.x) < ROAD_HALF + 1 && Math.abs(cz) < o.w / 2 + .7 && Math.abs(o.x - p.x) < o.len / 2 + .35) { o.done = true; S.speed = 0; crash(o); talk(o.g, roleOf(o), 'লাল বাতিতে ঢুকলা কেন? চোখে দেখো না?'); if (S.over) return; } }
+    for (const o of S.cross) { if (o.done || p.hit > 0) continue; const cz = o.jz.z + o.zo; if (Math.abs(o.x) < ROAD_HALF + 1 && Math.abs(cz) < o.w / 2 + .7 && Math.abs(o.x - p.x) < o.len / 2 + RD.w) { o.done = true; S.speed = 0; crash(o); talk(o.g, roleOf(o), 'লাল বাতিতে ঢুকলা কেন? চোখে দেখো না?'); if (S.over) return; } }
     // রাস্তার মানুষের কথা
     S.talkCD -= dt; if (S.talkCD <= 0 && talkT <= 0) { S.talkCD = rnd(3.5, 6); S.viralN = (S.viralN || 0) + 1; if (S.viralN % 4 === 0 && window.KH_DLG) viralTalk(); else ambientTalk(); }
     if (streetT > 0) { streetT -= dt; if (streetT <= 0) $('street').hidden = true; }
@@ -1162,7 +1239,7 @@ function step(dt) {
     // ধাক্কা
     for (const o of S.obs) {
       if (o.done) continue;
-      if (Math.abs(o.x - p.x) < o.w / 2 + .3 && Math.abs(o.z) < o.len / 2 + .85) {
+      if (Math.abs(o.x - p.x) < o.w / 2 + RD.w && Math.abs(o.z) < o.len / 2 + RD.hl) {
         if (o.kind === 'water') { o.done = true; p.slow = 2.2; sfx('splash'); fc('ছপাৎ!', '#9fd3ff', 24); say(pick(L.splash), false, 'M2'); continue; }
         if (o.kind === 'hole') { o.done = true; if (p.hit <= 0) crash(o); continue; }
         if (p.hit > 0) continue;
@@ -1269,7 +1346,7 @@ addEventListener('keydown', e => { if (e.repeat) return; if (e.key === 'ArrowDow
 function start() {
   if (!renderer) return;
   audio(); resize(); S = newGame(); demo = false; hud(); $('fx').innerHTML = '';
-  ['startO', 'endO', 'pauseO'].forEach(id => $(id).hidden = true); $('ctrl').hidden = false; $('spd').hidden = false; $('map').hidden = false; $('nav').hidden = false; drawMap(); showStreet(streetName(S.city.node, S.city.dir));
+  ['startO', 'endO', 'pauseO'].forEach(id => $(id).hidden = true); $('ctrl').hidden = false; $('spd').hidden = false; $('map').hidden = false; $('nav').hidden = false; drawMap(); fc('🏠 ' + jn(S.city.home) + ' → 🏢 ' + jn(S.city.office), '#ffd23f', 24); showStreet(streetName(S.city.node, S.city.dir));
   // শুরুতেই সামনে কিছু গাড়ি, তবে কাছে না
   for (let z = -60; z > FAR; z -= 22) spawnObs(z);
   running = true; last = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
@@ -1289,6 +1366,7 @@ function endGame(why) {
   if (S.over) return; S.over = true; running = false; engine(0); ['ctrl', 'spd', 'map', 'nav', 'talk', 'sub', 'street', 'tL', 'tR'].forEach(id => $(id).hidden = true); ambience(false); tuiKey = ''; talkT = 0; S.p.brake = false;
   const reached = why === 'office', left = Math.max(0, Math.round(CLOCK_SEC - S.clock));
   if (reached) { S.score += 300 + left * 4; if (window.KHViral) setTimeout(() => KHViral.confetti(90), 200); } // অফিসে পৌঁছানোর বোনাস
+  S.score = Math.round(S.score * RD.mult); // ধীর গাড়িতে পয়েন্টের গুণ
   news(reached ? 'office' : why === 'time' ? 'late' : 'crash');
   const sc = S.score, title = TITLES.filter(t => sc >= t[0]).pop()[1], newBest = sc > best;
   if (newBest) { best = sc; store.set('kh-jam-best', best); if (sc > 0 && window.KHViral) setTimeout(() => KHViral.confetti(), 300); }
