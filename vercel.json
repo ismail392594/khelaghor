@@ -105,5 +105,15 @@
     "deploymentEnabled": {
       "claude/**": false
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/live/m/:id",
+      "destination": "/api/live?f=page&id=:id"
+    },
+    {
+      "source": "/live/sitemap.xml",
+      "destination": "/api/live?f=sitemap"
+    }
+  ]
 }

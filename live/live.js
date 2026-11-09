@@ -784,7 +784,8 @@ $('vBox').addEventListener('click', e => {
 $('pShare').onclick = async () => {
   const m = S.det ? S.det.m : S.feed && S.feed.matches.find(x => x.id === S.open);
   // শেয়ারের লিংক এমন ঠিকানায়, যেটা ফেসবুক/হোয়াটসঅ্যাপে স্কোরসহ প্রিভিউ দেখায়
-  const url = location.origin + '/api/live?f=share&id=' + encodeURIComponent(S.open || '') + (PRED ? '&p=1' : '');
+  // লাইভ স্কোরে ম্যাচের নিজের পাতা (Google-এও আসে), প্রেডিকশনে প্রিভিউ লিংক
+  const url = PRED ? location.origin + '/api/live?f=share&p=1&id=' + encodeURIComponent(S.open || '') : location.origin + '/live/m/' + encodeURIComponent(S.open || '');
   const text = m ? `${tname(m.a)} বনাম ${tname(m.b)}: লাইভ স্কোর বাংলায়, আর কে জিতবে ভোট দিন!` : 'লাইভ স্কোর বাংলায়';
   let file = null;
   try { if (m) file = await shareImage(m); } catch (e) {}
