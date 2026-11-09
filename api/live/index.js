@@ -12,6 +12,7 @@
 // GET  /api/live?f=board[&p=week]  → লিডারবোর্ড (সব সময় / এই সপ্তাহ)
 // GET  /api/live?f=table&lg=39&season=2026 → ফুটবল লিগের পয়েন্ট টেবিল
 // GET  /api/live?f=me              → (লগইন) আমার পয়েন্ট আর ভোট
+// GET  /live/m/{id} (= ?f=page&id=) → Google-এর জন্য ম্যাচের পাতা;  /live/sitemap.xml (= ?f=sitemap)
 // GET  /api/live?f=share&id=..   → শেয়ারের লিংক (প্রিভিউতে স্কোর দেখায়, তারপর ম্যাচের পাতায় নিয়ে যায়)
 // GET  /api/live?f=diag            → ডাটা ঠিকমতো আসছে কিনা দেখার ছোট রিপোর্ট (কোনো key দেখায় না)
 // POST /api/live?f=vote {id,pick}  → (লগইন) "কে জিতবে?" ভোট
@@ -20,6 +21,7 @@
 // POST /api/live?f=push {token,teams} → প্রিয় দলের খবর ফোনে পেতে নাম লেখানো (teams খালি = বন্ধ)
 // POST /api/live?f=react {id,e,n}  → দর্শকের ইমোজি প্রতিক্রিয়া (fire, wow, clap, sad, love)
 import { shareHtml } from './_share.js';
+import { matchPage, sitemapXml } from './_seo.js';
 import { getFeed, getMatch, vote, combo, me, board, diag, table, react, push, HttpErr, POINTS, EXACT, COMBO } from './_store.js';
 
 const cache = (res, s, swr) => res.setHeader('Cache-Control', s ? `public, max-age=0, s-maxage=${s}, stale-while-revalidate=${swr}` : 'no-store');
@@ -49,6 +51,23 @@ export default async function handler(req, res) {
     }
     if (f === 'board') { cache(res, 60, 120); return res.status(200).json(await board(q.p === 'week' ? 'week' : 'all')); }
     if (f === 'table') { cache(res, 1800, 3600); return res.status(200).json(await table(q.lg, q.season)); }
+    if (f === 'page') {
+      // Google-এর জন্য ম্যাচের পাতা (/live/m/{id})
+      const id = String(q.id || '').slice(0, 70);
+      let m = null;
+      try { m = (await getFeed()).matches.find(x => x.id === id) || null; } catch (e) {}
+      if (!m && /^[a-z]_[A-Za-z0-9_-]{1,60}$/.test(id) && !id.startsWith('d_')) { try { m = (await getMatch(id)).m; } catch (e) {} }
+      cache(res, m && m.state === 'done' ? 3600 : 60, 600);
+      res.setHeader('content-type', 'text/html; charset=utf-8');
+      return res.status(m ? 200 : 404).send(matchPage(m, id));
+    }
+    if (f === 'sitemap') {
+      let list = [];
+      try { list = (await getFeed()).matches; } catch (e) {}
+      cache(res, 900, 3600);
+      res.setHeader('content-type', 'application/xml; charset=utf-8');
+      return res.status(200).send(sitemapXml(list));
+    }
     if (f === 'share') {
       const id = String(q.id || '');
       let m = null;

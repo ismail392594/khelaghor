@@ -4,3 +4,4 @@ Disallow: /admin/
 Disallow: /api/
 
 Sitemap: https://khelaghorbd.online/sitemap.xml
+Sitemap: https://khelaghorbd.online/live/sitemap.xml
