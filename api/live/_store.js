@@ -8,12 +8,12 @@
 //   liveMatch/{id}        এক ম্যাচের বিস্তারিত, স্কোরকার্ড, বাংলা বল-বাই-বল
 //   liveVotes/{id}        "কে জিতবে?" ভোটের গোনা;  liveVotes/{id}/v/{uid} প্রত্যেকের ভোট
 //   livePoints/{uid}      প্রত্যেকের পয়েন্ট (লিডারবোর্ড)
-import { cricCall, cricSummary, cricCard, bbbLines, snapOf, diffLines } from './_cricket.js';
+import { cricCall, cricSummary, cricScoreSummary, cricCard, bbbLines, snapOf, diffLines } from './_cricket.js';
 import { fbCall, fbSummary, fbDetail, leagues } from './_football.js';
 import { demoAll, demoMatch } from './_demo.js';
 
 export const POINTS = 10; // সঠিক অনুমানে কত পয়েন্ট
-const CACHE_V = 2; // ক্যাশের ছাঁচ বদলালে বাড়াতে হয়, তাহলে পুরোনো ক্যাশ ফেলে সব নতুন করে আনে
+const CACHE_V = 3; // ক্যাশের ছাঁচ বদলালে বাড়াতে হয়, তাহলে পুরোনো ক্যাশ ফেলে সব নতুন করে আনে
 const MIN = 60e3, HOUR = 60 * MIN, DAY = 24 * HOUR;
 
 export class HttpErr extends Error { constructor(status, msg) { super(msg); this.status = status; } }
@@ -113,7 +113,19 @@ async function refresh(F, doc, due, now) {
       }
       return ok ? out.map(cricSummary) : null;
     };
-    if (due.cList) jobs.push(pages('currentMatches', 2).then(l => { if (l) { c.list = l.slice(0, 60); c.at = now; } }));
+    // প্রথমে cricScore (এক ডাকেই পৃথিবীর সব ম্যাচ), না চললে currentMatches-এর পাতাগুলো
+    if (due.cList) jobs.push((async () => {
+      const r = await cricCall('cricScore');
+      cq = qOf(r, now, cq);
+      let l = null;
+      if (r.ok && Array.isArray(r.data)) {
+        l = r.data.map(x => { try { return cricScoreSummary(x); } catch (e) { return null; } }).filter(Boolean)
+          .filter(m => m.state === 'live' || (m.state === 'upcoming' && m.start < now + 8 * DAY && m.start > now - 12 * HOUR) || (m.state === 'done' && m.start > now - 48 * HOUR));
+        c.src = 'cricScore'; c.raw = r.data.length;
+      } else c.err = 'cricScore: ' + r.err;
+      if (!l || !l.length) { l = await pages('currentMatches', 2); c.src = 'currentMatches'; }
+      if (l) { c.list = l.sort((x, y) => (y.state === 'live') - (x.state === 'live') || (y.rk || 0) - (x.rk || 0)).slice(0, 120); c.at = now; }
+    })());
     if (due.cUp) jobs.push(pages('matches', 4).then(l => {
       if (l) { c.up = l.filter(m => m.state === 'upcoming' && m.start > now - HOUR && m.start < now + 8 * DAY).sort((x, y) => (y.rk || 0) - (x.rk || 0) || x.start - y.start).slice(0, 50); c.upAt = now; }
     }));
@@ -351,4 +363,19 @@ async function settleOne({ db, FV }, id, result) {
     await b.commit();
     if (q.size < 200) return;
   }
+}
+
+/* ---------- সমস্যা খোঁজার জন্য: কোনো key বা গোপন তথ্য দেখায় না ---------- */
+export async function diag(now = Date.now()) {
+  const F = await fb();
+  if (!F) return { firebase: false, keys: has() };
+  const d = (await F.db.doc('liveCache/feed').get()).data() || {};
+  const c = d.c || {}, f = d.f || {};
+  const cnt = l => (l || []).reduce((a, m) => (a[m.state] = (a[m.state] || 0) + 1, a), {});
+  return {
+    keys: has(), v: d.v,
+    cricket: { src: c.src, rawRows: c.raw, err: c.err || null, listAt: c.at ? new Date(c.at).toISOString() : null, upAt: c.upAt ? new Date(c.upAt).toISOString() : null,
+      list: cnt(c.list), up: cnt(c.up), left: d.cq, sample: (c.list || []).slice(0, 15).map(m => `${m.state} | ${m.a.name} v ${m.b.name} | ${m.tour} | ${m.raw || ''}`) },
+    football: { err: f.err || null, at: f.at ? new Date(f.at).toISOString() : null, day: cnt(f.day), live: cnt(f.live), left: d.fq }
+  };
 }

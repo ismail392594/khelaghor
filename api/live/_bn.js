@@ -28,10 +28,23 @@ export function matchLabel(s) {
 export const fmtType = t => ({ t20: 'টি-টোয়েন্টি', odi: 'ওয়ানডে', test: 'টেস্ট' })[String(t || '').toLowerCase()] || '';
 
 // ক্রিকেটের অবস্থার লেখা বাংলায়। nameBn: ইংরেজি দলের নাম → বাংলা নাম (না থাকলে ইংরেজিই)
+// দলের নাম মেলানো: "Bangladesh U19" = "Bangladesh Under-19", "Kathmandu" = "Kathmandu Gorkhas"
+export const normTeam = n => String(n || '').toLowerCase().replace(/under[- ]?(\d+)/g, 'u$1').replace(/\bwomen\b/g, 'w').replace(/[^a-z0-9]/g, '');
+export const sameTeam = (x, name) => { const a = normTeam(x), b = normTeam(name); return !!a && !!b && (a === b || b.startsWith(a) || a.startsWith(b)); };
+
 export function cricStatusBn(s, nameBn = x => x) {
-  const t = String(s || '').trim();
-  let m;
+  let t = String(s || '').trim();
+  let m, pre = '';
   if (!t) return '';
+  // টেস্ট: "Day 3: Stumps - New Zealand A trail by 428 runs"
+  if ((m = t.match(/^Day (\d+):\s*(Stumps|Lunch|Tea|Dinner|Session \d)?\s*-?\s*(.*)$/i))) {
+    const what = /stumps/i.test(m[2] || '') ? ' শেষ' : /lunch/i.test(m[2] || '') ? ', লাঞ্চ বিরতি' : /tea/i.test(m[2] || '') ? ', চা বিরতি' : '';
+    pre = `${ord(+m[1])} দিন${what}`;
+    t = m[3] || '';
+    if (!t) return pre;
+    const rest = cricStatusBn(t, nameBn);
+    return rest ? `${pre} · ${rest}` : pre;
+  }
   if ((m = t.match(/^(.+?) won by (\d+) (run|wkt|wicket)s?/i))) return `${nameBn(m[1])} ${bnNum(m[2])} ${/run/i.test(m[3]) ? 'রানে' : 'উইকেটে'} জিতেছে`;
   if ((m = t.match(/^(.+?) won (the super over|by super over)/i))) return `সুপার ওভারে ${nameBn(m[1])} জিতেছে`;
   if ((m = t.match(/^(.+?) won/i))) return `${nameBn(m[1])} জিতেছে`;
@@ -59,11 +72,11 @@ export function cricResult(status, nameA, nameB) {
   const t = String(status || '');
   const w = t.match(/^(.+?) won/i);
   if (w) {
-    const x = w[1].trim().toLowerCase();
-    if (x === String(nameA).toLowerCase()) return 'a';
-    if (x === String(nameB).toLowerCase()) return 'b';
-    if (String(nameA).toLowerCase().startsWith(x)) return 'a';
-    if (String(nameB).toLowerCase().startsWith(x)) return 'b';
+    const x = w[1].trim();
+    const ea = normTeam(x) === normTeam(nameA), eb = normTeam(x) === normTeam(nameB);
+    if (ea || eb) return ea ? 'a' : 'b';
+    if (sameTeam(x, nameA)) return 'a';
+    if (sameTeam(x, nameB)) return 'b';
     return null;
   }
   if (/drawn|draw/i.test(t)) return 'd';
