@@ -265,6 +265,10 @@ function compose(doc, now) {
     const listAt = id[0] === 'c' ? (c.at || 0) : id[0] === 's' ? (sm.at || 0) : (f.at || 0);
     if ((m._at || 0) > listAt && map.has(id)) map.set(id, m);
   }
+  // "লাইভ" বলছে কিন্তু স্কোর নেই আর লেখা "শুরু হয়নি": আসলে আসন্ন (দুই উৎস মেলানোর সময় এমন হতে পারে)
+  for (const [id, m] of map) {
+    if (m.sport === 'cricket' && m.state === 'live' && !(m.inns || []).length && /শুরু হয়নি|not started|ns$/i.test(m.status || '')) map.set(id, { ...m, state: 'upcoming' });
+  }
   // পূর্বাভাস জোড়া: ফুটবলে আনা পূর্বাভাস (doc.p), ক্রিকেটে দলের শক্তির হিসাব
   const P = doc.p || {};
   for (const [id, m] of map) {
