@@ -398,6 +398,71 @@ label.f input:focus{outline:none;border-color:#6d5cff}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebSite", "name": "খেলাঘর", "alternateName": ["Khelaghor", "খেলাঘর গেমিং হাব"], "url": "https://khelaghorbd.online/", "inLanguage": "bn"}, {"@type": "ItemList", "itemListElement": [{"@type": "ListItem", "position": 1, "url": "https://khelaghorbd.online/games/ludo/", "name": "অনলাইন লুডু"}, {"@type": "ListItem", "position": 2, "url": "https://khelaghorbd.online/games/mosha/", "name": "মশা মারো"}, {"@type": "ListItem", "position": 3, "url": "https://khelaghorbd.online/games/jam/", "name": "ঢাকা জ্যাম রানার"}, {"@type": "ListItem", "position": 4, "url": "https://khelaghorbd.online/games/bazar/", "name": "বাজার দর চ্যালেঞ্জ"}, {"@type": "ListItem", "position": 5, "url": "https://khelaghorbd.online/games/argbra/", "name": "আর্জেন্টিনা বনাম ব্রাজিল পেনাল্টি"}, {"@type": "ListItem", "position": 6, "url": "https://khelaghorbd.online/games/carrom/", "name": "ক্যারম বোর্ড অনলাইন"}]}]}</script>
+<style id="clean">
+/* পরিষ্কার, বাস্তবসম্মত রূপ (১০ নভেম্বর): গাঢ় নিরপেক্ষ পটভূমি, সমতল কার্ড, আসল ছবি; কার্টুনের মতো ঝকমকে গ্রেডিয়েন্ট, ৩ডি ছায়া আর নড়াচড়া বাদ */
+:root{--deep:#0d1117;--panel:#161b22;--panel2:#1c222b;--line:#262d38;--muted:#9aa4b2;--ink:#0d1117;--green:#1f9d55;--greenD:#167a42;--gold:#f2b705;--goldD:#b58900;--cyan:#58a6ff}
+html,body{background:var(--deep)}
+body{background:var(--deep)!important}
+body::before{background:var(--deep)}
+.top{background:rgba(13,17,23,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line);margin:0 calc(-1 * max(14px,env(safe-area-inset-left,0px)));padding:10px max(14px,env(safe-area-inset-left,0px))}
+.ava{background:var(--panel2);color:#e6edf3!important;box-shadow:none;border:1px solid var(--line)!important;border-radius:50%;width:42px;height:42px}
+.lvl{background:#30363d;border-color:var(--deep)}
+.xp{background:#21262d}.xp i{background:var(--cyan)}
+.wallet{background:var(--panel);box-shadow:none;border:1px solid var(--line)}
+.plus{background:var(--green);box-shadow:none}
+.gbtn{background:var(--green);box-shadow:none;border-radius:12px;text-shadow:none;font-family:var(--body);font-weight:700;font-size:1.02rem;padding:11px 18px}
+.gbtn:active{transform:translateY(1px);box-shadow:none}
+.gbtn.gold{background:var(--gold);box-shadow:none;color:#1b1500}
+/* বড় ছবি: আসল খেলার দৃশ্য */
+.hero.feat{display:block;padding:0;background:var(--panel);border:1px solid var(--line);box-shadow:none;border-radius:18px;transform:none!important;aspect-ratio:16/9;max-height:340px;width:100%}
+.hero.feat::after{background:linear-gradient(180deg,rgba(13,17,23,0) 30%,rgba(13,17,23,.92) 100%)}
+.hero.feat .hpic{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.hero.feat .hcap{position:absolute;left:0;right:0;bottom:0;padding:16px;z-index:1}
+.hero.feat small{background:rgba(255,255,255,.14);backdrop-filter:blur(4px);font-weight:600}
+.hero.feat h1{font-size:1.9rem;margin:6px 0 2px;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+.hero.feat p{font-size:.9rem;color:#d0d7de;margin:0 0 10px;max-width:36ch}
+.daily,.install,.mission{background:var(--panel)!important;border:1px solid var(--line)!important;box-shadow:none!important;border-radius:14px}
+.sec h2{font-family:var(--body);font-weight:700;font-size:1.18rem;letter-spacing:.01em}
+.chip{background:var(--panel);border:1px solid var(--line);color:#c9d1d9;font-weight:600}
+.chip[aria-pressed="true"]{background:#e6edf3;color:var(--ink);box-shadow:none;border-color:#e6edf3}
+.search{background:var(--panel)!important;border:1px solid var(--line)!important;box-shadow:none!important}
+/* গেম কার্ড: সমতল, ছবি উপরে, লেখা নিচে */
+.tile,.tile.shot{background:var(--panel)!important;border:1px solid var(--line);box-shadow:none!important;border-radius:14px;transform:none!important}
+.tile.pre{opacity:1}
+.tile.shot .pic{border-bottom:1px solid var(--line);background-color:#0b0f14}
+.tile.shot .pic::after{width:44px;height:44px;font-size:1rem;background:rgba(255,255,255,.85);opacity:0;transition:opacity .2s}
+.tile.shot:hover .pic::after,.tile.shot:focus-visible .pic::after{opacity:1}
+.tile b{font-family:var(--body);font-weight:700;font-size:1rem;text-shadow:none!important;color:#e6edf3}
+.tile .ds{color:var(--muted);opacity:1}
+.tile .no{background:rgba(13,17,23,.7);color:#c9d1d9}
+.tile .meta span{background:#21262d;color:#c9d1d9}.tile .meta .pp{background:#21262d;color:#c9d1d9}
+.tile:not(.shot){background:var(--panel)!important}
+.board{background:var(--panel);color:#e6edf3;border:1px solid var(--line);box-shadow:none;border-radius:14px}
+.board .row{border-bottom-color:var(--line)}
+.nav{background:rgba(13,17,23,.96);border-top:1px solid var(--line);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.nav>div{background:none!important;box-shadow:none!important}
+.nav button{color:#8b949e}
+.nav button[aria-current="true"]{background:none;color:#e6edf3;box-shadow:none}
+/* গান/ভয়েস: উপরের সারিতে ছোট গোল বোতাম */
+.soundBar.docked{position:static;gap:4px}
+.soundBar.docked button{width:36px;height:36px;padding:0;justify-content:center;border-radius:50%;background:var(--panel)!important;border:1px solid var(--line);box-shadow:none!important;animation:none!important;color:#c9d1d9}
+.soundBar.docked button span{display:none}
+.soundBar.docked.on .sMusic{color:#3fb950}
+.soundBar.docked .sVoice.off{color:#6e7681}
+.appb{background:var(--panel)!important;border:1px solid var(--line);box-shadow:none!important;color:#c9d1d9!important;border-radius:10px}
+.bubbles{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+.bubble{background:#e6edf3;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+/* আরো মজা: ভাঁজ করা অংশ */
+.more{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.more>summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.more>summary::-webkit-details-marker{display:none}
+.more>summary span{font-weight:700;font-size:1.08rem}
+.more>summary span::after{content:"＋";float:right;color:var(--muted)}
+.more[open]>summary span::after{content:"－"}
+.more>summary small{color:var(--muted);font-size:.8rem}
+.moreIn{display:flex;flex-direction:column;gap:14px;padding:4px 14px 16px}
+.dlg,.riddle{background:var(--panel2)!important;border:1px solid var(--line)!important;box-shadow:none!important;color:#e6edf3}
+</style>
 </head><body>
 
 <div class="wrap">
@@ -411,15 +476,13 @@ label.f input:focus{outline:none;border-color:#6d5cff}
   <!-- HOME -->
   <main id="v-home" class="wrap" style="gap:16px">
     <div class="notice" id="notice" hidden role="status"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4h3l6 5V5L6 10z" fill="currentColor"/><path d="M15 9a4 4 0 0 1 0 6M17.5 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span id="noticeTxt"></span><button id="noticeX" aria-label="ঘোষণা বন্ধ করুন">✕</button></div>
-    <section class="hero">
-      <div>
-        <small>এখন জনপ্রিয়</small>
-        <h1>লুডু খেলুন</h1>
-        <p>কম্পিউটার বা বন্ধুদের সাথে ক্লাসিক লুডু, ছক্কা হাতে নিন!</p>
-        <button class="gbtn" id="heroPlay">খেলুন ▶</button>
-      </div>
-      <div class="mini" aria-hidden="true">
-        <svg viewBox="0 0 15 15"><rect width="15" height="15" fill="#fbf8f2"/><rect width="6" height="6" fill="#e5484d"/><rect x="9" width="6" height="6" fill="#2fa36b"/><rect x="9" y="9" width="6" height="6" fill="#f2b100"/><rect y="9" width="6" height="6" fill="#3b78f0"/><rect x=".9" y=".9" width="4.2" height="4.2" rx=".5" fill="#fff"/><rect x="9.9" y=".9" width="4.2" height="4.2" rx=".5" fill="#fff"/><rect x="9.9" y="9.9" width="4.2" height="4.2" rx=".5" fill="#fff"/><rect x=".9" y="9.9" width="4.2" height="4.2" rx=".5" fill="#fff"/><circle cx="2.2" cy="2.2" r=".7" fill="#e5484d"/><circle cx="3.8" cy="3.8" r=".7" fill="#e5484d"/><circle cx="11.2" cy="2.2" r=".7" fill="#2fa36b"/><circle cx="12.8" cy="12.8" r=".7" fill="#f2b100"/><circle cx="2.2" cy="12.8" r=".7" fill="#3b78f0"/><rect x="1" y="7" width="5" height="1" fill="#e5484d"/><rect x="7" y="1" width="1" height="5" fill="#2fa36b"/><rect x="9" y="7" width="5" height="1" fill="#f2b100"/><rect x="7" y="9" width="1" height="5" fill="#3b78f0"/><polygon points="6,6 7.5,7.5 6,9" fill="#e5484d"/><polygon points="6,6 9,6 7.5,7.5" fill="#2fa36b"/><polygon points="9,6 9,9 7.5,7.5" fill="#f2b100"/><polygon points="6,9 9,9 7.5,7.5" fill="#3b78f0"/></svg>
+    <section class="hero feat">
+      <img class="hpic" src="/icons/shots/hero_racer.webp" alt="হাইওয়ে রাজা: ঢাকা-চট্টগ্রাম হাইওয়েতে বাস" width="1200" height="560" fetchpriority="high">
+      <div class="hcap">
+        <small>নতুন · বাস্তবসম্মত ৩ডি</small>
+        <h1>হাইওয়ে রাজা</h1>
+        <p>ঢাকা-চট্টগ্রাম হাইওয়েতে বাস চালান, স্টপেজে যাত্রী তুলুন, ভাড়া নিন</p>
+        <a class="gbtn" id="heroPlay" data-game="হাইওয়ে রাজা" href="/games/racer/">খেলুন ▶</a>
       </div>
     </section>
     <section class="install" id="install" hidden>
@@ -451,11 +514,6 @@ label.f input:focus{outline:none;border-color:#6d5cff}
       </div>
     </section>
     <div class="recent" id="recentBox" hidden><div class="sec"><h2>আবার খেলুন</h2></div><div class="rrow" id="recentRow"></div></div>
-    <div class="sec" id="vidSec" hidden><h2>ফানি ভিডিও 🎬</h2><span>পাশে সরিয়ে আরো দেখুন →</span></div>
-    <div class="vids" id="vids" hidden></div>
-    <div class="sec" id="stSec" hidden><h2>গল্পের আসর 📚</h2><span>পড়ুন বা শুনুন →</span></div>
-    <div class="chips stchips" id="stChips" hidden></div>
-    <div class="strow" id="stRow" hidden></div>
     <div class="sec"><h2>সব গেম</h2><span id="count"></span></div>
     <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><input id="gSearch" type="search" placeholder="গেম খুঁজুন… যেমন লুডু, মশা" aria-label="গেম খুঁজুন"></label>
     <div class="chips" id="chips">
@@ -463,31 +521,9 @@ label.f input:focus{outline:none;border-color:#6d5cff}
       <button class="chip" data-f="launch" aria-pressed="false">নতুন লঞ্চ</button>
       <button class="chip" data-f="trad" aria-pressed="false">ঐতিহ্যবাহী</button>
       <button class="chip" data-f="viral" aria-pressed="false">ভাইরাল</button>
-      <button class="chip" data-f="live" aria-pressed="false">এখনই খেলা যায়</button>
     </div>
     <div class="grid" id="grid"></div>
     <div class="adslot" hidden><span class="adlbl">বিজ্ঞাপন</span><div class="adbox"></div><button class="adfree" type="button">বিজ্ঞাপন ছাড়া খেলুন →</button></div>
-    <div class="sec"><h2>আজকের ভাইরাল ডায়লগ</h2><span id="dCount"></span></div>
-    <section class="dlg">
-      <span class="badge18" id="b18" hidden>১৮+</span>
-      <div class="dchar" id="dChar" aria-live="polite"><span class="dface" id="dFace">😈</span><b id="dWho">ভিলেন মামা</b></div>
-      <q id="dText"></q>
-      <small id="dTag"></small>
-      <div class="acts">
-        <button class="gbtn" id="dNext">আরেকটা</button>
-        <button class="gbtn" id="dHear">🔊 শুনুন</button>
-        <button class="gbtn gold" id="dCopy">কপি করে শেয়ার</button>
-      </div>
-      <label class="adult"><input type="checkbox" id="adultChk"> বড়দের মজা (১৮+) চালু করুন</label>
-    </section>
-    <div class="sec"><h2>শব্দ বোমা 💣</h2><span>চাপলেই ফাটবে!</span></div>
-    <section class="bombs" id="bombs" aria-label="শব্দ বোমা: চাপলে মজার কথা বলে"></section>
-    <div class="sec"><h2>ধাঁধার আসর</h2><span id="rCount"></span></div>
-    <section class="riddle" id="riddle">
-      <p class="rq" id="rQ"></p>
-      <p class="rans" id="rA" hidden></p>
-      <div class="acts"><button class="gbtn gold" id="rShow">উত্তর দেখুন</button><button class="gbtn" id="rNext">আরেকটা</button></div>
-    </section>
     <div class="sec"><h2>সেরা খেলোয়াড়</h2><span id="lbSub">মোট পয়েন্ট</span></div>
     <div class="chips" id="lbTabs">
       <button class="chip" data-lb="points" aria-pressed="true">পয়েন্ট</button>
@@ -510,6 +546,37 @@ label.f input:focus{outline:none;border-color:#6d5cff}
       <button class="chip" data-lb="bussim" aria-pressed="false">বাস সিমুলেটর</button>
     </div>
     <div class="board" id="lb"></div>
+    <details class="more" id="moreFun">
+      <summary><span>আরো মজা</span><small>গল্প · ভিডিও · ভাইরাল ডায়লগ · শব্দ বোমা · ধাঁধা</small></summary>
+      <div class="moreIn">
+    <div class="sec" id="stSec" hidden><h2>গল্পের আসর 📚</h2><span>পড়ুন বা শুনুন →</span></div>
+    <div class="chips stchips" id="stChips" hidden></div>
+    <div class="strow" id="stRow" hidden></div>
+    <div class="sec" id="vidSec" hidden><h2>ফানি ভিডিও 🎬</h2><span>পাশে সরিয়ে আরো দেখুন →</span></div>
+    <div class="vids" id="vids" hidden></div>
+    <div class="sec"><h2>আজকের ভাইরাল ডায়লগ</h2><span id="dCount"></span></div>
+    <section class="dlg">
+      <span class="badge18" id="b18" hidden>১৮+</span>
+      <div class="dchar" id="dChar" aria-live="polite"><span class="dface" id="dFace">😈</span><b id="dWho">ভিলেন মামা</b></div>
+      <q id="dText"></q>
+      <small id="dTag"></small>
+      <div class="acts">
+        <button class="gbtn" id="dNext">আরেকটা</button>
+        <button class="gbtn" id="dHear">🔊 শুনুন</button>
+        <button class="gbtn gold" id="dCopy">কপি করে শেয়ার</button>
+      </div>
+      <label class="adult"><input type="checkbox" id="adultChk"> বড়দের মজা (১৮+) চালু করুন</label>
+    </section>
+    <div class="sec"><h2>শব্দ বোমা 💣</h2><span>চাপলেই ফাটবে!</span></div>
+    <section class="bombs" id="bombs" aria-label="শব্দ বোমা: চাপলে মজার কথা বলে"></section>
+    <div class="sec"><h2>ধাঁধার আসর</h2><span id="rCount"></span></div>
+    <section class="riddle" id="riddle">
+      <p class="rq" id="rQ"></p>
+      <p class="rans" id="rA" hidden></p>
+      <div class="acts"><button class="gbtn gold" id="rShow">উত্তর দেখুন</button><button class="gbtn" id="rNext">আরেকটা</button></div>
+    </section>
+      </div>
+    </details>
     <div class="adslot" hidden><span class="adlbl">বিজ্ঞাপন</span><div class="adbox"></div><button class="adfree" type="button">বিজ্ঞাপন ছাড়া খেলুন →</button></div>
 
 
@@ -714,18 +781,19 @@ function drawGrid(){
   const HI=['হাইওয়ে রাজা','ঢাকা জ্যাম রানার'],hiRank=n=>{const k=HI.indexOf(n);return k<0?99:k};
   const list=GAMES.map((x,i)=>[x[0],x[1],x[2]||null,i]).sort((a,b)=>hiRank(a[0])-hiRank(b[0])||a[3]-b[3]).filter(x=>(filter==='all'||x[1]===filter||(filter==='live'&&x[2]))&&(!qq||x[0].includes(qq)||String(x[3]+1)===qq.replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭৮৯'.indexOf(d))));
   const GS=(window.KH&&window.KH.gameStatus)||{};
-  let shown=0;
+  let shown=0,soonN=0;
   list.forEach(([name,cat,url,i])=>{
     let st=GS[name]||(url?'live':'soon');
     if(st==='hidden')return;
     if(!url&&(st==='live'||st==='maint'))st='soon';
     if(url&&st==='soon')st='live'; // তৈরি গেম নিজে থেকেই চালু
+    if(st==='soon'){soonN++;return;} // যে গেম এখনো তৈরি হয়নি তার খালি কার্ড দেখানো হয় না, শুধু গোনা
     shown++;
     const [a,b]=PAL[i%PAL.length];
     const el=document.createElement('button');
     el.className='tile '+(st==='live'?'live':st==='maint'?'maint':'soon');el.style.setProperty('--a',a);el.style.setProperty('--b',b);
     const SHOT={'লুডু':'ludo','মশা মারো':'mosha','ঢাকা জ্যাম রানার':'jam','বাজার দর চ্যালেঞ্জ':'bazar','আর্জেন্টিনা বনাম ব্রাজিল':'argbra','ক্যারম':'carrom','ষোলোগুটি':'sholo','বাঘবন্দি':'bagh','ঘুড়ি কাটাকাটি':'ghuri','হাডুডু':'hadudu','কলব্রিজ':'callbridge','টুয়েন্টি নাইন':'twentynine','দাবা':'chess','গোল্লাছুট':'gollachut','দাড়িয়াবান্ধা':'dariabandha','বিয়েবাড়ির বিরিয়ানি':'biryani','হাইওয়ে রাজা':'racer'}[name];
-    if(SHOT&&url){el.classList.add('shot');el.style.setProperty('--shot',`url(/icons/shots/${SHOT}.png)`)}
+    if(SHOT&&url){el.classList.add('shot');el.style.setProperty('--shot',`url(/icons/shots/${SHOT}.webp)`)}
     el.onclick=()=>window.KH.tapGame?window.KH.tapGame(name,st==='live'?url:null,st):(st==='live'?openModes(name,url):toast(SOON[i%SOON.length]));
     const inf=(window.GAME_INFO||{})[name]||['',''];
     const lbl=st==='live'?'খেলুন':st==='maint'?'মেরামত চলছে':'শিগগিরই';
@@ -733,7 +801,7 @@ function drawGrid(){
     g.appendChild(el);
   });
   if(!shown)g.innerHTML='<p class="empty-g">এই নামে কোনো গেম পাওয়া যায়নি 😅</p>';
-  $('count').textContent=bn(shown)+'টি গেম';
+  $('count').textContent=bn(shown)+'টি গেম'+(soonN?` · আরো ${bn(soonN)}টি আসছে`:'');
 }
 
 /* sheets */
@@ -846,7 +914,7 @@ function closePop(id){
 document.addEventListener('click',e=>{const b=e.target.closest('[data-x]');if(b)closePop(b.dataset.x)});
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const open=[...document.querySelectorAll('.modal:not([hidden]),.sheet:not([hidden]),.invpop:not([hidden])')].pop();if(open)closePop(open.id)});
 
-$('heroPlay').onclick=()=>openModes('লুডু',LUDO);
+
 /* খোঁজা */
 $('gSearch').addEventListener('input',()=>drawGrid());
 

@@ -227,7 +227,7 @@
   /* ===== সাউন্ড কন্ট্রোল: গান · পরের গান · ভয়েস ===== */
   const bar = document.createElement('div'); bar.className = 'soundBar';
   bar.innerHTML = '<button type="button" class="sMusic"></button><button type="button" class="sNext" aria-label="পরের গান"><svg viewBox="0 0 24 24"><path d="M5 5l9 7-9 7zM16 5h3v14h-3z" fill="currentColor"/></svg></button><button type="button" class="sVoice"></button>';
-  document.body.appendChild(bar);
+  const dock = document.querySelector('.top'); if (dock) { bar.classList.add('docked'); dock.insertBefore(bar, dock.querySelector('.wallet')); } else document.body.appendChild(bar); // উপরের সারিতে ছোট বোতাম, ভাসমান না
   const sb = bar.querySelector('.sMusic'), sn = bar.querySelector('.sNext'), sv = bar.querySelector('.sVoice');
   function drawSound() {
     const playing = musicOn && unlocked;
@@ -289,25 +289,7 @@
   }
   K.bubble = bubble;
 
-  /* স্ক্রল করলে ডায়লগ */
-  let lastY = scrollY, lastAt = 0, used = [];
-  addEventListener('scroll', () => {
-    const now = Date.now();
-    if (Math.abs(scrollY - lastY) < 280 || now - lastAt < 3500) return;
-    if (document.querySelector('.sheet:not([hidden]),.modal:not([hidden])')) return;
-    lastY = scrollY; lastAt = now;
-    let pool = SCROLL.filter(x => !used.includes(x)); if (!pool.length) { used = []; pool = SCROLL; }
-    const t = pick(pool); used.push(t); bubble(t);
-  }, { passive: true });
-  if ('IntersectionObserver' in window) {
-    const seen = new Set();
-    const io = new IntersectionObserver(es => es.forEach(e => {
-      if (!e.isIntersecting) return;
-      const h = e.target.textContent.trim(); if (seen.has(h) || !SECTION[h]) return;
-      seen.add(h); if (Date.now() - lastAt < 1500) return; lastAt = Date.now(); bubble(pick(SECTION[h]));
-    }), { threshold: 1 });
-    document.querySelectorAll('.sec h2').forEach(h => io.observe(h));
-  }
+  /* স্ক্রল করলে বা নতুন অংশে গেলে আর নিজে থেকে কথার বুদবুদ আসে না (মালিক: পাতা পরিষ্কার চাই); বুদবুদ শুধু গেমে চাপলে */
 
   /* =============== গেম আমন্ত্রণ + গেস্ট গেট =============== */
   function inviteLine(name) {
@@ -348,7 +330,7 @@
     });
   };
   // হাবের "খেলুন" বোতামও একই পথে
-  const hp = $('heroPlay'); if (hp) hp.onclick = () => { const st = (K.gameStatus || {})['লুডু'] || 'live'; K.tapGame('লুডু', st === 'live' ? '/games/ludo/' : null, st); };
+  const hp = $('heroPlay'); if (hp) hp.onclick = e => { e.preventDefault(); const nm = hp.dataset.game || 'হাইওয়ে রাজা', st = (K.gameStatus || {})[nm] || 'live'; K.tapGame(nm, st === 'live' ? hp.getAttribute('href') : null, st); };
   // কম্পিউটারের সাথে খেলতে গেলেও লগইন লাগবে
   const cpu = $('mCpu');
 
@@ -357,10 +339,9 @@
   const mOk = $('mOk'); if (mOk) new MutationObserver(() => { if (!$('modal').hidden) sfx('coin'); }).observe($('modal'), { attributes: true, attributeFilter: ['hidden'] });
 
   /* প্রথমবার: স্বাগত বাবল */
-  setTimeout(() => bubble(pick(['স্বাগতম খেলাঘরে! গান শুনতে নিচের বোতাম চাপেন', 'আসসালামু আলাইকুম! আজকে কে জিতবে দেখি', 'আইছেন যখন, এক দান খেইলা যান!'])), 1500);
 
   /* =============== ব্যাকগ্রাউন্ড অ্যানিমেশন =============== */
-  if (!reduce) {
+  if (false) { // ভাসমান রঙিন আকৃতি বন্ধ: পাতা পরিষ্কার আর ফোনে হালকা
     const cv = document.createElement('canvas'); cv.className = 'bgfx'; cv.setAttribute('aria-hidden', 'true');
     document.body.prepend(cv);
     const g = cv.getContext('2d');
