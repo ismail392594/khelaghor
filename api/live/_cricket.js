@@ -8,7 +8,7 @@ const BASE = 'https://api.cricapi.com/v1/';
 // ICC-র পূর্ণ সদস্য ১২ দেশ: এদের পুরুষ দলের খেলা তালিকায় সবার আগে দেখানো হয়
 const FULL = ['afghanistan', 'australia', 'bangladesh', 'england', 'india', 'ireland', 'new zealand', 'pakistan', 'south africa', 'sri lanka', 'west indies', 'zimbabwe'];
 // rk: ৩ = পূর্ণ সদস্যের পুরুষ দল, ২ = পূর্ণ সদস্যের মহিলা বা অন্য দল, ১ = বাকি সব। বাংলাদেশের খেলা থাকলে +১
-function rankOf(na, nb) {
+export function rankOf(na, nb) {
   const base = n => String(n || '').toLowerCase().replace(/\s+(women|w|u-?19|under[- ]19|a|xi|emerging)$/i, '');
   const full = FULL.includes(base(na)) && FULL.includes(base(nb));
   const plain = n => FULL.includes(String(n || '').toLowerCase());

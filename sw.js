@@ -1,6 +1,6 @@
 // খেলাঘর service worker: পেজগুলো ক্যাশে রাখে, যাতে দুর্বল নেটেও দ্রুত খোলে।
 // নতুন ভার্সন পাবলিশ করলে VERSION বাড়ান।
-const VERSION = 'khelaghor-v102';
+const VERSION = 'khelaghor-v103';
 const CORE = ['/js/update.js', '/', '/app/', '/games/ludo/', '/games/mosha/', '/games/jam/', '/games/bazar/', '/games/argbra/', '/games/carrom/', '/games/sholo/', '/games/bagh/', '/games/ghuri/', '/games/hadudu/', '/games/callbridge/', '/games/twentynine/', '/games/chess/', '/games/gollachut/', '/games/dariabandha/', '/games/biryani/', '/games/racer/', '/games/loadshed/', '/games/kanamachi/', '/news/', '/js/chess-engine.js', '/js/kh-human.js', '/js/kh-scene.js', '/js/guest.js', '/js/share-card.js', '/js/challenge.js', '/help/', '/live/', '/live/live.js', '/live/insight.js', '/offline.html', '/js/game-info.js', '/js/fun.js', '/js/voice.js', '/js/videos.js', '/js/viral.js', '/js/howto.js', '/js/stories.js', '/js/story-split.js', '/js/ludo-engine.js', '/js/vendor/three.module.min.js', '/js/online.js', '/js/firebase-config.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', e => {

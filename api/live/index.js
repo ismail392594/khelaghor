@@ -2,6 +2,7 @@
 //
 // দরকার (Vercel → Settings → Environment Variables):
 //   CRICKET_API_KEY          : cricketdata.org থেকে পাওয়া key (না থাকলে ক্রিকেটে নমুনা ডাটা দেখায়)
+//   SPORTMONKS_TOKEN         : (ইচ্ছা হলে) Sportmonks ক্রিকেটের token, থাকলে দ্রুত স্কোর আর আসল বল-বাই-বল
 //   FOOTBALL_API_KEY         : dashboard.api-football.com থেকে পাওয়া key (না থাকলে ফুটবলে নমুনা ডাটা)
 //   FIREBASE_SERVICE_ACCOUNT : আগে থেকেই আছে
 //   LIVE_FB_LEAGUES          : (ইচ্ছা হলে) কোন ফুটবল প্রতিযোগিতা দেখাবে, যেমন "1,2,39"

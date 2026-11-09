@@ -11,6 +11,8 @@
 import { cricCall, cricSummary, cricScoreSummary, cricCard, bbbLines, snapOf, diffLines } from './_cricket.js';
 import { fbCall, fbSummary, fbDetail, leagues } from './_football.js';
 import { demoAll, demoMatch } from './_demo.js';
+import { hasSm, smCall, smSummary, smDetail, LIST_INC, DETAIL_INC } from './_smonks.js';
+import { normTeam } from './_bn.js';
 
 export const POINTS = 10; // সঠিক অনুমানে কত পয়েন্ট
 export const EXACT = 20; // ফুটবলে একদম সঠিক স্কোর বললে বাড়তি পয়েন্ট
@@ -34,7 +36,7 @@ export async function fb() {
 
 export const _setFb = x => { _fb = x; }; // শুধু পরীক্ষার জন্য
 
-const has = () => ({ c: !!process.env.CRICKET_API_KEY, f: !!process.env.FOOTBALL_API_KEY });
+const has = () => ({ c: !!process.env.CRICKET_API_KEY, f: !!process.env.FOOTBALL_API_KEY, s: hasSm() });
 const utcDay = t => new Date(t).toISOString().slice(0, 10);
 const dhakaDay = t => new Date(t + 6 * HOUR).toISOString().slice(0, 10);
 
@@ -53,9 +55,9 @@ function every(rem, now, minMs, share) {
 /* ---------- ম্যাচের তালিকা ---------- */
 export async function getFeed(now = Date.now()) {
   const H = has();
-  const demoWant = { cricket: !H.c, football: !H.f };
-  const demo = (H.c && H.f) ? [] : demoAll(now, demoWant).map(x => x.m);
-  if (!H.c && !H.f) return { at: now, matches: demo, demo: true };
+  const demoWant = { cricket: !H.c && !H.s, football: !H.f };
+  const demo = (demoWant.cricket || demoWant.football) ? demoAll(now, demoWant).map(x => x.m) : [];
+  if (!H.c && !H.f && !H.s) return { at: now, matches: demo, demo: true };
   const F = await fb();
   if (!F) throw new HttpErr(503, 'সার্ভার এখনো চালু হয়নি');
   const { db } = F;
@@ -82,7 +84,12 @@ function plan(doc, H, now) {
     fLive: H.f && fLive && now - (f.at || 0) > every(fRem, now, MIN, 0.6),
     fDay: H.f && stale || H.f && (now - (f.dayAt || 0) > Math.max(2 * HOUR, every(fRem, now, 2 * HOUR, 0.15)) || f.dayKey !== dhakaDay(now))
   };
-  d.any = d.cList || d.cUp || d.fLive || d.fDay;
+  // Sportmonks: ঘণ্টায় ২,০০০ বার ডাকা যায়, তাই খেলা চললে প্রায় প্রতি মিনিটে
+  const s = doc.s || {};
+  const sLive = [...(s.live || []), ...(s.fx || [])].some(m => (m.state === 'live' && !m.pause) || (m.state === 'upcoming' && m.start <= now && m.start > now - 3 * HOUR));
+  d.sLive = H.s && (stale || now - (s.at || 0) > (sLive ? 50e3 : 10 * MIN));
+  d.sFx = H.s && (stale || now - (s.fxAt || 0) > 30 * MIN);
+  d.any = d.cList || d.cUp || d.fLive || d.fDay || d.sLive || d.sFx;
   return d;
 }
 
@@ -103,7 +110,7 @@ async function refresh(F, doc, due, now) {
   const { db, FV } = F;
   const meta = await lock(db, now);
   if (!meta) return null;
-  const c = { ...(doc.c || {}) }, f = { ...(doc.f || {}) };
+  const c = { ...(doc.c || {}) }, f = { ...(doc.f || {}) }, sm = { ...(doc.s || {}) };
   let cq = doc.cq || meta.cq || null, fq = doc.fq || meta.fq || null;
   try {
     const jobs = [];
@@ -150,6 +157,22 @@ async function refresh(F, doc, due, now) {
       if (!r.ok) { f.err = r.err; return; }
       f.live = r.data.map(fbSummary); f.at = now; f.liveOk = now;
     }));
+    if (due.sLive) jobs.push(smCall('livescores', { include: LIST_INC }).then(r => {
+      if (r.ok) { sm.live = (r.data || []).map(x => { try { return smSummary(x); } catch (e) { return null; } }).filter(Boolean); sm.at = now; sm.err = null; }
+      else sm.err = r.err;
+    }));
+    if (due.sFx) jobs.push((async () => {
+      const d0 = new Date(now - DAY).toISOString().slice(0, 10), d1 = new Date(now + 7 * DAY).toISOString().slice(0, 10);
+      const out = [];
+      for (let pg = 1; pg <= 3; pg++) {
+        const r = await smCall('fixtures', { include: LIST_INC, 'filter[starts_between]': `${d0},${d1}`, page: pg });
+        if (!r.ok) { sm.err = r.err; break; }
+        out.push(...(r.data || []));
+        const pgn = r.meta && r.meta.pagination;
+        if (!pgn || pgn.current_page >= pgn.total_pages) break;
+      }
+      if (out.length) { sm.fx = out.map(x => { try { return smSummary(x); } catch (e) { return null; } }).filter(Boolean).slice(0, 200); sm.fxAt = now; }
+    })());
     await Promise.all(jobs);
     // তালিকায় "চলছে" ছিল কিন্তু এখন লাইভে নেই → খেলা শেষ, ফলাফল আনি (সব কাজ শেষে, যাতে একটা আরেকটাকে মুছে না দেয়)
     if (f.liveOk === now) {
@@ -161,7 +184,7 @@ async function refresh(F, doc, due, now) {
         if (g.ok) { const upd = new Map(g.data.map(fbSummary).map(m => [m.id, m])); f.day = (f.day || []).map(m => upd.get(m.id) || m); }
       }
     }
-    const out = { v: CACHE_V, c, f, cq, fq };
+    const out = { v: CACHE_V, c, f, s: sm, cq, fq };
     await db.doc('liveCache/feed').set(out);
     const metaUp = { until: 0, cq, fq };
     if (now - (meta.settleAt || 0) > 5 * MIN) {
@@ -185,8 +208,23 @@ function compose(doc, now) {
   for (const m of c.list || []) map.set(m.id, m);
   for (const m of f.day || []) map.set(m.id, m);
   for (const m of f.live || []) map.set(m.id, m);
+  // Sportmonks-এর ম্যাচ থাকলে CricketData-র একই ম্যাচ বাদ (একই দুই দল, কাছাকাছি সময়)
+  const sm = doc.s || {};
+  const smMap = new Map();
+  for (const m of sm.fx || []) smMap.set(m.id, m);
+  for (const m of sm.live || []) smMap.set(m.id, m);
+  if (smMap.size) {
+    const keyOf = m => [normTeam(m.a.name), normTeam(m.b.name)].sort().join('|');
+    const smKeys = [...smMap.values()].map(m => [keyOf(m), m.start]);
+    for (const [id, m] of map) {
+      if (id[0] !== 'c') continue;
+      const k = keyOf(m);
+      if (smKeys.some(([sk, st]) => sk === k && Math.abs(st - m.start) < 8 * HOUR)) map.delete(id);
+    }
+    for (const [id, m] of smMap) map.set(id, m);
+  }
   for (const [id, m] of Object.entries(doc.fresh || {})) {
-    const listAt = id[0] === 'c' ? (c.at || 0) : (f.at || 0);
+    const listAt = id[0] === 'c' ? (c.at || 0) : id[0] === 's' ? (sm.at || 0) : (f.at || 0);
     if ((m._at || 0) > listAt && map.has(id)) map.set(id, m);
   }
   return [...map.values()].filter(m =>
@@ -211,10 +249,14 @@ export async function getMatch(id, now = Date.now()) {
   let md = (await ref.get()).data() || null;
   let S = feed.matches.find(m => m.id === id) || (md && md.sum);
   if (!S) throw new HttpErr(404, 'ম্যাচ পাওয়া যায়নি');
-  const sport = id[0] === 'c' ? 'cricket' : 'football';
+  const sport = id[0] === 'f' ? 'football' : 'cricket';
   const liveN = Math.max(1, feed.matches.filter(m => m.sport === sport && m.state === 'live').length);
   let due = false;
-  if (S.state === 'live') {
+  if (id[0] === 's') {
+    // Sportmonks: সীমা অনেক বেশি, তাই চলমান খেলায় ২০ সেকেন্ড পরপর
+    if (S.state === 'live' || (S.state === 'upcoming' && S.start <= now && S.start > now - 6 * HOUR)) due = !md || now - (md.at || 0) > 20e3;
+    else if (S.state === 'done') due = !md || !md.final;
+  } else if (S.state === 'live') {
     const st = (await db.doc('liveMeta/state').get()).data() || {};
     const rem = remOf(sport === 'cricket' ? st.cq : st.fq, now);
     due = !md || now - (md.at || 0) > every(rem, now, MIN, 0.5 / liveN) * (sport === 'cricket' ? 2 : 1);
@@ -245,7 +287,12 @@ async function refreshMatch(F, id, S, md, now) {
     const rid = id.slice(2);
     const st = (await db.doc('liveMeta/state').get()).data() || {};
     let out;
-    if (id[0] === 'c') {
+    if (id[0] === 's') {
+      const r = await smCall('fixtures/' + rid, { include: DETAIL_INC });
+      if (!r.ok || !r.data) { await ref.set({ until: 0 }, { merge: true }); return null; }
+      const sum = smSummary(r.data);
+      out = { at: now, until: 0, sum, det: smDetail(r.data, sum), final: sum.state === 'done' };
+    } else if (id[0] === 'c') {
       const useB = !(st.bbbOff > now);
       const [sc, bb] = await Promise.all([cricCall('match_scorecard', { id: rid }), useB ? cricCall('match_bbb', { id: rid }) : null]);
       let cq = qOf(sc, now, st.cq); if (bb) cq = qOf(bb, now, cq);
@@ -395,6 +442,7 @@ async function fetchResult(id) {
   const rid = id.slice(2);
   if (id[0] === 'c') { const r = await cricCall('match_info', { id: rid }); return r.ok ? cricSummary(r.data) : null; }
   if (id[0] === 'f') { const r = await fbCall('fixtures', { id: rid }); return r.ok && r.data[0] ? fbSummary(r.data[0]) : null; }
+  if (id[0] === 's') { const r = await smCall('fixtures/' + rid, { include: LIST_INC }); return r.ok && r.data ? smSummary(r.data) : null; }
   return null;
 }
 
@@ -430,6 +478,7 @@ export async function diag(q = '', now = Date.now()) {
       list: cnt(c.list), up: cnt(c.up), left: d.cq,
       sample: (c.list || []).filter(m => !q || (m.a.name + ' ' + m.b.name + ' ' + m.tour).toLowerCase().includes(String(q).toLowerCase())).slice(0, 20)
         .map(m => `${m.state} (${m.ms || '-'}) | ${m.a.name} v ${m.b.name} | ${m.tour} | ${new Date(m.start).toISOString().slice(0, 16)} | ${m.raw || ''}`) },
+    sportmonks: { on: hasSm(), err: (d.s || {}).err || null, at: (d.s || {}).at ? new Date(d.s.at).toISOString() : null, live: cnt((d.s || {}).live), fx: cnt((d.s || {}).fx) },
     football: { err: f.err || null, at: f.at ? new Date(f.at).toISOString() : null, day: cnt(f.day), live: cnt(f.live), left: d.fq }
   };
 }
