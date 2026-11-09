@@ -44,21 +44,46 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 @keyframes sIn{from{transform:translateX(-50%) scale(.3);opacity:0}}
 .pop{position:absolute;left:50%;top:44%;transform:translateX(-50%);z-index:4;font:800 1.25rem var(--display);color:#ffe27a;text-shadow:0 2px 6px rgba(0,0,0,.8);pointer-events:none;animation:popUp 1s ease-out forwards;white-space:nowrap}
 @keyframes popUp{from{opacity:0;transform:translate(-50%,10px) scale(.7)}20%{opacity:1;transform:translate(-50%,0) scale(1.1)}to{opacity:0;transform:translate(-50%,-50px) scale(1)}}
-.speedo{position:absolute;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:3;text-align:center;pointer-events:none;text-shadow:0 2px 8px rgba(0,0,0,.7)}
-.speedo b{display:block;font:800 2.6rem/1 var(--display)}
-.speedo small{font-weight:700;font-size:.7rem;color:#dbe6f3}
-.speedo b.fast{color:#ff8a5c}
-.nbar{width:120px;height:7px;border-radius:9px;background:rgba(255,255,255,.2);margin:5px auto 0;overflow:hidden}.nbar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#38bdf8,#a78bfa);transition:width .15s}
-.pedal{position:absolute;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:4;border:0;border-radius:22px;width:84px;height:84px;display:grid;place-items:center;align-content:center;font:800 .82rem var(--display);color:#fff;cursor:pointer;touch-action:none;box-shadow:0 6px 0 rgba(0,0,0,.35),inset 0 -6px 12px rgba(0,0,0,.25),inset 0 4px 10px rgba(255,255,255,.25)}
-.pedal span{font-size:1.5rem;line-height:1}
-.pedal.on{transform:translateY(3px) scale(.96);filter:brightness(1.2)}
-.brk{left:max(14px,env(safe-area-inset-left,0px));background:linear-gradient(180deg,#5b6472,#2b313b)}
-.nit{right:max(14px,env(safe-area-inset-right,0px));background:linear-gradient(180deg,#60a5fa,#4338ca)}
-.nit.empty{filter:grayscale(.9) brightness(.6)}
-.steerHint{position:absolute;top:50%;z-index:2;font-size:2.6rem;color:rgba(255,255,255,.22);pointer-events:none;transform:translateY(-50%);transition:color .15s}
-.steerHint.l{left:max(12px,env(safe-area-inset-left,0px))}.steerHint.r{right:max(12px,env(safe-area-inset-right,0px))}
-.steerHint.on{color:rgba(255,226,122,.85)}
-.chost{position:absolute;right:max(10px,env(safe-area-inset-right,0px));bottom:calc(112px + env(safe-area-inset-bottom,0px));z-index:3}
+.ctl{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:4;display:flex;gap:12px;align-items:flex-end}
+.ctl.l{left:max(14px,env(safe-area-inset-left,0px))}.ctl.r{right:max(14px,env(safe-area-inset-right,0px))}
+.swap .ctl.l{left:auto;right:max(14px,env(safe-area-inset-right,0px))}.swap .ctl.r{right:auto;left:max(14px,env(safe-area-inset-left,0px))}
+.cb{position:relative;border:0;padding:0;cursor:pointer;touch-action:none;color:#fff;display:grid;place-items:center;align-content:center;gap:2px;font:800 .72rem var(--display);-webkit-tap-highlight-color:transparent;
+  background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.06));border:1.5px solid rgba(255,255,255,.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 8px 20px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.35);transition:transform .06s,background .1s}
+.cb svg{width:34px;height:34px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+.cb.on{transform:scale(.93);background:linear-gradient(180deg,rgba(255,226,122,.55),rgba(255,180,40,.3));border-color:#ffe27a}
+.stb{width:78px;height:78px;border-radius:50%}
+.pd{width:70px;height:104px;border-radius:18px 18px 24px 24px}
+.pd i{position:absolute;inset:auto 10px 10px;height:4px;border-radius:4px;background:rgba(255,255,255,.25)}
+.pd.brk{background:linear-gradient(180deg,rgba(80,88,100,.85),rgba(30,34,42,.85))}
+.pd.brk.on{background:linear-gradient(180deg,#ff6b5c,#b91c1c);border-color:#ffb4a8}
+.pd.nit{background:linear-gradient(180deg,rgba(96,165,250,.9),rgba(67,56,202,.9));overflow:hidden}
+.pd.nit em{position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.22);height:100%;transition:height .15s}
+.pd.nit.on{background:linear-gradient(180deg,#a5f3fc,#6366f1);border-color:#e0e7ff}
+.pd.nit.empty{filter:grayscale(.9) brightness(.6)}
+.pd b,.pd svg{position:relative}
+.ctl.half .stb,.ctl.tilt .stb{display:none}
+.gauge{position:absolute;left:50%;bottom:calc(8px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:3;width:126px;height:126px;pointer-events:none;text-align:center}
+.gauge svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(135deg)}
+.gauge circle{fill:none;stroke-linecap:round}
+.gauge .trk{stroke:rgba(0,0,0,.45);stroke-width:9}
+.gauge .arc{stroke:url(#gG);stroke-width:9;transition:stroke-dasharray .1s}
+.gauge .narc{stroke:#7dd3fc;stroke-width:3;opacity:.9}
+.gauge div{position:absolute;inset:0;display:grid;place-content:center;text-shadow:0 2px 6px rgba(0,0,0,.8)}
+.gauge b{font:800 2.1rem/1 var(--display)}.gauge b.fast{color:#ffb38a}
+.gauge small{font-weight:700;font-size:.6rem;color:#dbe6f3}
+.gauge em{font-style:normal;font:800 .7rem var(--display);color:#ffe27a;margin-top:2px}
+.keyhint{position:absolute;left:50%;bottom:calc(140px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:3;font-size:.72rem;font-weight:700;color:rgba(255,255,255,.75);background:rgba(0,0,0,.35);padding:3px 10px;border-radius:99px;pointer-events:none;white-space:nowrap}
+@media (pointer:coarse){.keyhint{display:none}}
+@media (pointer:fine) and (hover:hover){.stb{width:62px;height:62px}.pd{width:58px;height:86px}}
+@media (max-width:640px){.gauge{bottom:calc(124px + env(safe-area-inset-bottom,0px));width:96px;height:96px}.gauge b{font-size:1.6rem}.gauge small{font-size:.52rem}.gauge em{font-size:.6rem}}
+@media (max-width:380px){.stb{width:66px;height:66px}.pd{width:60px;height:92px}.ctl{gap:8px}}
+.seg{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.seg button{flex:1;min-width:80px;border:1px solid var(--line);border-radius:12px;padding:9px 6px;background:rgba(255,255,255,.05);color:var(--fg);font:700 .85rem var(--body);cursor:pointer}
+.seg button[aria-pressed="true"]{background:linear-gradient(180deg,#ffe27a,#f2b23a);color:#2a1a08;border-color:#ffe27a}
+.setrow{display:flex;flex-direction:column;gap:6px;text-align:left}.setrow>span{font-weight:700;font-size:.85rem;color:var(--muted)}
+.setrow input[type=range]{width:100%;accent-color:#ffd23f}
+.gbtn.mini{padding:8px 14px;font-size:.9rem}
+.chost{position:absolute;right:max(10px,env(safe-area-inset-right,0px));top:calc(56px + env(safe-area-inset-top,0px));z-index:3}
 .over{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:16px;background:linear-gradient(180deg,rgba(8,12,18,.35),rgba(8,12,18,.78));overflow:auto}
 .card{width:100%;max-width:400px;background:rgba(17,24,33,.9);border:1px solid var(--line);border-radius:24px;padding:20px 18px;display:flex;flex-direction:column;gap:12px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5);max-height:100%;overflow:auto;backdrop-filter:blur(6px)}
 .card h1{font-family:var(--display);font-size:2.5rem;margin:0;line-height:1.05;color:var(--accent)}
@@ -107,16 +132,27 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
     <div class="top">
       <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
       <div class="score"><b id="sc">০</b><small id="scL">পয়েন্ট</small><div><span class="combo" id="combo" hidden></span></div></div>
-      <button class="hb" id="horn" aria-label="হর্ন">📯</button>
+      <button class="hb" id="horn" aria-label="হর্ন"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h3l7 4V6L6 10z"/><path d="M16 9c1.2 1.6 1.2 4.4 0 6M19 7c2 2.8 2 7.2 0 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+      <button class="hb" id="setB" aria-label="সেটিংস"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.6 7.6 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.6 7.6 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.6 7.6 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.6 7.6 0 0 0 1.7-1l2.5 1 2-3.5zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg></button>
       <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
     </div>
     <div class="dist" id="dist" hidden>চট্টগ্রাম আর <b id="km">২৫০</b> কিমি</div>
     <div class="com" id="com"></div>
     <div class="say" id="say" hidden></div>
-    <div class="steerHint l" id="hL" hidden>◀</div><div class="steerHint r" id="hR" hidden>▶</div>
-    <div class="speedo" id="speedo" hidden><b id="kmh">০</b><small>কিমি/ঘণ্টা</small><div class="nbar"><i id="nbar"></i></div></div>
-    <button class="pedal brk" id="brk" hidden><span>🛑</span>ব্রেক</button>
-    <button class="pedal nit" id="nit" hidden><span>🔥</span>নাইট্রো</button>
+    <div class="gauge" id="speedo" hidden>
+      <svg viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="gG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4ade80"/><stop offset=".6" stop-color="#facc15"/><stop offset="1" stop-color="#ef4444"/></linearGradient></defs>
+        <circle class="trk" cx="60" cy="60" r="50" stroke-dasharray="235.6 314.2"/><circle class="arc" id="gArc" cx="60" cy="60" r="50" stroke-dasharray="0 314.2"/><circle class="narc" id="nArc" cx="60" cy="60" r="41" stroke-dasharray="0 257.6"/></svg>
+      <div><b id="kmh">০</b><small>কিমি/ঘণ্টা</small><em id="gearT">গিয়ার ১</em></div>
+    </div>
+    <div class="keyhint" id="keyhint" hidden>← → সরানো · ↓ ব্রেক · স্পেস নাইট্রো · H হর্ন · Esc বিরতি</div>
+    <div class="ctl l" id="ctlL" hidden>
+      <button class="cb stb" id="stL" aria-label="বামে"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4l-8 8 8 8"/></svg></button>
+      <button class="cb stb" id="stR" aria-label="ডানে"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4l8 8-8 8"/></svg></button>
+    </div>
+    <div class="ctl r" id="ctlR" hidden>
+      <button class="cb pd brk" id="brk" aria-label="ব্রেক"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="6"/><path d="M12 9v3.5M12 15.2v.1M4.5 6.5a10 10 0 0 0 0 11M19.5 6.5a10 10 0 0 1 0 11"/></svg><b>ব্রেক</b><i></i></button>
+      <button class="cb pd nit" id="nit" aria-label="নাইট্রো"><em id="nbar"></em><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg><b>নাইট্রো</b></button>
+    </div>
     <div class="chost" id="chatHost"></div>
 
     <div class="over" id="startO">
@@ -124,7 +160,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
         <h1>হাইওয়ে রাজা</h1>
         <p class="story">ঢাকা-চট্টগ্রাম মহাসড়ক, কাঁচপুর ব্রিজ পার হয়ে গেছেন। সামনে ২৫০ কিলোমিটার, রাস্তা ভর্তি গাড়ি। ফাঁক দিয়ে কান ঘেঁষে বের হোন, কিন্তু ধাক্কা লাগলেই খেলা শেষ!</p>
         <div class="rules">
-          <div>👆 পর্দার <b>বাম অর্ধেক</b> চাপলে বামে, <b>ডান অর্ধেক</b> চাপলে ডানে (কীবোর্ডে ← →)</div>
+          <div>◀ ▶ বোতাম চেপে লেন বদলান (সেটিংসে <b>ফোন কাত</b> করেও চালানো যায়, কীবোর্ডে ← →)</div>
           <div>🛑 <b>ব্রেক</b> চেপে গতি কমান, 🔥 <b>নাইট্রো</b> দিয়ে উড়ে যান (↓ আর স্পেস)</div>
           <div>😱 অন্য গাড়ির <b>কান ঘেঁষে</b> পার হলে বোনাস, টানা করলে বোনাস দ্বিগুণ-তিনগুণ</div>
           <div>⚡ ঘণ্টায় <b>১০০ কিমির বেশি</b> গতিতে পয়েন্ট বেশি, তবে ধাক্কা লাগলেই শেষ!</div>
@@ -137,6 +173,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
           <button data-lv="1" disabled>অফিস টাইম<small>মাঝারি ভিড়</small></button>
           <button data-lv="2" disabled>ঈদের আগের দিন<small>ঠাসা ভিড়</small></button>
         </div>
+        <button class="gbtn ghost mini" id="setB2">⚙️ নিয়ন্ত্রণ আর সেটিংস</button>
         <p class="small" id="bestTxt"></p>
         <div class="lb" id="lb1"></div>
         <p class="credit">৩ডি গাড়ি: <a href="https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept" target="_blank" rel="noopener">Car Concept</a> (Khronos Group, মূল মডেল Unity Fan), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0</a>, খেলাঘর ছোট করেছে আর লোগো সরিয়েছে। আকাশ, গাছ, ব্যারিয়ার, পিচ আর ঘাসের টেক্সচার: <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a> (CC0)।</p>
@@ -154,6 +191,18 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
         <div class="gvid"></div>
         <div class="acts"><button class="gbtn" id="againBtn">আবার চালাই</button><button class="gbtn ghost" id="menuBtn">রাস্তা বদলাই</button><button class="gbtn ghost" id="shareBtn">কপি করে শেয়ার</button></div>
         <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+
+    <div class="over" id="setO" hidden>
+      <div class="card">
+        <h2>⚙️ সেটিংস</h2>
+        <div class="setrow"><span>স্টিয়ারিং</span><div class="seg" id="sMode"><button data-v="btn">◀ ▶ বোতাম</button><button data-v="half">পর্দার দুই পাশ</button><button data-v="tilt">📱 ফোন কাত</button></div></div>
+        <div class="setrow"><span>বোতামের দিক</span><div class="seg" id="sHand"><button data-v="r">স্টিয়ারিং বামে</button><button data-v="l">স্টিয়ারিং ডানে</button></div></div>
+        <div class="setrow"><span>শব্দ <b id="volT"></b></span><input type="range" id="sVol" min="0" max="100" step="5" aria-label="শব্দের মাত্রা"></div>
+        <div class="setrow"><span>গ্রাফিক্স</span><div class="seg" id="sGfx"><button data-v="auto">অটো</button><button data-v="high">উঁচু</button><button data-v="low">কম (দ্রুত)</button></div></div>
+        <div class="setrow"><span>ক্যামেরা</span><div class="seg" id="sCam"><button data-v="far">পেছন থেকে</button><button data-v="near">কাছ থেকে</button></div></div>
+        <div class="acts"><button class="gbtn" id="setClose">ঠিক আছে</button><button class="gbtn ghost" id="setQuit" hidden>খেলা ছেড়ে দিই</button></div>
       </div>
     </div>
 
@@ -195,48 +244,72 @@ const store = { get(k, d) { try { const v = localStorage.getItem(k); return v ==
 const GAME = 'racer', A = '/games/racer/assets/';
 const KMH = 3.6;
 
-/* ================= শব্দ: ইঞ্জিন, বাতাস, হর্ন, ধাক্কা ================= */
-let sndOn = store.get('kh-sfx', true), ac = null, eng = null;
-function audio() { if (!ac) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; ac = new C(); } if (ac.state === 'suspended') ac.resume(); return ac; }
-function tone(fr, t, d, type, v, to) { const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(fr, t); if (to) o.frequency.exponentialRampToValueAtTime(to, t + d); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + d + .02); }
-function noiseBuf(sec) { const n = Math.floor(ac.sampleRate * sec), b = ac.createBuffer(1, n, ac.sampleRate), x = b.getChannelData(0); for (let i = 0; i < n; i++) x[i] = Math.random() * 2 - 1; return b; }
-function noise(t, d, v, fr, type, to) { const s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain(); s.buffer = noiseBuf(d); fl.type = type || 'lowpass'; fl.frequency.setValueAtTime(fr, t); if (to) fl.frequency.exponentialRampToValueAtTime(to, t + d); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); s.connect(fl); fl.connect(g); g.connect(ac.destination); s.start(t); }
+/* ================= শব্দ: ইঞ্জিন, টায়ার-রাস্তা, বাতাস, পাশ কাটানো গাড়ি, হর্ন, ধাক্কা ================= */
+// ল্যাপটপ/ফোনের স্পিকার ১৫০ হার্জের নিচে প্রায় কিছুই বাজায় না, তাই ইঞ্জিনের শব্দ হারমোনিক-ভরা আর মাঝের সুরে রাখা
+let sndOn = store.get('kh-sfx', true), vol = store.get('kh-racer-vol', .8), ac = null, master = null, eng = null;
+function audio() {
+  if (!ac) {
+    const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; ac = new C();
+    const comp = ac.createDynamicsCompressor(); comp.threshold.value = -18; comp.knee.value = 12; comp.ratio.value = 4; comp.attack.value = .005; comp.release.value = .2;
+    master = ac.createGain(); master.gain.value = sndOn ? vol : 0; master.connect(comp); comp.connect(ac.destination);
+  }
+  if (ac.state === 'suspended') ac.resume(); return ac;
+}
+function setVol() { if (master) master.gain.setTargetAtTime(sndOn ? vol : 0, ac.currentTime, .05); }
+function tone(fr, t, d, type, v, to, dest) { const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(fr, t); if (to) o.frequency.exponentialRampToValueAtTime(to, t + d); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g); g.connect(dest || master); o.start(t); o.stop(t + d + .02); }
+let NB = null; function noiseBuf() { if (!NB) { const n = ac.sampleRate * 2; NB = ac.createBuffer(1, n, ac.sampleRate); const x = NB.getChannelData(0); for (let i = 0; i < n; i++) x[i] = Math.random() * 2 - 1; } return NB; }
+function noise(t, d, v, fr, type, to, q) { const s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain(); s.buffer = noiseBuf(); fl.type = type || 'lowpass'; fl.Q.value = q || 1; fl.frequency.setValueAtTime(fr, t); if (to) fl.frequency.exponentialRampToValueAtTime(to, t + d); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + d); s.connect(fl); fl.connect(g); g.connect(master); s.start(t, Math.random()); s.stop(t + d + .05); }
+function loopNoise(type, fr, q) { const s = ac.createBufferSource(); s.buffer = noiseBuf(); s.loop = true; const f = ac.createBiquadFilter(); f.type = type; f.frequency.value = fr; f.Q.value = q; const g = ac.createGain(); g.gain.value = 0; s.connect(f); f.connect(g); g.connect(master); s.start(); return { f, g }; }
 function engineOn() {
-  if (!sndOn || !audio() || eng) return;
-  const out = ac.createGain(); out.gain.value = 0; out.connect(ac.destination);
-  const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 600; lp.Q.value = 2; lp.connect(out);
-  const o1 = ac.createOscillator(), o2 = ac.createOscillator(), o3 = ac.createOscillator(); o1.type = 'sawtooth'; o2.type = 'sawtooth'; o3.type = 'square';
-  const g3 = ac.createGain(); g3.gain.value = .25; [o1, o2].forEach(o => o.connect(lp)); o3.connect(g3); g3.connect(lp);
-  const ws = ac.createBufferSource(); ws.buffer = noiseBuf(2); ws.loop = true; const wf = ac.createBiquadFilter(); wf.type = 'bandpass'; wf.frequency.value = 900; wf.Q.value = .5; const wg = ac.createGain(); wg.gain.value = 0; ws.connect(wf); wf.connect(wg); wg.connect(ac.destination);
-  const sq = ac.createBufferSource(); sq.buffer = noiseBuf(1); sq.loop = true; const sf = ac.createBiquadFilter(); sf.type = 'bandpass'; sf.frequency.value = 2400; sf.Q.value = 6; const sg = ac.createGain(); sg.gain.value = 0; sq.connect(sf); sf.connect(sg); sg.connect(ac.destination);
-  [o1, o2, o3, ws, sq].forEach(o => o.start());
-  eng = { out, lp, o1, o2, o3, wg, sg };
+  if (!audio() || eng) return;
+  // ইঞ্জিন: ৪ সিলিন্ডারের মতো হারমোনিক সহ PeriodicWave, হালকা ডিসটরশন, তারপর ফিল্টার
+  const re = new Float32Array(24), im = new Float32Array(24); for (let h = 1; h < 24; h++) im[h] = (h % 2 ? 1 : .7) / Math.pow(h, .75) * (h === 2 || h === 4 ? 1.6 : 1);
+  const wave = ac.createPeriodicWave(re, im);
+  const o1 = ac.createOscillator(), o2 = ac.createOscillator(), sub = ac.createOscillator(); o1.setPeriodicWave(wave); o2.setPeriodicWave(wave); sub.type = 'triangle';
+  const shaper = ac.createWaveShaper(), cv = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = i / 511.5 - 1; cv[i] = Math.tanh(x * 2.2); } shaper.curve = cv;
+  const pre = ac.createGain(); pre.gain.value = .5; const g2 = ac.createGain(); g2.gain.value = .45; const gs = ac.createGain(); gs.gain.value = .35;
+  const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1800; lp.Q.value = .9;
+  const pk = ac.createBiquadFilter(); pk.type = 'peaking'; pk.frequency.value = 900; pk.gain.value = 6; pk.Q.value = .8;
+  // সিলিন্ডারের ধকধক: অ্যাম্প্লিটিউড মডুলেশন
+  const am = ac.createGain(), lfo = ac.createOscillator(), lfoG = ac.createGain(); lfo.type = 'sine'; lfoG.gain.value = .25; lfo.connect(lfoG); lfoG.connect(am.gain); am.gain.value = .75;
+  const out = ac.createGain(); out.gain.value = 0;
+  o1.connect(pre); o2.connect(g2); g2.connect(pre); sub.connect(gs); gs.connect(pre); pre.connect(shaper); shaper.connect(lp); lp.connect(pk); pk.connect(am); am.connect(out); out.connect(master);
+  // টার্বো/নাইট্রোর শিস
+  const tw = ac.createOscillator(), tg = ac.createGain(); tw.type = 'sine'; tw.frequency.value = 2400; tg.gain.value = 0; tw.connect(tg); tg.connect(master);
+  const road = loopNoise('lowpass', 380, .7), wind = loopNoise('bandpass', 1100, .4), skid = loopNoise('bandpass', 2300, 7);
+  [o1, o2, sub, lfo, tw].forEach(o => o.start());
+  eng = { o1, o2, sub, lfo, lp, out, tg, tw, road, wind, skid, gear: 0 };
 }
 const GEARS = [0, 45, 80, 115, 150, 190, 400];
-function engineUpdate(v, thr, skid) {
+function engineUpdate(v, thr, skidAmt, nitro) {
   if (!eng) return; const t = ac.currentTime, k = v * KMH; let g = 0; while (k > GEARS[g + 1]) g++;
-  const rpm = clamp((k - GEARS[g]) / (GEARS[g + 1] - GEARS[g]), 0, 1) * .75 + .2 + thr * .05;
-  const f = 38 + rpm * 120 + g * 6;
-  eng.o1.frequency.setTargetAtTime(f, t, .05); eng.o2.frequency.setTargetAtTime(f * 1.01 * 2, t, .05); eng.o3.frequency.setTargetAtTime(f / 2, t, .05);
-  eng.lp.frequency.setTargetAtTime(300 + rpm * 1500 + thr * 300, t, .08);
-  eng.out.gain.setTargetAtTime(sndOn ? .09 + thr * .05 : 0, t, .1);
-  eng.wg.gain.setTargetAtTime(sndOn ? Math.min(.22, (k / 230) ** 2 * .22) : 0, t, .2);
-  eng.sg.gain.setTargetAtTime(sndOn ? skid * .12 : 0, t, .05);
+  if (g !== eng.gear) { if (g > eng.gear) { tone(220, t, .08, 'square', .05); eng.out.gain.setValueAtTime(.12, t); } eng.gear = g; } // গিয়ার বদলের ঝাঁকি
+  const rpm = clamp((k - GEARS[g]) / (GEARS[g + 1] - GEARS[g]), 0, 1), f = 70 + rpm * 120 + g * 8 + thr * 6; // ~৭০-২২০ হার্জ মূল সুর
+  eng.o1.frequency.setTargetAtTime(f, t, .04); eng.o2.frequency.setTargetAtTime(f * 1.503, t, .04); eng.sub.frequency.setTargetAtTime(f / 2, t, .04); eng.lfo.frequency.setTargetAtTime(f / 4, t, .04);
+  eng.lp.frequency.setTargetAtTime(900 + rpm * 2600 + thr * 800, t, .06);
+  eng.out.gain.setTargetAtTime(.32 + rpm * .12 + thr * .1, t, .08);
+  eng.tg.gain.setTargetAtTime(nitro ? .035 : 0, t, .15); eng.tw.frequency.setTargetAtTime(1800 + rpm * 1500, t, .1);
+  eng.road.g.gain.setTargetAtTime(Math.min(.5, k / 200 * .5), t, .2); eng.road.f.frequency.setTargetAtTime(250 + k * 2, t, .2);
+  eng.wind.g.gain.setTargetAtTime(Math.min(.35, (k / 220) ** 2 * .35), t, .25);
+  eng.skid.g.gain.setTargetAtTime(skidAmt * .35, t, .04);
 }
-function engineQuiet() { if (eng) { const t = ac.currentTime; eng.out.gain.setTargetAtTime(0, t, .3); eng.wg.gain.setTargetAtTime(0, t, .5); eng.sg.gain.setTargetAtTime(0, t, .1); } }
+function engineQuiet() { if (eng) { const t = ac.currentTime; [eng.out.gain, eng.road.g.gain, eng.wind.g.gain, eng.skid.g.gain, eng.tg.gain].forEach(g => g.setTargetAtTime(0, t, .25)); } }
 const SFX = {
-  horn() { const t = ac.currentTime; tone(415, t, .45, 'square', .07); tone(523, t, .45, 'square', .06); },
-  whoosh() { const t = ac.currentTime; noise(t, .45, .35, 400, 'bandpass', 2600); },
-  combo() { const t = ac.currentTime; [784, 988, 1319].forEach((f, i) => tone(f, t + i * .06, .14, 'triangle', .14)); },
-  crash() { const t = ac.currentTime; noise(t, 1.1, .9, 900, 'lowpass', 120); tone(70, t, .5, 'sine', .6, 30); for (let i = 0; i < 9; i++) tone(rnd(2500, 5200), t + .08 + i * .045, .12, 'triangle', .05); },
-  scrape() { const t = ac.currentTime; noise(t, .3, .25, 3000, 'highpass'); },
-  nitro() { const t = ac.currentTime; noise(t, .7, .3, 300, 'lowpass', 1800); },
-  beep() { const t = ac.currentTime; tone(880, t, .12, 'sine', .15); },
-  go() { const t = ac.currentTime; tone(1320, t, .35, 'sine', .2); }
+  horn() { const t = ac.currentTime, f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 2200; f.connect(master); tone(415, t, .5, 'sawtooth', .22, 0, f); tone(523, t, .5, 'sawtooth', .18, 0, f); },
+  whoosh() { const t = ac.currentTime; noise(t, .55, .7, 500, 'bandpass', 2800, 1.2); },
+  pass(close) { const t = ac.currentTime; noise(t, .5, close ? .45 : .22, 1400, 'bandpass', 380, 1.5); tone(180, t, .45, 'sawtooth', close ? .05 : .025, 120); }, // পাশ কাটানোর ডপলার
+  combo() { const t = ac.currentTime; [784, 988, 1319].forEach((f, i) => tone(f, t + i * .06, .16, 'triangle', .25)); },
+  crash() { const t = ac.currentTime; noise(t, 1.2, 1, 1200, 'lowpass', 150); tone(80, t, .5, 'sine', .9, 35); noise(t + .02, .35, .6, 3000, 'highpass'); for (let i = 0; i < 12; i++) tone(rnd(2500, 6000), t + .08 + i * .04, .14, 'triangle', .08); },
+  scrape() { const t = ac.currentTime; noise(t, .35, .5, 3200, 'bandpass', 2000, 3); },
+  nitro() { const t = ac.currentTime; noise(t, .8, .6, 300, 'lowpass', 2500); },
+  go() { const t = ac.currentTime; [523, 784].forEach((f, i) => tone(f, t + i * .12, .3, 'triangle', .3)); },
+  click() { const t = ac.currentTime; tone(1200, t, .04, 'square', .05); }
 };
-function sfx(n) { if (!sndOn || !audio()) return; try { SFX[n](); } catch (e) {} }
-$('snd').onclick = () => { sndOn = !sndOn; store.set('kh-sfx', sndOn); $('snd').classList.toggle('off', !sndOn); if (sndOn) engineOn(); else engineQuiet(); };
+function sfx(n, a) { if (!sndOn || !audio()) return; try { SFX[n](a); } catch (e) {} }
+$('snd').onclick = () => { sndOn = !sndOn; store.set('kh-sfx', sndOn); $('snd').classList.toggle('off', !sndOn); audio(); setVol(); if (sndOn && S && S.started && !S.over) engineOn(); };
 $('snd').classList.toggle('off', !sndOn);
+// iPhone/Chrome: প্রথম ছোঁয়াতেই শব্দ চালু
+addEventListener('pointerdown', () => { if (ac && ac.state === 'suspended') ac.resume(); }, { passive: true });
 
 /* ================= রেন্ডারার, আকাশ, আলো ================= */
 let renderer = null;
@@ -600,10 +673,12 @@ function step(dt) {
         if (dx < cw + 1.0 && st.v * KMH > 75) {
           st.combo++; st.comboT = 4; st.near++; const pts = 100 * st.combo; st.score += pts; sfx('whoosh');
           pop(`কান ঘেঁষা! +${bn(pts)}`); if (st.combo > 1) { $('combo').hidden = false; $('combo').textContent = `কম্বো ×${bn(st.combo)}`; if (st.combo % 3 === 0) { sfx('combo'); com('combo'); shout(`×${bn(st.combo)}!`, '#ffd23f'); } } else if (Math.random() < .45) com('near');
-        }
+        } else if (dx < 5.5 && st.v * KMH > 40) sfx('pass', dx < 3.5);
       }
     }
   }
+  // উল্টো দিকের গাড়ি পাশ দিয়ে গেলে শোঁ শব্দ (ডান লেনে থাকলে বেশি জোরে)
+  for (const c of st.opp) if (!c.passed && c.z > st.z) { c.passed = true; const dx = Math.abs(c.x - st.x); if (dx < 11 && !st.crashed) sfx('pass', dx < 8); }
   // সাইনবোর্ড আর গতিসীমা চিহ্ন পুনর্ব্যবহার
   if (sign.position.z > st.z + 30) { st.signKm = Math.max(1, 250 - st.dist / 1000 - 1); drawSign(st.signKm); sign.position.z = st.z - 900; }
   if (limSign.position.z > st.z + 30) limSign.position.z = st.z - rnd(500, 800);
@@ -651,7 +726,9 @@ function drawTrees() {
 }
 function hud() {
   const k = Math.round(S.v * KMH); $('kmh').textContent = bn(k); $('kmh').classList.toggle('fast', k > 120);
-  $('sc').textContent = bn(Math.floor(S.score)); $('nbar').style.width = Math.round(S.nitro * 100) + '%'; $('nit').classList.toggle('empty', S.nitro < .05);
+  $('gArc').setAttribute('stroke-dasharray', (clamp(k / 270, 0, 1) * 235.6).toFixed(1) + ' 314.2'); $('nArc').setAttribute('stroke-dasharray', (S.nitro * 192.6).toFixed(1) + ' 257.6');
+  let g = 0; while (k > GEARS[g + 1]) g++; $('gearT').textContent = S.v < .5 ? 'N' : 'গিয়ার ' + bn(g + 1);
+  $('sc').textContent = bn(Math.floor(S.score)); $('nbar').style.height = Math.round(S.nitro * 100) + '%'; $('nit').classList.toggle('empty', S.nitro < .05);
   $('km').textContent = bn(Math.max(0, 250 - S.dist / 1000).toFixed(1));
 }
 function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.updateProjectionMatrix(); }
@@ -660,7 +737,7 @@ let fpsAcc = 0, fpsN = 0, dropped = false;
 function loop(ts) {
   const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
   if (ready && S) {
-    if (S.started && !S.over) step(dt);
+    if (S.started && !S.over && !paused) step(dt);
     else if (!S.started) { S.z -= 0; idleTraffic(dt); }
     const port = W / H < .85;
     if (player) {
@@ -674,7 +751,7 @@ function loop(ts) {
     }
     // ক্যামেরা
     if (S.started) {
-      const k = clamp(S.v * KMH / 230, 0, 1.2), back = (port ? 7.6 : 6.4) + k * 1.4, up = (port ? 2.9 : 2.25) + k * .2;
+      const k = clamp(S.v * KMH / 230, 0, 1.2), nearC = CFG.cam === 'near', back = (nearC ? (port ? 5.6 : 4.8) : (port ? 7.6 : 6.4)) + k * 1.4, up = (nearC ? (port ? 2.1 : 1.7) : (port ? 2.9 : 2.25)) + k * .2;
       camPos.set(S.x * .85, up, S.z + back); camLook.set(S.x * .9, .9, S.z - 12);
       cam.position.lerp(camPos, Math.min(1, dt * (S.crashed ? 2 : 7))); cam.position.z = S.crashed ? cam.position.z : S.z + back;
       const fov = (port ? 66 : 56) + k * 12 + (S.nitroOn ? 6 : 0); cam.fov += (fov - cam.fov) * Math.min(1, dt * 3); cam.updateProjectionMatrix();
@@ -689,12 +766,12 @@ function loop(ts) {
     dome.position.set(cam.position.x, 0, cam.position.z); skirt.position.x = cam.position.x; skirt.position.z = cam.position.z;
     sun.position.copy(SUN_DIR).multiplyScalar(80).add(v3.set(S.x, 0, S.z - 8)); sun.target.position.set(S.x, 0, S.z - 8);
     drawTraffic(T0); drawTrees();
-    if (S.started && !S.over) { hud(); engineUpdate(S.crashed ? 0 : S.v, keys.n ? 1 : 0, S.crashed ? 0 : (S.skid || 0)); }
+    if (S.started && !S.over) { hud(); engineUpdate(S.crashed ? 0 : S.v, keys.b ? 0 : 1, S.crashed ? 0 : (S.skid || 0), !!S.nitroOn); }
     if (comT > 0 && (comT -= dt) <= 0) $('com').textContent = '';
   }
   if (renderer) renderer.render(scene, cam);
   // দুর্বল ফোনে ফ্রেম কম হলে রেজোলিউশন কমানো
-  if (renderer && !dropped && S && S.started) { fpsAcc += dt; fpsN++; if (fpsN === 180) { if (fpsAcc / fpsN > 1 / 38) { renderer.setPixelRatio(1); renderer.shadowMap.enabled = false; scene.traverse(o => { if (o.material) o.material.needsUpdate = true; }); resize(); dropped = true; } fpsAcc = 0; fpsN = 0; } }
+  if (renderer && !dropped && CFG.gfx === 'auto' && S && S.started && !paused) { fpsAcc += dt; fpsN++; if (fpsN === 180) { if (fpsAcc / fpsN > 1 / 38) { renderer.setPixelRatio(1); renderer.shadowMap.enabled = false; scene.traverse(o => { if (o.material) o.material.needsUpdate = true; }); resize(); dropped = true; } fpsAcc = 0; fpsN = 0; } }
   requestAnimationFrame(loop);
 }
 function idleTraffic(dt) { // মেনুতে থাকলে উল্টো দিকের গাড়ি চলতে থাকে
@@ -715,7 +792,7 @@ const TIPS = [
 ];
 const TITLES = [[0, 'নবিশ চালক'], [2500, 'লোকাল বাসের ওস্তাদ'], [6000, 'হাইওয়ের চিতা'], [12000, 'হাইওয়ে রাজা'], [22000, 'ফর্মুলা ওয়ানের নাতি']];
 function endRun() {
-  S.over = true; const sc = Math.floor(S.score); lastScore = sc; ['speedo', 'brk', 'nit', 'dist', 'hL', 'hR'].forEach(i => $(i).hidden = true);
+  S.over = true; const sc = Math.floor(S.score); lastScore = sc; ['speedo', 'ctlL', 'ctlR', 'dist', 'keyhint'].forEach(i => $(i).hidden = true);
   $('eS').textContent = bn(sc); $('eD').textContent = bn((S.dist / 1000).toFixed(1)); $('eN').textContent = bn(S.near);
   $('endTitle').textContent = TITLES.filter(t => sc >= t[0]).pop()[1];
   $('endT').textContent = pick(['ধুম!', 'ঠুস!', 'গেল রে!']);
@@ -728,7 +805,7 @@ function endRun() {
 }
 function start(level) {
   if (!ready) return; audio(); engineOn(); lv = level; store.set('kh-racer-lv', lv);
-  resetWorld(level); S.started = true; S.nextKm = 5; ['startO', 'endO'].forEach(i => $(i).hidden = true); ['speedo', 'brk', 'nit', 'dist', 'hL', 'hR'].forEach(i => $(i).hidden = false); document.querySelector('.score').style.visibility = 'visible';
+  resetWorld(level); S.started = true; S.nextKm = 5; ['startO', 'endO'].forEach(i => $(i).hidden = true); ['speedo', 'ctlL', 'ctlR', 'dist', 'keyhint'].forEach(i => $(i).hidden = false); applyCtl(); document.querySelector('.score').style.visibility = 'visible';
   cam.position.set(S.x, 2.6, S.z + 9); com('start'); sfx('go');
 }
 document.querySelectorAll('[data-lv]').forEach(b => b.onclick = () => start(+b.dataset.lv));
@@ -739,21 +816,61 @@ $('horn').onclick = () => { audio(); sfx('horn'); if (S && S.started && !S.crash
 // গাড়ির রং
 const paintBox = $('paint'); PAINTS.forEach(([c, n], i) => { const b = document.createElement('button'); b.style.background = c; b.title = n; b.setAttribute('aria-label', n); b.setAttribute('aria-pressed', String(i === store.get('kh-racer-paint', 1))); b.onclick = () => { store.set('kh-racer-paint', i); paintBox.querySelectorAll('button').forEach((x, j) => x.setAttribute('aria-pressed', String(i === j))); (lights.paint || []).forEach(m => m.color.set(c)); }; paintBox.appendChild(b); });
 
-/* ================= নিয়ন্ত্রণ ================= */
+/* ================= নিয়ন্ত্রণ আর সেটিংস ================= */
+const CFG = Object.assign({ mode: 'btn', hand: 'r', gfx: 'auto', cam: 'far' }, store.get('kh-racer-cfg', {}));
+const saveCfg = () => store.set('kh-racer-cfg', CFG);
 const KM = { ArrowLeft: 'l', KeyA: 'l', ArrowRight: 'r', KeyD: 'r', ArrowDown: 'b', KeyS: 'b', Space: 'n', ArrowUp: 'n', KeyW: 'n', ShiftLeft: 'n' };
-addEventListener('keydown', e => { const k = KM[e.code]; if (k) { keys[k] = 1; e.preventDefault(); } if (e.code === 'KeyH') $('horn').click(); });
+addEventListener('keydown', e => { const k = KM[e.code]; if (k) { keys[k] = 1; e.preventDefault(); } if (e.code === 'KeyH') $('horn').click(); if (e.code === 'Escape' || e.code === 'KeyP') { $('setO').hidden ? openSet() : closeSet(); } });
 addEventListener('keyup', e => { const k = KM[e.code]; if (k) keys[k] = 0; });
-function hint() { const v = [...touchSteer.values()].reduce((a, b) => a + b, 0) + keys.r - keys.l; $('hL').classList.toggle('on', v < 0); $('hR').classList.toggle('on', v > 0); }
-const stage = $('stage');
-stage.addEventListener('pointerdown', e => { if (!S || !S.started || e.target.closest('button,a,.over,.khChatBtn')) return; touchSteer.set(e.pointerId, e.clientX < W / 2 ? -1 : 1); hint(); });
-stage.addEventListener('pointermove', e => { if (touchSteer.has(e.pointerId)) { touchSteer.set(e.pointerId, e.clientX < W / 2 ? -1 : 1); hint(); } });
-['pointerup', 'pointercancel', 'pointerleave'].forEach(t => stage.addEventListener(t, e => { touchSteer.delete(e.pointerId); hint(); }));
-for (const [id, k] of [['brk', 'b'], ['nit', 'n']]) {
-  const b = $(id);
-  b.addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); keys[k] = 1; b.classList.add('on'); try { b.setPointerCapture(e.pointerId); } catch (x) {} });
-  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => b.addEventListener(t, () => { keys[k] = 0; b.classList.remove('on'); }));
+function holdBtn(b, down, up) {
+  b.addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); b.classList.add('on'); down(); try { b.setPointerCapture(e.pointerId); } catch (x) {} if (navigator.vibrate) try { navigator.vibrate(8); } catch (x) {} });
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => b.addEventListener(t, () => { if (b.classList.contains('on')) { b.classList.remove('on'); up(); } }));
+  b.addEventListener('contextmenu', e => e.preventDefault());
 }
+holdBtn($('stL'), () => keys.l = 1, () => keys.l = 0); holdBtn($('stR'), () => keys.r = 1, () => keys.r = 0);
+holdBtn($('brk'), () => keys.b = 1, () => keys.b = 0); holdBtn($('nit'), () => keys.n = 1, () => keys.n = 0);
+// "পর্দার দুই পাশ" মোড
+const stage = $('stage');
+stage.addEventListener('pointerdown', e => { if (CFG.mode !== 'half' || !S || !S.started || e.target.closest('button,a,.over,.khChatBtn,input')) return; touchSteer.set(e.pointerId, e.clientX < W / 2 ? -1 : 1); });
+stage.addEventListener('pointermove', e => { if (touchSteer.has(e.pointerId)) touchSteer.set(e.pointerId, e.clientX < W / 2 ? -1 : 1); });
+['pointerup', 'pointercancel', 'pointerleave'].forEach(t => stage.addEventListener(t, e => touchSteer.delete(e.pointerId)));
+// "ফোন কাত" মোড: ২০° কাত = পুরো স্টিয়ারিং
+let tilt0 = null;
+addEventListener('deviceorientation', e => {
+  if (CFG.mode !== 'tilt' || e.gamma == null) { touchSteer.delete('tilt'); return; }
+  const ang = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
+  let t = ang === 90 ? e.beta : ang === -90 || ang === 270 ? -e.beta : e.gamma; if (tilt0 === null) tilt0 = 0;
+  t -= tilt0; touchSteer.set('tilt', Math.abs(t) < 2.5 ? 0 : clamp((t - Math.sign(t) * 2.5) / 17, -1, 1));
+});
+async function askTilt() { try { if (window.DeviceOrientationEvent && DeviceOrientationEvent.requestPermission) { const r = await DeviceOrientationEvent.requestPermission(); if (r !== 'granted') { CFG.mode = 'btn'; saveCfg(); drawSet(); } } } catch (e) {} }
+function applyCtl() {
+  ['ctlL', 'ctlR'].forEach(i => { $(i).classList.toggle('half', CFG.mode === 'half'); $(i).classList.toggle('tilt', CFG.mode === 'tilt'); });
+  document.querySelector('.app').classList.toggle('swap', CFG.hand === 'l'); if (CFG.mode !== 'tilt') touchSteer.delete('tilt');
+}
+function applyGfx() {
+  if (!renderer) return; const low = CFG.gfx === 'low' || (CFG.gfx === 'auto' && (LOW || dropped));
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, low ? 1 : CFG.gfx === 'high' ? 2 : 1.75));
+  if (renderer.shadowMap.enabled === low) { renderer.shadowMap.enabled = !low; scene.traverse(o => { if (o.material) [].concat(o.material).forEach(m => m.needsUpdate = true); }); }
+  resize();
+}
+function drawSet() {
+  for (const [id, key] of [['sMode', 'mode'], ['sHand', 'hand'], ['sGfx', 'gfx'], ['sCam', 'cam']]) $(id).querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === CFG[key])));
+  $('sVol').value = Math.round(vol * 100); $('volT').textContent = sndOn ? bn(Math.round(vol * 100)) + '%' : '(বন্ধ)';
+}
+for (const [id, key] of [['sMode', 'mode'], ['sHand', 'hand'], ['sGfx', 'gfx'], ['sCam', 'cam']]) $(id).addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return; CFG[key] = b.dataset.v; saveCfg(); drawSet(); sfx('click');
+  if (key === 'mode' && CFG.mode === 'tilt') { tilt0 = null; askTilt(); } if (key === 'gfx') applyGfx(); applyCtl();
+});
+$('sVol').addEventListener('input', () => { vol = $('sVol').value / 100; store.set('kh-racer-vol', vol); if (!sndOn && vol > 0) { sndOn = true; store.set('kh-sfx', true); $('snd').classList.remove('off'); } audio(); setVol(); drawSet(); });
+$('sVol').addEventListener('change', () => sfx('horn'));
+let paused = false;
+function openSet() { drawSet(); $('setO').hidden = false; $('setQuit').hidden = !(S && S.started && !S.over); if (S && S.started && !S.over) { paused = true; engineQuiet(); } }
+function closeSet() { $('setO').hidden = true; paused = false; keys.l = keys.r = keys.b = keys.n = 0; last = performance.now(); }
+$('setB').onclick = openSet; $('setB2').onclick = openSet; $('setClose').onclick = closeSet;
+$('setQuit').onclick = () => { closeSet(); if (S && S.started && !S.over) { S.crashed = true; S.crashT = 3; endRun(); } };
 addEventListener('blur', () => { keys.l = keys.r = keys.b = keys.n = 0; touchSteer.clear(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && S && S.started && !S.over && $('setO').hidden) openSet(); });
+applyCtl();
 
 /* ================= চালু ================= */
 // বাংলা ফন্ট লোড হলে প্লেট, সাইনবোর্ড আবার আঁকা
@@ -764,7 +881,7 @@ if (!renderer) { $('loadT').textContent = 'আপনার ফোনে ৩ড�
 else {
   buildTrees();
   Promise.all([buildPlayer(), buildTraffic(), buildProps()]).then(() => {
-    ready = true; resetWorld(lv); renderer.compile(scene, cam);
+    ready = true; resetWorld(lv); applyGfx(); renderer.compile(scene, cam);
     $('loadB').hidden = true; $('loadT').textContent = 'গাড়ি রেডি! কোন সময়ের রাস্তায় নামবেন?'; document.querySelectorAll('[data-lv]').forEach(b => b.disabled = false);
   }).catch(err => { console.error(err); $('loadT').textContent = 'মডেল লোড হয়নি। নেট চেক করে পেজটা আবার খুলুন।'; });
 }
@@ -799,7 +916,7 @@ async function saveScore(sc) {
 const MY_H = ['ভাই, সাইড দেন!', 'ডান লেন ফাঁকা করেন!', 'রসমালাই খাইতে কুমিল্লা যাইতেছি!', 'হর্ন শুনেন না নাকি?'];
 const OP_H = ['আস্তে চালান ভাই, জীবন একটাই!', 'এত তাড়া কিসের? প্লেন ধরবেন?', 'লেন মেনে চলেন!', 'পুলিশ সামনে, সাবধান!'];
 if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY_H, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP_H), 'M3', '🚌 পাশের ড্রাইভার', true), 2600); } });
-window.KHRacer = { get S() { return S; }, _scene: scene, _r: renderer, get ready() { return ready; }, start, keys, carSize, addCar(dx, dz, v) { const c = spawnCar(S, true); if (c) { c.x = c.tx = S.x + dx; c.z = S.z + dz; c.v = c.want = v; c.chT = 99; } return !!c; }, tick: n => { for (let i = 0; i < n; i++) if (S && S.started && !S.over) step(1 / 60); } };
+window.KHRacer = { dbgAudio: () => ({ state: ac && ac.state, eng: !!eng, master: master && master.gain.value, out: eng && eng.out.gain.value, road: eng && eng.road.g.gain.value }), get S() { return S; }, _scene: scene, _r: renderer, get ready() { return ready; }, start, keys, carSize, addCar(dx, dz, v) { const c = spawnCar(S, true); if (c) { c.x = c.tx = S.x + dx; c.z = S.z + dz; c.v = c.want = v; c.chT = 99; } return !!c; }, tick: n => { for (let i = 0; i < n; i++) if (S && S.started && !S.over) step(1 / 60); } };
 </script>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
 </body></html>
