@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>ইন্টারভিউ সারভাইভাল · খেলাঘর</title>
+<meta name="description" content="চাকরির ইন্টারভিউ বোর্ড! তিনজন প্রশ্নকর্তা, কঠিন প্রশ্ন, বুক ধড়ফড়। ঠিক উত্তর বাছুন, গভীর শ্বাস নিয়ে শান্ত থাকুন, পকেটে ফোন বাজলে দ্রুত বন্ধ করুন। চাকরিটা পাবেন তো?">
+<link rel="canonical" href="https://khelaghorbd.online/games/interview/">
+<meta property="og:title" content="ইন্টারভিউ সারভাইভাল · খেলাঘর">
+<meta property="og:description" content="নিজের সম্পর্কে কিছু বলুন… চাকরিটা পাবেন তো?">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/interview.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/interview.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+:root{--accent:#38bdf8}
+.meters{position:absolute;left:10px;right:10px;top:10px;z-index:3;display:grid;grid-template-columns:1fr 1fr;gap:6px;pointer-events:none}
+.mt{background:rgba(5,8,18,.65);border-radius:10px;padding:4px 8px;font-size:.7rem;font-weight:700}
+.mt .b{height:7px;background:rgba(255,255,255,.12);border-radius:4px;overflow:hidden;margin-top:3px}.mt .b i{display:block;height:100%;width:0;transition:width .2s}
+.dlg{position:absolute;left:8px;right:8px;bottom:8px;z-index:4;background:rgba(248,250,252,.97);color:#0f172a;border-radius:16px;padding:12px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.dlg .who{font:800 .8rem var(--body);color:#1d4ed8}.dlg .q{font:700 1rem var(--body);margin:4px 0 8px;line-height:1.45}
+.dlg .tm{height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden;margin-bottom:8px}.dlg .tm i{display:block;height:100%;background:#f59e0b;width:100%}
+.opts{display:grid;gap:7px}.opts button{border:2px solid #cbd5e1;background:#fff;border-radius:12px;padding:10px;text-align:left;font:700 .85rem var(--body);cursor:pointer;color:#0f172a;line-height:1.4}
+.shaky .opts button{animation:shk .12s infinite alternate}@keyframes shk{to{transform:translate(1.5px,-1px)}}
+.res{font:700 .88rem var(--body);padding:8px 10px;border-radius:10px;margin-bottom:6px}.res.g{background:#dcfce7;color:#166534}.res.b{background:#fee2e2;color:#991b1b}.res.m{background:#fef9c3;color:#854d0e}
+.nx{display:block;margin:4px auto 0;border:0;border-radius:10px;padding:9px 18px;font:800 .88rem var(--body);background:#1d4ed8;color:#fff;cursor:pointer}
+.ev{position:absolute;left:50%;top:32%;transform:translateX(-50%);z-index:5;background:#111827;border:2px solid #f59e0b;border-radius:14px;padding:10px 14px;text-align:center;font:700 .86rem var(--body);box-shadow:0 8px 24px rgba(0,0,0,.6);width:min(86%,300px)}
+.ev button{margin-top:8px;border:0;border-radius:10px;padding:8px 14px;font:800 .86rem var(--body);background:#f59e0b;color:#1c1917;cursor:pointer}
+.breath{border:0;border-radius:14px;padding:10px 16px;font:800 .9rem var(--body);color:#fff;background:radial-gradient(circle at 40% 30%,#7dd3fc,#0284c7 60%,#0c4a6e);box-shadow:0 4px 0 rgba(0,0,0,.4);cursor:pointer}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="qn">প্রশ্ন ০/৮</b><small id="job">পদ: জুনিয়র অফিসার</small></div>
+    <div class="stat r"><b id="sc">০</b><small>বোর্ডের নম্বর</small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas class="cv" id="cv"></canvas>
+    <div class="meters" id="meters" hidden><div class="mt">😰 ঘাবড়ানো<div class="b"><i id="mNerv" style="background:#f97316"></i></div></div><div class="mt">👍 বোর্ডের মন<div class="b"><i id="mImp" style="background:#22c55e;width:50%"></i></div></div></div>
+    <div class="dlg" id="dlg" hidden></div>
+    <div class="ev" id="ev" hidden></div>
+    <div class="say" id="say" hidden></div>
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>ইন্টারভিউ সারভাইভাল</h1>
+        <p class="story">মতিঝিলের এক অফিস, ১৪ তলা। ফাইল হাতে, নতুন শার্ট পরে বসে আছেন। দরজা খুললো: "আসুন, বসুন।" টেবিলের ওপাশে তিনজন, চোখে চশমা, হাতে আপনার সিভি…</p>
+        <div class="rules">
+          <div>💬 প্রতিটা প্রশ্নে তিনটা উত্তর। সৎ, গোছানো, আত্মবিশ্বাসী উত্তরই সেরা; বেশি বড় কথা বা মিথ্যা ধরা পড়ে!</div>
+          <div>😰 সময় যত যায় ঘাবড়ানো বাড়ে; বেশি ঘাবড়ালে লেখা কাঁপে। <b>😮‍💨 গভীর শ্বাস</b> নিলে শান্ত হবেন।</div>
+          <div>📱 হঠাৎ পকেটে ফোন বাজতে পারে বা কারো কলম পড়ে যেতে পারে; ঠিক কাজটা দ্রুত করুন!</div>
+        </div>
+        <div class="lvl">
+          <button data-lv="0">ইন্টার্নশিপ<small>সহজ বোর্ড</small></button>
+          <button data-lv="1">প্রথম চাকরি<small>সাধারণ বোর্ড</small></button>
+          <button data-lv="2">সরকারি ভাইভা<small>কড়া বোর্ড</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">মানুষ: Renderpeople (<a href="/games/racer/assets/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। দেয়াল, আকাশ: Poly Haven (CC0)। অফিস, প্রশ্ন আর চরিত্র কাল্পনিক।</p>
+      </div>
+    </div>
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">ফলাফল</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eG">০</b><span>সেরা উত্তর</span></div><div><b id="eN">০%</b><span>গড় ঘাবড়ানো</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার ইন্টারভিউ</button><button class="gbtn ghost" id="menuBtn">চাকরি বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">💼</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+  <div class="ctl"><div class="hint" id="hint">চাকরি বেছে ইন্টারভিউ দিন</div><button class="breath" id="brB" hidden>😮‍💨 গভীর শ্বাস</button></div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { GLTFLoader } from "/js/vendor/addons/GLTFLoader.js";
+import { RGBELoader } from "/js/vendor/addons/RGBELoader.js";
+import { MeshoptDecoder } from "/js/vendor/addons/meshopt_decoder.module.js";
+import { clone as cloneSkinned } from "/js/vendor/addons/SkeletonUtils.js";
+import { TIERS, detectTier } from "/js/kh-quality.js";
+import { loadPeople } from "/js/kh-people.js";
+import { gameShell, sound, bn, pick, rnd, clamp, esc } from "/js/kh-shell.js";
+
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'interview', name: 'ইন্টারভিউ সারভাইভাল', lbTitle: 'সেরা প্রার্থী', offMsg: 'বোর্ডের সবাই মিটিংয়ে, আজ ইন্টারভিউ হবে না! পরে আসেন।' });
+const SND = sound(SH);
+const TIER = TIERS[detectTier()], LOW = TIER.id <= 1;
+let renderer = null; try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' }); } catch (e) {}
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(56, 1, .05, 100);
+scene.background = new THREE.Color('#d9e2ea');
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.shadowMap.enabled = !LOW; }
+const ANISO = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1, texL = new THREE.TextureLoader(), RA = '/games/racer/assets/', JA = '/games/jam/assets/';
+const tex = (u, srgb, rx, ry) => { const t = texL.load(u); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; t.repeat.set(rx, ry); return t; };
+const cvTex = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; };
+const M = (c, o) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: .8 }, o || {}));
+const box = (w, h, d, m, x, y, z) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); b.castShadow = !LOW; b.receiveShadow = true; scene.add(b); return b; };
+if (renderer && TIER.id >= 1) new RGBELoader().load(RA + 'sky_1k.hdr', h => { const pm = new THREE.PMREMGenerator(renderer); h.mapping = THREE.EquirectangularReflectionMapping; scene.environment = pm.fromEquirectangular(h).texture; scene.environmentIntensity = .5; h.dispose(); pm.dispose(); }, undefined, () => {});
+
+/* ---------- ১৪ তলার কনফারেন্স রুম ---------- */
+const RW = 6, RD = 5, RH = 2.9;
+const carpet = cvTex(256, 256, (x) => { x.fillStyle = '#4b5563'; x.fillRect(0, 0, 256, 256); for (let i = 0; i < 5000; i++) { x.fillStyle = `rgba(${Math.random() < .5 ? '0,0,0' : '255,255,255'},${Math.random() * .08})`; x.fillRect(Math.random() * 256, Math.random() * 256, 2, 2); } }); carpet.wrapS = carpet.wrapT = THREE.RepeatWrapping; carpet.repeat.set(4, 4);
+{ const f = new THREE.Mesh(new THREE.PlaneGeometry(RW, RD), M('#fff', { map: carpet, roughness: 1 })); f.rotation.x = -Math.PI / 2; f.receiveShadow = true; scene.add(f); const c = new THREE.Mesh(new THREE.PlaneGeometry(RW, RD), M('#f1f5f9')); c.rotation.x = Math.PI / 2; c.position.y = RH; scene.add(c); }
+const wallM = new THREE.MeshStandardMaterial({ map: tex(JA + 'plaster_diff.jpg', true, 2, 1.5), normalMap: tex(JA + 'plaster_nor.jpg', false, 2, 1.5), color: '#eef1f4', roughness: .9 });
+for (const [w, x, z, ry] of [[RD, -RW / 2, 0, Math.PI / 2], [RD, RW / 2, 0, -Math.PI / 2], [RW, 0, RD / 2, Math.PI]]) { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, RH), wallM); m.rotation.y = ry; m.position.set(x, RH / 2, z); scene.add(m); }
+// পেছনের দেয়াল জুড়ে কাচ, বাইরে শহর
+const cityT = cvTex(1024, 512, (x) => { const g = x.createLinearGradient(0, 0, 0, 512); g.addColorStop(0, '#9cc3e6'); g.addColorStop(1, '#e2e8f0'); x.fillStyle = g; x.fillRect(0, 0, 1024, 512); for (let i = 0; i < 40; i++) { const bx = Math.random() * 1024, bw = 40 + Math.random() * 90, top = 120 + Math.random() * 250; x.fillStyle = `hsl(210,${8 + Math.random() * 10}%,${55 + Math.random() * 25}%)`; x.fillRect(bx, top, bw, 512 - top); x.fillStyle = 'rgba(30,50,70,.35)'; for (let y = top + 8; y < 500; y += 14) for (let xx = bx + 4; xx < bx + bw - 6; xx += 10) x.fillRect(xx, y, 6, 8); } });
+{ const c = new THREE.Mesh(new THREE.PlaneGeometry(14, 7), new THREE.MeshBasicMaterial({ map: cityT, toneMapped: false })); c.position.set(0, 1.6, -RD / 2 - 3); scene.add(c); const gl = new THREE.Mesh(new THREE.PlaneGeometry(RW, RH), new THREE.MeshStandardMaterial({ color: '#cfe3f0', transparent: true, opacity: .12, roughness: .05, metalness: .3 })); gl.position.set(0, RH / 2, -RD / 2); scene.add(gl); for (let i = 0; i <= 6; i++) box(.05, RH, .06, M('#334155', { metalness: .6 }), -RW / 2 + i * RW / 6, RH / 2, -RD / 2); box(RW, .06, .08, M('#334155', { metalness: .6 }), 0, .9, -RD / 2); }
+scene.add(new THREE.HemisphereLight('#f8fafc', '#475569', .9));
+{ const d = new THREE.DirectionalLight('#fff7ea', 1.6); d.position.set(2, 4, -6); d.castShadow = !LOW; d.shadow.mapSize.set(1024, 1024); Object.assign(d.shadow.camera, { left: -4, right: 4, top: 4, bottom: -2 }); scene.add(d); for (const x of [-1.5, 0, 1.5]) { const p = new THREE.Mesh(new THREE.BoxGeometry(.9, .03, .5), new THREE.MeshBasicMaterial({ color: '#ffffff' })); p.position.set(x, RH - .02, 0); scene.add(p); } }
+// টেবিল, চেয়ার, নামফলক, পানির গ্লাস, ফাইল
+const wood = M('#5b3a22', { roughness: .45, metalness: .05 }), chairM = M('#111827', { roughness: .6 });
+box(2.8, .06, 1.1, wood, 0, .76, -.6); box(2.7, .7, .06, wood, 0, .38, -1.1);
+function chair(x, z, ry) { const g = new THREE.Group(); const s = new THREE.Mesh(new THREE.BoxGeometry(.5, .08, .5), chairM); s.position.y = .48; g.add(s); const b = new THREE.Mesh(new THREE.BoxGeometry(.5, .65, .07), chairM); b.position.set(0, .85, -.24); g.add(b); const p = new THREE.Mesh(new THREE.CylinderGeometry(.03, .03, .4, 8), M('#9ca3af', { metalness: .8 })); p.position.y = .25; g.add(p); const bs = new THREE.Mesh(new THREE.CylinderGeometry(.25, .25, .03, 5), M('#9ca3af', { metalness: .8 })); bs.position.y = .03; g.add(bs); g.position.set(x, 0, z); g.rotation.y = ry; scene.add(g); }
+const PX = [-.9, 0, .9];
+PX.forEach(x => chair(x, -1.45, 0));
+const ROLES = ['এইচআর ম্যানেজার', 'বিভাগীয় প্রধান', 'এমডি স্যার'];
+PX.forEach((x, i) => { const np = new THREE.Mesh(new THREE.BoxGeometry(.32, .08, .04), new THREE.MeshBasicMaterial({ map: cvTex(256, 64, (c) => { c.fillStyle = '#0f172a'; c.fillRect(0, 0, 256, 64); c.fillStyle = '#e2e8f0'; c.font = "700 26px 'Noto Sans Bengali',sans-serif"; c.textAlign = 'center'; c.fillText(ROLES[i], 128, 42); }) })); np.position.set(x, .83, -.1); np.rotation.x = -.3; scene.add(np); const gl = new THREE.Mesh(new THREE.CylinderGeometry(.03, .025, .1, 14), new THREE.MeshStandardMaterial({ color: '#dbeafe', transparent: true, opacity: .4, roughness: .05 })); gl.position.set(x + .25, .84, -.35); scene.add(gl); const f = new THREE.Mesh(new THREE.BoxGeometry(.22, .01, .3), M(pick(['#1d4ed8', '#b91c1c', '#15803d']))); f.position.set(x - .2, .8, -.4); f.rotation.y = rnd(-.2, .2); scene.add(f); });
+const myFile = new THREE.Mesh(new THREE.BoxGeometry(.24, .01, .32), M('#f59e0b')); myFile.position.set(.1, .8, -.05); scene.add(myFile);
+// প্যানেল (আসল মানুষ) আর পড়ে যাওয়া কলম
+const PANEL = []; let pen = null;
+loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned).then(P => { [0, 2, 3].forEach((k, i) => { const h = P.make(k, { scale: .98, shadow: !LOW }); h.root.position.set(PX[i], -.25, -1.3); scene.add(h.root); PANEL.push(h); }); window.KHG.ready = true; }).catch(() => { window.KHG.ready = true; });
+pen = new THREE.Mesh(new THREE.CylinderGeometry(.006, .006, .14, 8), M('#1e3a8a')); pen.rotation.z = Math.PI / 2; pen.position.set(.4, .02, -.1); pen.visible = false; scene.add(pen);
+
+/* ---------- প্রশ্ন: [প্রশ্ন, কে, [[উত্তর, মান g/m/b, মন্তব্য]...]] ---------- */
+const QS = [
+  ['প্রথমে নিজের সম্পর্কে একটু বলুন।', 0, [['আমি ব্যবস্থাপনায় স্নাতক করেছি, দুটো প্রতিষ্ঠানে ইন্টার্নশিপ করেছি। হিসাব আর গ্রাহক সামলানোয় আমি ভালো, আর নতুন কিছু দ্রুত শিখি।', 'g', 'গোছানো, কাজের কথা!'], ['আমার নাম… বাড়ি… আমার বাবা… আমার শখ ক্রিকেট খেলা, গান শোনা…', 'm', 'ব্যক্তিগত গল্প বেশি, কাজের কথা কম।'], ['সিভিতে তো সব লেখা আছে স্যার।', 'b', 'বোর্ড বিরক্ত হলো।']]],
+  ['আমাদের প্রতিষ্ঠানেই কেন চাকরি করতে চান?', 1, [['আপনাদের গ্রাহকসেবা আর নতুন প্রকল্পগুলোর কথা পড়েছি। আমার দক্ষতা দিয়ে এখানে অবদান রাখতে আর শিখতে চাই।', 'g', 'প্রতিষ্ঠান সম্পর্কে জেনে এসেছেন, ভালো!'], ['শুনেছি এখানে বেতন ভালো।', 'm', 'সৎ, তবে শুধু বেতনের কথা ভালো শোনায় না।'], ['চাকরি তো দরকার, যেকোনো জায়গায় হলেই হয়।', 'b', 'আগ্রহ নেই মনে হলো।']]],
+  ['আপনার সবচেয়ে বড় দুর্বলতা কী?', 0, [['আগে সব কাজ নিজে করতে চাইতাম, তাই চাপ হতো। এখন কাজ ভাগ করে নিতে আর সময়সূচি বানাতে শিখছি।', 'g', 'সৎ, আর উন্নতির চেষ্টাও দেখালেন।'], ['আমার কোনো দুর্বলতা নেই স্যার।', 'b', 'অতিরিক্ত আত্মবিশ্বাস, বিশ্বাসযোগ্য না।'], ['আমি একটু বেশি পরিশ্রমী, এটাই দুর্বলতা।', 'm', 'খুব শোনা উত্তর, বোর্ড মুচকি হাসলো।']]],
+  ['বেতন কত আশা করেন?', 2, [['এই পদে বাজারের প্রচলিত হার জেনে এসেছি; আপনাদের কাঠামো অনুযায়ী আলোচনা করতে রাজি, ২৫-৩০ হাজারের মধ্যে হলে ভালো।', 'g', 'বাস্তবসম্মত আর নমনীয়।'], ['যা দেন তাই নেবো স্যার।', 'm', 'নিজের মূল্য বোঝেন না মনে হলো।'], ['কমপক্ষে ৮০ হাজার, নইলে আসবো না।', 'b', 'নতুনের জন্য অবাস্তব দাবি!']]],
+  ['ধরুন একটা কাজের ডেডলাইন মিস হতে যাচ্ছে। কী করবেন?', 1, [['আগেভাগেই সুপারভাইজারকে জানাবো, কতটুকু হয়েছে দেখাবো, বাকিটার নতুন সময় আর দরকারি সাহায্য চেয়ে নেবো।', 'g', 'দায়িত্বশীল আর স্বচ্ছ!'], ['রাত জেগে করে ফেলবো, কাউকে কিছু বলবো না।', 'm', 'পরিশ্রমী, তবে যোগাযোগ দরকার।'], ['দোষটা দলের অন্য কারো ঘাড়ে দিয়ে দেবো।', 'b', 'এটা খুব খারাপ মনোভাব!']]],
+  ['আগের ইন্টার্নশিপ ছাড়লেন কেন?', 0, [['ইন্টার্নশিপের মেয়াদ শেষ হয়েছিল। সেখানে হিসাবের সফটওয়্যার শিখেছি, যা এখানে কাজে লাগবে।', 'g', 'ইতিবাচক আর প্রাসঙ্গিক।'], ['ওখানকার বস খুব খারাপ ছিল, সবাই জানে।', 'b', 'আগের জায়গার বদনাম করা লাল সংকেত!'], ['ভালো লাগছিল না।', 'm', 'অস্পষ্ট উত্তর।']]],
+  ['এক্সেলে কী কী পারেন?', 1, [['সূত্র (SUM, VLOOKUP), পিভট টেবিল আর চার্ট বানাতে পারি; একটা বিক্রির হিসাব ফাইল বানিয়েছিলাম।', 'g', 'নির্দিষ্ট আর প্রমাণসহ!'], ['সব পারি স্যার, এক্সপার্ট।', 'b', 'পরীক্ষা নিতেই ধরা পড়লেন!'], ['বেসিক পারি, শিখে নেবো।', 'm', 'সৎ, তবে আরেকটু প্রস্তুতি দরকার।']]],
+  ['পাঁচ বছর পর নিজেকে কোথায় দেখতে চান?', 2, [['এই প্রতিষ্ঠানে দক্ষতা বাড়িয়ে একটা দলের দায়িত্ব নিতে চাই, সাথে পেশাদার সার্টিফিকেশন শেষ করতে চাই।', 'g', 'লক্ষ্য আছে, প্রতিষ্ঠানের সাথে মিলে।'], ['আপনার চেয়ারে, স্যার! 😄', 'm', 'মজার, তবে একটু বেশি সাহসী।'], ['বিদেশে চলে যাবো।', 'b', 'তাহলে আমাদের এখানে কেন?']]],
+  ['আপনার কোনো প্রশ্ন আছে আমাদের কাছে?', 1, [['জি, এই পদে প্রথম ছয় মাসে আমার কাছে কী প্রত্যাশা থাকবে, আর প্রশিক্ষণের সুযোগ কেমন?', 'g', 'আগ্রহী আর চিন্তাশীল প্রশ্ন!'], ['না স্যার, কোনো প্রশ্ন নেই।', 'm', 'আগ্রহ কম মনে হলো।'], ['ছুটি কয়দিন? অফিস কয়টায় ছুটি?', 'b', 'শুরুতেই ছুটির খোঁজ!']]],
+  ['কাজের চাপে সহকর্মীর সাথে মতের অমিল হলে কী করবেন?', 2, [['শান্তভাবে দুজনের যুক্তি শুনবো, তথ্য দেখে সমাধান খুঁজবো; না মিললে টিম লিডারের পরামর্শ নেবো।', 'g', 'পরিণত মনোভাব।'], ['আমার কথাই ঠিক, সেটা প্রমাণ করে ছাড়বো।', 'b', 'দলে কাজের জন্য খারাপ।'], ['চুপ করে থাকবো।', 'm', 'ঝামেলা এড়ানো, কিন্তু সমাধান না।']]]];
+const SFX = { good() { [523, 659, 784].forEach((f, i) => SND.tone(f, .14, 'triangle', .18, 0, i * .08)); }, bad() { SND.tone(200, .35, 'sawtooth', .1, 120); }, meh() { SND.tone(440, .2, 'sine', .08, 400); }, ring() { for (let i = 0; i < 6; i++) SND.tone(1320 + (i % 2) * 200, .08, 'square', .06, 0, i * .1); }, beat() { SND.tone(60, .12, 'sine', .25, 45); SND.tone(60, .1, 'sine', .2, 45, .18); }, breath() { SND.noise(1.2, .1, 500, 'lowpass'); } };
+const LV = [{ n: 'ইন্টার্নশিপ', job: 'ইন্টার্ন', cnt: 7, sec: 22, nerv: 2.5, ev: .5 }, { n: 'প্রথম চাকরি', job: 'জুনিয়র অফিসার', cnt: 8, sec: 18, nerv: 3.5, ev: .8 }, { n: 'সরকারি ভাইভা', job: 'সহকারী পরিচালক', cnt: 10, sec: 14, nerv: 4.5, ev: 1 }];
+let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0;
+function say(t, col, ms) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, ms || 1300); }
+function hud() { $('qn').textContent = `প্রশ্ন ${bn(Math.min(S.i + 1, S.list.length))}/${bn(S.list.length)}`; $('job').textContent = 'পদ: ' + LV[lv].job; $('sc').textContent = bn(Math.max(0, Math.round(S.score))); $('mNerv').style.width = S.nerv + '%'; $('mImp').style.width = clamp(S.imp, 0, 100) + '%'; $('dlg').classList.toggle('shaky', S.nerv > 70); }
+function start(level) { lv = level; const L = LV[lv]; const list = [...QS.slice(0, 1), ...QS.slice(1, 8).sort(() => Math.random() - .5), ...QS.slice(8)].slice(0, L.cnt); if (L.cnt < 8) list.push(QS[8]); S = { list: list.slice(0, L.cnt), i: 0, score: 0, nerv: 25, imp: 50, good: 0, bad: 0, nervSum: 0, nervN: 0, over: false, ans: false, t: 0, evDone: 0, phase: 'q' };
+  ['startO', 'endO'].forEach(i => $(i).hidden = true); $('meters').hidden = false; $('brB').hidden = false; $('hint').hidden = true; SND.ac; hud(); say('আসুন, বসুন।', '#e2e8f0'); setTimeout(ask, 900); }
+function ask() { const q = S.list[S.i]; if (!q) return endGame(); S.ans = false; S.t = LV[lv].sec; const d = $('dlg'); d.hidden = false;
+  d.innerHTML = `<div class="who">🧑‍💼 ${ROLES[q[1]]}</div><div class="q">"${esc(q[0])}"</div><div class="tm"><i id="tmI"></i></div><div class="opts">${q[2].map((o, k) => [o, k]).sort(() => Math.random() - .5).map(([o, k]) => `<button data-k="${k}">${esc(o[0])}</button>`).join('')}</div>`;
+  d.querySelectorAll('[data-k]').forEach(b => b.onclick = () => answer(+b.dataset.k)); hud();
+  if (Math.random() < LV[lv].ev * .35 && S.evDone < 2) setTimeout(() => { if (S && !S.over && !S.ans) event(); }, rnd(2500, 6000)); }
+function answer(k) { if (S.ans || S.ev) return; S.ans = true; const q = S.list[S.i], o = q[2][k]; S.nervSum += S.nerv; S.nervN++;
+  const nervPen = S.nerv > 70 ? .7 : 1; let pts = o[1] === 'g' ? 100 : o[1] === 'm' ? 40 : -30; pts = Math.round(pts * nervPen + S.t * 2);
+  S.score += pts; S.imp += o[1] === 'g' ? 10 : o[1] === 'm' ? 0 : -12; if (o[1] === 'g') { S.good++; SFX.good(); S.nerv = Math.max(0, S.nerv - 12); } else if (o[1] === 'b') { S.bad++; SFX.bad(); S.nerv = Math.min(100, S.nerv + 15); } else SFX.meh();
+  const d = $('dlg'); d.innerHTML = `<div class="res ${o[1]}">${o[1] === 'g' ? '✅' : o[1] === 'b' ? '❌' : '😐'} ${esc(o[2])}${S.nerv > 70 && o[1] === 'g' ? ' (তবে কণ্ঠ কাঁপছিল)' : ''}</div><button class="nx" id="nx">${S.i + 1 >= S.list.length ? 'ফলাফল' : 'পরের প্রশ্ন ➡️'}</button>`;
+  $('nx').onclick = () => { S.i++; ask(); }; hud(); }
+function event() { const kind = pick(['phone', 'pen']); S.ev = kind; S.evDone++; const e = $('ev'); e.hidden = false; S.evT = 3.5;
+  if (kind === 'phone') { SFX.ring(); e.innerHTML = '📱 পকেটে ফোন বাজছে! (আম্মু কল করছেন)<br><button id="evA">🔕 দ্রুত সাইলেন্ট করি</button> <button id="evB" style="background:#475569;color:#fff">📞 ধরি</button>'; $('evA').onclick = () => evEnd(true, 'দ্রুত সাইলেন্ট করলেন, "দুঃখিত"। বোর্ড মাথা নাড়লো।'); $('evB').onclick = () => evEnd(false, 'ইন্টারভিউর মাঝে ফোন ধরলেন! 😱'); }
+  else { pen.visible = true; e.innerHTML = '🖊️ এমডি স্যারের কলম মেঝেতে পড়ে গেল!<br><button id="evA">🙇 তুলে দিই</button> <button id="evB" style="background:#475569;color:#fff">🙄 না দেখার ভান</button>'; $('evA').onclick = () => evEnd(true, '"ধন্যবাদ।" ছোট্ট সৌজন্য, বড় ছাপ! 👍'); $('evB').onclick = () => evEnd(false, 'বোর্ড খেয়াল করলো আপনি এড়িয়ে গেলেন…'); } }
+function evEnd(ok, txt) { $('ev').hidden = true; pen.visible = false; S.ev = null; if (ok) { S.score += 40; S.imp += 6; SFX.good(); say(txt, '#86efac', 1800); } else { S.score -= 50; S.imp -= 12; S.nerv = Math.min(100, S.nerv + 15); SFX.bad(); say(txt, '#fca5a5', 1800); } hud(); }
+function breath() { if (!S || S.over || S.breathing) return; S.breathing = 1.2; SFX.breath(); S.nerv = Math.max(0, S.nerv - 22); S.t = Math.max(0, S.t - 1.5); say('শ্বাস নিন… ছাড়ুন… 😮‍💨', '#7dd3fc'); hud(); }
+function step(dt) { const L = LV[lv]; if (S.breathing > 0) S.breathing -= dt;
+  if (!S.ans && !S.ev && S.list[S.i]) { S.t -= dt; S.nerv = Math.min(100, S.nerv + dt * L.nerv); const ti = $('tmI'); if (ti) { ti.style.width = clamp(S.t / L.sec * 100, 0, 100) + '%'; ti.style.background = S.t < 5 ? '#ef4444' : '#f59e0b'; } if (S.t <= 0) { S.ans = true; S.score -= 40; S.imp -= 10; S.nerv = Math.min(100, S.nerv + 10); SFX.bad(); const d = $('dlg'); d.innerHTML = '<div class="res b">⏰ চুপ করে রইলেন… "ঠিক আছে, পরের প্রশ্নে যাই।"</div><button class="nx" id="nx">পরের প্রশ্ন ➡️</button>'; $('nx').onclick = () => { S.i++; ask(); }; } if (S.nerv > 75 && Math.random() < dt * 1.5) SFX.beat(); }
+  if (S.ev && (S.evT -= dt) <= 0) evEnd(false, S.ev === 'phone' ? 'ফোন বাজতেই থাকলো… বোর্ড বিরক্ত।' : 'কলম পড়েই রইলো…'); hud(); }
+const TIPS = ['জানেন কি? ইন্টারভিউর আগে প্রতিষ্ঠানের ওয়েবসাইট দেখে যান; তাদের কাজ সম্পর্কে দুটো কথা বলতে পারলেই আলাদা হয়ে যাবেন।', 'জানেন কি? উত্তর দেওয়ার আগে ২ সেকেন্ড থেমে গভীর শ্বাস নিলে কণ্ঠ স্থির হয়।', 'জানেন কি? আগের অফিসের বদনাম করা ইন্টারভিউতে সবচেয়ে বড় ভুলগুলোর একটি।', 'জানেন কি? শেষে বোর্ডকে একটা চিন্তাশীল প্রশ্ন করলে আগ্রহ বোঝা যায়।'];
+function endGame() { if (S.over) return; S.over = true; $('dlg').hidden = true; $('ev').hidden = true; $('meters').hidden = true; $('brB').hidden = true; $('hint').hidden = false; $('hint').textContent = 'ইন্টারভিউ শেষ';
+  const n = S.list.length, avgN = S.nervN ? S.nervSum / S.nervN : 0, sc = Math.max(0, Math.round(S.score + S.imp * 3)); const hired = S.imp >= 75 && S.good >= n * .6;
+  $('endT').textContent = hired ? 'অভিনন্দন! আপনি নির্বাচিত! 🎉' : S.imp >= 50 ? '"আমরা আপনাকে জানাবো…" 🤞' : '"ধন্যবাদ, আসতে পারেন।" 😔';
+  $('endTitle').textContent = hired ? (avgN < 40 ? 'ঠান্ডা মাথার সেরা প্রার্থী 👑' : 'যোগ্য প্রার্থী') : S.bad >= 3 ? 'প্রস্তুতি দরকার' : 'অল্পের জন্য';
+  $('endLine').textContent = `${bn(n)}টা প্রশ্নে ${bn(S.good)}টা সেরা উত্তর, ${bn(S.bad)}টা ভুল। গড় ঘাবড়ানো ${bn(Math.round(avgN))}%। বোর্ডের মন ${bn(Math.round(clamp(S.imp, 0, 100)))}%।`;
+  $('eS').textContent = bn(sc); $('eG').textContent = bn(S.good) + '/' + bn(n); $('eN').textContent = bn(Math.round(avgN)) + '%'; $('eTip').textContent = pick(TIPS);
+  setTimeout(() => { $('endO').hidden = false; if (hired && window.KHViral) KHViral.confetti(); }, 300); SH.saveScore(sc); lastScore = sc; }
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 64 : 48; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+function loop(ts) { const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  if (S && !S.over) step(dt);
+  for (const h of PANEL) h.update(dt, 0, 1);
+  const nv = S ? S.nerv / 100 : 0, sh = nv > .6 ? (nv - .6) * .012 : 0, port = W / H < .8;
+  cam.position.set(Math.sin(T0 * 23) * sh, (port ? 1.28 : 1.22) + Math.sin(T0 * 1.2) * .01, port ? 1.55 : 1.25); cam.lookAt(0, port ? .98 : 1.02, -1.3);
+  if (renderer) renderer.render(scene, cam); requestAnimationFrame(loop); }
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = e => { e.stopPropagation(); start(+b.dataset.lv); });
+$('brB').onclick = breath; addEventListener('keydown', e => { if (e.key === ' ') breath(); });
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `ইন্টারভিউ সারভাইভালে ${bn(lastScore)} পয়েন্ট! 💼 আপনি চাকরিটা পাবেন তো? ${location.origin}/games/interview/`; try { navigator.clipboard.writeText(t).then(() => say('কপি হয়েছে, শেয়ার করুন!', '#86efac')); } catch (e) {} };
+resize(); last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+window.KHG = { get S() { return S; }, start, answer, breath, ready: false };
+</script>
+<script src="/js/update.js"></script>
+</body></html>
