@@ -99,7 +99,10 @@ function cricMatch(id, A, B, pa, pb, start, now, tour, label, seed) {
     m.status = `${gen(b.bn)} জিততে ${bnNum(120 - i2.legal)} বলে ${bnNum(sim.target - i2.r)} রান দরকার`;
   } else m.status = sim.inns[0] && sim.inns[0].done ? 'ইনিংস বিরতি' : `${a.bn} ব্যাট করছে`;
   m.toss = `টস: ${a.bn} (ব্যাটিং)`;
-  return { m, det: { card: sim.inns.map(x => x.card), comm: sim.comm, ov: sim.inns.map(x => ({ t: x.tn, o: x.ovr })) } };
+  const li = sim.inns[sim.inns.length - 1];
+  const cur = li && state === 'live' ? { bat: li.card.bat.filter(b => b[1] === 'ব্যাট করছেন').map(b => [b[0], b[2], b[3], b[4], b[5]]), bowl: li.card.bowl.slice(-1).map(b => [b[0], b[1], b[3], b[4]]), part: li.card.bat.filter(b => b[1] === 'ব্যাট করছেন').reduce((t, b) => t + b[2], 0), last: null, fow: [] } : null;
+  const mom = state === 'done' ? (sim.result === 'b' ? pb[2] : pa[2]) : '';
+  return { m, det: { card: sim.inns.map(x => x.card), comm: sim.comm, ov: sim.inns.map(x => ({ t: x.tn, o: x.ovr })), cur, mom } };
 }
 
 /* ---------- ফুটবল: ৯০ মিনিটের নকল খেলা ---------- */
@@ -113,14 +116,14 @@ function fbMatch(id, A, B, pa, pb, start, now, tour, label, seed, national = tru
   const a = team(A, national), b = team(B, national);
   const min = Math.floor((now - start) / 60e3); // বাস্তব ১ মিনিট = খেলার ১ মিনিট
   const R = rng(seed);
-  const ev = [];
+  const ev = [], gl = [];
   let ga = 0, gb = 0;
   const playMin = min < 0 ? -1 : min <= 45 ? min : min < 60 ? 45 : Math.min(90, min - 15);
   for (let t = 1; t <= 90; t++) {
     const x = R(), y = R(), z = R();
     if (t > playMin) continue;
-    if (x < 0.022) { ga++; ev.push({ o: t + "'", k: 'G', t: `গোল! ${pa[Math.floor(z * 7)]} (${a.bn || a.name}) · ${bnNum(ga)}-${bnNum(gb)}` }); }
-    else if (x < 0.040) { gb++; ev.push({ o: t + "'", k: 'G', t: `গোল! ${pb[Math.floor(z * 7)]} (${b.bn || b.name}) · ${bnNum(ga)}-${bnNum(gb)}` }); }
+    if (x < 0.022) { ga++; gl.push({ s: 'a', m: t, n: pa[Math.floor(z * 7)], k: 'G' }); ev.push({ o: t + "'", k: 'G', t: `গোল! ${pa[Math.floor(z * 7)]} (${a.bn || a.name}) · ${bnNum(ga)}-${bnNum(gb)}` }); }
+    else if (x < 0.040) { gb++; gl.push({ s: 'b', m: t, n: pb[Math.floor(z * 7)], k: 'G' }); ev.push({ o: t + "'", k: 'G', t: `গোল! ${pb[Math.floor(z * 7)]} (${b.bn || b.name}) · ${bnNum(ga)}-${bnNum(gb)}` }); }
     else if (y < 0.04) { const s = z < 0.5; ev.push({ o: t + "'", k: 'Y', t: `হলুদ কার্ড: ${(s ? pa : pb)[Math.floor(R() * 7)]} (${s ? a.bn || a.name : b.bn || b.name})` }); }
     else if (t > 58 && y > 0.965) { const s = z < 0.5; ev.push({ o: t + "'", k: 'S', t: `বদলি (${s ? a.bn || a.name : b.bn || b.name}): নতুন খেলোয়াড় ঢুকলেন` }); }
   }
@@ -150,7 +153,7 @@ function fbMatch(id, A, B, pa, pb, start, now, tour, label, seed, national = tru
   const pos = ['G', 'D', 'D', 'D', 'D', 'M', 'M', 'M', 'F', 'F', 'F'];
   const xi = ps => pos.map((p, i) => [i + 1, (ps[i % ps.length] || 'খেলোয়াড়') + (i >= ps.length ? ' ' + (i + 1) : ''), p]);
   const lu = state === 'upcoming' ? [] : [{ t: a.bn || a.name, f: '4-3-3', coach: 'নমুনা কোচ', xi: xi(pa), sub: [] }, { t: b.bn || b.name, f: '4-4-2', coach: 'নমুনা কোচ', xi: xi(pb), sub: [] }];
-  return { m, det: { comm, stats, lu } };
+  return { m, det: { comm, stats, lu, gl } };
 }
 
 // সব নমুনা ম্যাচ (id-তে চক্র নম্বর থাকে, তাই প্রতিটা চক্রে ভোটও নতুন)

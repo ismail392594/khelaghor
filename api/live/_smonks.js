@@ -25,7 +25,7 @@ export async function smCall(path, params = {}) {
 }
 
 export const LIST_INC = 'runs,localteam,visitorteam,league,stage,venue';
-export const DETAIL_INC = 'runs,localteam,visitorteam,league,stage,venue,batting.batsman,batting.result,bowling.bowler,balls.score,balls.batsman,balls.bowler';
+export const DETAIL_INC = 'runs,localteam,visitorteam,league,stage,venue,manofmatch,batting.batsman,batting.result,bowling.bowler,balls.score,balls.batsman,balls.bowler';
 
 const FMT = t => { const s = String(t || '').toLowerCase(); return /t20/.test(s) ? 't20' : /t10/.test(s) ? 't10' : /odi|list a|one day|50/.test(s) ? 'odi' : /test|4day|first class/.test(s) ? 'test' : s; };
 const DONE = /^(finished|aban|cancl|no result)/i;
@@ -59,7 +59,7 @@ export function smSummary(x) {
     id: 's_' + x.id, sport: 'cricket', src: 'sm', state, start: Date.parse(x.starting_at) || 0,
     tour: (x.league && x.league.name ? x.league.name : '') + (x.stage && x.stage.name && x.league && x.stage.name !== x.league.name ? ' · ' + x.stage.name : ''),
     label: matchLabel(x.round) || '', test: fmt === 'test', intl: national, rk: rankOf(na, nb), fmt,
-    venue: (x.venue && x.venue.name) || '', city: (x.venue && x.venue.city) || '', a, b, inns, status: st, raw: (x.note || status).slice(0, 120)
+    sid: x.season_id || null, venue: (x.venue && x.venue.name) || '', city: (x.venue && x.venue.city) || '', a, b, inns, status: st, raw: (x.note || status).slice(0, 120)
   };
   if (state === 'live' && /stump/i.test(status)) out.pause = true;
   if (state === 'done') {
@@ -126,5 +126,25 @@ export function smDetail(x, sum) {
     if (s.is_wicket || s.out) arr[i][1]++;
   }
   const ov = [...ovMap.entries()].sort((p, q) => String(p[0]).localeCompare(String(q[0]))).map(([sb, arr]) => { const T = teamOfBoard(sb); return { t: T ? T.bn || T.name : '', o: arr }; });
-  return { card, comm: comm.reverse().slice(0, 160), ov };
+  // এখন মাঠে: ক্রিজের দুই ব্যাটার, বর্তমান বোলার, চলমান জুটি আর শেষ উইকেট (শেষ ইনিংস থেকে)
+  let cur = null;
+  const curSb = boards[boards.length - 1];
+  if (curSb) {
+    const bat = list(x.batting).filter(b => b.scoreboard === curSb);
+    const bowl = list(x.bowling).filter(b => b.scoreboard === curSb);
+    const n = +String(curSb).replace(/\D/g, '') || 1;
+    const r = runs.find(q => +q.inning === n);
+    const fow = bat.filter(b => +b.fow_score > 0).map(b => ({ n: pname(b.batsman), r: +b.score || 0, at: +b.fow_score, ov: +b.fow_balls || 0 })).sort((p, q) => p.at - q.at);
+    const last = fow[fow.length - 1];
+    const tot = r ? +r.score || 0 : 0;
+    cur = {
+      bat: bat.filter(b => b.active).map(b => [pname(b.batsman), +b.score || 0, +b.ball || 0, +(b.four_x ?? b.fout_x) || 0, +b.six_x || 0]),
+      bowl: bowl.filter(b => b.active).map(b => [pname(b.bowler), +b.overs || 0, +b.runs || 0, +b.wickets || 0]).slice(0, 1),
+      part: r ? tot - (last ? last.at : 0) : null,
+      last: last ? [last.n, last.r, last.at, last.ov] : null,
+      fow: fow.map(f => [f.n, f.at, f.ov])
+    };
+  }
+  const mom = x.manofmatch ? pname(x.manofmatch) : '';
+  return { card, comm: comm.reverse().slice(0, 160), ov, cur, mom };
 }
