@@ -2,6 +2,7 @@
 //
 // দরকার (Vercel → Settings → Environment Variables):
 //   CRICKET_API_KEY          : cricketdata.org থেকে পাওয়া key (না থাকলে ক্রিকেটে নমুনা ডাটা দেখায়)
+//   SPORTMONKS_TOKEN         : (ইচ্ছা হলে) Sportmonks ক্রিকেটের token, থাকলে দ্রুত স্কোর আর আসল বল-বাই-বল
 //   FOOTBALL_API_KEY         : dashboard.api-football.com থেকে পাওয়া key (না থাকলে ফুটবলে নমুনা ডাটা)
 //   FIREBASE_SERVICE_ACCOUNT : আগে থেকেই আছে
 //   LIVE_FB_LEAGUES          : (ইচ্ছা হলে) কোন ফুটবল প্রতিযোগিতা দেখাবে, যেমন "1,2,39"
@@ -13,7 +14,8 @@
 // GET  /api/live?f=me              → (লগইন) আমার পয়েন্ট আর ভোট
 // GET  /api/live?f=diag            → ডাটা ঠিকমতো আসছে কিনা দেখার ছোট রিপোর্ট (কোনো key দেখায় না)
 // POST /api/live?f=vote {id,pick}  → (লগইন) "কে জিতবে?" ভোট
-import { getFeed, getMatch, vote, me, board, diag, table, HttpErr, POINTS, EXACT } from './_store.js';
+// POST /api/live?f=react {id,e,n}  → দর্শকের ইমোজি প্রতিক্রিয়া (fire, wow, clap, sad, love)
+import { getFeed, getMatch, vote, me, board, diag, table, react, HttpErr, POINTS, EXACT } from './_store.js';
 
 const cache = (res, s, swr) => res.setHeader('Cache-Control', s ? `public, max-age=0, s-maxage=${s}, stale-while-revalidate=${swr}` : 'no-store');
 
@@ -24,6 +26,7 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       cache(res, 0);
       if (f === 'vote') return res.status(200).json(await vote(req));
+      if (f === 'react') return res.status(200).json(await react(req));
       throw new HttpErr(405, 'ভুল অনুরোধ');
     }
     if (req.method !== 'GET') throw new HttpErr(405, 'ভুল অনুরোধ');

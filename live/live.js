@@ -216,7 +216,10 @@ async function loadDetail() {
   try {
     const d = await get('f=match&id=' + encodeURIComponent(id));
     if (S.open !== id) return;
+    const prevTop = S.det && S.det.id === id && S.det.det && S.det.det.comm && S.det.det.comm[0];
+    d.id = id;
     S.det = d;
+    burstFor(prevTop, d.det && d.det.comm && d.det.comm[0]);
     renderDetail(d.m, d.det, d.votes);
   } catch (e) {
     if (!S.det && S.open === id) $('pBody').innerHTML = `<div class="empty"><span class="em">📡</span>${esc(e.message)}</div>`;
@@ -256,6 +259,7 @@ function renderDetail(m, det, votes) {
 <div class="vs">${team('a')}<div class="mid">${mid}</div>${team('b')}</div>${st}<div class="hsub">${sub}</div>`;
   renderInsight(m);
   renderVote(m, votes);
+  renderFun(m, S.det && S.det.id === m.id ? S.det.react : null);
   const tabs = m.sport === 'cricket' ? [['c', 'বল-বাই-বল'], ['s', 'স্কোরকার্ড']] : [['c', 'ঘটনা'], ['s', 'পরিসংখ্যান']];
   if (m.sport === 'football' && m.lg && m.season && !m.demo) tabs.push(['t', 'টেবিল']);
   if (!S.tab) S.tab = 'c';
@@ -350,6 +354,43 @@ function statsHtml(det) {
     const x = num(a), y = num(b), t = x + y || 1;
     return `<div class="stat"><div class="l"><b>${bn(a)}</b><span>${esc(l)}</span><b>${bn(b)}</b></div><div class="b"><i style="flex:${x / t || 0.001}"></i><i style="flex:${y / t || 0.001}"></i></div></div>`;
   }).join('');
+}
+
+/* ---------- মজার অংশ: ইমোজি প্রতিক্রিয়া, হাইলাইটস, টিভি ---------- */
+const RX = [['fire', '🔥'], ['wow', '😱'], ['clap', '👏'], ['sad', '😭'], ['love', '❤️']];
+const rxLocal = {}; let rxQueue = {}, rxTimer = null;
+function renderFun(m, react) {
+  const r = Object.assign({}, react || {});
+  for (const [k] of RX) r[k] = (r[k] || 0) + ((rxLocal[m.id] || {})[k] || 0);
+  const q = encodeURIComponent;
+  const names = `${m.a.name} vs ${m.b.name}`;
+  const hl = `https://www.youtube.com/results?search_query=${q(names + ' highlights ' + (m.tour || ''))}`;
+  const tv = `https://www.google.com/search?q=${q(names + ' live TV channel Bangladesh')}`;
+  $('fBox').innerHTML = `<h3>🎉 দর্শকদের প্রতিক্রিয়া<span>চাপ দিন!</span></h3>
+<div class="rx">${RX.map(([k, e]) => `<button type="button" data-rx="${k}" aria-label="${e}">${e}<small>${bn(r[k] || 0)}</small></button>`).join('')}</div>
+<div class="lnk">${m.state === 'done' ? `<a href="${hl}" target="_blank" rel="noopener">▶ অফিসিয়াল হাইলাইটস</a>` : `<a class="tv" href="${tv}" target="_blank" rel="noopener">📺 টিভিতে কোথায় দেখাচ্ছে</a>`}</div>`;
+}
+function sendRx() {
+  const q = rxQueue; rxQueue = {}; rxTimer = null;
+  for (const [key, n] of Object.entries(q)) {
+    const [id, e] = key.split('|');
+    fetch(API + '?f=react', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, e, n: Math.min(10, n) }) })
+      .then(r => { if (r.ok && S.det && S.det.id === id) { S.det.react = S.det.react || {}; S.det.react[e] = (S.det.react[e] || 0) + n; if (rxLocal[id]) rxLocal[id][e] = Math.max(0, (rxLocal[id][e] || 0) - n); } }).catch(() => {});
+  }
+}
+function flyEmoji(e, x, y) {
+  const d = document.createElement('div'); d.className = 'fly'; d.textContent = e;
+  d.style.left = (x - 16 + (Math.random() * 30 - 15)) + 'px'; d.style.top = (y - 30) + 'px';
+  document.body.appendChild(d); setTimeout(() => d.remove(), 1500);
+}
+// নতুন চার/ছক্কা/আউট/গোল এলে পর্দা জুড়ে বড় লেখা
+function burstFor(prev, top) {
+  if (!top || !prev || (prev.o === top.o && prev.t === top.t)) return;
+  const txt = { '4': 'চার! 🏏', '6': 'ছক্কা! 🚀', W: 'আউট! ☝️', G: 'গোওওল! ⚽' }[top.k];
+  if (!txt) return;
+  const b = $('burst'); b.innerHTML = `<b class="k${top.k}">${txt}</b>`; b.hidden = false;
+  try { navigator.vibrate && navigator.vibrate(top.k === 'W' || top.k === 'G' ? [80, 60, 80] : 60); } catch (e) {}
+  clearTimeout(burstFor.t); burstFor.t = setTimeout(() => { b.hidden = true; }, 1900);
 }
 
 /* ---------- কে জিতবে? ভোট ---------- */
@@ -609,6 +650,15 @@ function wrap(x, t, cx, y, maxW, lh) {
   for (const w of words) { const test = line ? line + ' ' + w : w; if (x.measureText(test).width > maxW && line) { x.fillText(line, cx, y + n * lh); line = w; n++; if (n > 1) return; } else line = test; }
   x.fillText(line, cx, y + n * lh);
 }
+$('fBox').addEventListener('click', e => {
+  const b = e.target.closest('[data-rx]'); if (!b || !S.open) return;
+  const k = b.dataset.rx, id = S.open;
+  rxLocal[id] = rxLocal[id] || {}; rxLocal[id][k] = (rxLocal[id][k] || 0) + 1;
+  const sm = b.querySelector('small'); sm.textContent = bn((parseInt(sm.textContent.replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d)), 10) || 0) + 1);
+  const r = b.getBoundingClientRect(); flyEmoji(b.firstChild.textContent, r.left + r.width / 2, r.top);
+  rxQueue[id + '|' + k] = (rxQueue[id + '|' + k] || 0) + 1;
+  if (!rxTimer) rxTimer = setTimeout(sendRx, 2000);
+});
 $('ptsBtn').onclick = openBoard;
 $('lbSheet').addEventListener('click', e => { if (e.target === $('lbSheet') || e.target.closest('[data-x]')) $('lbSheet').hidden = true; });
 addEventListener('popstate', () => {

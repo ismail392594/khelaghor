@@ -233,6 +233,21 @@ body{background:radial-gradient(900px 380px at 50% -160px,#3a2fb8 0,transparent 
 table.lt td,table.lt th{padding:7px 3px;font-size:.8rem}
 table.lt tr.hi td{background:rgba(255,199,39,.12);font-weight:700}
 .hero .vs .t .s{font-size:1.6rem}
+/* ইমোজি প্রতিক্রিয়া, হাইলাইটসের বোতাম আর চার/ছক্কা/গোলের বড় অ্যানিমেশন */
+.rx{display:flex;justify-content:space-between;gap:6px}
+.rx button{flex:1;border:1px solid var(--line);background:var(--card2);border-radius:14px;padding:8px 2px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:1.5rem;line-height:1;transition:transform .1s}
+.rx button:active{transform:scale(.9)}
+.rx button small{font-size:.72rem;color:var(--dim);font-weight:700}
+.lnk{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.lnk a{flex:1;min-width:140px;text-align:center;text-decoration:none;border-radius:12px;padding:10px 8px;font-weight:700;font-size:.86rem;color:#fff;background:linear-gradient(135deg,#e11d48,#9f1239)}
+.lnk a.tv{background:linear-gradient(135deg,#2563eb,#1e3a8a)}
+.fly{position:fixed;z-index:80;font-size:2rem;pointer-events:none;animation:fly 1.4s ease-out forwards}
+@keyframes fly{to{transform:translateY(-220px) scale(1.4);opacity:0}}
+.burst{position:fixed;inset:0;z-index:85;display:grid;place-items:center;pointer-events:none}
+.burst b{font-family:var(--display);font-size:4.2rem;font-weight:800;padding:10px 34px;border-radius:28px;color:#fff;animation:pop 1.9s ease-out forwards;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.burst b.k4{background:linear-gradient(135deg,#0ea5e9,#2563eb)}.burst b.k6{background:linear-gradient(135deg,#a855f7,#6d28d9)}
+.burst b.kW{background:linear-gradient(135deg,#ff3b5c,#b91c1c)}.burst b.kG{background:linear-gradient(135deg,#22c55e,#15803d)}
+@keyframes pop{0%{transform:scale(.3) rotate(-8deg);opacity:0}15%{transform:scale(1.15) rotate(2deg);opacity:1}30%{transform:scale(1)}80%{opacity:1}100%{transform:scale(1.1);opacity:0}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head><body>
@@ -269,11 +284,13 @@ table.lt tr.hi td{background:rgba(255,199,39,.12);font-weight:700}
   <div class="wrap">
     <div class="box ins" id="iBox" hidden></div>
     <div class="box" id="vBox"></div>
+    <div class="box fun" id="fBox"></div>
     <div class="tabs" role="tablist" id="pTabs"></div>
     <div id="pBody"></div>
   </div>
 </section>
 
+<div class="burst" id="burst" hidden aria-live="assertive"></div>
 <div class="sheet" id="lbSheet" hidden>
   <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="lbT">
     <button class="ib xb" type="button" data-x aria-label="বন্ধ করুন">✕</button>
