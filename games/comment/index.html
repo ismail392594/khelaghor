@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>ফেসবুক কমেন্ট যোদ্ধা · খেলাঘর</title>
+<meta name="description" content="সোশ্যাল মিডিয়ার ফিডে গুজব, প্রতারণা আর সত্যি খবর! যাচাই করুন, গুজব রিপোর্ট করুন, দরকারি খবর শেয়ার করুন, আর কমেন্টে ভদ্র থাকুন। আপনি কি সত্যিকারের কমেন্ট যোদ্ধা?">
+<link rel="canonical" href="https://khelaghorbd.online/games/comment/">
+<meta property="og:title" content="ফেসবুক কমেন্ট যোদ্ধা · খেলাঘর">
+<meta property="og:description" content="শেয়ার করার আগে যাচাই! গুজব চিনতে পারবেন?">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/comment.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/comment.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+:root{--accent:#60a5fa}
+.feedwrap{position:absolute;inset:0;display:flex;justify-content:center;background:linear-gradient(#111827,#0b1120);overflow:hidden}
+.phone{position:relative;width:min(100%,430px);height:100%;background:#f0f2f5;color:#1c1e21;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fff;border-bottom:1px solid #dddfe2}
+.topbar .lg{font:800 1.35rem var(--display);color:#166534;letter-spacing:.5px}
+.topbar .sr{flex:1;background:#f0f2f5;border-radius:18px;padding:6px 12px;font-size:.78rem;color:#65676b}
+.meter{display:flex;gap:6px;align-items:center;padding:6px 12px;background:#fff;border-bottom:1px solid #dddfe2;font-size:.72rem;font-weight:700;color:#444}
+.meter .b{flex:1;height:7px;background:#e4e6eb;border-radius:4px;overflow:hidden}.meter .b i{display:block;height:100%;background:#16a34a}
+.post{background:#fff;margin:8px 0;padding:10px 12px 0;animation:slideIn .35s ease-out}
+@keyframes slideIn{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.ph{display:flex;gap:9px;align-items:center}
+.av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:1.3rem;flex:none}
+.pn{font-weight:800;font-size:.9rem}.pt{font-size:.7rem;color:#65676b}
+.ptx{font-size:.95rem;line-height:1.5;margin:8px 0}
+.pimg{height:150px;border-radius:6px;margin:0 -12px;display:grid;place-items:center;font-size:3.4rem;position:relative;overflow:hidden}
+.pimg span{position:absolute;left:10px;bottom:8px;right:10px;color:#fff;font:800 1rem var(--display);text-shadow:0 2px 6px rgba(0,0,0,.6);text-align:left}
+.stats2{display:flex;justify-content:space-between;font-size:.72rem;color:#65676b;padding:6px 0;border-bottom:1px solid #e4e6eb}
+.acts3{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:4px 0}
+.acts3 button{border:0;background:none;padding:9px 2px;border-radius:6px;font:700 .76rem var(--body);color:#65676b;cursor:pointer}
+.acts3 button:active{background:#f0f2f5}
+.acts3 button.sh{color:#1d4ed8}.acts3 button.rp{color:#b91c1c}.acts3 button.vf{color:#15803d}
+.verify{background:#ecfdf5;border-left:4px solid #16a34a;margin:6px 0 8px;padding:7px 9px;font-size:.8rem;border-radius:4px}
+.verify.red{background:#fef2f2;border-color:#dc2626}
+.cbox{display:grid;gap:6px;padding:4px 0 10px}.cbox button{border:1px solid #dddfe2;background:#f0f2f5;border-radius:16px;padding:8px 12px;text-align:left;font:600 .82rem var(--body);cursor:pointer;color:#1c1e21}
+.timer{height:4px;background:#e4e6eb;margin:0 -12px}.timer i{display:block;height:100%;background:#f59e0b;width:100%}
+.res{padding:10px 12px;font-weight:800;font-size:.9rem;border-radius:8px;margin:6px 0 10px}
+.res.good{background:#dcfce7;color:#166534}.res.bad{background:#fee2e2;color:#991b1b}.res.meh{background:#fef9c3;color:#854d0e}
+.scrollb{margin:0 auto 12px;display:block;border:0;background:#1d4ed8;color:#fff;border-radius:10px;padding:9px 18px;font:800 .85rem var(--body);cursor:pointer}
+.feed{flex:1;overflow:auto}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="sc">০</b><small>পয়েন্ট</small></div>
+    <div class="stat r"><b id="left">০/১২</b><small>পোস্ট</small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <div class="feedwrap"><div class="phone"><div class="topbar"><span class="lg">বইপাতা</span><span class="sr">🔍 খুঁজুন</span><span>🔔</span></div><div class="meter">🛡️ আপনার বিশ্বাসযোগ্যতা<div class="b"><i id="credB"></i></div><span id="reach">গুজব ছড়ালো: ০ জন</span></div><div class="feed" id="feed"></div></div></div>
+    <div class="say" id="say" hidden></div>
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>ফেসবুক কমেন্ট যোদ্ধা</h1>
+        <p class="story">ফোন খুললেই ফিড ভর্তি: "শেয়ার না করলে পাপ হবে!", "কাল থেকে নোট বাতিল!", "রক্ত লাগবে জরুরি"। কোনটা সত্যি, কোনটা গুজব, কোনটা প্রতারণা? আপনার একটা শেয়ারে হাজার মানুষ বিভ্রান্ত হতে পারে।</p>
+        <div class="rules">
+          <div>🔍 <b>যাচাই</b> করলে সূত্র দেখা যায় (একটু সময় যায়)। সন্দেহ হলে আগে যাচাই!</div>
+          <div>↗️ <b>শেয়ার</b> শুধু সত্যি আর দরকারি খবর। 🚩 <b>রিপোর্ট</b> গুজব আর প্রতারণা। কিছু না করে <b>স্ক্রল</b> করাও চলে।</div>
+          <div>💬 <b>কমেন্ট</b> করতে চাইলে ভদ্র ভাষায়। গালি বা খোঁচা দিলে পয়েন্ট কাটবে।</div>
+        </div>
+        <div class="lvl">
+          <button data-lv="0">নতুন ব্যবহারকারী<small>৮ পোস্ট</small></button>
+          <button data-lv="1">নিয়মিত<small>১২ পোস্ট</small></button>
+          <button data-lv="2">সারাদিন অনলাইন<small>১৬ পোস্ট, দ্রুত</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">সব পোস্ট, নাম আর পেজ কাল্পনিক। "বইপাতা" খেলাঘরের বানানো কাল্পনিক অ্যাপ।</p>
+      </div>
+    </div>
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">ফিড শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eOk">০</b><span>ঠিক সিদ্ধান্ত</span></div><div><b id="eR">০</b><span>গুজব ছড়ালো</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার স্ক্রল</button><button class="gbtn ghost" id="menuBtn">স্তর বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">💬</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import { gameShell, sound, bn, pick, rnd, clamp, esc } from "/js/kh-shell.js";
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'comment', name: 'ফেসবুক কমেন্ট যোদ্ধা', lbTitle: 'সেরা সত্য-যোদ্ধা', offMsg: 'ইন্টারনেট নেই! পরে আসেন।' });
+const SND = sound(SH);
+/* পোস্ট: k = fake (গুজব), scam (প্রতারণা), real (সত্যি দরকারি), chat (মতামত, কমেন্টের পরীক্ষা) */
+const POSTS = [
+  { k: 'fake', who: 'সত্য সংবাদ ২৪ (পেজ)', av: '📰', bg: '#b91c1c', t: '⚠️ জরুরি! কাল থেকে ৫০০ টাকার সব নোট বাতিল! আজকের মধ্যে খরচ করে ফেলুন! বেশি বেশি শেয়ার করুন!!', img: ['💵', 'নোট বাতিল!!!'], v: 'সূত্র: কোনো সরকারি ঘোষণা নেই। পেজটা ৪ দিন আগে খোলা। বাংলাদেশ ব্যাংকের ওয়েবসাইটে এমন কিছু নেই।', likes: '১২ হাজার' },
+  { k: 'fake', who: 'স্বাস্থ্য টিপস বিডি', av: '🌿', bg: '#15803d', t: 'ডাক্তাররা চান না আপনি জানুন! পেঁপে পাতার রস ৩ দিন খেলে ডেঙ্গু পুরোপুরি সেরে যায়, হাসপাতালে যাওয়ার দরকার নেই!', img: ['🍃', 'ডেঙ্গুর ঘরোয়া চিকিৎসা'], v: 'সূত্র: কোনো গবেষণা বা চিকিৎসকের নাম নেই। ডেঙ্গুতে ডাক্তারের পরামর্শ আর প্রয়োজনে হাসপাতাল জরুরি; ভুল তথ্যে জীবন ঝুঁকিতে পড়ে।', likes: '৮ হাজার' },
+  { k: 'fake', who: 'দেশ বিদেশ নিউজ', av: '🌍', bg: '#7c2d12', t: 'বিজ্ঞানীরা নিশ্চিত করেছেন: আজ রাত ২টায় ঢাকায় বড় ভূমিকম্প হবে! সবাই বাসা থেকে বের হয়ে থাকুন!', img: ['🏚️', 'আজ রাতেই ভূমিকম্প!'], v: 'সূত্র: ভূমিকম্পের দিন-সময় আগে থেকে বলার কোনো বৈজ্ঞানিক উপায় নেই। আবহাওয়া অধিদপ্তর এমন কিছু বলেনি।', likes: '২৫ হাজার' },
+  { k: 'fake', who: 'বাজার খবর', av: '🧂', bg: '#6b7280', t: 'লবণের দাম কাল থেকে ২০০ টাকা কেজি! দোকানে লবণ শেষ হয়ে যাচ্ছে, এখনই ১০ কেজি কিনে রাখুন!', img: ['🧂', 'লবণ শেষ!'], v: 'সূত্র: কোনো সূত্র নেই। এমন গুজবে মানুষ আতঙ্কে কিনতে গিয়ে সত্যিই সংকট তৈরি করে।', likes: '৯ হাজার' },
+  { k: 'fake', who: 'এলাকার খবর (গ্রুপ)', av: '👥', bg: '#92400e', t: 'সাবধান! এলাকায় ছেলেধরা ঘুরছে, কালো ব্যাগ হাতে অচেনা কাউকে দেখলেই ধরুন!', img: ['⚠️', 'ছেলেধরা!'], v: 'সূত্র: পুলিশ এমন কিছু জানায়নি। এমন গুজবে নিরপরাধ মানুষ গণপিটুনির শিকার হয়েছেন। সন্দেহ হলে ৯৯৯-এ জানান, নিজে আইন হাতে নয়।', likes: '৪ হাজার' },
+  { k: 'scam', who: 'ফ্রি ইন্টারনেট অফার', av: '📶', bg: '#1d4ed8', t: '🎁 অপারেটরের ৩০তম জন্মদিনে সবার জন্য ৫০ জিবি ফ্রি! নিচের লিংকে গিয়ে নম্বর আর ওটিপি দিন!', img: ['🎁', '৫০ জিবি ফ্রি!!'], v: 'সূত্র: লিংকটা অদ্ভুত ঠিকানার, আসল অপারেটরের না। কেউ কখনো ওটিপি চায় না; দিলে অ্যাকাউন্ট হ্যাক হবে।', likes: '৩ হাজার' },
+  { k: 'scam', who: 'ব্যাংক কাস্টমার কেয়ার', av: '🏦', bg: '#0f766e', t: 'প্রিয় গ্রাহক, আপনার কার্ড ব্লক হয়ে গেছে। চালু করতে এই নম্বরে কার্ডের পিন আর সিভিভি পাঠান।', img: ['💳', 'কার্ড ব্লক!'], v: 'সূত্র: কোনো ব্যাংক কখনো পিন বা সিভিভি চায় না। এটা প্রতারণা।', likes: '১ হাজার' },
+  { k: 'scam', who: 'লটারি বিজয়ী', av: '🏆', bg: '#a16207', t: 'অভিনন্দন! আপনি ১০ লাখ টাকার লটারি জিতেছেন! টাকা পেতে আগে ৫ হাজার টাকা "প্রসেসিং ফি" বিকাশ করুন।', img: ['💰', '১০ লাখ জিতেছেন!'], v: 'সূত্র: আপনি কোনো লটারিতে অংশই নেননি। আগে টাকা চাওয়া মানেই প্রতারণা।', likes: '৫০০' },
+  { k: 'real', who: 'রক্তদান গ্রুপ', av: '🩸', bg: '#be123c', t: 'জরুরি: ঢাকা মেডিকেল কলেজ হাসপাতালে এক রোগীর জন্য আজ বিকেলে ২ ব্যাগ O+ রক্ত লাগবে। রোগীর স্বজনের সাথে যোগাযোগ করুন (নম্বর গ্রুপে যাচাই করা)।', img: ['🩸', 'O+ রক্ত লাগবে'], v: 'সূত্র: গ্রুপের অ্যাডমিন হাসপাতালের ভর্তি কাগজ দেখে যাচাই করেছেন। শেয়ার করলে রক্তদাতা পাওয়া সহজ হবে।', likes: '৬০০' },
+  { k: 'real', who: 'আবহাওয়া আপডেট', av: '🌧️', bg: '#0369a1', t: 'আবহাওয়া অধিদপ্তরের পূর্বাভাস: আজ সন্ধ্যায় ঢাকাসহ কয়েক জেলায় বজ্রসহ বৃষ্টি হতে পারে। খোলা মাঠে থাকবেন না।', img: ['⛈️', 'আজ সন্ধ্যায় বৃষ্টি'], v: 'সূত্র: আবহাওয়া অধিদপ্তরের ওয়েবসাইটে একই পূর্বাভাস আছে।', likes: '২ হাজার' },
+  { k: 'real', who: 'থানা পুলিশ (যাচাইকৃত পেজ)', av: '👮', bg: '#1e3a8a', t: 'একটি হারানো শিশুকে পাওয়া গেছে, থানায় নিরাপদে আছে। অভিভাবককে পরিচয়পত্রসহ থানায় যোগাযোগ করতে অনুরোধ করা হলো।', img: ['🧒', 'হারানো শিশু পাওয়া গেছে'], v: 'সূত্র: থানার যাচাই করা অফিসিয়াল পেজ। শেয়ার করলে পরিবার দ্রুত খুঁজে পাবে।', likes: '৫ হাজার' },
+  { k: 'real', who: 'উপজেলা স্বাস্থ্য কমপ্লেক্স', av: '💉', bg: '#047857', t: 'আগামী শুক্রবার শিশুদের বিনামূল্যে টিকা দেওয়া হবে। টিকা কার্ড সঙ্গে আনুন। বিস্তারিত স্বাস্থ্য অধিদপ্তরের ওয়েবসাইটে।', img: ['💉', 'বিনামূল্যে টিকা'], v: 'সূত্র: সরকারি স্বাস্থ্য কমপ্লেক্সের অফিসিয়াল পেজ, ওয়েবসাইটেও একই তথ্য।', likes: '১ হাজার' },
+  { k: 'chat', who: 'ক্রিকেটপ্রেমী রাফি', av: '🏏', bg: '#16a34a', t: 'আজকের ম্যাচে হারটা খুব কষ্ট দিল। ব্যাটিং অর্ডারটা কি ঠিক ছিল? আপনাদের কী মনে হয়?', img: ['🏏', 'কষ্টের হার'], c: [['এরা সব বাজে, খেলা ছেড়ে দেওয়া উচিত! 🤬', 'bad'], ['হা হা, আবার হারলো 😂', 'meh'], ['কষ্ট লাগছে, তবে ব্যাটিং অর্ডারে মিডল অর্ডারে আরেকজন ব্যাটার থাকলে ভালো হতো। পরের ম্যাচে ঘুরে দাঁড়াবে ইনশাআল্লাহ।', 'good']] },
+  { k: 'chat', who: 'নীলা (রান্নার ছবি)', av: '👩‍🍳', bg: '#c2410c', t: 'প্রথমবার বিরিয়ানি রান্না করলাম! একটু শক্ত হয়ে গেছে, তবু খুশি 😊', img: ['🍛', 'আমার প্রথম বিরিয়ানি'], c: [['এটা বিরিয়ানি নাকি খিচুড়ি? 😂', 'meh'], ['রান্না পারো না তো পোস্ট দাও কেন!', 'bad'], ['অভিনন্দন! প্রথমবারেই দারুণ দেখাচ্ছে। চাল একটু বেশি ভিজিয়ে নিলে নরম হবে।', 'good']] },
+  { k: 'chat', who: 'স্কুলের বড় ভাই তানভীর', av: '🎓', bg: '#4338ca', t: 'এসএসসিতে A+ পাইনি, B এসেছে। মনটা খারাপ।', img: ['📄', 'রেজাল্ট'], c: [['B? লজ্জার ব্যাপার!', 'bad'], ['আমার তো A+ 😎', 'meh'], ['মন খারাপ কোরো না ভাই, একটা রেজাল্ট জীবন ঠিক করে না। সামনে অনেক সুযোগ, আমরা পাশে আছি।', 'good']] },
+  { k: 'fake', who: 'বিস্ময়কর তথ্য', av: '😱', bg: '#9d174d', t: 'এই ছবিটা ১১ জনকে শেয়ার করলে ৭ দিনের মধ্যে সুখবর পাবেন, না করলে বিপদ!', img: ['🔮', '১১ জনকে শেয়ার করুন'], v: 'সূত্র: এটা "চেইন পোস্ট"; শুধু শেয়ার বাড়াতে ভয় দেখায়। এর কোনো সত্যতা নেই।', likes: '৩০ হাজার' }];
+const LV = [{ n: 'নতুন ব্যবহারকারী', cnt: 8, sec: 18 }, { n: 'নিয়মিত', cnt: 12, sec: 14 }, { n: 'সারাদিন অনলাইন', cnt: 16, sec: 10 }];
+const SFX = { good() { [659, 880].forEach((f, i) => SND.tone(f, .12, 'triangle', .2, 0, i * .07)); }, bad() { SND.tone(200, .35, 'sawtooth', .12, 120); }, pop() { SND.tone(900, .05, 'sine', .08); }, tick() { SND.tone(1400, .03, 'square', .04); } };
+let S = null, lv = 1, lastScore = 0, tmr = null;
+function say(t, col, ms) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, ms || 1300); }
+function hud() { $('sc').textContent = bn(Math.max(0, S.score)); $('left').textContent = bn(Math.min(S.i + 1, S.list.length)) + '/' + bn(S.list.length); $('credB').style.width = S.cred + '%'; $('credB').style.background = S.cred < 40 ? '#dc2626' : S.cred < 70 ? '#f59e0b' : '#16a34a'; $('reach').textContent = 'গুজব ছড়ালো: ' + bn(S.reach) + ' জন'; }
+function start(level) {
+  lv = level; const L = LV[lv]; const pool = [...POSTS].sort(() => Math.random() - .5); const list = []; const kinds = ['fake', 'scam', 'real', 'chat'];
+  for (const k of kinds) list.push(...pool.filter(p => p.k === k).slice(0, Math.ceil(L.cnt / 4))); list.sort(() => Math.random() - .5);
+  S = { list: list.slice(0, L.cnt), i: 0, score: 0, cred: 70, reach: 0, ok: 0, verified: 0, rude: 0, over: false };
+  ['startO', 'endO'].forEach(i => $(i).hidden = true); $('feed').innerHTML = ''; SND.ac; hud(); show();
+}
+function show() {
+  const p = S.list[S.i], L = LV[lv]; if (!p) return endGame(); S.cur = { p, done: false, t: L.sec, ver: false };
+  const el = document.createElement('div'); el.className = 'post';
+  el.innerHTML = `<div class="ph"><div class="av" style="background:${p.bg}22">${p.av}</div><div><div class="pn">${esc(p.who)}</div><div class="pt">${pick(['২ মিনিট', '১৫ মিনিট', '১ ঘণ্টা', '৩ ঘণ্টা'])} আগে · 🌐</div></div></div>
+    <div class="ptx">${esc(p.t)}</div><div class="pimg" style="background:linear-gradient(135deg,${p.bg},#111)">${p.img[0]}<span>${esc(p.img[1])}</span></div>
+    <div class="stats2"><span>👍❤️😮 ${p.likes || bn(Math.floor(rnd(40, 400)))}</span><span>${bn(Math.floor(rnd(20, 900)))} কমেন্ট · ${bn(Math.floor(rnd(10, 3000)))} শেয়ার</span></div>
+    <div class="timer"><i></i></div><div class="extra"></div>
+    <div class="acts3">${p.k === 'chat' ? '<button class="vf" data-a="cmt">💬 কমেন্ট</button><button data-a="like">👍 লাইক</button><button data-a="skip">⏭️ স্ক্রল</button><button class="rp" data-a="report">🚩 রিপোর্ট</button>' : '<button class="vf" data-a="verify">🔍 যাচাই</button><button class="sh" data-a="share">↗️ শেয়ার</button><button class="rp" data-a="report">🚩 রিপোর্ট</button><button data-a="skip">⏭️ স্ক্রল</button>'}</div>`;
+  $('feed').prepend(el); $('feed').scrollTop = 0; S.cur.el = el; el.querySelectorAll('[data-a]').forEach(b => b.onclick = () => act(b.dataset.a)); SFX.pop(); hud();
+  clearInterval(tmr); tmr = setInterval(() => { if (!S || S.over || S.cur.done) return; S.cur.t -= .1; el.querySelector('.timer i').style.width = clamp(S.cur.t / L.sec * 100, 0, 100) + '%'; if (S.cur.t <= 0) act('timeout'); }, 100);
+}
+function result(txt, cls, pts) { const c = S.cur; c.done = true; S.score += pts; if (pts > 0) { S.ok++; SFX.good(); } else if (pts < 0) SFX.bad(); const ex = c.el.querySelector('.extra'); const r = document.createElement('div'); r.className = 'res ' + cls; r.textContent = txt; ex.appendChild(r); c.el.querySelector('.acts3')?.remove(); c.el.querySelector('.timer')?.remove(); const nb = document.createElement('button'); nb.className = 'scrollb'; nb.textContent = S.i + 1 >= S.list.length ? 'ফলাফল দেখি ✓' : 'পরের পোস্ট ⬇️'; nb.onclick = () => { S.i++; show(); }; c.el.appendChild(nb); hud(); }
+function act(a) {
+  const c = S && S.cur; if (!c || c.done) return; const p = c.p, bad = p.k === 'fake' || p.k === 'scam';
+  if (a === 'verify') { if (c.ver) return; c.ver = true; S.verified++; c.t = Math.max(1.5, c.t - 3); const v = document.createElement('div'); v.className = 'verify' + (bad ? ' red' : ''); v.textContent = '🔍 ' + p.v; c.el.querySelector('.extra').appendChild(v); SFX.tick(); return; }
+  if (a === 'cmt') { const box = document.createElement('div'); box.className = 'cbox'; box.innerHTML = [...p.c].sort(() => Math.random() - .5).map(([t, q]) => `<button data-q="${q}">💬 ${esc(t)}</button>`).join(''); c.el.querySelector('.acts3').replaceWith(box); box.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { box.remove(); const q = b.dataset.q; if (q === 'good') { S.cred = Math.min(100, S.cred + 8); result('ভদ্র, কাজের কমেন্ট! সবাই লাইক দিল 👍', 'good', 120); } else if (q === 'meh') { S.cred -= 4; result('খোঁচা দেওয়া কমেন্ট… কেউ কষ্ট পেল 😕', 'meh', 10); } else { S.cred -= 15; S.rude++; result('গালি দিলেন! আপনার কমেন্ট রিপোর্ট হলো 😡', 'bad', -100); } }); return; }
+  if (p.k === 'chat') { if (a === 'like') return result('লাইক দিলেন, ভালো! (একটা ভালো কমেন্টও করা যেত)', 'meh', 30); if (a === 'report') { S.cred -= 5; return result('সাধারণ পোস্ট রিপোর্ট করার কিছু নেই 🤔', 'bad', -30); } return result('স্ক্রল করে গেলেন।', 'meh', 0); }
+  if (a === 'share') { if (bad) { const n = Math.floor(rnd(300, 2500)); S.reach += n; S.cred = Math.max(0, S.cred - 20); return result(`${p.k === 'scam' ? 'প্রতারণার লিংক' : 'গুজব'} শেয়ার করলেন! ${bn(n)} জন বন্ধু দেখলো 😱`, 'bad', -150); } S.cred = Math.min(100, S.cred + 6); return result('দরকারি সত্যি খবর ছড়ালেন! 💚 অনেকের উপকার হবে', 'good', 120 + (c.ver ? 20 : 0)); }
+  if (a === 'report') { if (bad) { S.cred = Math.min(100, S.cred + 6); return result(`${p.k === 'scam' ? 'প্রতারণা' : 'গুজব'} রিপোর্ট করলেন! 🚩 ঠিক কাজ`, 'good', 100 + (c.ver ? 20 : 0)); } S.cred -= 8; return result('সত্যি খবর রিপোর্ট করলেন! মানুষ জরুরি তথ্য পেল না 😟', 'bad', -60); }
+  if (a === 'skip' || a === 'timeout') { if (bad) return result(a === 'timeout' ? 'সময় শেষ, তবে অন্তত গুজব ছড়াননি' : 'গুজব না ছড়িয়ে এড়িয়ে গেলেন (রিপোর্ট করলে আরো ভালো)', 'meh', 25); return result(p.k === 'real' ? 'দরকারি খবরটা কেউ পেল না… শেয়ার করা যেত' : 'স্ক্রল করে গেলেন।', 'meh', 0); }
+}
+const TIPS = ['জানেন কি? কোনো খবর শেয়ার করার আগে দেখুন: কে লিখেছে, কবে লিখেছে, অন্য বিশ্বস্ত সূত্রেও আছে কিনা।', 'জানেন কি? "বেশি বেশি শেয়ার করুন", "না করলে বিপদ" এসব কথা থাকলে বেশিরভাগ সময়ই গুজব।', 'জানেন কি? কোনো ব্যাংক বা অপারেটর কখনো পিন, সিভিভি বা ওটিপি চায় না।', 'জানেন কি? গুজবে গণপিটুনির মতো ঘটনা ঘটেছে। সন্দেহ হলে ৯৯৯-এ ফোন করুন, নিজে আইন হাতে নেবেন না।'];
+function endGame() {
+  if (S.over) return; S.over = true; clearInterval(tmr); const n = S.list.length, sc = Math.max(0, S.score + S.cred * 3);
+  $('endT').textContent = S.reach === 0 && S.rude === 0 ? 'একটা গুজবও ছড়াননি! 🛡️' : S.reach > 2000 ? 'গুজবের কারখানা হয়ে গেলেন 😱' : 'ফিড শেষ';
+  $('endTitle').textContent = S.ok >= n - 1 ? 'সত্যিকারের কমেন্ট যোদ্ধা 👑' : S.ok >= n * .7 ? 'সচেতন নাগরিক' : S.rude ? 'কমেন্টে আগুন' : 'আরেকটু সাবধান হতে হবে';
+  $('endLine').textContent = `${bn(n)}টা পোস্টে ${bn(S.ok)}টা ঠিক সিদ্ধান্ত, ${bn(S.verified)} বার যাচাই করেছেন। আপনার শেয়ারে গুজব দেখেছে ${bn(S.reach)} জন।${S.rude ? ` ${bn(S.rude)}টা কমেন্ট ছিল অভদ্র।` : ''}`;
+  $('eS').textContent = bn(sc); $('eOk').textContent = bn(S.ok) + '/' + bn(n); $('eR').textContent = bn(S.reach); $('eTip').textContent = pick(TIPS);
+  setTimeout(() => { $('endO').hidden = false; if (S.ok >= n - 1 && window.KHViral) KHViral.confetti(); }, 300); SH.saveScore(sc); lastScore = sc;
+}
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = e => { e.stopPropagation(); start(+b.dataset.lv); });
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `ফেসবুক কমেন্ট যোদ্ধায় ${bn(lastScore)} পয়েন্ট! 🛡️ শেয়ার করার আগে যাচাই করি। আপনি গুজব চিনতে পারবেন? ${location.origin}/games/comment/`; try { navigator.clipboard.writeText(t).then(() => say('কপি হয়েছে, শেয়ার করুন!', '#86efac')); } catch (e) {} };
+// শুরুর আগে ফিডে একটা নমুনা পোস্ট
+$('feed').innerHTML = '<div class="post"><div class="ph"><div class="av" style="background:#16a34a22">🏠</div><div><div class="pn">খেলাঘর</div><div class="pt">এইমাত্র · 🌐</div></div></div><div class="ptx">শেয়ার করার আগে একবার ভাবুন: খবরটা সত্যি তো? 🤔</div><div class="pimg" style="background:linear-gradient(135deg,#166534,#111)">🛡️<span>যাচাই করুন, তারপর শেয়ার</span></div><div class="stats2"><span>👍❤️ ১.২ হাজার</span><span>৮৮ কমেন্ট</span></div></div>';
+window.KHG = { get S() { return S; }, start, act, ready: true };
+</script>
+<script src="/js/update.js"></script>
+</body></html>
