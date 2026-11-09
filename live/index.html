@@ -248,6 +248,20 @@ table.lt tr.hi td{background:rgba(255,199,39,.12);font-weight:700}
 .burst b.k4{background:linear-gradient(135deg,#0ea5e9,#2563eb)}.burst b.k6{background:linear-gradient(135deg,#a855f7,#6d28d9)}
 .burst b.kW{background:linear-gradient(135deg,#ff3b5c,#b91c1c)}.burst b.kG{background:linear-gradient(135deg,#22c55e,#15803d)}
 @keyframes pop{0%{transform:scale(.3) rotate(-8deg);opacity:0}15%{transform:scale(1.15) rotate(2deg);opacity:1}30%{transform:scale(1)}80%{opacity:1}100%{transform:scale(1.1);opacity:0}}
+/* খোঁজা, ছোট লিগ ভাঁজ, ফর্ম, মুখোমুখি, আবহাওয়া */
+.srch{width:100%;border:1px solid var(--line);background:var(--bg2);color:var(--ink);border-radius:12px;padding:9px 12px;font:inherit;font-size:.9rem;margin:-2px 0 10px}
+.srch::placeholder{color:var(--faint)}
+.more{display:block;width:100%;border:1px dashed var(--line);background:none;border-radius:14px;padding:11px;font-weight:700;color:var(--dim);margin:4px 0 12px}
+.sub2{font-size:.78rem;color:var(--dim);font-weight:700;margin:14px 0 6px}
+.frm{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:5px 0;font-size:.86rem}
+.frm span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fm{font-style:normal;display:inline-grid;place-items:center;min-width:26px;height:22px;border-radius:6px;font-size:.7rem;font-weight:800;margin-left:3px;padding:0 3px}
+.fm.fW{background:#16a34a;color:#fff}.fm.fD{background:#64748b;color:#fff}.fm.fL{background:#dc2626;color:#fff}
+.h2h{list-style:none;margin:0;padding:0}
+.h2h li{display:grid;grid-template-columns:40px 1fr auto 1fr;gap:6px;align-items:center;font-size:.8rem;padding:5px 0;border-bottom:1px solid var(--line)}
+.h2h li span:last-child{text-align:right}.h2h small{color:var(--faint)}.h2h b{font-family:var(--display)}
+.wxr{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:.84rem;color:var(--dim)}
+.wxr b{font-family:var(--display);font-size:1.25rem;color:var(--ink)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head><body>
@@ -268,6 +282,7 @@ table.lt tr.hi td{background:rgba(255,199,39,.12);font-weight:700}
     <button type="button" class="chip" data-f="upcoming" aria-pressed="false">আসন্ন <b id="nUp">০</b></button>
     <button type="button" class="chip" data-f="done" aria-pressed="false">শেষ <b id="nDone">০</b></button>
   </div>
+  <input class="srch" id="q" type="search" placeholder="🔎 দল বা লিগ খুঁজুন (যেমন Bangladesh, Barcelona)" aria-label="খুঁজুন" autocomplete="off">
   <div class="days" id="days" hidden role="group" aria-label="দিন বাছাই"></div>
   <div class="note" id="demoNote" hidden></div>
   <main id="list" aria-live="polite"><div class="skel"></div><div class="skel"></div><div class="skel"></div></main>

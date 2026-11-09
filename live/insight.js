@@ -82,3 +82,34 @@ export function rates(m) {
   out.push(['উইকেট বাকি', bn(Math.max(0, 10 - cur.w))]);
   return out;
 }
+
+// ওভার/আন্ডার (আনুমানিক): ফুটবলে ২.৫ গোলের বেশি হওয়ার সম্ভাবনা, ক্রিকেটে প্রথম ইনিংসে একটা রানের সীমা পার হওয়ার সম্ভাবনা
+const pois = (l, k) => { let p = Math.exp(-l); for (let i = 1; i <= k; i++) p *= l / i; return p; };
+const ncdf = z => { const t = 1 / (1 + 0.2316419 * Math.abs(z)); const d = 0.3989423 * Math.exp(-z * z / 2); const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return z > 0 ? 1 - p : p; };
+export function overUnder(m) {
+  const out = [];
+  if (m.sport === 'football') {
+    let have = (m.a.g || 0) + (m.b.g || 0), lam;
+    if (m.state === 'live') lam = 2.5 * Math.max(0, 90 - Math.min(90, m.min || (m.per === 'HT' ? 45 : 0))) / 90;
+    else if (m.state === 'upcoming') { have = 0; lam = m.pred && m.pred.gh != null && m.pred.ga != null ? m.pred.gh + m.pred.ga : 2.6; }
+    else return out;
+    for (const line of [1.5, 2.5, 3.5]) {
+      if (have > line) continue;
+      let under = 0; for (let k = 0; k + have <= line; k++) under += pois(lam, k);
+      out.push([`${bn(line)}-এর বেশি গোল`, Math.round((1 - under) * 100)]);
+    }
+  } else if (m.sport === 'cricket' && m.state === 'live' && !m.pause) {
+    const mo = maxOvers(m), inns = m.inns || [];
+    if (!mo || inns.length !== 1) return out;
+    const cur = inns[0], b = balls(cur.o), left = mo * 6 - b;
+    if (!left) return out;
+    const crr = b ? cur.r / (b / 6) : 0;
+    const base = mo === 20 ? 8.2 : mo === 50 ? 5.6 : 10;
+    const wf = Math.pow(Math.min(1, (10 - cur.w + 2) / 8), 0.6);
+    const proj = cur.r + (0.5 * crr + 0.5 * base) * wf * left / 6;
+    const sd = Math.max(6, Math.sqrt(left) * 2.2);
+    const line = Math.round(proj / 5) * 5 + 0.5;
+    out.push([`${bn(Math.floor(line))}-এর বেশি রান`, Math.round((1 - ncdf((line - proj) / sd)) * 100)]);
+  }
+  return out;
+}

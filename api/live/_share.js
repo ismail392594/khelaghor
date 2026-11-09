@@ -16,6 +16,7 @@ export function shareHtml(m, id) {
     const ic = m.sport === 'cricket' ? '🏏' : '⚽';
     const live = m.state === 'live' ? '🔴 লাইভ: ' : m.state === 'done' ? '🏁 ' : '';
     if (m.state === 'upcoming') title = `${ic} ${nm(m.a)} বনাম ${nm(m.b)} · কে জিতবে? ভোট দিন`;
+    if (m.state === 'upcoming' && m.pred) title = `${ic} ${nm(m.a)} বনাম ${nm(m.b)} · পূর্বাভাস: ${nm(m.a)} ${bn(Math.round(m.pred.a * 100))}%${m.pred.d > 0.01 ? `, ড্র ${bn(Math.round(m.pred.d * 100))}%` : ''}, ${nm(m.b)} ${bn(Math.round(m.pred.b * 100))}%`;
     else if (m.sport === 'football') title = `${live}${ic} ${nm(m.a)} ${sc(m, 'a')} - ${sc(m, 'b')} ${nm(m.b)}`;
     else title = `${live}${ic} ${nm(m.a)} ${sc(m, 'a')} বনাম ${nm(m.b)} ${sc(m, 'b')}`.replace(/\s+/g, ' ');
     desc = `${m.status || ''}${m.tour ? ' · ' + m.tour : ''} · খেলাঘরে বাংলায় বল-বাই-বল আর কে জিতবে ভোট।`;

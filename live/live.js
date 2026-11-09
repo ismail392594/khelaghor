@@ -1,5 +1,5 @@
 // খেলাঘর লাইভ স্কোর: পাতার সব কাজ। ডাটা আসে শুধু আমাদের সার্ভার (/api/live) থেকে, সরাসরি কোনো API থেকে নয়।
-import { winProb, rates } from '/live/insight.js';
+import { winProb, rates, overUnder } from '/live/insight.js';
 import { VAPID_KEY } from '/live/push-config.js';
 const API = '/api/live';
 const $ = id => document.getElementById(id);
@@ -109,6 +109,8 @@ function renderList() {
   document.querySelectorAll('.chip[data-f]').forEach(b => b.setAttribute('aria-pressed', b.dataset.f === S.filter));
   document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === S.sport));
   let list = by[S.filter].slice();
+  const q = (S.q || '').trim().toLowerCase();
+  if (q) list = list.filter(m => (m.a.name + ' ' + m.b.name + ' ' + (m.a.bn || '') + ' ' + (m.b.bn || '') + ' ' + (m.tour || '')).toLowerCase().includes(q));
   // তারিখের বোতাম (আসন্ন আর শেষ খেলায়)
   const daysEl = $('days');
   if (S.filter !== 'live') {
@@ -139,7 +141,12 @@ function renderList() {
     if (!part.length) continue;
     if (S.sport === 'all') html += `<div class="sec ${sp}"><span>${sp === 'cricket' ? '🏏' : '⚽'}</span><b>${sp === 'cricket' ? 'ক্রিকেট' : 'ফুটবল'}</b><em>${bn(part.length)}টি খেলা</em></div>`;
     let lastG = null;
+    // ছোট লিগ অনেক থাকলে ভাঁজ করে রাখা (চাপলে খোলে)
+    let minor = [];
+    if (!q && part.length > 25 && !S.showMinor) { minor = part.filter(m => (m.rk || 1) < 2 && !isFav(m) && !paused(m)); }
+    const mset = new Set(minor);
     for (const m of part) {
+      if (mset.has(m)) continue;
       const g = paused(m) ? '__pause' : (isFav(m) ? '__fav' : '') + m.tour;
       if (g !== lastG) {
         const title = paused(m) ? '⏸ আজকের খেলা শেষ, পরের দিন আবার শুরু' : (isFav(m) ? '⭐ ' : '') + (m.tour || (sp === 'cricket' ? 'ক্রিকেট' : 'ফুটবল'));
@@ -147,6 +154,7 @@ function renderList() {
       }
       html += cardHtml(m);
     }
+    if (minor.length) html += `<button type="button" class="more" data-minor>▾ আরও ${bn(minor.length)}টি খেলা (ছোট লিগ) দেখুন</button>`;
   }
   $('list').innerHTML = html;
 }
@@ -189,7 +197,8 @@ ${probBar(m)}<div class="cfoot">${foot}${voteChip(m)}</div></button>`;
 }
 // কার্ডের নিচে জেতার সম্ভাবনার সরু দাগ
 function probBar(m, big) {
-  const p = winProb(m);
+  // খেলা চললে চলমান হিসাব, না চললে আগের পূর্বাভাস
+  const p = winProb(m) || (m.state === 'upcoming' && m.pred ? m.pred : null);
   if (!p) return '';
   const pc = x => Math.round(x * 100);
   const seg = `<i class="pa" style="flex:${p.a}"></i>${p.d > 0.01 ? `<i class="pd" style="flex:${p.d}"></i>` : ''}<i class="pb" style="flex:${p.b}"></i>`;
@@ -278,10 +287,50 @@ function renderDetail(m, det, votes) {
 // খেলার হিসাব: জেতার সম্ভাবনা আর রান রেট
 function renderInsight(m) {
   const box = $('iBox');
-  const p = probBar(m, true), r = rates(m);
-  if (!p && !r.length) { box.hidden = true; return; }
+  const p = probBar(m, true), r = rates(m), ou = overUnder(m);
+  const x = S.det && S.det.id === m.id ? S.det.x : null;
+  const v = S.det && S.det.id === m.id ? S.det.votes : null;
+  const vt = v ? v.a + v.b + v.d : 0;
+  let html = '';
+  if (p) html += `<div class="wpt">${m.state === 'upcoming' ? '📈 কে জিততে পারে (খেলাঘরের পূর্বাভাস)' : 'জেতার সম্ভাবনা'}</div>${p}`;
+  if (m.state === 'upcoming' && vt >= 3) html += `<div class="wpt" style="margin-top:8px">🗳️ জনতার ভোট: ${esc(tname(m.a))} ${bn(Math.round(v.a / vt * 100))}%${m.sport === 'football' || m.test ? ` · ড্র ${bn(Math.round(v.d / vt * 100))}%` : ''} · ${esc(tname(m.b))} ${bn(Math.round(v.b / vt * 100))}%</div>`;
+  const chips = r.concat(ou.map(([k, val]) => [k, bn(val) + '%']));
+  if (chips.length) html += `<div class="rts">${chips.map(([k, val]) => `<div><small>${k}</small><b>${val}</b></div>`).join('')}</div>`;
+  if (x) {
+    const fm = s2 => [...(s2 || '')].map(c => `<i class="fm f${c}">${{ W: 'জ', D: 'ড্র', L: 'হা' }[c] || c}</i>`).join('');
+    if (x.form && (x.form.a || x.form.b)) html += `<div class="sub2">শেষ ৫ খেলার ফর্ম</div><div class="frm"><span>${esc(tname(m.a))}</span><span>${fm(x.form.a)}</span></div><div class="frm"><span>${esc(tname(m.b))}</span><span>${fm(x.form.b)}</span></div>`;
+    if (x.cmp && x.cmp.length) html += `<div class="sub2">দুই দলের তুলনা</div>` + x.cmp.map(([l, a, b]) => `<div class="stat"><div class="l"><b>${bn(Math.round(a))}%</b><span>${esc(l)}</span><b>${bn(Math.round(b))}%</b></div><div class="b"><i style="flex:${a || 0.001}"></i><i style="flex:${b || 0.001}"></i></div></div>`).join('');
+    if (x.h2h && x.h2h.length) html += `<div class="sub2">আগের মুখোমুখি</div><ul class="h2h">${x.h2h.map(h => `<li><small>${h.t ? bn(new Date(h.t).getFullYear()) : ''}</small><span>${esc(h.h)}</span><b>${bn(h.hg)} - ${bn(h.ag)}</b><span>${esc(h.a)}</span></li>`).join('')}</ul>`;
+  }
+  html += `<div id="wx"></div>`;
+  if (!p && !chips.length && !x && !m.city) { box.hidden = true; return; }
   box.hidden = false;
-  box.innerHTML = `<h3>📊 খেলার হিসাব<span>আনুমানিক</span></h3>${p ? `<div class="wpt">জেতার সম্ভাবনা</div>${p}` : ''}${r.length ? `<div class="rts">${r.map(([k, v]) => `<div><small>${k}</small><b>${v}</b></div>`).join('')}</div>` : ''}`;
+  box.innerHTML = `<h3>📊 খেলার হিসাব<span>আনুমানিক</span></h3>${html}`;
+  weather(m);
+}
+// আবহাওয়া: Open-Meteo (ফ্রি, key লাগে না), মাঠের শহর থেকে
+const wxCache = {};
+const WX = c => c === 0 ? ['☀️', 'রোদ'] : c <= 3 ? ['⛅', 'আংশিক মেঘলা'] : c <= 48 ? ['🌫️', 'কুয়াশা'] : c <= 67 ? ['🌧️', 'বৃষ্টি'] : c <= 77 ? ['❄️', 'তুষার'] : c <= 82 ? ['🌦️', 'থেমে থেমে বৃষ্টি'] : ['⛈️', 'ঝড়বৃষ্টি'];
+async function weather(m) {
+  const city = String(m.city || '').trim();
+  if (!city || m.state === 'done' || m.start > Date.now() + 6 * 864e5) return;
+  try {
+    let w = wxCache[city];
+    if (!w) {
+      const g = await (await fetch(`https://geocoding-api.open-meteo.com/v1/search?count=1&language=en&name=${encodeURIComponent(city)}`)).json();
+      const loc = g.results && g.results[0];
+      if (!loc) return;
+      const f = await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&hourly=temperature_2m,precipitation_probability,weather_code,wind_speed_10m&timezone=UTC&forecast_days=7`)).json();
+      w = wxCache[city] = { f, name: loc.name };
+    }
+    const h = w.f.hourly; if (!h) return;
+    const t = m.state === 'live' ? Date.now() : m.start;
+    let k = 0, best = Infinity;
+    h.time.forEach((s2, i) => { const d = Math.abs(Date.parse(s2 + 'Z') - t); if (d < best) { best = d; k = i; } });
+    const [ic, txt] = WX(h.weather_code[k]);
+    const el = $('wx'); if (!el || S.open !== m.id) return;
+    el.innerHTML = `<div class="sub2">${m.state === 'live' ? 'এখন মাঠের আবহাওয়া' : 'খেলার সময়ের আবহাওয়া'} (${esc(w.name)})</div><div class="wxr"><b>${ic} ${bn(Math.round(h.temperature_2m[k]))}°</b><span>${txt}</span><span>☔ বৃষ্টি ${bn(h.precipitation_probability[k] ?? 0)}%</span><span>💨 ${bn(Math.round(h.wind_speed_10m[k]))} কিমি/ঘ</span></div>`;
+  } catch (e) {}
 }
 // ফুটবল লিগের পয়েন্ট টেবিল
 const tblCache = {};
@@ -596,8 +645,10 @@ document.querySelector('.chips').addEventListener('click', e => {
 });
 $('list').addEventListener('click', e => {
   const g = e.target.closest('[data-go]'); if (g) { S.filter = g.dataset.go; S.autoFilter = false; renderList(); return; }
+  if (e.target.closest('[data-minor]')) { S.showMinor = true; renderList(); return; }
   const c = e.target.closest('.card'); if (c) openMatch(c.dataset.id);
 });
+$('q').addEventListener('input', e => { S.q = e.target.value; clearTimeout(S.qT); S.qT = setTimeout(renderList, 150); });
 $('days').addEventListener('click', e => { const b = e.target.closest('[data-day]'); if (!b) return; S.day = b.dataset.day || null; renderList(); });
 document.querySelector('.lbtabs').addEventListener('click', e => { const b = e.target.closest('[data-per]'); if (!b) return; S.period = b.dataset.per; loadBoard(); });
 // প্রিয় দল
@@ -688,7 +739,8 @@ async function shareImage(m) {
   if (m.sport === 'football' && m.a.g != null) { x.font = F(800, 150); x.fillText(`${bn(m.a.g)} - ${bn(m.b.g)}`, W / 2, 720); }
   else { x.font = F(700, 44); x.fillStyle = '#737bb3'; x.fillText('বনাম', W / 2, 420); }
   x.fillStyle = '#ffd0d8'; x.font = F(700, 40);
-  const st = m.state === 'upcoming' ? `খেলা শুরু ${when(m.start)}` : String(m.status || '');
+  const pr = m.state === 'upcoming' && m.pred ? ` · পূর্বাভাস: ${tname(m.a)} ${bn(Math.round(m.pred.a * 100))}%${m.pred.d > 0.01 ? ` · ড্র ${bn(Math.round(m.pred.d * 100))}%` : ''} · ${tname(m.b)} ${bn(Math.round(m.pred.b * 100))}%` : '';
+  const st = m.state === 'upcoming' ? `খেলা শুরু ${when(m.start)}${pr}` : String(m.status || '');
   wrap(x, st, W / 2, 850, 940, 50);
   x.fillStyle = '#ffc727'; rr(x, 190, 950, 700, 84, 42); x.fill();
   x.fillStyle = '#2b1a00'; x.font = F(800, 38); x.fillText('khelaghorbd.online/live', W / 2, 1005);
