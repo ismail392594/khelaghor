@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>বউচি · খেলাঘর</title>
+<meta name="description" content="দম ধরে চি-ই-ই বলতে বলতে প্রতিপক্ষের এলাকায় ঢুকে সবাইকে ছুঁয়ে দিন, দম ফুরানোর আগে ঘরে ফিরুন। বউকে বাঁচান!">
+<link rel="canonical" href="https://khelaghorbd.online/games/bouchi/">
+<meta property="og:title" content="বউচি · খেলাঘর">
+<meta property="og:description" content="চি-ই-ই-ই! দম থাকতে থাকতে ছুঁয়ে দাও, দম ফুরালে দৌড়!">
+<meta property="og:image" content="https://khelaghorbd.online/icons/og/bouchi.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://khelaghorbd.online/icons/og/bouchi.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="/css/kh-game.css">
+<style>
+:root{--accent:#fb7185}
+.breath{position:absolute;left:12px;right:12px;top:10px;z-index:3;pointer-events:none}
+.breath small{font-weight:800;font-size:.74rem;text-shadow:0 1px 3px #000}
+.breath .b{height:12px;border-radius:8px;background:rgba(0,0,0,.5);border:2px solid rgba(255,255,255,.6);overflow:hidden;margin-top:3px}.breath .b i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ef4444,#f59e0b 35%,#38bdf8);transition:width .1s}
+.ctl .bigb.chi{width:110px;height:110px;background:radial-gradient(circle at 40% 30%,#fecdd3,#e11d48 60%,#881337);font-size:.9rem}
+.ctl .bigb.chi.on{box-shadow:0 0 0 6px rgba(251,113,133,.5),0 0 30px #fb7185;transform:scale(1.05)}
+</style>
+</head><body>
+<div class="app">
+  <div class="hud">
+    <a class="back" href="/" aria-label="হাবে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="stat"><b id="sc">০</b><small>পয়েন্ট · আউট <span id="outs">০</span>/৫</small></div>
+    <div class="stat r"><b id="tm">৯০</b><small>সেকেন্ড · <span id="lives">❤️❤️❤️</span></small></div>
+    <button class="hb" id="snd" aria-label="শব্দ চালু/বন্ধ"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas class="cv" id="cv"></canvas>
+    <div class="breath"><small id="bTxt">দম</small><div class="b"><i id="bI"></i></div></div>
+    <div class="joy" id="joy" hidden><i></i></div>
+    <div class="say" id="say" hidden></div>
+    <div class="chost" id="chatHost"></div>
+    <div class="over" id="startO">
+      <div class="card">
+        <h1>বউচি</h1>
+        <p class="story">মাঠের এক মাথায় আপনার দলের "বউ" বসে আছে, অন্য দিকে প্রতিপক্ষের পাঁচজন। দম ধরে "চি-ই-ই" বলতে বলতে ওদের এলাকায় ঢুকে ছুঁয়ে দিন!</p>
+        <div class="rules">
+          <div>🕹️ পর্দার বাম দিকে আঙুল রেখে টানুন: যেদিকে টানবেন সেদিকে দৌড়।</div>
+          <div>😤 <b>"চি-ই-ই"</b> বোতাম চেপে ধরে রাখুন = দম ধরা। দম থাকা অবস্থায় যাকে ছোঁবেন সে আউট, আর কেউ আপনাকে ধরতে পারবে না।</div>
+          <div>⚠️ বোতাম ছাড়লে বা দম শেষ হলে আপনি দুর্বল! প্রতিপক্ষ তাড়া করবে, ধরার আগে নিজের ঘরে (নীল দাগ) ফিরুন। ঘরে দম আবার ভরে।</div>
+          <div>🏆 পাঁচজনকে আউট করলে বউ ছুটে নিরাপদে যাবে। ধরা পড়লে একটা জীবন যায়।</div>
+        </div>
+        <div class="lvl">
+          <button data-lv="0">ছোটরা<small>ধীর দল</small></button>
+          <button data-lv="1">পাড়ার দল<small>মাঝারি</small></button>
+          <button data-lv="2">স্কুল চ্যাম্পিয়ন<small>দ্রুত, চালাক</small></button>
+        </div>
+        <p class="small" id="bestTxt"></p>
+        <div class="lb" id="lb1"></div>
+        <p class="small credit">মানুষ: Renderpeople (<a href="/games/racer/assets/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। ঘাস, মাটি, আকাশ, গাছ: <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a> (CC0)।</p>
+      </div>
+    </div>
+    <div class="over" id="endO" hidden>
+      <div class="card">
+        <h2 id="endT">খেলা শেষ</h2>
+        <span class="title" id="endTitle"></span>
+        <p class="story" id="endLine"></p>
+        <div class="stats"><div><b id="eS">০</b><span>পয়েন্ট</span></div><div><b id="eO">০</b><span>আউট করেছেন</span></div><div><b id="eL">০</b><span>জীবন বাকি</span></div></div>
+        <p class="small" id="eBest"></p>
+        <p class="tip" id="eTip"></p>
+        <div class="gvid"></div>
+        <div class="acts"><button class="gbtn" id="againBtn">আবার খেলি</button><button class="gbtn ghost" id="menuBtn">দল বদলাই</button><button class="gbtn ghost" id="shareBtn">শেয়ার</button></div>
+        <div class="lb" id="lb2"></div>
+      </div>
+    </div>
+    <div class="over" id="gate" hidden><div class="card"><div style="font-size:2.4rem;line-height:1">👰</div><h2 id="gateT">আজ বন্ধ!</h2><p id="gateP"></p><a class="gbtn" href="/">হাবে ফিরে যান</a></div></div>
+  </div>
+  <div class="ctl"><div class="hint" id="hint">দল বেছে খেলা শুরু করুন</div><button class="bigb chi" id="chiB"><span>😤</span>চি-ই-ই<br>(চেপে রাখুন)</button></div>
+</div>
+<script src="/js/voice.js"></script>
+<script src="/js/viral.js"></script>
+<script src="/js/guest.js"></script>
+<script src="/js/share-card.js"></script>
+<script src="/js/challenge.js"></script>
+<script type="module">
+import * as THREE from "/js/vendor/three.module.min.js";
+import { GLTFLoader } from "/js/vendor/addons/GLTFLoader.js";
+import { MeshoptDecoder } from "/js/vendor/addons/meshopt_decoder.module.js";
+import { clone as cloneSkinned } from "/js/vendor/addons/SkeletonUtils.js";
+import { TIERS, detectTier } from "/js/kh-quality.js";
+import { loadPeople } from "/js/kh-people.js";
+import { gameShell, sound, bn, pick, rnd, clamp } from "/js/kh-shell.js";
+
+const $ = id => document.getElementById(id);
+const SH = gameShell({ game: 'bouchi', name: 'বউচি', lbTitle: 'সেরা বউচি খেলোয়াড়', offMsg: 'বউ বাপের বাড়ি গেছে! একটু পরে আসেন।' });
+const SND = sound(SH);
+const TIER = TIERS[detectTier()], LOW = TIER.id <= 1;
+let renderer = null; try { renderer = new THREE.WebGLRenderer({ canvas: $('cv'), antialias: TIER.aa, powerPreference: 'high-performance' }); } catch (e) {}
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(58, 1, .1, 300);
+if (renderer) { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, TIER.pr)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.shadowMap.enabled = !LOW; renderer.shadowMap.type = THREE.PCFSoftShadowMap; }
+const ANISO = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1, texL = new THREE.TextureLoader(), RA = '/games/racer/assets/', KA = '/games/kanamachi/assets/';
+const tex = (u, srgb, r) => { const t = texL.load(u); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; t.repeat.set(r, r); return t; };
+const skyT = texL.load(RA + 'sky.jpg'); skyT.colorSpace = THREE.SRGBColorSpace;
+const skyG = new THREE.SphereGeometry(180, 32, 16); skyG.scale(-1, 1, 1); scene.add(new THREE.Mesh(skyG, new THREE.MeshBasicMaterial({ map: skyT, fog: false, toneMapped: false })));
+scene.add(new THREE.HemisphereLight('#fff0d6', '#4a5a30', 1.1));
+const sun = new THREE.DirectionalLight('#ffe2b4', 2.4); sun.position.set(-10, 18, 8); sun.castShadow = !LOW; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -16, right: 16, top: 16, bottom: -16 }); scene.add(sun);
+const gT = ['grass_diff.jpg', 'grass_nor.jpg', 'grass_arm.jpg'].map((f, i) => tex(RA + f, i === 0, 30));
+const ground = new THREE.Mesh(new THREE.CircleGeometry(80, 48), new THREE.MeshStandardMaterial({ map: gT[0], normalMap: gT[1], roughnessMap: gT[2], color: '#a3b86f', roughness: 1 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+// খেলার মাঠ: ১২ মি চওড়া, ২০ মি লম্বা; নিচে আমাদের ঘর (z ৮ থেকে ১০), মাঝে দাগ, উপরে প্রতিপক্ষের এলাকা
+const FW = 6, HOME = 7.5, FAR = -10;
+const fieldT = (() => { const c = document.createElement('canvas'); c.width = 512; c.height = 1024; const x = c.getContext('2d'); x.clearRect(0, 0, 512, 1024); const L = (a, b, cc, d, col, w) => { x.strokeStyle = col; x.lineWidth = w; x.beginPath(); x.moveTo(a, b); x.lineTo(cc, d); x.stroke(); };
+  const Z = z => (z - FAR) / (10 - FAR) * 1024; L(6, 0, 6, 1024, 'rgba(245,242,230,.85)', 8); L(506, 0, 506, 1024, 'rgba(245,242,230,.85)', 8); L(0, 4, 512, 4, 'rgba(245,242,230,.85)', 8); L(0, 1020, 512, 1020, 'rgba(245,242,230,.85)', 8);
+  L(0, Z(0), 512, Z(0), 'rgba(245,242,230,.9)', 7); x.fillStyle = 'rgba(56,189,248,.18)'; x.fillRect(6, Z(HOME), 500, 1020 - Z(HOME)); L(0, Z(HOME), 512, Z(HOME), 'rgba(56,189,248,.95)', 9);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; })();
+const dirt = new THREE.Mesh(new THREE.PlaneGeometry(FW * 2, 20), new THREE.MeshStandardMaterial({ map: tex(KA + 'ground_diff.jpg', true, 6), roughness: 1, polygonOffset: true, polygonOffsetFactor: -1 })); dirt.rotation.x = -Math.PI / 2; dirt.position.set(0, .003, 0); dirt.receiveShadow = true; scene.add(dirt);
+const lines = new THREE.Mesh(new THREE.PlaneGeometry(FW * 2, 20), new THREE.MeshStandardMaterial({ map: fieldT, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3, roughness: 1 })); lines.rotation.x = -Math.PI / 2; lines.position.y = .006; scene.add(lines);
+const treeMs = ['tree1.webp', 'tree2.webp'].map(f => { const t = texL.load(RA + f); t.colorSpace = THREE.SRGBColorSpace; return new THREE.MeshStandardMaterial({ map: t, alphaTest: .5, side: THREE.DoubleSide, roughness: 1 }); });
+const TREES = []; for (let i = 0; i < 26; i++) { const a = rnd(0, 6.28), r = rnd(18, 40), h = rnd(8, 14); const p = new THREE.Mesh(new THREE.PlaneGeometry(h * .9, h), treeMs[i % 2]); p.geometry.translate(0, h / 2, 0); p.position.set(Math.cos(a) * r, 0, Math.sin(a) * r); scene.add(p); TREES.push(p); }
+// মানুষ: আমি, বউ (ঘরে বসা), প্রতিপক্ষ ৫ জন
+let ME = null, BOU = null; const OPP = [];
+const ONAME = ['সাজু', 'রনি', 'বিল্লাল', 'হাবিব', 'তুহিন'];
+loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned).then(P => {
+  ME = P.make(3, { scale: .85, shadow: !LOW }); scene.add(ME.root);
+  BOU = P.make(2, { scale: .8, shadow: !LOW }); BOU.root.position.set(0, 0, 9); scene.add(BOU.root);
+  const veil = new THREE.Mesh(new THREE.SphereGeometry(.13, 12, 8, 0, Math.PI * 2, 0, Math.PI * .65), new THREE.MeshStandardMaterial({ color: '#dc2626', side: THREE.DoubleSide })); veil.position.y = 1.32; veil.scale.set(1.2, 1.3, 1.2); BOU.root.add(veil);
+  for (let i = 0; i < 5; i++) { const h = P.make(i, { scale: .84, shadow: !LOW }); scene.add(h.root); OPP.push({ h, name: ONAME[i] }); }
+  if (S) placeOpp();
+}).catch(() => {});
+
+let chiV = null;
+function chi(on) { // "চি-ই-ই": কণ্ঠের মতো সুর (করাতের মতো ঢেউ + ফরম্যান্ট ফিল্টার)
+  const a = SND.ac; if (!a) return;
+  if (on && !chiV) { const o = a.createOscillator(), f1 = a.createBiquadFilter(), f2 = a.createBiquadFilter(), g = a.createGain(), vib = a.createOscillator(), vg = a.createGain(); o.type = 'sawtooth'; o.frequency.value = 260; f1.type = 'bandpass'; f1.frequency.value = 2700; f1.Q.value = 6; f2.type = 'bandpass'; f2.frequency.value = 320; f2.Q.value = 4; vib.frequency.value = 6; vg.gain.value = 6; vib.connect(vg); vg.connect(o.frequency); o.connect(f1); o.connect(f2); f1.connect(g); f2.connect(g); g.gain.value = 0; g.connect(SND.out); o.start(); vib.start(); g.gain.setTargetAtTime(.12, a.currentTime, .05); chiV = { o, g, vib }; }
+  if (!on && chiV) { const v = chiV; chiV = null; v.g.gain.setTargetAtTime(0, a.currentTime, .05); setTimeout(() => { v.o.stop(); v.vib.stop(); }, 300); }
+}
+const SFX = {
+  tag() { [784, 988].forEach((f, i) => SND.tone(f, .15, 'triangle', .3, 0, i * .08)); },
+  caught() { SND.noise(.25, .6, 500); SND.tone(200, .4, 'sawtooth', .15, 110); },
+  gasp() { SND.noise(.35, .35, 1200, 'bandpass'); },
+  win() { [523, 659, 784, 1047, 1319].forEach((f, i) => SND.tone(f, .22, 'triangle', .28, 0, i * .1)); }
+};
+const LV = [{ n: 'ছোটরা', spd: 3.0, chase: 3.4, breath: 6, react: .7 }, { n: 'পাড়ার দল', spd: 3.6, chase: 4.0, breath: 5, react: .45 }, { n: 'স্কুল চ্যাম্পিয়ন', spd: 4.2, chase: 4.6, breath: 4.2, react: .3 }];
+const MYSPD = 4.4;
+let S = null, lv = 1, W = 1, H = 1, last = 0, lastScore = 0;
+function placeOpp() { OPP.forEach((o, i) => { o.x = (i - 2) * 2.2; o.z = -5 + (i % 2) * 1.5; o.out = false; o.vx = 0; o.vz = 0; o.h.root.visible = true; o.fall = 0; }); }
+function newGame() { S = { t: 90, score: 0, outs: 0, lives: 3, breath: 1, holding: false, x: 0, z: 8.6, over: false, started: false, weak: false, safeT: 0 }; placeOpp(); hud(); }
+function say(t, col) { const e = $('say'); e.textContent = t; e.style.color = col || '#fff'; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(say.t); say.t = setTimeout(() => e.hidden = true, 1300); }
+function pop(t, cls) { const e = document.createElement('div'); e.className = 'pop ' + (cls || ''); e.textContent = t; $('stage').appendChild(e); setTimeout(() => e.remove(), 1100); }
+function hud() { $('sc').textContent = bn(Math.round(S.score)); $('outs').textContent = bn(S.outs); $('tm').textContent = bn(Math.ceil(Math.max(0, S.t))); $('lives').textContent = '❤️'.repeat(S.lives) + '🤍'.repeat(3 - S.lives); }
+const inHome = () => S.z > HOME;
+function setHold(on) { if (!S || !S.started || S.over) return; SND.ac; if (on && S.breath <= .02) { pop('দম নেই! ঘরে ফিরুন', 'bad'); return; } S.holding = on; $('chiB').classList.toggle('on', on); chi(on); if (!on && !inHome()) { SFX.gasp(); S.weak = true; say('দম ছেড়ে দিলেন! দৌড়!', '#fca5a5'); } }
+function caught(o) {
+  S.lives--; S.holding = false; chi(false); $('chiB').classList.remove('on'); SFX.caught(); say(o.name + ' ধরে ফেলেছে!', '#fca5a5'); if (window.KHViral) KHViral.pop(pick(['ধরছি! ধরছি!', 'দম ফুরাইছে, হা হা!', 'আর যাবি কোথায়!']), 'M3', '🙌 ' + o.name);
+  S.x = 0; S.z = 8.6; S.breath = 1; S.weak = false; S.safeT = 1.2; hud(); if (S.lives <= 0) endGame(false);
+}
+let joy = null; const J = { x: 0, y: 0 }, JR = 55;
+$('stage').addEventListener('pointerdown', e => { if (e.target.closest('.over,.chost,button')) return; joy = { id: e.pointerId, x: e.clientX, y: e.clientY }; const r = $('stage').getBoundingClientRect(); $('joy').style.left = (e.clientX - r.left) + 'px'; $('joy').style.top = (e.clientY - r.top) + 'px'; $('joy').hidden = false; SND.ac; });
+addEventListener('pointermove', e => { if (!joy || e.pointerId !== joy.id) return; let dx = e.clientX - joy.x, dy = e.clientY - joy.y; const d = Math.hypot(dx, dy); if (d > JR) { dx *= JR / d; dy *= JR / d; } $('joy').firstElementChild.style.transform = `translate(${dx}px,${dy}px)`; J.x = dx / JR; J.y = dy / JR; });
+const endJoy = e => { if (joy && e.pointerId === joy.id) { joy = null; J.x = J.y = 0; $('joy').hidden = true; $('joy').firstElementChild.style.transform = ''; } };
+addEventListener('pointerup', endJoy); addEventListener('pointercancel', endJoy);
+const keys = {}; addEventListener('keydown', e => { keys[e.key] = 1; if (e.key === ' ' && !e.repeat) setHold(true); }); addEventListener('keyup', e => { keys[e.key] = 0; if (e.key === ' ') setHold(false); });
+$('chiB').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); setHold(true); }); ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => $('chiB').addEventListener(ev, () => { if (S && S.holding) setHold(false); }));
+function step(dt) {
+  const L = LV[lv]; S.t -= dt; S.safeT = Math.max(0, S.safeT - dt);
+  // দম: চেপে রাখলে কমে, ঘরে থাকলে ভরে
+  if (S.holding) { S.breath -= dt / L.breath; if (S.breath <= 0) { S.breath = 0; setHold(false); } } else if (inHome()) { S.breath = Math.min(1, S.breath + dt * .5); S.weak = false; }
+  $('bI').style.width = Math.round(S.breath * 100) + '%'; $('bTxt').textContent = S.holding ? '😤 চি-ই-ই-ই… দম ' + bn(Math.round(S.breath * 100)) + '%' : inHome() ? '🏠 নিজের ঘরে, দম নিচ্ছেন' : '⚠️ দম নেই! ঘরে ফিরুন';
+  // নড়াচড়া
+  const mx = J.x + (keys.ArrowRight ? 1 : 0) - (keys.ArrowLeft ? 1 : 0), mz = J.y + (keys.ArrowDown ? 1 : 0) - (keys.ArrowUp ? 1 : 0), ml = Math.hypot(mx, mz);
+  if (ml > .1) { const s = MYSPD * Math.min(1, ml) * dt; S.x = clamp(S.x + mx / ml * s * Math.min(1, ml), -FW + .4, FW - .4); S.z = clamp(S.z + mz / ml * s * Math.min(1, ml), FAR + .4, 9.6); S.face = Math.atan2(mx, mz); S.moving = true; } else S.moving = false;
+  // প্রতিপক্ষ
+  for (const o of OPP) {
+    if (o.out) { o.fall = Math.min(1, o.fall + dt * 2); continue; }
+    const dx = S.x - o.x, dz = S.z - o.z, d = Math.hypot(dx, dz) || .01; let vx = 0, vz = 0;
+    if (S.holding && S.z < 2) { if (d < 4.5) { vx = -dx / d * L.spd; vz = -dz / d * L.spd; } } // দম ধরা চিকে দেখে পালায়
+    else if (!S.holding && !inHome() && S.safeT <= 0) { if ((o.react = (o.react ?? L.react) - dt) <= 0) { vx = dx / d * L.chase; vz = dz / d * L.chase; } } // দুর্বল হলে তাড়া
+    else { o.react = L.react; o.wt = (o.wt || 0) - dt; if (o.wt <= 0) { o.wt = rnd(1, 2.5); o.tx = rnd(-FW + 1, FW - 1); o.tz = rnd(FAR + 1, 1); } const tx = o.tx - o.x, tz = o.tz - o.z, td = Math.hypot(tx, tz); if (td > .3) { vx = tx / td * 1.4; vz = tz / td * 1.4; } }
+    o.x = clamp(o.x + vx * dt, -FW + .3, FW - .3); o.z = clamp(o.z + vz * dt, FAR + .3, HOME - .2); o.moving = Math.hypot(vx, vz) > .2; if (o.moving) o.face = Math.atan2(vx, vz);
+    const d2 = Math.hypot(S.x - o.x, S.z - o.z);
+    if (d2 < .75) { if (S.holding) { o.out = true; S.outs++; S.score += 100 + Math.round(S.breath * 60); SFX.tag(); say(o.name + ' আউট! ✋', '#86efac'); if (window.KHViral) KHViral.pop(pick(['ইশ! ছুঁয়ে দিল!', 'এত লম্বা দম!', 'না না, আমি আউট না!']), 'M3', '😩 ' + o.name); hud(); if (S.outs >= 5) return endGame(true); }
+      else if (!inHome() && S.safeT <= 0) { caught(o); return; } }
+  }
+  if ((S.hT = (S.hT || 0) - dt) <= 0) { S.hT = .25; hud(); }
+  if (S.t <= 0) endGame(false);
+}
+const TIPS = ['জানেন কি? বউচিতে দম ধরে রাখার অভ্যাসে ফুসফুস মজবুত হয়; তবে কখনো জোর করে অনেকক্ষণ দম আটকে রাখবেন না, মাথা ঘুরতে পারে।', 'জানেন কি? বউচি দলের খেলা: একজন ঢুকলে বাকিরা পাহারা দেয়, আর "বউ" সুযোগ বুঝে নিরাপদ ঘরে দৌড় দেয়।', 'জানেন কি? দৌড়ানোর খেলার আগে একটু হাত-পা নেড়ে শরীর গরম করে নিলে পেশিতে টান লাগার ভয় কমে।'];
+function endGame(win) {
+  if (S.over) return; S.over = true; chi(false); $('chiB').classList.remove('on'); const sc = Math.max(0, Math.round(S.score + (win ? 300 + S.lives * 120 + Math.max(0, S.t) * 4 : 0)));
+  $('endT').textContent = win ? 'বউ নিরাপদে পৌঁছে গেছে! 👰🎉' : S.lives <= 0 ? 'সব জীবন শেষ 😅' : 'সময় শেষ!';
+  const titles = [[1300, 'বউচি সম্রাট 👑'], [900, 'লম্বা দমের ওস্তাদ'], [500, 'পাড়ার চ্যাম্পিয়ন'], [200, 'উঠতি খেলোয়াড়'], [0, 'দম কম, চেষ্টা বেশি']];
+  $('endTitle').textContent = titles.find(x => sc >= x[0])[1];
+  $('endLine').textContent = win ? `${bn(S.outs)} জনকেই আউট করেছেন, হাতে ${bn(Math.ceil(S.t))} সেকেন্ড আর ${bn(S.lives)}টা জীবন বাকি ছিল!` : `${bn(S.outs)} জনকে আউট করেছেন। দম ছাড়ার আগে ঘরের কাছাকাছি থাকুন!`;
+  $('eS').textContent = bn(sc); $('eO').textContent = bn(S.outs); $('eL').textContent = bn(S.lives); $('eTip').textContent = pick(TIPS);
+  if (win) SFX.win(); setTimeout(() => { $('endO').hidden = false; if (win && window.KHViral) KHViral.confetti(); }, 900);
+  SH.saveScore(sc); lastScore = sc;
+}
+function resize() { const r = $('stage').getBoundingClientRect(); W = r.width; H = r.height; if (renderer) renderer.setSize(W, H, false); cam.aspect = W / H; cam.fov = W / H < .8 ? 70 : 55; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+const _cp = new THREE.Vector3();
+function loop(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; const T0 = ts / 1000;
+  if (S && S.started && !S.over) step(dt);
+  if (ME && S) { ME.root.position.set(S.x, 0, S.z); ME.root.rotation.y = S.face ?? Math.PI; ME.update(dt, S.moving, 1.6); }
+  if (BOU) { if (S && S.over && S.outs >= 5) { BOU.root.position.z -= dt * 3; BOU.root.rotation.y = Math.PI; BOU.update(dt, true, 1.5); } else BOU.update(dt, false); }
+  for (const o of OPP) { if (o.x === undefined) continue; o.h.root.position.set(o.x, 0, o.z); o.h.root.rotation.set(o.out ? -o.fall * 1.4 : 0, o.moving ? o.face : Math.atan2(S.x - o.x, S.z - o.z), 0); o.h.update(dt, o.moving && !o.out, 1.6); }
+  const port = W / H < .8; if (S && S.started) { _cp.set(S.x * .7, port ? 9 : 7, S.z + (port ? 9 : 8)); cam.position.lerp(_cp, Math.min(1, dt * 4)); cam.lookAt(S.x * .7, 0, S.z - 4); }
+  else { const a = T0 * .07; cam.position.set(Math.sin(a) * 16, 9, Math.cos(a) * 16); cam.lookAt(0, 0, 0); }
+  for (const t of TREES) t.rotation.y = Math.atan2(cam.position.x - t.position.x, cam.position.z - t.position.z);
+  if (renderer) renderer.render(scene, cam);
+  requestAnimationFrame(loop);
+}
+function start(level) { lv = level; newGame(); S.started = true; ['startO', 'endO'].forEach(i => $(i).hidden = true); SND.ac; $('hint').textContent = 'বাম দিকে টেনে দৌড় · ডানের বোতাম চেপে রাখুন = দম'; if (window.KHViral) setTimeout(() => KHViral.pop('আয় দেখি, দম কত লম্বা!', 'M3', '😎 ' + ONAME[0]), 800); }
+document.querySelectorAll('[data-lv]').forEach(b => b.onclick = e => { e.stopPropagation(); start(+b.dataset.lv); });
+$('againBtn').onclick = () => start(lv); $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; };
+$('shareBtn').onclick = () => { const t = `বউচিতে ${bn(S ? S.outs : 0)} জনকে আউট করেছি, ${bn(lastScore)} পয়েন্ট! 😤 চি-ই-ই! আপনার দম কত লম্বা? ${location.origin}/games/bouchi/`; try { navigator.clipboard.writeText(t).then(() => pop('কপি হয়েছে, শেয়ার করুন!', 'good')); } catch (e) {} };
+newGame(); resize(); last = performance.now(); requestAnimationFrame(loop);
+if (!renderer) $('bestTxt').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।';
+const MY = ['চি-ই-ই-ই!', 'বউ আমাদের, কেউ ছুঁইবা না!', 'এইবার সবাইকে আউট করবো!', 'আমার দম অনেক লম্বা!'], OP = ['দম ফুরাইলে ধরবো!', 'আয় আয়, দেখি!', 'হা হা, কাশি দিলি!', 'বউ আমরা নিয়া যাবো!'];
+if (window.KHViral) KHViral.chat({ host: $('chatHost'), lines: MY, onSay: t => { KHViral.pop(t, 'M2', '💬 আপনি বললেন', true); setTimeout(() => KHViral.pop(pick(OP), 'M3', '😎 প্রতিপক্ষ', true), 1500); } });
+window.KHG = { get S() { return S; }, OPP, start, setHold, J };
+</script>
+<script src="/js/update.js"></script>
+</body></html>
