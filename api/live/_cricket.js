@@ -69,10 +69,13 @@ export function cricSummary(m) {
   const test = String(m.matchType || '').toLowerCase() === 'test' || /test/i.test(parts[1] || '');
   const out = {
     id: 'c_' + m.id, sport: 'cricket', state, start, tour, label, test, intl, rk: rankOf(na, nb),
+    fmt: String(m.matchType || '').toLowerCase(),
     venue: m.venue || '', a, b,
     inns: (m.score || []).map(s => ({ side: String(s.inning || '').toLowerCase().startsWith(na.toLowerCase()) ? 'a' : 'b', r: +s.r || 0, w: +s.w || 0, o: +s.o || 0 })),
     status: cricStatusBn(status, bnOf), raw: status.slice(0, 120)
   };
+  // টেস্টে আজকের খেলা শেষ (stumps): লাইভ তালিকায় না দেখিয়ে আলাদা রাখি
+  if (state === 'live' && /stumps/i.test(status)) out.pause = true;
   if (state === 'done') out.result = cricResult(m.matchWinner ? m.matchWinner + ' won' : status, na, nb) || cricResult(status, na, nb);
   if (m.tossWinner) out.toss = `টস: ${bnOf(m.tossWinner)} (${/bat/i.test(m.tossChoice || '') ? 'ব্যাটিং' : 'বোলিং'})`;
   return out;

@@ -177,6 +177,62 @@ td.r{font-weight:800}
 .gbtn svg{width:20px;height:20px}
 .share{border:0;background:rgba(255,255,255,.07);border-radius:12px;padding:8px 12px;font-weight:700;font-size:.86rem;display:inline-flex;align-items:center;gap:6px}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#fff;color:#141a4a;border-radius:99px;padding:10px 18px;font-weight:700;font-size:.9rem;z-index:90;box-shadow:0 10px 30px rgba(0,0,0,.4);max-width:92vw;text-align:center}
+/* ===== নতুন সাজ (৯ নভেম্বর): খেলার ভাগ, আরও জমকালো কার্ড, হিসাবের বাক্স, স্কোর আন্দাজ ===== */
+body{background:radial-gradient(900px 380px at 50% -160px,#3a2fb8 0,transparent 70%),radial-gradient(600px 300px at 110% 20%,rgba(255,59,92,.12) 0,transparent 70%),var(--bg)}
+.ttl{background:linear-gradient(90deg,#fff,#ffd75a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ttl .dot{-webkit-text-fill-color:initial}
+.sec{display:flex;align-items:center;gap:10px;margin:18px 0 6px;padding:10px 14px;border-radius:16px;font-family:var(--display)}
+.sec:first-child{margin-top:4px}
+.sec span{font-size:1.5rem;line-height:1}
+.sec b{font-size:1.25rem;font-weight:800;flex:1}
+.sec em{font-style:normal;font-family:var(--body);font-size:.78rem;font-weight:700;background:rgba(0,0,0,.25);border-radius:99px;padding:3px 10px}
+.sec.cricket{background:linear-gradient(110deg,#0f7a4a,#14532d 70%);box-shadow:0 6px 18px rgba(16,185,129,.18)}
+.sec.football{background:linear-gradient(110deg,#1d4ed8,#312e81 70%);box-shadow:0 6px 18px rgba(59,130,246,.2)}
+.card{overflow:hidden;border-radius:20px;padding:12px 15px 11px}
+.card::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 4px 4px 0;background:var(--faint);opacity:.6}
+.card.live::before{background:var(--live);opacity:1;box-shadow:0 0 12px var(--live)}
+.card.live{background:linear-gradient(180deg,#2a2466,#1a1f58);border-color:rgba(255,59,92,.45);box-shadow:0 8px 24px rgba(255,59,92,.12),0 6px 16px rgba(0,0,0,.2)}
+.card.done::before{background:var(--green)}
+.tm .nm{font-size:1.06rem}
+.sc{font-size:1.38rem}
+.star{font-style:normal;color:var(--gold);font-size:.85em}
+.pill.pause{background:rgba(255,199,39,.15);color:#ffe08a}
+.wp{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.72rem;font-weight:700;color:var(--dim)}
+.wbar{flex:1;display:flex;gap:2px;height:6px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.06)}
+.wbar.big{height:12px;margin:6px 0 2px}
+.wbar i{display:block;height:100%}
+.wbar .pa{background:linear-gradient(90deg,#38bdf8,#60a5fa)}.wbar .pd{background:#64748b}.wbar .pb{background:linear-gradient(90deg,#fbbf24,#ffc727)}
+.days{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;margin-top:-4px;scrollbar-width:none}
+.days::-webkit-scrollbar{display:none}
+.day{border:0;background:rgba(255,255,255,.06);border-radius:10px;padding:5px 12px;font-weight:700;font-size:.82rem;color:var(--dim);white-space:nowrap}
+.day[aria-pressed=true]{background:var(--gold);color:#2b1a00}
+.ins h3 span{color:var(--dim)!important}
+.wpt{font-size:.78rem;color:var(--dim);font-weight:600}
+.wpl{display:flex;justify-content:space-between;gap:8px;font-size:.84rem;color:var(--dim)}
+.wpl b{color:var(--ink);font-family:var(--display);font-size:1.05rem}
+.rts{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:12px}
+.rts div{background:var(--card2);border-radius:12px;padding:8px 10px}
+.rts small{display:block;font-size:.72rem;color:var(--dim)}
+.rts b{font-family:var(--display);font-size:1.15rem}
+.fav{border:1px solid var(--line);background:rgba(255,255,255,.06);border-radius:99px;padding:3px 10px;font-size:.76rem;font-weight:700;color:var(--dim)}
+.fav[aria-pressed=true]{background:rgba(255,199,39,.15);color:var(--gold);border-color:rgba(255,199,39,.4)}
+.sbox2{margin-top:12px;background:var(--card2);border-radius:14px;padding:10px 12px}
+.sl{font-size:.8rem;color:var(--dim);text-align:center;margin-bottom:8px}
+.srow{display:flex;align-items:center;justify-content:center;gap:8px}
+.srow>span{flex:none;display:grid;place-items:center}
+.srow em{font-style:normal;font-family:var(--display);font-size:1.4rem;color:var(--faint)}
+.stp{display:flex;align-items:center;gap:4px}
+.stp button{width:32px;height:32px;border-radius:10px;border:0;background:rgba(255,255,255,.1);font-size:1.1rem;font-weight:800}
+.stp b{font-family:var(--display);font-size:1.6rem;min-width:28px;text-align:center}
+.sact{display:flex;gap:8px;margin-top:10px}
+.cbtn{flex:1;border:0;border-radius:12px;padding:10px;font-weight:800;background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;box-shadow:0 3px 0 #0f5132}
+.lbtn{border:1px solid var(--line);background:none;border-radius:12px;padding:10px 12px;font-weight:700;color:var(--dim)}
+.lbtabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:rgba(255,255,255,.06);padding:4px;border-radius:12px;margin-top:12px}
+.lbtabs button{border:0;background:none;border-radius:9px;padding:7px;font-weight:700;color:var(--dim)}
+.lbtabs button[aria-pressed=true]{background:#fff;color:#141a4a}
+table.lt td,table.lt th{padding:7px 3px;font-size:.8rem}
+table.lt tr.hi td{background:rgba(255,199,39,.12);font-weight:700}
+.hero .vs .t .s{font-size:1.6rem}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head><body>
@@ -197,6 +253,7 @@ td.r{font-weight:800}
     <button type="button" class="chip" data-f="upcoming" aria-pressed="false">আসন্ন <b id="nUp">০</b></button>
     <button type="button" class="chip" data-f="done" aria-pressed="false">শেষ <b id="nDone">০</b></button>
   </div>
+  <div class="days" id="days" hidden role="group" aria-label="দিন বাছাই"></div>
   <div class="note" id="demoNote" hidden></div>
   <main id="list" aria-live="polite"><div class="skel"></div><div class="skel"></div><div class="skel"></div></main>
   <p class="foot">শুধু স্কোর দেখানো হয়, কোনো ভিডিও নয়। স্কোর কয়েক সেকেন্ড পিছিয়ে থাকতে পারে।<br>পতাকা: <a href="https://flagpedia.net" target="_blank" rel="noopener">flagpedia.net</a></p>
@@ -210,6 +267,7 @@ td.r{font-weight:800}
   </div></div>
   <div class="hero"><div class="wrap" id="pHero"></div></div>
   <div class="wrap">
+    <div class="box ins" id="iBox" hidden></div>
     <div class="box" id="vBox"></div>
     <div class="tabs" role="tablist" id="pTabs"></div>
     <div id="pBody"></div>
@@ -221,6 +279,7 @@ td.r{font-weight:800}
     <button class="ib xb" type="button" data-x aria-label="বন্ধ করুন">✕</button>
     <h2 id="lbT">🏆 কে জিতবে? লিডারবোর্ড</h2>
     <div id="lbMe"></div>
+    <div class="lbtabs" role="group" aria-label="সময়"><button type="button" data-per="week" aria-pressed="true">এই সপ্তাহ</button><button type="button" data-per="all" aria-pressed="false">সব সময়</button></div>
     <p class="rules" id="lbRules"></p>
     <ol class="lb" id="lbList"></ol>
   </div>

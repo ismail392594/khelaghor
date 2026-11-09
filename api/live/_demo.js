@@ -81,7 +81,7 @@ function cricMatch(id, A, B, pa, pb, start, now, tour, label, seed) {
   const sim = simT20(seed, a, b, pa, pb, elapsed < 0 ? 0 : balls);
   const state = elapsed < 0 ? 'upcoming' : sim.result ? 'done' : 'live';
   const m = {
-    id, sport: 'cricket', state, start, tour, label, test: false, intl: true, venue: 'নমুনা মাঠ', demo: true,
+    id, sport: 'cricket', state, start, tour, label, test: false, intl: true, fmt: 't20', rk: 3, venue: 'নমুনা মাঠ', demo: true,
     a: { ...a, inn: sim.inns.filter(x => x.side === 'a').map(x => ({ r: x.r, w: x.w, o: x.o })) },
     b: { ...b, inn: sim.inns.filter(x => x.side === 'b').map(x => ({ r: x.r, w: x.w, o: x.o })) },
     inns: sim.inns.map(x => ({ side: x.side, r: x.r, w: x.w, o: x.o }))
@@ -124,7 +124,7 @@ function fbMatch(id, A, B, pa, pb, start, now, tour, label, seed, national = tru
   const state = min < 0 ? 'upcoming' : min >= 105 ? 'done' : 'live';
   const per = state === 'upcoming' ? 'NS' : state === 'done' ? 'FT' : min <= 45 ? '1H' : min < 60 ? 'HT' : '2H';
   const m = {
-    id, sport: 'football', state, start, tour, label, intl: national, venue: 'নমুনা স্টেডিয়াম', demo: true,
+    id, sport: 'football', state, start, tour, label, intl: national, lg: 1, season: 2026, venue: 'নমুনা স্টেডিয়াম', demo: true,
     a: { ...a, g: state === 'upcoming' ? null : ga }, b: { ...b, g: state === 'upcoming' ? null : gb },
     per, min: state === 'live' && per !== 'HT' ? playMin : null,
     status: { NS: 'শুরু হয়নি', '1H': 'প্রথমার্ধ', HT: 'বিরতি', '2H': 'দ্বিতীয়ার্ধ', FT: 'খেলা শেষ' }[per]
