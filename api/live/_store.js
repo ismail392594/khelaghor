@@ -230,11 +230,12 @@ async function refresh(F, doc, due, now) {
         // শুরুতে শেখার জন্য আগের দিনগুলোর ফল (দিনে এক ডাক করে, হাতে ডাক বেশি থাকলে তবেই, ১৪ দিন পর্যন্ত)
         if (remOf(fq, now) > 55) {
           const bf = E.bf || [];
-          const want = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(k => dhakaDay(now - k * DAY)).find(d => !bf.includes(d));
-          if (want) {
+          const wants = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(k => dhakaDay(now - k * DAY)).filter(d => !bf.includes(d)).slice(0, 2);
+          for (const want of wants) {
             const r = await fbCall('fixtures', { date: want, timezone: 'Asia/Dhaka' });
             fq = qOf(r, now, fq);
-            if (r.ok) { learn(E, r.data.map(fbSummary), want); E.bf = bf.concat(want).slice(-20); ch = true; }
+            if (!r.ok) break;
+            learn(E, r.data.map(fbSummary), want); E.bf = (E.bf || []).concat(want).slice(-20); ch = true;
           }
         }
         if (learn(E, f.day || [], dhakaDay(now))) ch = true;
