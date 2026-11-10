@@ -234,13 +234,14 @@ async function refresh(F, doc, due, now) {
         const E = (await eref.get()).data() || { r: {}, seen: {}, bf: [] };
         let ch = false;
         // শুরুতে শেখার জন্য আগের দিনগুলোর ফল (দিনে এক ডাক করে, হাতে ডাক বেশি থাকলে তবেই, ১৪ দিন পর্যন্ত)
-        if (remOf(fq, now) > 55) {
+        // ফ্রি প্ল্যান শুধু গতকাল-আজ-কাল দেয় (১০ নভেম্বর দেখা), তাই সেটা জানা গেলে আর চেষ্টা করি না
+        if (remOf(fq, now) > 55 && !E.bfOff) {
           const bf = E.bf || [];
           const wants = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(k => dhakaDay(now - k * DAY)).filter(d => !bf.includes(d)).slice(0, 2);
           for (const want of wants) {
             const r = await fbCall('fixtures', { date: want, timezone: 'Asia/Dhaka' });
             fq = qOf(r, now, fq);
-            if (!r.ok) { console.error('elo bf', want, r.err); break; }
+            if (!r.ok) { if (/do not have access to this date/i.test(r.err || '')) { E.bfOff = true; ch = true; } else console.error('elo bf', want, r.err); break; }
             learn(E, r.data.map(fbSummary), want); E.bf = (E.bf || []).concat(want).slice(-20); ch = true;
           }
         }
