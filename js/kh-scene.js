@@ -17,24 +17,20 @@ export function grassTufts(THREE, scene, { n = 1500, range = 24, skip = () => fa
 }
 
 // দর্শক: spots = [{x, z, ry, sit}] ; ফেরত দেয় update(T0, excite)
-export function crowd(THREE, scene, spots, { colors } = {}) {
-  const n = spots.length, bodyG = new THREE.CapsuleGeometry(.17, .42, 4, 8), headG = new THREE.SphereGeometry(.13, 10, 8), hairG = new THREE.SphereGeometry(.137, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2);
-  const armG = new THREE.CapsuleGeometry(.05, .32, 3, 6);
-  const M = (c, r) => new THREE.MeshStandardMaterial({ color: c, roughness: r });
-  const bodies = new THREE.InstancedMesh(bodyG, M('#ffffff', .85), n), heads = new THREE.InstancedMesh(headG, M('#ffffff', .7), n), hairs = new THREE.InstancedMesh(hairG, M('#120c08', .8), n), arms = new THREE.InstancedMesh(armG, M('#ffffff', .75), n * 2);
-  const cl = colors || ['#e74c3c', '#2563eb', '#16a34a', '#f59e0b', '#9333ea', '#f5f5f5', '#0ea5e9', '#ec4899', '#facc15', '#1f2937'], sk = ['#9a6a4f', '#6e4532', '#b58467', '#83563d'], c = new THREE.Color();
-  spots.forEach((s, i) => { s.ph = s.ph ?? Math.random() * 6; s.fan = Math.random() < .35; bodies.setColorAt(i, c.set(pick(cl))); const skc = pick(sk); heads.setColorAt(i, c.set(skc)); arms.setColorAt(i * 2, c.set(skc)); arms.setColorAt(i * 2 + 1, c.set(skc)); });
-  bodies.castShadow = true; [bodies, heads, hairs, arms].forEach(m => { m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); scene.add(m); });
-  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), qa = new THREE.Quaternion(), v = new THREE.Vector3(), sc = new THREE.Vector3(1, 1, 1), e = new THREE.Euler(), off = new THREE.Vector3();
+// দর্শক: বাংলাদেশি মানুষের ছবি (games/racer/assets/people.webp, ৯ ঘর) instanced সমতলে; উত্তেজনায় লাফায়। বসা দর্শক একটু পেছনে আর ছোট।
+export function crowd(THREE, scene, spots) {
+  const n = spots.length, t = new THREE.TextureLoader().load('/games/racer/assets/people.webp'); t.colorSpace = THREE.SRGBColorSpace;
+  const g = new THREE.PlaneGeometry(.9, 1.8); g.translate(0, .9, 0); g.setAttribute('cell', new THREE.InstancedBufferAttribute(new Float32Array(n).map(() => Math.floor(Math.random() * 9)), 1));
+  const m = new THREE.MeshStandardMaterial({ map: t, alphaTest: .5, side: THREE.DoubleSide, roughness: .9 });
+  m.onBeforeCompile = sh => { sh.vertexShader = 'attribute float cell;\n' + sh.vertexShader.replace('#include <uv_vertex>', '#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv = vec2((vMapUv.x + cell) / 9.0, vMapUv.y);\n#endif'); };
+  const im = new THREE.InstancedMesh(g, m, n); im.instanceMatrix.setUsage(THREE.DynamicDrawUsage); im.frustumCulled = false; scene.add(im);
+  const camP = new THREE.Vector3(0, 10, 30); im.onBeforeRender = (r, sc, c) => camP.copy(c.position);
+  spots.forEach(s => { s.ph = s.ph ?? Math.random() * 6; s.sc = (s.sit ? .86 : 1) * (.92 + Math.random() * .16); });
+  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), v = new THREE.Vector3(), sc = new THREE.Vector3(), e = new THREE.Euler();
   return function update(T0, excite = 0) {
-    spots.forEach((s, i) => {
-      const jump = Math.max(0, Math.sin(T0 * (5 + excite * 4) + s.ph)) * (.03 + excite * .25) * (s.sit ? .4 : 1), base = s.sit ? .32 : .55;
-      e.set(0, s.ry, Math.sin(T0 * 2 + s.ph) * .05); q.setFromEuler(e); v.set(s.x, base + jump, s.z); sc.set(1, s.sit ? .7 : 1, 1); m4.compose(v, q, sc); bodies.setMatrixAt(i, m4);
-      v.set(s.x, base + jump + (s.sit ? .48 : .58), s.z); sc.set(1, 1, 1); m4.compose(v, q, sc); heads.setMatrixAt(i, m4); v.y += .02; m4.compose(v, q, sc); hairs.setMatrixAt(i, m4);
-      const up = (s.fan || excite > .5) ? (excite > .3 ? 1 : .5 + Math.sin(T0 * 3 + s.ph) * .5) : 0;
-      for (const sd of [-1, 1]) { const wave = up ? Math.sin(T0 * 9 + s.ph + sd) * .3 : 0; e.set(0, s.ry, sd * (.25 + up * 2.4 + wave)); qa.setFromEuler(e); off.set(sd * .22, s.sit ? .15 : .22, 0).applyQuaternion(q); v.set(s.x + off.x, base + jump + off.y + (up ? .12 : -.05), s.z + off.z); m4.compose(v, qa, sc); arms.setMatrixAt(i * 2 + (sd > 0 ? 1 : 0), m4); }
-    });
-    bodies.instanceMatrix.needsUpdate = heads.instanceMatrix.needsUpdate = hairs.instanceMatrix.needsUpdate = arms.instanceMatrix.needsUpdate = true;
+    spots.forEach((s, i) => { const jump = Math.max(0, Math.sin(T0 * (5 + excite * 4) + s.ph)) * (.015 + excite * .18) * (s.sit ? .4 : 1);
+      e.set(0, Math.atan2(camP.x - s.x, camP.z - s.z), Math.sin(T0 * 1.6 + s.ph) * .02); q.setFromEuler(e); v.set(s.x, jump, s.z); sc.setScalar(s.sc); m4.compose(v, q, sc); im.setMatrixAt(i, m4); });
+    im.instanceMatrix.needsUpdate = true;
   };
 }
 // আয়তাকার মাঠের চারপাশে দর্শকের জায়গা

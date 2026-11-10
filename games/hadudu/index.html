@@ -175,6 +175,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 <script src="/js/challenge.js"></script>
 <script type="module">
 import * as THREE from "/js/vendor/three.module.min.js";
+import { crowd as mkCrowd } from "/js/kh-scene.js";
 import { EffectComposer } from "/js/vendor/addons/EffectComposer.js";
 import { RenderPass } from "/js/vendor/addons/RenderPass.js";
 import { UnrealBloomPass } from "/js/vendor/addons/UnrealBloomPass.js";
@@ -286,24 +287,10 @@ const bulbG = new THREE.SphereGeometry(.07, 8, 6);
 const CROWD = [];
 { const spots = []; const ring = (dist, n, sit) => { for (const side of [0, 1, 2, 3]) for (let i = 0; i < n; i++) { const t = (i + .5) / n - .5; let x, z, ry; const L2 = side < 2 ? FW + 2 : FL + 2; if (side === 0) { x = t * L2; z = -FL / 2 - dist; ry = 0; } else if (side === 1) { x = t * L2; z = FL / 2 + dist; ry = Math.PI; } else if (side === 2) { x = -FW / 2 - dist; z = t * L2; ry = Math.PI / 2; } else { x = FW / 2 + dist; z = t * L2; ry = -Math.PI / 2; } if (side === 1 && Math.abs(x) < 3.2 && dist < 3) continue; spots.push({ x: x + rnd(-.15, .15), z: z + rnd(-.15, .15), ry, sit, ph: Math.random() * 6 }); } };
   ring(1.6, LOW ? 10 : 15, 1); ring(2.5, LOW ? 9 : 14, 0); if (!LOW) ring(3.3, 13, 0);
-  const n = spots.length, bodyG = new THREE.CapsuleGeometry(.17, .42, 4, 8), headG = new THREE.SphereGeometry(.13, 10, 8), hairG = new THREE.SphereGeometry(.137, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2);
-  const bodies = new THREE.InstancedMesh(bodyG, M('#ffffff', { roughness: .85 }), n), heads = new THREE.InstancedMesh(headG, M('#ffffff', { roughness: .7 }), n), hairs = new THREE.InstancedMesh(hairG, M('#120c08', { roughness: .8 }), n);
-  const cl = ['#e74c3c', '#2563eb', '#16a34a', '#f59e0b', '#9333ea', '#f5f5f5', '#0ea5e9', '#ec4899', '#facc15', '#1f2937'], sk = ['#9a6a4f', '#6e4532', '#b58467', '#83563d'], c = new THREE.Color();
-  spots.forEach((s, i) => { bodies.setColorAt(i, c.set(pick(cl))); heads.setColorAt(i, c.set(pick(sk))); });
-  bodies.castShadow = true; [bodies, heads, hairs].forEach(m => { m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); scene.add(m); });
-  CROWD.push({ spots, bodies, heads, hairs });
+  CROWD.push({ spots, upd: mkCrowd(THREE, scene, spots) });
 }
-const m4 = new THREE.Matrix4(), q4 = new THREE.Quaternion(), v4 = new THREE.Vector3(), s4 = new THREE.Vector3(1, 1, 1);
 let crowdExcite = 0;
-function updCrowd(T0) {
-  const C = CROWD[0]; if (!C) return;
-  C.spots.forEach((s, i) => {
-    const jump = Math.max(0, Math.sin(T0 * (5 + crowdExcite * 4) + s.ph)) * (.03 + crowdExcite * .25) * (s.sit ? .4 : 1), base = s.sit ? .32 : .55;
-    q4.setFromEuler(new THREE.Euler(0, s.ry, Math.sin(T0 * 2 + s.ph) * .05)); v4.set(s.x, base + jump, s.z); s4.set(1, s.sit ? .7 : 1, 1); m4.compose(v4, q4, s4); C.bodies.setMatrixAt(i, m4);
-    v4.set(s.x, base + jump + (s.sit ? .48 : .58), s.z); s4.set(1, 1, 1); m4.compose(v4, q4, s4); C.heads.setMatrixAt(i, m4); v4.y += .02; m4.compose(v4, q4, s4); C.hairs.setMatrixAt(i, m4);
-  });
-  C.bodies.instanceMatrix.needsUpdate = C.heads.instanceMatrix.needsUpdate = C.hairs.instanceMatrix.needsUpdate = true;
-}
+function updCrowd(T0) { const C = CROWD[0]; if (C) C.upd(T0, crowdExcite); }
 // ধুলো
 const dustTex = ctex(64, 64, (x) => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(210,170,120,.9)'); g.addColorStop(1, 'rgba(210,170,120,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); });
 const dusts = Array.from({ length: 40 }, () => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: dustTex, transparent: true, depthWrite: false, opacity: 0 })); s.visible = false; scene.add(s); return { s, t: 1, k: 1, vx: 0, vz: 0 }; });
