@@ -167,6 +167,7 @@ function renderList() {
     if (minor.length) html += `<button type="button" class="more" data-minor>▾ আরও ${bn(minor.length)}টি খেলা (ছোট লিগ) দেখুন</button>`;
   }
   if (PRED && S.filter === 'upcoming' && !q) html = freeComboHtml() + html;
+  if (!PRED && !q && S.filter !== 'done') html = bigHtml(all) + html;
   $('list').innerHTML = html;
 }
 
@@ -284,7 +285,7 @@ function renderDetail(m, det, votes) {
   if (paused(m)) st = `<div class="hst">⏸ ${esc(m.status)}</div>`;
   else if (m.state === 'live') st = `<div class="hst hot">${m.sport === 'football' ? esc(m.status) + (m.min ? ` · ${bn(liveMin(m))}'` : '') : esc(m.status)}</div>`;
   else if (m.state === 'upcoming' && m.start <= Date.now()) st = `<div class="hst hot">⏳ খেলা শুরুর সময় হয়ে গেছে (${when(m.start)})</div><div class="hsub">স্কোর কয়েক মিনিটের মধ্যে চলে আসবে, পাতা নিজে থেকেই আপডেট হবে</div>`;
-  else if (m.state === 'upcoming') st = `<div class="hst">খেলা শুরু ${when(m.start)}</div><div class="hcd" data-hcd="${m.start}">${hcd(m.start)}</div>`;
+  else if (m.state === 'upcoming') st = `<div class="hst">খেলা শুরু ${when(m.start)}</div><div class="hcd" data-hcd="${m.start}">${hcd(m.start)}</div><button type="button" class="ics" data-ics="${esc(m.id)}">📅 ফোনের ক্যালেন্ডারে রাখুন</button>`;
   else st = `<div class="hst">${esc(m.status)}</div>`;
   const sub = [m.label, m.toss, m.venue].filter(Boolean).map(esc).join(' · ');
   $('pHero').innerHTML = `<div class="hsub" style="padding-top:12px">${m.sport === 'cricket' ? '🏏' : '⚽'} ${esc(m.tour)}${m.demo ? ' <span class="demo">নমুনা</span>' : ''}</div>
@@ -383,6 +384,15 @@ function crOutlookHtml(m, o) {
   if (o.mile) h += `<div><small>${bn(o.mile[0])} রান হতে পারে</small><b>${bn(o.mile[1])} ওভারে</b></div>`;
   if (o.proj) h += `<div><small>ইনিংস শেষে সম্ভাব্য স্কোর</small><b>${bn(o.proj[0])}-${bn(o.proj[1])}</b></div>`;
   return h + '</div>';
+}
+// লাইভ পাতার ওপরে "আজকের বড় খেলা" (বড় প্রতিযোগিতা বা দেশের দলের খেলা, চলমান বা ২৪ ঘণ্টার মধ্যে)
+function bigHtml(all) {
+  const now = Date.now();
+  const L = all.filter(m => !m.demo && !paused(m) && (m.rk || 1) >= 3 && (m.state === 'live' || (m.state === 'upcoming' && m.start < now + 24 * 3600e3)))
+    .sort((x, y) => (y.state === 'live') - (x.state === 'live') || (isFav(y) - isFav(x)) || x.start - y.start).slice(0, 8);
+  if (L.length < 2) return '';
+  const sc = (m, s) => m.sport === 'football' ? bn(m[s].g ?? 0) : (m[s].inn && m[s].inn.length ? bn(m[s].inn[m[s].inn.length - 1].r + '/' + m[s].inn[m[s].inn.length - 1].w) : '');
+  return `<div class="bigs"><div class="bigh">⭐ আজকের বড় খেলা</div><div class="bigr">${L.map(m => `<button type="button" class="bigm${m.state === 'live' ? ' on' : ''}" data-open="${esc(m.id)}"><small>${m.state === 'live' ? `● লাইভ${m.sport === 'football' && m.min ? ' ' + bn(liveMin(m)) + "'" : ''}` : when(m.start)}</small><span>${badge(m.a)}<b>${esc(tname(m.a))}</b>${m.state === 'live' ? `<i>${sc(m, 'a')}</i>` : ''}</span><span>${badge(m.b)}<b>${esc(tname(m.b))}</b>${m.state === 'live' ? `<i>${sc(m, 'b')}</i>` : ''}</span></button>`).join('')}</div></div>`;
 }
 // প্রেডিকশন পাতা: খেলাঘরের হিসাবে আজকের ফ্রি কম্বো (শুধু পয়েন্টের খেলা)
 function freeCombos() {
@@ -553,10 +563,41 @@ function ovChart(det) {
     return `<div class="ovc"><div class="sub2">${esc(x.t)} · ওভার প্রতি রান (মোট ${bn(tot)})</div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="ওভার প্রতি রানের গ্রাফ">${bars}<text x="0" y="${H - 2}" fill="#737bb3" font-size="9">১</text><text x="${W - 14}" y="${H - 2}" fill="#737bb3" font-size="9">${bn(n)}</text></svg></div>`;
   }).join('');
 }
+// খেলার সময় ফোনের ক্যালেন্ডারে (.ics ফাইল, সব ফোনে খোলে; ৩০ মিনিট আগে মনে করায়)
+function icsFor(m) {
+  const t = d => new Date(d).toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
+  const dur = m.sport === 'football' ? 2 * 3600e3 : m.test ? 8 * 3600e3 : 4 * 3600e3;
+  const name = `${tname(m.a)} বনাম ${tname(m.b)}`;
+  const url = `https://khelaghorbd.online/live/m/${encodeURIComponent(m.id)}`;
+  const txt = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Khelaghor//Live//BN', 'BEGIN:VEVENT', `UID:${m.id}@khelaghorbd.online`, `DTSTAMP:${t(Date.now())}`, `DTSTART:${t(m.start)}`, `DTEND:${t(m.start + dur)}`,
+    `SUMMARY:${m.sport === 'cricket' ? '🏏' : '⚽'} ${name}`, `DESCRIPTION:${(m.tour || '').replace(/[,;]/g, ' ')} · লাইভ স্কোর: ${url}`, `URL:${url}`, 'BEGIN:VALARM', 'TRIGGER:-PT30M', 'ACTION:DISPLAY', `DESCRIPTION:${name} ৩০ মিনিট পরে`, 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([txt], { type: 'text/calendar;charset=utf-8' }));
+  a.download = `khelaghor-${m.id}.ics`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  toast('ক্যালেন্ডারের ফাইল নামানো হলো, খুললেই যোগ হবে');
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-ics]'); if (!b) return;
+  const m = S.feed && S.feed.matches.find(x => x.id === b.dataset.ics); if (m) icsFor(m);
+});
+// ক্রিকেট "ওয়ার্ম": দুই ইনিংসের রান ওভার ধরে পাশাপাশি (কে কখন এগিয়ে ছিল)
+function wormChart(det) {
+  const ov = ((det && det.ov) || []).slice(0, 2);
+  if (ov.length < 2 || ov[0].o.length < 2) return '';
+  const cum = x => { let t = 0; return x.o.map(o => (t += o[0])); };
+  const A = cum(ov[0]), B = cum(ov[1]);
+  const n = Math.max(A.length, B.length), max = Math.max(...A, ...B, 10);
+  const W = 320, H = 130, X = i => 6 + (i + 1) / n * (W - 12), Y = v => H - 16 - v / max * (H - 26);
+  const line = (arr, col) => `<polyline fill="none" stroke="${col}" stroke-width="2.4" stroke-linejoin="round" points="6,${H - 16} ${arr.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')}"/>`;
+  const dots = (x, arr, col) => x.o.map((o, i) => o[1] ? `<circle cx="${X(i).toFixed(1)}" cy="${Y(arr[i]).toFixed(1)}" r="3.2" fill="${col}" stroke="#fff" stroke-width="1"/>` : '').join('');
+  return `<div class="ovc"><div class="sub2">📈 রানের দৌড় (ওভার ধরে মোট রান, বিন্দু = উইকেট)</div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="দুই ইনিংসের রানের তুলনা">${line(A, '#38bdf8')}${line(B, '#fbbf24')}${dots(ov[0], A, '#38bdf8')}${dots(ov[1], B, '#fbbf24')}<text x="0" y="${H - 2}" fill="#737bb3" font-size="9">০</text><text x="${W - 14}" y="${H - 2}" fill="#737bb3" font-size="9">${bn(n)}</text></svg><div class="wlg"><span><i style="background:#38bdf8"></i>${esc(ov[0].t)}</span><span><i style="background:#fbbf24"></i>${esc(ov[1].t)}</span></div></div>`;
+}
 function cardTbl(det) {
   const card = (det && det.card) || [];
   if (!card.length) return '<div class="empty"><span class="em">📋</span>খেলা শুরু হলে স্কোরকার্ড দেখা যাবে</div>';
-  return ovChart(det) + card.map((inn, i) => `<details class="inn"${i === card.length - 1 ? ' open' : ''}><summary><span>${esc(inn.t)}</span><b>${inn.tot ? bn(`${inn.tot.r}/${inn.tot.w}`) + ` <small style="font-size:.75rem;color:var(--dim)">(${bn(inn.tot.o)})</small>` : ''}</b></summary>
+  return wormChart(det) + ovChart(det) + card.map((inn, i) => `<details class="inn"${i === card.length - 1 ? ' open' : ''}><summary><span>${esc(inn.t)}</span><b>${inn.tot ? bn(`${inn.tot.r}/${inn.tot.w}`) + ` <small style="font-size:.75rem;color:var(--dim)">(${bn(inn.tot.o)})</small>` : ''}</b></summary>
 <table><thead><tr><th>ব্যাটার</th><th>রান</th><th>বল</th><th>৪</th><th>৬</th></tr></thead><tbody>
 ${inn.bat.map(b => `<tr><td>${esc(b[0])}<small>${esc(b[1])}</small></td><td class="r">${bn(b[2])}</td><td>${bn(b[3])}</td><td>${bn(b[4])}</td><td>${bn(b[5])}</td></tr>`).join('')}
 </tbody></table>${inn.ext != null ? `<div class="ext">অতিরিক্ত: ${bn(inn.ext)}</div>` : ''}
@@ -906,6 +947,7 @@ document.querySelector('.chips').addEventListener('click', e => {
 $('list').addEventListener('click', e => {
   const g = e.target.closest('[data-go]'); if (g) { S.filter = g.dataset.go; S.autoFilter = false; renderList(); return; }
   if (e.target.closest('[data-minor]')) { S.showMinor = true; renderList(); return; }
+  const bo = e.target.closest('[data-open]'); if (bo) { openMatch(bo.dataset.open); return; }
   const fr = e.target.closest('[data-free]');
   if (fr) {
     const L = S.free && S.free[fr.dataset.free];
