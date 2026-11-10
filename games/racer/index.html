@@ -256,7 +256,7 @@ body .khViral small{font-size:.66rem!important}
         <div class="acts"><button class="gbtn ghost mini" id="setB2">⚙️ নিয়ন্ত্রণ আর সেটিংস</button><a class="gbtn ghost mini" href="/">🏠 খেলা থেকে বের হই</a></div>
         <p class="small" id="bestTxt"></p>
         <div class="lb" id="lb1"></div>
-        <p class="credit"><span id="vcred"></span> আমার গাড়ি: <a href="https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept" target="_blank" rel="noopener">Car Concept</a> (Khronos Group, মূল মডেল Unity Fan), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0</a>, খেলাঘর ছোট করেছে আর লোগো সরিয়েছে। স্টপেজের মানুষ: Sketchfab-এর শিল্পী Himanshuvaid, anandmohan662, Imran Aziz, dk8026854, Sunny khude, P151292 (<a href="/assets/people/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>) আর Renderpeople-এর 3D স্ক্যান (<a href="/games/racer/assets/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। আকাশ, গাছ, ব্যারিয়ার, বাজারের দেয়াল-টিন, পিচ আর ঘাসের টেক্সচার: <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a> (CC0)।</p>
+        <p class="credit"><span id="vcred"></span> আমার গাড়ি: <a href="https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept" target="_blank" rel="noopener">Car Concept</a> (Khronos Group, মূল মডেল Unity Fan), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0</a>, খেলাঘর ছোট করেছে আর লোগো সরিয়েছে। স্টপেজের গ্রামের বাড়ি: Sketchfab-এর শিল্পী bhagathartworks, nayan pachori (CC-BY 4.0)। মানুষ: Sketchfab-এর শিল্পী Himanshuvaid, anandmohan662, Imran Aziz, dk8026854, Sunny khude, P151292 (<a href="/assets/people/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>) আর Renderpeople-এর 3D স্ক্যান (<a href="/games/racer/assets/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। আকাশ, গাছ, ব্যারিয়ার, বাজারের দেয়াল-টিন, পিচ আর ঘাসের টেক্সচার: <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a> (CC0)।</p>
       </div>
     </div>
 
@@ -1235,7 +1235,7 @@ function resetWorld(level) {
   S.opp.forEach(c => c.z = S.z - rnd(-60, 650));
   culvert.position.z = S.z - 500; placeBazaar(S, true); placeStop(S, true); BEND.value.set(0, 0); bendTo.set(0, 0); bendLeft = 300;
   S.signKm = .4; drawSign(S.signKm); sign.position.z = S.z - 380; limSign.position.z = S.z - 700;
-  TREES.forEach(t => t.z = S.z - rnd(-40, 700));
+  TREES.forEach(t => t.z = S.z - rnd(-40, 700)); HOUSES.forEach((w, i) => w.position.z = S.z - i * 600 / HOUSES.length - rnd(0, 30));
   if (player) { player.position.set(S.x, 0, S.z); player.rotation.set(0, 0, 0); player.userData.body.rotation.set(0, 0, 0); player.userData.body.position.set(0, 0, 0); }
 }
 
@@ -1398,7 +1398,7 @@ function step(dt) {
   // দূরে চলে গেলে সব কিছু পেছনে টেনে আনা (ফ্লোটিং অরিজিন), যাতে বহু দূর গেলেও কাঁপুনি না হয়
   if (st.z < -4000) rebase(4800);
 }
-function rebase(d) { stopG.position.z += d; if (S.stop) S.stop.z += d; culvert.position.z += d; bazaar.position.z += d; S.z += d; S.cars.forEach(c => c.z += d); S.opp.forEach(c => c.z += d); TREES.forEach(t => t.z += d); sign.position.z += d; limSign.position.z += d; camPos.z += d; camLook.z += d; cam.position.z += d; }
+function rebase(d) { stopG.position.z += d; if (S.stop) S.stop.z += d; culvert.position.z += d; bazaar.position.z += d; S.z += d; S.cars.forEach(c => c.z += d); S.opp.forEach(c => c.z += d); TREES.forEach(t => t.z += d); HOUSES.forEach(w => w.position.z += d); sign.position.z += d; limSign.position.z += d; camPos.z += d; camLook.z += d; cam.position.z += d; }
 function crash(c, dz) {
   const st = S; st.crashed = true; st.crashT = 0; c.hit = true; c.spin = rnd(-1.6, 1.6); c.v = Math.max(c.v, st.v * .8);
   st.spinV = (c.x > st.x ? -1 : 1) * rnd(1.8, 3.2); st.lat = (c.x > st.x ? -1 : 1) * rnd(2, 5); st.v *= .45; st.shake = 1;
@@ -1437,6 +1437,18 @@ function drawTraffic(T0) {
   for (const c of S.opp) { c.ry = Math.PI + c.yaw; drawList.push(c); }
   traffic.update(drawList, Math.floor(T0 * 2.6) % 2 === 0);
 }
+// রাস্তার পাশের গ্রামের বাড়ি (Sketchfab CC-BY: টালির ছাদের পুরনো বাড়ি, বারান্দাওয়ালা বাড়ি); গাছের মতোই ঘুরে ঘুরে আসে
+const HOUSES = [];
+async function buildHouses() {
+  try { const L = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), ks = tier.id >= 2 ? ['house_veranda', 'house_old'] : ['house_veranda'];
+    const gs = await Promise.all(ks.map(k => L.loadAsync(A + k + '.glb')));
+    const N = tier.id >= 2 ? 14 : tier.id >= 1 ? 10 : 6;
+    for (let i = 0; i < N; i++) { const g = gs[i % gs.length].scene, o = g.clone(true), w = new THREE.Group(); w.add(o);
+      o.updateMatrixWorld(true); const b = new THREE.Box3().setFromObject(o), c = b.getCenter(new THREE.Vector3()), h = b.max.y - b.min.y, sc = (i % gs.length ? 4.6 : 5.6) / h;
+      o.scale.setScalar(sc); o.position.set(-c.x * sc, -b.min.y * sc, -c.z * sc); o.traverse(m => { if (m.isMesh) { m.castShadow = !LOW; m.receiveShadow = true; bendMat(m.material); } });
+      const left = i % 2 === 0; w.userData = { x: left ? -rnd(20, 32) : OPP + HALF + rnd(10, 22), left }; w.rotation.y = (left ? Math.PI / 2 : -Math.PI / 2) + rnd(-.25, .25); w.position.set(w.userData.x, -.35, -i * 600 / N - rnd(0, 30)); scene.add(w); HOUSES.push(w); }
+  } catch (e) { console.warn('houses', e); } }
+function drawHouses() { for (const w of HOUSES) { if (w.position.z > S.z + 60) w.position.z -= 660; else if (w.position.z < S.z - 600) w.position.z += 660; w.visible = !onBridge(w.position.z) && !onBridge(w.position.z + 8) && !onBridge(w.position.z - 8); } }
 function drawTrees() {
   const cx = cam.position.x, cz = cam.position.z;
   for (const t of TREES) {
@@ -1667,7 +1679,7 @@ function loop(ts) {
     dome.position.set(cam.position.x, 0, cam.position.z); skirt.position.x = cam.position.x; skirt.position.z = cam.position.z;
     sun.position.copy(SUN_DIR).multiplyScalar(80).add(v3.set(S.x, 0, S.z - 8)); sun.target.position.set(S.x, 0, S.z - 8);
     if (S) wxStep(dt);
-    drawTraffic(T0); drawTrees(); drawStopPeople(); drawPaxPeople(); smokeStep(dt); if (S.started && !S.over && (lifeHud.n = (lifeHud.n || 0) + 1) % 6 === 0) lifeHud();
+    drawTraffic(T0); drawTrees(); drawHouses(); drawStopPeople(); drawPaxPeople(); smokeStep(dt); if (S.started && !S.over && (lifeHud.n = (lifeHud.n || 0) + 1) % 6 === 0) lifeHud();
     if (S.started && !S.over) { hud(); engineUpdate(S.crashed ? 0 : Math.abs(S.v), keys.b ? 0 : 1, S.crashed ? 0 : (S.skid || 0), !!S.nitroOn); }
     if (comT > 0 && (comT -= dt) <= 0) $('com').textContent = '';
   }
@@ -1872,7 +1884,7 @@ try { Promise.all([document.fonts.load("700 40px 'Noto Sans Bengali'"), document
 lv = store.get('kh-racer-lv', 1); resize();
 if (!renderer) { $('loadT').textContent = 'আপনার ফোনে ৩ডি চলছে না। Chrome আপডেট করে আবার চেষ্টা করুন।'; }
 else {
-  buildTrees();
+  buildTrees(); buildHouses();
   buildMap(); buildStop(); buildPaxPeople();
   Promise.all([buildPlayer(), buildTraffic(), buildProps(), buildBazaar()]).then(async () => {
     await setRide(SIM && !RIDES[rideKey].pax ? 'bus_hino' : rideKey); drawMode(); resetWorld(lv); bendAll(); applyGfx(); renderer.compile(scene, cam); makeThumbs();

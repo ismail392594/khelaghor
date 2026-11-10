@@ -25,3 +25,7 @@ Poly Haven (https://polyhaven.com), সব CC0:
   p_claudia.glb: "Claudia Rigged 002 - 3D Rigged Business Women" — Renderpeople — https://sketchfab.com/3d-models/claudia-rigged-002-3d-rigged-business-women-c659bd0accab47c6bbe390cf822a2b92
   p_eric.glb: "Eric Rigged 001 - Rigged 3D Business Man" — Renderpeople — https://sketchfab.com/3d-models/eric-rigged-001-rigged-3d-business-man-a46bc9f67aaa415bb4f3241eef900e7f
   p_sophia.glb: "Sophia Animated 003 - Animated 3D Woman" — Renderpeople — https://sketchfab.com/3d-models/sophia-animated-003-animated-3d-woman-dc448c3be0e74f96a55fb475a13433cf
+
+রাস্তার পাশের গ্রামের বাড়ি, CC-BY 4.0 (পলিগন কমানো, টেক্সচার webp):
+  house_old.glb ...... "Indian House Old" — bhagathartworks — https://sketchfab.com/3d-models/indian-house-old-3beb064c1ae841c5beb556b5aa267036
+  house_veranda.glb .. "indian house - gameasset" — nayan pachori — https://sketchfab.com/3d-models/indian-house-gameasset-3f2b22855bd14cbf877b1ab5f6689582
