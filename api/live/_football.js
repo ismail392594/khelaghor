@@ -42,8 +42,8 @@ export function fbSummary(f) {
   const fx = f.fixture || {}, lg = f.league || {}, tm = f.teams || {}, g = f.goals || {}, sc = f.score || {};
   const st = (fx.status && fx.status.short) || 'NS';
   const national = lg.country === 'World' || (isCountry(tm.home && tm.home.name) && isCountry(tm.away && tm.away.name));
-  const a = { ...team(tm.home && tm.home.name, national), g: g.home };
-  const b = { ...team(tm.away && tm.away.name, national), g: g.away };
+  const a = { ...team(tm.home && tm.home.name, national), g: g.home, tid: tm.home && tm.home.id };
+  const b = { ...team(tm.away && tm.away.name, national), g: g.away, tid: tm.away && tm.away.id };
   const state = LIVE.includes(st) ? 'live' : DONE.includes(st) ? 'done' : 'upcoming';
   const out = {
     id: 'f_' + fx.id, sport: 'football', state, start: (fx.timestamp || 0) * 1000,

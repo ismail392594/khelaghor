@@ -91,7 +91,7 @@ export function overUnder(m) {
   if (m.sport === 'football') {
     let have = (m.a.g || 0) + (m.b.g || 0), lam;
     if (m.state === 'live') lam = 2.5 * Math.max(0, 90 - Math.min(90, m.min || (m.per === 'HT' ? 45 : 0))) / 90;
-    else if (m.state === 'upcoming') { have = 0; lam = m.pred && m.pred.gh != null && m.pred.ga != null ? m.pred.gh + m.pred.ga : 2.6; }
+    else if (m.state === 'upcoming') { have = 0; lam = m.pred && m.pred.la != null ? m.pred.la + m.pred.lb : m.pred && m.pred.gh != null && m.pred.ga != null ? m.pred.gh + m.pred.ga : 2.6; }
     else return out;
     for (const line of [1.5, 2.5, 3.5]) {
       if (have > line) continue;
@@ -112,4 +112,46 @@ export function overUnder(m) {
     out.push([`${bn(Math.floor(line))}-এর বেশি রান`, Math.round((1 - ncdf((line - proj) / sd)) * 100)]);
   }
   return out;
+}
+
+// ফুটবল: খেলার কোন ১৫ মিনিটে সাধারণত কত ভাগ গোল হয় (শেষের দিকে বেশি)
+const SLOT = [0.13, 0.15, 0.16, 0.16, 0.19, 0.21];
+const SLOT_T = ['০-১৫', '১৫-৩০', '৩০-৪৫', '৪৫-৬০', '৬০-৭৫', '৭৫-৯০'];
+// এখন থেকে খেলার শেষ পর্যন্ত গোলের কত ভাগ বাকি
+function leftShare(min) {
+  let s = 0;
+  for (let i = 0; i < 6; i++) { const a = i * 15, b = a + 15; if (min <= a) s += SLOT[i]; else if (min < b) s += SLOT[i] * (b - min) / 15; }
+  return s;
+}
+// কখন কী হতে পারে: পরের/প্রথম গোল, দুই দলই গোল, প্রথমার্ধে গোল, কোন সময়ে গোল বেশি, সম্ভাব্য ফল।
+// খেলাঘরের হিসাবের গোল (pred.la, pred.lb) লাগে; না থাকলে null
+export function fbOutlook(m) {
+  const p = m.pred;
+  if (m.sport !== 'football' || !p || p.la == null || !['live', 'upcoming'].includes(m.state)) return null;
+  const live = m.state === 'live';
+  const min = live ? Math.min(90, m.min || (m.per === 'HT' ? 45 : 0)) : 0;
+  const fr = leftShare(min);
+  const la = p.la * fr, lb = p.lb * fr, lt = la + lb;
+  const ga = live ? m.a.g || 0 : 0, gb = live ? m.b.g || 0 : 0;
+  const any = 1 - Math.exp(-lt);
+  const out = { live, n: p.n, next: { a: lt ? la / lt * any : 0, b: lt ? lb / lt * any : 0, none: 1 - any } };
+  out.btts = (ga ? 1 : 1 - Math.exp(-la)) * (gb ? 1 : 1 - Math.exp(-lb));
+  if (min < 45) out.half = 1 - Math.exp(-(p.la + p.lb) * (leftShare(min) - leftShare(45)));
+  out.slots = SLOT.map((s, i) => {
+    const a = i * 15; if (a + 15 <= min) return null;
+    const part = min > a ? s * (a + 15 - min) / 15 : s;
+    return [SLOT_T[i], 1 - Math.exp(-(p.la + p.lb) * part)];
+  }).filter(Boolean);
+  const sc = [];
+  for (let i = 0; i <= 6; i++) for (let j = 0; j <= 6; j++) sc.push([ga + i, gb + j, pois(la, i) * pois(lb, j) * (ga + i === gb + j ? 1.08 : 1)]);
+  const tot = sc.reduce((t, x) => t + x[2], 0);
+  out.scores = sc.sort((x, y) => y[2] - x[2]).slice(0, 3).map(([x, y, q]) => [x, y, q / tot]);
+  return out;
+}
+// বেশি/কম গোলের সম্ভাবনা (মোট গোল line-এর বেশি)
+export function overProb(m, line) {
+  const p = m.pred; if (!p || p.la == null) return null;
+  const lt = p.la + p.lb; let under = 0;
+  for (let k = 0; k <= line; k++) under += pois(lt, k);
+  return 1 - under;
 }

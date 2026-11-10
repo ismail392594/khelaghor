@@ -1,5 +1,5 @@
 // খেলাঘর লাইভ স্কোর: পাতার সব কাজ। ডাটা আসে শুধু আমাদের সার্ভার (/api/live) থেকে, সরাসরি কোনো API থেকে নয়।
-import { winProb, rates, overUnder } from '/live/insight.js';
+import { winProb, rates, overUnder, fbOutlook, overProb } from '/live/insight.js';
 import { VAPID_KEY } from '/live/push-config.js';
 import { drawAnim } from '/live/anim.js';
 const API = '/api/live';
@@ -166,6 +166,7 @@ function renderList() {
     }
     if (minor.length) html += `<button type="button" class="more" data-minor>▾ আরও ${bn(minor.length)}টি খেলা (ছোট লিগ) দেখুন</button>`;
   }
+  if (PRED && S.filter === 'upcoming' && S.sport !== 'cricket' && !q) html = freeComboHtml() + html;
   $('list').innerHTML = html;
 }
 
@@ -192,7 +193,7 @@ function cardHtml(m) {
     pill = '<span class="pill pause">দিনের খেলা শেষ</span>';
     foot = `<span class="st">${esc(m.status || '')}</span>`;
   } else if (m.state === 'live') {
-    pill = `<span class="pill live">${m.sport === 'football' && m.min ? bn(m.min) + "'" : 'লাইভ'}</span>`;
+    pill = `<span class="pill live">${m.sport === 'football' && m.min ? bn(liveMin(m)) + "'" : 'লাইভ'}</span>`;
     foot = `<span class="st hot">${esc(m.status || '')}</span>${m.upd && Date.now() - m.upd > 5 * 60000 ? `<span class="st old">🕒 ${bn(Math.floor((Date.now() - m.upd) / 60000))} মিনিট আগের</span>` : ''}`;
   } else if (m.state === 'upcoming') {
     pill = `<span class="pill">${when(m.start)}</span>`;
@@ -281,7 +282,7 @@ function renderDetail(m, det, votes) {
   const team = s => `<div class="t big">${badge(m[s], true)}<b>${esc(tname(m[s]))}${bs === s ? ' 🏏' : ''}</b>${heroScore(m, s)}${goals(s)}<button type="button" class="fav" data-fav="${esc(m[s].name)}" aria-pressed="${S.fav.has(m[s].name)}">${S.fav.has(m[s].name) ? '★ প্রিয়' : '☆ প্রিয়'}</button></div>`;
   let st;
   if (paused(m)) st = `<div class="hst">⏸ ${esc(m.status)}</div>`;
-  else if (m.state === 'live') st = `<div class="hst hot">${m.sport === 'football' ? esc(m.status) + (m.min ? ` · ${bn(m.min)}'` : '') : esc(m.status)}</div>`;
+  else if (m.state === 'live') st = `<div class="hst hot">${m.sport === 'football' ? esc(m.status) + (m.min ? ` · ${bn(liveMin(m))}'` : '') : esc(m.status)}</div>`;
   else if (m.state === 'upcoming' && m.start <= Date.now()) st = `<div class="hst hot">⏳ খেলা শুরুর সময় হয়ে গেছে (${when(m.start)})</div><div class="hsub">স্কোর কয়েক মিনিটের মধ্যে চলে আসবে, পাতা নিজে থেকেই আপডেট হবে</div>`;
   else if (m.state === 'upcoming') st = `<div class="hst">খেলা শুরু ${when(m.start)}</div><div class="hcd" data-hcd="${m.start}">${hcd(m.start)}</div>`;
   else st = `<div class="hst">${esc(m.status)}</div>`;
@@ -301,6 +302,13 @@ function renderDetail(m, det, votes) {
   if (S.tab === 't') { tableHtml(m); return; }
   if (S.tab === 'l') { $('pBody').innerHTML = luHtml(det); return; }
   $('pBody').innerHTML = det === null && !S.det ? '<div class="skel" style="margin-top:12px"></div>' : (S.tab === 'c' ? commHtml(m, det) : (m.sport === 'cricket' ? cardTbl(det) : statsHtml(det)));
+}
+// ফুটবলের ঘড়ি: শেষবার জানা মিনিট থেকে নিজে নিজে চলে (সব স্কোর অ্যাপ যেমন করে), তবে ১৫ মিনিটের বেশি আন্দাজ নয়
+function liveMin(m) {
+  if (!m.min || !m.upd || ['HT', 'BT', 'P', 'SUSP', 'INT'].includes(m.per)) return m.min;
+  const add = Math.min(15, Math.floor((Date.now() - m.upd) / 60000));
+  const cap = m.per === '1H' ? 45 : m.per === '2H' ? 90 : m.per === 'ET' ? 120 : m.min;
+  return Math.max(m.min, Math.min(cap, m.min + add));
 }
 // স্কোর কতক্ষণ আগের: ৩ মিনিটের বেশি পুরনো হলে সৎভাবে জানিয়ে দিই
 function fresh(m) {
@@ -335,11 +343,58 @@ function renderInsight(m) {
     if (x.cmp && x.cmp.length) html += `<div class="sub2">দুই দলের তুলনা</div>` + x.cmp.map(([l, a, b]) => `<div class="stat"><div class="l"><b>${bn(Math.round(a))}%</b><span>${esc(l)}</span><b>${bn(Math.round(b))}%</b></div><div class="b"><i style="flex:${a || 0.001}"></i><i style="flex:${b || 0.001}"></i></div></div>`).join('');
     if (x.h2h && x.h2h.length) html += `<div class="sub2">আগের মুখোমুখি</div><ul class="h2h">${x.h2h.map(h => `<li><small>${h.t ? bn(new Date(h.t).getFullYear()) : ''}</small><span>${esc(h.h)}</span><b>${bn(h.hg)} - ${bn(h.ag)}</b><span>${esc(h.a)}</span></li>`).join('')}</ul>`;
   }
+  const ol = fbOutlook(m);
+  if (ol) html += outlookHtml(m, ol);
   html += `<div id="wx"></div>`;
-  if (!p && !chips.length && !x && !m.city) { box.hidden = true; return; }
+  if (!p && !chips.length && !x && !m.city && !ol) { box.hidden = true; return; }
   box.hidden = false;
   box.innerHTML = `<h3>📊 খেলার হিসাব<span>আনুমানিক</span></h3>${html}`;
   weather(m);
+}
+// ফুটবল: কখন কী হতে পারে
+function outlookHtml(m, o) {
+  const pc = v => bn(Math.round(v * 100)) + '%';
+  const A = esc(tname(m.a)), B = esc(tname(m.b));
+  let h = `<div class="sub2">⏱️ কখন কী হতে পারে${o.live ? ' (এখন থেকে শেষ পর্যন্ত)' : ''}</div><div class="olk">`;
+  h += `<div class="olr"><span>${o.live ? 'পরের গোল' : 'প্রথম গোল'}</span><div class="olbar"><i style="flex:${o.next.a}" class="a"></i><i style="flex:${o.next.none}" class="n"></i><i style="flex:${o.next.b}" class="b"></i></div><small>${A} ${pc(o.next.a)} · ${o.live ? 'আর গোল নয়' : 'কোনো গোল নয়'} ${pc(o.next.none)} · ${B} ${pc(o.next.b)}</small></div>`;
+  h += `<div class="olc">`;
+  h += `<div><small>দুই দলই গোল করবে</small><b>${pc(o.btts)}</b></div>`;
+  if (o.half != null) h += `<div><small>প্রথমার্ধে${o.live ? ' আরও' : ''} গোল</small><b>${pc(o.half)}</b></div>`;
+  const op = !o.live ? overProb(m, 2) : null;
+  if (op != null) h += `<div><small>৩ বা বেশি গোল</small><b>${pc(op)}</b></div>`;
+  h += `</div>`;
+  if (o.slots.length) {
+    const mx = Math.max(...o.slots.map(x => x[1]));
+    h += `<div class="sub3">কোন সময়ে গোলের সম্ভাবনা বেশি</div><div class="slots">${o.slots.map(([t, v]) => `<div class="${v === mx ? 'hi' : ''}"><i style="height:${Math.round(18 + v / mx * 42)}px"></i><b>${pc(v)}</b><small>${t}'</small></div>`).join('')}</div>`;
+  }
+  h += `<div class="sub3">সবচেয়ে সম্ভাব্য ফল</div><div class="scs">${o.scores.map(([x, y, q]) => `<span><b>${bn(x)} - ${bn(y)}</b><small>${pc(q)}</small></span>`).join('')}</div>`;
+  if (o.n != null && o.n < 3) h += `<div class="olw">⚠️ এই দলগুলোর খেলার তথ্য এখনো কম, তাই হিসাব দুর্বল। খেলাঘর প্রতিদিনের ফল থেকে শিখছে।</div>`;
+  return h + '</div>';
+}
+// প্রেডিকশন পাতা: খেলাঘরের হিসাবে আজকের ফ্রি কম্বো (শুধু পয়েন্টের খেলা)
+function freeCombos() {
+  const now = Date.now(), c = [];
+  for (const m of (S.feed && S.feed.matches) || []) {
+    if (m.sport !== 'football' || m.state !== 'upcoming' || m.demo || !m.pred || m.pred.la == null) continue;
+    if (m.start < now + 15 * 60000 || m.start > now + 30 * 3600e3 || (m.pred.n ?? 9) < 3) continue;
+    const opts = [['w', 'a', m.pred.a], ['w', 'b', m.pred.b]];
+    const ov = m.oul ? overProb(m, Math.floor(m.oul)) : null;
+    if (ov != null) opts.push(['ou', 'o', ov], ['ou', 'u', 1 - ov]);
+    const [mk, pick, p] = opts.sort((x, y) => y[2] - x[2])[0];
+    c.push({ m, mk, pick, p: p + (m.rk || 1) * 0.01 });
+  }
+  c.sort((x, y) => y.p - x.p);
+  const safe = c.filter(x => x.p >= 0.6).slice(0, 2), big = c.filter(x => x.p >= 0.55).slice(0, 4);
+  return { safe: safe.length === 2 ? safe : null, big: big.length >= 3 ? big : null };
+}
+function freeComboHtml() {
+  const { safe, big } = freeCombos();
+  S.free = { safe, big };
+  if (!safe && !big) return `<div class="fcb"><h3>🎁 খেলাঘরের ফ্রি কম্বো</h3><p class="fcn">খেলাঘরের হিসাব এখন দলগুলোর আগের ফল থেকে শিখছে। যথেষ্ট নিশ্চিত খেলা পেলে এখানে আজকের কম্বো চলে আসবে।</p></div>`;
+  const pc = v => bn(Math.round(Math.min(0.99, v) * 100)) + '%';
+  const leg = l => `<li><span>${esc(tname(l.m.a))} বনাম ${esc(tname(l.m.b))}<small>${when(l.m.start)}</small></span><b>${l.mk === 'ou' ? `${l.pick === 'o' ? 'বেশি' : 'কম'} গোল (${bn(l.m.oul)})` : `${esc(tname(l.m[l.pick]))} জিতবে`}<small>${pc(l.p)}</small></b></li>`;
+  const card = (k, t, L) => L ? `<div class="fc"><div class="fch"><b>${t}</b><span>সব মিললে +${bn((S.combo || {})[L.length] || 0)} পয়েন্ট · সম্ভাবনা ${pc(L.reduce((x, l) => x * Math.min(0.99, l.p), 1))}</span></div><ul>${L.map(leg).join('')}</ul><button type="button" class="fcgo" data-free="${k}">🎯 এই কম্বো আমার স্লিপে নিন</button></div>` : '';
+  return `<div class="fcb"><h3>🎁 খেলাঘরের ফ্রি কম্বো <span>বিশ্লেষণ থেকে, বিনামূল্যে</span></h3>${card('safe', '🛡️ নিরাপদ কম্বো (২টা)', safe)}${card('big', '🚀 বড় কম্বো', big)}<p class="fcn">এটা শুধু খেলাঘরের পয়েন্টের খেলা, টাকার বাজির জন্য নয়। আন্দাজ ভুলও হতে পারে।</p></div>`;
 }
 // পূর্বাভাসের কারণ সহজ ভাষায়
 function why(m) {
@@ -830,6 +885,15 @@ document.querySelector('.chips').addEventListener('click', e => {
 $('list').addEventListener('click', e => {
   const g = e.target.closest('[data-go]'); if (g) { S.filter = g.dataset.go; S.autoFilter = false; renderList(); return; }
   if (e.target.closest('[data-minor]')) { S.showMinor = true; renderList(); return; }
+  const fr = e.target.closest('[data-free]');
+  if (fr) {
+    const L = S.free && S.free[fr.dataset.free];
+    if (!L) return;
+    S.slip = L.map(l => ({ id: l.m.id, mk: l.mk, pick: l.pick }));
+    saveSlip(); openSlip();
+    toast('কম্বো স্লিপে নেওয়া হলো, চাইলে বদলে নিন');
+    return;
+  }
   const c = e.target.closest('.card'); if (c) openMatch(c.dataset.id);
 });
 $('q').addEventListener('input', e => { S.q = e.target.value; clearTimeout(S.qT); S.qT = setTimeout(renderList, 150); });
