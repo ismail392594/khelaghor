@@ -6,10 +6,11 @@
 //   FOOTBALL_API_KEY         : dashboard.api-football.com থেকে পাওয়া key (না থাকলে ফুটবলে নমুনা ডাটা)
 //   FIREBASE_SERVICE_ACCOUNT : আগে থেকেই আছে
 //   LIVE_FB_LEAGUES          : (ইচ্ছা হলে) কোন ফুটবল প্রতিযোগিতা দেখাবে, যেমন "1,2,39"
+//   GEMINI_API_KEY           : (ইচ্ছা হলে) খেলাঘর AI চালু করতে, aistudio.google.com থেকে
 //
 // GET  /api/live?f=feed            → সব ম্যাচ (CDN-এ ১৫ সেকেন্ড জমা থাকে)
 // GET  /api/live?f=match&id=c_xxx  → এক ম্যাচের বিস্তারিত + ভোটের গোনা
-// GET  /api/live?f=board[&p=week]  → লিডারবোর্ড (সব সময় / এই সপ্তাহ)
+// GET  /api/live?f=board[&p=week][&s=acc|st] → লিডারবোর্ড (সব সময় / এই সপ্তাহ; পয়েন্ট / সঠিকতা / টানা সঠিক)
 // GET  /api/live?f=table&lg=39&season=2026 → ফুটবল লিগের পয়েন্ট টেবিল
 // GET  /api/live?f=me              → (লগইন) আমার পয়েন্ট আর ভোট
 // GET  /live/m/{id} (= ?f=page&id=) → Google-এর জন্য ম্যাচের পাতা;  /live/sitemap.xml (= ?f=sitemap)
@@ -20,8 +21,10 @@
 // POST /api/live?f=combo {legs:[{id,mk,pick}]} → কম্বো (২-৬টা ম্যাচ, সব মিললে বোনাস)
 // POST /api/live?f=group {act:'create'|'join'|'leave', name|code} → বন্ধুদের গ্রুপ;  GET ?f=gboard&code=&p= → গ্রুপের লিডারবোর্ড
 // POST /api/live?f=push {token,teams} → প্রিয় দলের খবর ফোনে পেতে নাম লেখানো (teams খালি = বন্ধ)
+// POST /api/live?f=ask {id,q}      → (লগইন) খেলাঘর AI-কে ম্যাচ নিয়ে প্রশ্ন (GEMINI_API_KEY থাকলে; দিনে ১০টা)
 // POST /api/live?f=react {id,e,n}  → দর্শকের ইমোজি প্রতিক্রিয়া (fire, wow, clap, sad, love)
 import { shareHtml } from './_share.js';
+import { ask, aiOn, aiPing } from './_ask.js';
 import { matchPage, sitemapXml } from './_seo.js';
 import { group, gboard, ctable } from './_store.js';
 import { getFeed, getMatch, vote, combo, me, board, diag, table, react, push, HttpErr, POINTS, EXACT, COMBO } from './_store.js';
@@ -39,13 +42,14 @@ export default async function handler(req, res) {
       if (f === 'group') return res.status(200).json(await group(req));
       if (f === 'react') return res.status(200).json(await react(req));
       if (f === 'push') return res.status(200).json(await push(req));
+      if (f === 'ask') return res.status(200).json(await ask(req));
       throw new HttpErr(405, 'ভুল অনুরোধ');
     }
     if (req.method !== 'GET') throw new HttpErr(405, 'ভুল অনুরোধ');
     if (f === 'feed') {
       const d = await getFeed();
       cache(res, 15, 45);
-      return res.status(200).json({ ...d, points: POINTS, exact: EXACT, combo: COMBO });
+      return res.status(200).json({ ...d, points: POINTS, exact: EXACT, combo: COMBO, ai: aiOn() });
     }
     if (f === 'match') {
       const d = await getMatch(String(q.id || ''));
@@ -54,7 +58,7 @@ export default async function handler(req, res) {
     }
     if (f === 'ctable') { cache(res, 1800, 3600); return res.status(200).json(await ctable(q.sid)); }
     if (f === 'gboard') { cache(res, 30, 60); return res.status(200).json(await gboard(q.code, q.p === 'week' ? 'week' : 'all')); }
-    if (f === 'board') { cache(res, 60, 120); return res.status(200).json(await board(q.p === 'week' ? 'week' : 'all')); }
+    if (f === 'board') { cache(res, 60, 120); return res.status(200).json(await board(q.p === 'week' ? 'week' : 'all', Date.now(), ['acc', 'st'].includes(q.s) ? q.s : 'pts')); }
     if (f === 'table') { cache(res, 1800, 3600); return res.status(200).json(await table(q.lg, q.season)); }
     if (f === 'page') {
       // Google-এর জন্য ম্যাচের পাতা (/live/m/{id})
@@ -81,6 +85,7 @@ export default async function handler(req, res) {
       res.setHeader('content-type', 'text/html; charset=utf-8');
       return res.status(200).send(shareHtml(m, id, q.p === '1'));
     }
+    if (f === 'diag' && q.q === 'ai') { cache(res, 0); return res.status(200).json(await aiPing()); }
     if (f === 'diag') { cache(res, 0); return res.status(200).json(await diag(String(q.q || '').slice(0, 40))); }
     if (f === 'me') { cache(res, 0); return res.status(200).json(await me(req)); }
     throw new HttpErr(404, 'পাওয়া যায়নি');
