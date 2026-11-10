@@ -60,7 +60,7 @@
         </div>
         <p class="small" id="bestTxt"></p>
         <div class="lb" id="lb1"></div>
-        <p class="small credit">খেলোয়াড়: Sketchfab-এর শিল্পী আর Renderpeople, দর্শক: Renderpeople (<a href="/assets/people/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। ঘাস: Poly Haven (CC0)। মাঠ, স্টাম্প, ব্যাট খেলাঘরের নিজের বানানো।</p>
+        <p class="small credit">খেলোয়াড়: Sketchfab-এর শিল্পী numaan.k99 (জার্সির রং বদলানো) আর অন্যরা, দর্শক: বাংলাদেশি মডেলের ছবি (<a href="/assets/people/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। ঘাস: Poly Haven (CC0)। মাঠ, স্টাম্প, ব্যাট খেলাঘরের নিজের বানানো।</p>
       </div>
     </div>
     <div class="over" id="endO" hidden>
@@ -152,9 +152,9 @@ const shadowB = new THREE.Mesh(new THREE.CircleGeometry(.05, 16), new THREE.Mesh
 /* ---------- বোলার, ফিল্ডার, কিপার ---------- */
 let bowler = null; const FIELD = [], FPOS = [[-22, -38], [25, -36], [-45, -12], [46, -8], [-30, 22], [32, 20], [0, -60], [-58, -30], [57, -32]];
 let keeper = null;
-loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned).then(P => { bowler = P.make(0, { scale: 1, shadow: !LOW }); scene.add(bowler.root); bowler.root.position.set(.6, 0, -32);
-  keeper = P.make(3, { scale: .95, shadow: !LOW }); keeper.root.position.set(.1, 0, 4.5); keeper.root.rotation.y = Math.PI; scene.add(keeper.root);
-  FPOS.forEach((p, i) => { const h = P.make(i + 1, { scale: rnd(.95, 1.02), shadow: false }); h.root.position.set(p[0], 0, p[1]); h.root.lookAt(0, 0, -6); scene.add(h.root); FIELD.push({ h, x: p[0], z: p[1], tx: p[0], tz: p[1], hx: p[0], hz: p[1] }); }); window.KHG.ready = true; }).catch(() => { window.KHG.ready = true; });
+loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned, { kits: ['cricket'] }).then(P => { bowler = P.make(0, { scale: 1, shadow: !LOW, kit: 'cricket' }); scene.add(bowler.root); bowler.root.position.set(.6, 0, -32);
+  keeper = P.make(3, { scale: .97, shadow: !LOW, kit: 'cricket' }); keeper.root.position.set(.1, 0, 4.5); keeper.root.rotation.y = Math.PI; scene.add(keeper.root);
+  FPOS.forEach((p, i) => { const h = P.make(i + 1, { scale: rnd(.95, 1.02), shadow: false, kit: 'cricket' }); h.root.position.set(p[0], 0, p[1]); h.root.lookAt(0, 0, -6); scene.add(h.root); FIELD.push({ h, x: p[0], z: p[1], tx: p[0], tz: p[1], hx: p[0], hz: p[1] }); }); window.KHG.ready = true; }).catch(() => { window.KHG.ready = true; });
 
 const SFX = {
   crack(q) { SND.noise(.05, .6 * q + .1, 3500, 'highpass'); SND.tone(900, .08, 'triangle', .2 * q, 500); },

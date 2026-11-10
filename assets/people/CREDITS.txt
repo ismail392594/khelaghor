@@ -9,3 +9,4 @@ bd_saree.glb        "Woman" — dk8026854 — https://sketchfab.com/3d-models/wo
 bd_w_saree_red.glb  "Indian aunty red saree women 3 model fts a.i" — Sunny khude 3d model — https://sketchfab.com/3d-models/indian-aunty-red-saree-women-3-model-fts-ai-bd79b7975eec4b8e93b7d9c55f7a886c
 bd_w_saree_blue.glb "Indian poor aunty 3d model fts" — Sunny khude 3d model — https://sketchfab.com/3d-models/indian-poor-aunty-3d-model-fts-e2188cd9c28743aeb89bbf6c8b7dd21e
 bd_w_abaya.glb      "woman hijab" — P151292 — https://sketchfab.com/3d-models/woman-hijab-1dc6d6210ebf41548c6b0c8849f94ef7
+bd_cricket.glb      "Indian Cricket Player Rigged" — numaan.k99 — https://sketchfab.com/3d-models/indian-cricket-player-rigged-a1001b602e4f430bb9de68c24d9a4aa7 (জার্সির রং সবুজ-লাল করা, "INDIA" লেখা মুছে ফেলা)

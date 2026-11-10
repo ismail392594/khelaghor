@@ -3,6 +3,7 @@
 // প্রতি ফ্রেমে হাড় থেকে হাড়ে বসানো (retarget)। শাড়ি-বোরকায় পা ঢাকা, তাই মহিলাদের হাঁটা হালকা দোলা আর ওঠানামা দিয়ে দেখানো।
 // ব্যবহার আগের মতোই: const P = await loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned);
 //   const h = P.make(i, { scale: .8 }); scene.add(h.root); প্রতি ফ্রেমে h.update(dt, চলছে কিনা 0-1, দৌড় গতি);
+// খেলার পোশাক: loadPeople(..., { kits: ['cricket'] }) আর make(i, { kit: 'cricket' }) = সবুজ-লাল জার্সির ক্রিকেটার।
 // i % 5 অনুযায়ী লিঙ্গ আগের মতোই: ০ পুরুষ, ১ মহিলা, ২ মহিলা, ৩ পুরুষ, ৪ মহিলা। মানুষ +z দিকে মুখ করে থাকে। scale .78-.85 = কিশোর।
 const RA = '/games/racer/assets/', PA = '/assets/people/';
 const MEN = [['bd_pj_blue', 1.72], ['bd_pj_red', 1.74], ['bd_oldman', 1.66], ['bd_shalwar_sit', 1.75]];
@@ -15,12 +16,13 @@ const CHILD = { hip: null, spine_01: 'spine_02', spine_02: 'spine_03', spine_03:
 const ORDER = ['hip', 'spine_01', 'spine_02', 'spine_03', 'neck', 'head', 'shoulder_l', 'upperarm_l', 'lowerarm_l', 'hand_l', 'shoulder_r', 'upperarm_r', 'lowerarm_r', 'hand_r', 'upperleg_l', 'lowerleg_l', 'foot_l', 'ball_l', 'upperleg_r', 'lowerleg_r', 'foot_r', 'ball_r'];
 const norm = n => n.replace(/^mixamorig:?/, '').replace(/_\d+$/, '');
 
-export async function loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned) {
+export async function loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned, { kits = [] } = {}) {
   const L = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
   const [nathan, sophia] = await Promise.all(['nathan', 'sophia'].map(k => L.loadAsync(RA + 'p_' + k + '.glb')));
   const walk = nathan.animations[0], idle = sophia.animations[0];
   const load = list => Promise.all(list.map(([k, h]) => L.loadAsync(PA + k + '.glb').then(g => ({ k, h, g })).catch(e => { console.warn('people', k, e); return null; })));
-  const [men, women] = await Promise.all([load(MEN), load(WOMEN)]);
+  const [men, women, kitL] = await Promise.all([load(MEN), load(WOMEN), load(kits.map(k => ['bd_' + k, 1.76]))]);
+  const KIT = Object.fromEntries(kitL.filter(Boolean).map(r => [r.k.slice(3), r]));
   if (window.KH_PEOPLE_DEBUG) console.log('men', men.map(x => x && x.k).join(','), 'women', women.map(x => x && x.k).join(','));
   const v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), v3 = new THREE.Vector3(), v4 = new THREE.Vector3(), q1 = new THREE.Quaternion(), q2 = new THREE.Quaternion(), q3 = new THREE.Quaternion();
   const bonesOf = o => { const m = {}; o.traverse(b => { if (b.isBone) m[norm(b.name)] = b; }); return m; };
@@ -68,7 +70,7 @@ export async function loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned
     return { count: 5, make(i, { scale = 1, shadow = true } = {}) { const o = cloneSkinned(gs[i % 5].scene); o.scale.setScalar(.01 * scale); o.traverse(m => { if (m.isMesh) { m.castShadow = shadow; m.frustumCulled = false; } }); const root = new THREE.Group(); root.add(o); const mx = new THREE.AnimationMixer(o), w = mx.clipAction(walk), id = mx.clipAction(idle); w.play(); id.play(); w.weight = 0; let b = 0; return { root, update(dt, moving, speed = 1) { b += ((moving ? 1 : 0) - b) * Math.min(1, dt * 6); w.weight = b; id.weight = 1 - b; w.timeScale = speed; mx.update(dt); } }; } }; }
   return {
     count: 5,
-    make(i, { scale = 1, shadow = true } = {}) { const male = SEX[((i % 5) + 5) % 5] === 'M', k = Math.floor(i / 5) + (i % 5);
+    make(i, { scale = 1, shadow = true, kit } = {}) { if (kit && KIT[kit]) return makeRigged(KIT[kit], scale, shadow); const male = SEX[((i % 5) + 5) % 5] === 'M', k = Math.floor(i / 5) + (i % 5);
       if (male) { const R = M[k % M.length]; return R.g.animations !== undefined && R.g.scene.getObjectByProperty('isSkinnedMesh', true) ? makeRigged(R, scale, shadow) : makeStatic(R, scale, shadow); }
       return makeStatic(F[k % F.length], scale, shadow); }
   };
