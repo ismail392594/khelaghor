@@ -137,11 +137,11 @@ function renderList() {
   const note = $('demoNote');
   if (demoN) {
     note.hidden = false;
-    note.textContent = '⚠️ "নমুনা" লেখা ম্যাচগুলো কাল্পনিক, পাতা কেমন দেখাবে বোঝানোর জন্য।';
+    note.textContent = '"নমুনা" লেখা ম্যাচগুলো কাল্পনিক, পাতা কেমন দেখাবে বোঝানোর জন্য।';
   } else note.hidden = true;
   if (!list.length) {
     const msg = { live: 'এই মুহূর্তে কোনো খেলা চলছে না', upcoming: 'সামনে কোনো খেলা নেই', done: 'সাম্প্রতিক শেষ হওয়া খেলা নেই' }[S.filter];
-    $('list').innerHTML = `<div class="empty"><span class="em">${S.sport === 'football' ? '⚽' : '🏏'}</span>${msg}${S.filter === 'live' && by.upcoming.length ? '<br><br><button class="chip" type="button" data-go="upcoming">আসন্ন খেলা দেখুন ›</button>' : ''}</div>`;
+    $('list').innerHTML = `<div class="empty"><span class="em"></span>${msg}${S.filter === 'live' && by.upcoming.length ? '<br><br><button class="chip" type="button" data-go="upcoming">আসন্ন খেলা দেখুন ›</button>' : ''}</div>`;
     return;
   }
   // আগে ক্রিকেট, তার নিচে ফুটবল; প্রতিটার ভেতরে টুর্নামেন্ট অনুযায়ী
@@ -174,13 +174,13 @@ function renderList() {
 function voteChip(m) {
   if (!PRED) return '';
   const p = S.me && S.me.picks && S.me.picks[m.id];
-  if (!p) return m.state === 'upcoming' ? '<span class="vt">🗳️ ভোট দিন</span>' : '';
+  if (!p) return m.state === 'upcoming' ? '<span class="vt">ভোট দিন</span>' : '';
   const pn = p === 'd' ? 'ড্র' : tname(m[p]);
   if (m.state === 'done' && m.result) {
     if (m.result === 'void') return '<span class="vt lose">বাতিল</span>';
     const sc = S.me.scores && S.me.scores[m.id];
     const ex = sc && m.sport === 'football' && sc[0] === m.a.g && sc[1] === m.b.g;
-    return m.result === p ? `<span class="vt win">🎉 +${bn(S.pts + (ex ? S.exact : 0))}</span>` : '<span class="vt lose">মেলেনি</span>';
+    return m.result === p ? `<span class="vt win">+${bn(S.pts + (ex ? S.exact : 0))}</span>` : '<span class="vt lose">মেলেনি</span>';
   }
   return `<span class="vt mine">✓ ${esc(pn)}</span>`;
 }
@@ -195,7 +195,7 @@ function cardHtml(m) {
     foot = `<span class="st">${esc(m.status || '')}</span>`;
   } else if (m.state === 'live') {
     pill = `<span class="pill live">${m.sport === 'football' && m.min ? bn(liveMin(m)) + "'" : 'লাইভ'}</span>`;
-    foot = `<span class="st hot">${esc(m.status || '')}</span>${m.upd && !halted(m) && Date.now() - m.upd > 5 * 60000 ? `<span class="st old">🕒 ${bn(Math.floor((Date.now() - m.upd) / 60000))} মিনিট আগের</span>` : ''}`;
+    foot = `<span class="st hot">${esc(m.status || '')}</span>${m.upd && !halted(m) && Date.now() - m.upd > 5 * 60000 ? `<span class="st old">${bn(Math.floor((Date.now() - m.upd) / 60000))} মিনিট আগের</span>` : ''}`;
   } else if (m.state === 'upcoming') {
     pill = `<span class="pill">${when(m.start)}</span>`;
     foot = m.start - Date.now() < 864e5 ? `<span class="st">শুরু হতে <span class="cd" data-cd="${m.start}">${cdText(m.start - Date.now())}</span></span>` : `<span class="st">${esc(m.status && m.status !== 'খেলা এখনো শুরু হয়নি' && m.status !== 'শুরু হয়নি' ? m.status : 'খেলা শুরু ' + when(m.start))}</span>`;
@@ -214,11 +214,11 @@ function opinions(m, big) {
   const top = (arr, n) => { const t = arr[0] + arr[1] + arr[2]; if (!t || t < n) return null; const i = arr.indexOf(Math.max(...arr)); return [['a', 'b', 'd'][i], arr[i] / t]; };
   const lab = k => k === 'd' ? 'ড্র' : esc(tname(m[k]));
   const out = [];
-  if (m.pred && m.pred.a != null) { const r = top([m.pred.a, m.pred.b, m.pred.d || 0], 0); if (r) out.push(['🤖', 'হিসাব', r]); }
-  if (m.fan) { const r = top(m.fan, 3); if (r) out.push(['👥', 'দর্শক', r]); }
-  if (m.exv) { const r = top(m.exv, 2); if (r) out.push(['🎓', 'সেরারা', r]); }
+  if (m.pred && m.pred.a != null) { const r = top([m.pred.a, m.pred.b, m.pred.d || 0], 0); if (r) out.push(['', 'খেলাঘর', r]); }
+  if (m.fan) { const r = top(m.fan, 3); if (r) out.push(['', 'দর্শক', r]); }
+  if (m.exv) { const r = top(m.exv, 2); if (r) out.push(['', 'সেরা অনুমানকারী', r]); }
   if (out.length < 2) return ''; // শুধু হিসাব থাকলে জেতার দাগেই দেখা যায়
-  return `<div class="ops${big ? ' big' : ''}">${out.map(([ic, t, [k, v]]) => `<span title="${t}">${ic} <small>${t}</small> ${big ? `<b>${lab(k)}</b> ` : `<b class="s${k}">${k === 'd' ? 'ড্র' : esc((m[k].bn || m[k].name || '').slice(0, 10))}</b> `}${bn(Math.round(v * 100))}%</span>`).join('')}</div>`;
+  return `<div class="ops${big ? ' big' : ''}">${out.map(([ic, t, [k, v]]) => `<span title="${t}"><small>${t}</small> ${big ? `<b>${lab(k)}</b> ` : `<b class="s${k}">${k === 'd' ? 'ড্র' : esc((m[k].bn || m[k].name || '').slice(0, 10))}</b> `}${bn(Math.round(v * 100))}%</span>`).join('')}</div>`;
 }
 function probBar(m, big) {
   // খেলা চললে চলমান হিসাব, না চললে আগের পূর্বাভাস
@@ -291,16 +291,16 @@ function renderDetail(m, det, votes) {
   // পুরনো জমা তথ্যে টাইব্রেকারের শট গোলের তালিকায় থাকতে পারে: টাইব্রেকার হলে ১২০ মিনিটের পরের পেনাল্টি বাদ
   const gl = ((det && det.gl) || []).filter(x => !(m.pen && x.k === 'P' && /^120\+/.test(String(x.m))));
   const goals = s => { const g = gl.filter(x => x.s === s); return g.length ? `<div class="gls">${g.map(x => `<span>${x.k === 'R' ? '🟥' : '⚽'} ${esc(x.n)} ${bn(x.m)}'${x.k === 'P' ? ' (পে.)' : x.k === 'OG' ? ' (আত্মঘাতী)' : ''}</span>`).join('')}</div>` : ''; };
-  const team = s => `<div class="t big">${badge(m[s], true)}<b>${esc(tname(m[s]))}${bs === s ? ' 🏏' : ''}</b>${heroScore(m, s)}${goals(s)}<button type="button" class="fav" data-fav="${esc(m[s].name)}" aria-pressed="${S.fav.has(m[s].name)}">${S.fav.has(m[s].name) ? '★ প্রিয়' : '☆ প্রিয়'}</button></div>`;
+  const team = s => `<div class="t big">${badge(m[s], true)}<b>${esc(tname(m[s]))}${bs === s ? ' <i class="bat" title="ব্যাট করছে"></i>' : ''}</b>${heroScore(m, s)}${goals(s)}<button type="button" class="fav" data-fav="${esc(m[s].name)}" aria-pressed="${S.fav.has(m[s].name)}">${S.fav.has(m[s].name) ? '★ প্রিয়' : '☆ প্রিয়'}</button></div>`;
   let st;
   if (paused(m)) st = `<div class="hst">⏸ ${esc(m.status)}</div>`;
   else if (m.state === 'live') st = `<div class="hst hot">${m.sport === 'football' ? esc(m.status) + (m.min ? ` · ${bn(liveMin(m))}'` : '') : esc(m.status)}</div>`;
-  else if (m.state === 'upcoming' && m.start <= Date.now()) st = `<div class="hst hot">⏳ খেলা শুরুর সময় হয়ে গেছে (${when(m.start)})</div><div class="hsub">স্কোর কয়েক মিনিটের মধ্যে চলে আসবে, পাতা নিজে থেকেই আপডেট হবে</div>`;
-  else if (m.state === 'upcoming') st = `<div class="hst">খেলা শুরু ${when(m.start)}</div><div class="hcd" data-hcd="${m.start}">${hcd(m.start)}</div><button type="button" class="ics" data-ics="${esc(m.id)}">📅 ফোনের ক্যালেন্ডারে রাখুন</button>`;
+  else if (m.state === 'upcoming' && m.start <= Date.now()) st = `<div class="hst hot">খেলা শুরুর সময় হয়ে গেছে (${when(m.start)})</div><div class="hsub">স্কোর কয়েক মিনিটের মধ্যে চলে আসবে, পাতা নিজে থেকেই আপডেট হবে</div>`;
+  else if (m.state === 'upcoming') st = `<div class="hst">খেলা শুরু ${when(m.start)}</div><div class="hcd" data-hcd="${m.start}">${hcd(m.start)}</div><button type="button" class="ics" data-ics="${esc(m.id)}">ক্যালেন্ডারে রাখুন</button>`;
   else st = `<div class="hst">${esc(m.status)}</div>`;
   const sub = [m.label, m.toss, m.venue].filter(Boolean).map(esc).join(' · ');
-  $('pHero').innerHTML = `<div class="hsub" style="padding-top:12px">${m.sport === 'cricket' ? '🏏' : '⚽'} ${esc(m.tour)}${m.demo ? ' <span class="demo">নমুনা</span>' : ''}</div>
-<div class="vs">${team('a')}<div class="mid">${mid}</div>${team('b')}</div>${st}<div class="hsub">${sub}</div>${fresh(m)}${det && det.mom && m.state === 'done' ? `<div class="mom">🏅 ম্যান অব দ্য ম্যাচ: <b>${esc(det.mom)}</b></div>` : ''}`;
+  $('pHero').innerHTML = `<div class="hsub" style="padding-top:12px">${esc(m.tour)}${m.demo ? ' <span class="demo">নমুনা</span>' : ''}</div>
+<div class="vs">${team('a')}<div class="mid">${mid}</div>${team('b')}</div>${st}<div class="hsub">${sub}</div>${fresh(m)}${det && det.mom && m.state === 'done' ? `<div class="mom">ম্যান অব দ্য ম্যাচ: <b>${esc(det.mom)}</b></div>` : ''}`;
   renderInsight(m);
   if (!PRED) drawAnim($('aBox'), m, det, tname);
   if (PRED) { renderVote(m, votes); $('pTabs').innerHTML = ''; $('pBody').innerHTML = ''; return; }
@@ -329,7 +329,7 @@ function fresh(m) {
   if (m.state !== 'live' || !m.upd || halted(m)) return '';
   const mins = Math.floor((Date.now() - m.upd) / 60000);
   if (mins < 3) return '';
-  return `<div class="stale">🕒 এই স্কোর ${bn(mins)} মিনিট আগের${m.id[0] === 'c' ? '। এই খেলার তথ্য ধীরে আসে, মাঠে এর মধ্যে আরও কিছু হয়ে থাকতে পারে' : ''}</div>`;
+  return `<div class="stale">এই স্কোর ${bn(mins)} মিনিট আগের${m.id[0] === 'c' ? '। এই খেলার তথ্য ধীরে আসে, মাঠে এর মধ্যে আরও কিছু হয়ে থাকতে পারে' : ''}</div>`;
 }
 // খেলার হিসাব: জেতার সম্ভাবনা আর রান রেট
 function renderInsight(m) {
@@ -343,13 +343,13 @@ function renderInsight(m) {
   const dd = S.det && S.det.id === m.id ? S.det.det : null;
   const cur = dd && dd.cur;
   if (!PRED && m.sport === 'cricket' && m.state === 'live' && cur && (cur.bat.length || cur.bowl.length)) {
-    html += `<div class="wpt">🏏 এখন মাঠে</div><table class="onf"><tbody>${cur.bat.map(b => `<tr><td>${esc(b[0])}</td><td class="r">${bn(b[1])}<small> (${bn(b[2])} বল)</small></td><td><small>৪×${bn(b[3])} ৬×${bn(b[4])}</small></td></tr>`).join('')}${cur.bowl.map(b => `<tr class="bw"><td>⚾ ${esc(b[0])}</td><td class="r">${bn(b[3])}/${bn(b[2])}</td><td><small>${bn(b[1])} ওভার</small></td></tr>`).join('')}</tbody></table>
-<div class="onm">${cur.part != null ? `<span>🤝 জুটি <b>${bn(cur.part)}</b></span>` : ''}${cur.last ? `<span>☝️ শেষ উইকেট: ${esc(cur.last[0])} ${bn(cur.last[1])}${cur.last[2] != null ? ` (দলের রান ${bn(cur.last[2])})` : ''}</span>` : ''}</div>`;
+    html += `<div class="wpt">এখন মাঠে</div><table class="onf"><tbody>${cur.bat.map(b => `<tr><td>${esc(b[0])}</td><td class="r">${bn(b[1])}<small> (${bn(b[2])} বল)</small></td><td><small>৪×${bn(b[3])} ৬×${bn(b[4])}</small></td></tr>`).join('')}${cur.bowl.map(b => `<tr class="bw"><td>${esc(b[0])}</td><td class="r">${bn(b[3])}/${bn(b[2])}</td><td><small>${bn(b[1])} ওভার</small></td></tr>`).join('')}</tbody></table>
+<div class="onm">${cur.part != null ? `<span>জুটি <b>${bn(cur.part)}</b></span>` : ''}${cur.last ? `<span>শেষ উইকেট: ${esc(cur.last[0])} ${bn(cur.last[1])}${cur.last[2] != null ? ` (দলের রান ${bn(cur.last[2])})` : ''}</span>` : ''}</div>`;
   }
-  if (p) html += `<div class="wpt">${m.state === 'upcoming' ? '📈 কে জিততে পারে (খেলাঘরের পূর্বাভাস)' : 'জেতার সম্ভাবনা'}</div>${p}`;
-  if (m.state === 'upcoming' && m.pred) html += `<div class="why">💡 ${why(m)}</div>`;
-  if (m.state === 'upcoming') { const op = opinions(m, true); if (op) html += `<div class="sub2">তিন মত: খেলাঘরের হিসাব, দর্শক আর সেরা অনুমানকারীরা</div>${op}`; }
-  if (m.state === 'upcoming' && vt >= 3) html += `<div class="wpt" style="margin-top:8px">🗳️ জনতার ভোট: ${esc(tname(m.a))} ${bn(Math.round(v.a / vt * 100))}%${m.sport === 'football' || m.test ? ` · ড্র ${bn(Math.round(v.d / vt * 100))}%` : ''} · ${esc(tname(m.b))} ${bn(Math.round(v.b / vt * 100))}%</div>`;
+  if (p) html += `<div class="wpt">${m.state === 'upcoming' ? 'কে জিততে পারে (খেলাঘরের পূর্বাভাস)' : 'জেতার সম্ভাবনা'}</div>${p}`;
+  if (m.state === 'upcoming' && m.pred) html += `<div class="why">${why(m)}</div>`;
+  if (m.state === 'upcoming') { const op = opinions(m, true); if (op) html += `<div class="sub2">কে কী বলছে</div>${op}`; }
+  if (m.state === 'upcoming' && vt >= 3) html += `<div class="wpt" style="margin-top:8px">জনতার ভোট: ${esc(tname(m.a))} ${bn(Math.round(v.a / vt * 100))}%${m.sport === 'football' || m.test ? ` · ড্র ${bn(Math.round(v.d / vt * 100))}%` : ''} · ${esc(tname(m.b))} ${bn(Math.round(v.b / vt * 100))}%</div>`;
   const chips = r.concat(ou.map(([k, val]) => [k, bn(val) + '%']));
   if (chips.length) html += `<div class="rts">${chips.map(([k, val]) => `<div><small>${k}</small><b>${val}</b></div>`).join('')}</div>`;
   if (x) {
@@ -368,7 +368,7 @@ function renderInsight(m) {
   box.hidden = false;
   // নতুন ডাটা এলে বাক্স আবার আঁকা হয়: AI প্রশ্নে যা লেখা হচ্ছিল তা হারাতে দিই না
   const inp = box.querySelector('[data-aiform] input'), typed = inp ? inp.value : '', foc = inp && document.activeElement === inp;
-  box.innerHTML = `<h3>📊 খেলার হিসাব<span>আনুমানিক</span></h3>${html}`;
+  box.innerHTML = `<h3>খেলার বিশ্লেষণ</h3>${html}`;
   const inp2 = box.querySelector('[data-aiform] input');
   if (inp2 && typed && !(S.ai && S.ai.busy)) inp2.value = typed;
   if (inp2 && foc) inp2.focus();
@@ -378,7 +378,7 @@ function renderInsight(m) {
 function outlookHtml(m, o) {
   const pc = v => bn(Math.round(v * 100)) + '%';
   const A = esc(tname(m.a)), B = esc(tname(m.b));
-  let h = `<div class="sub2">⏱️ কখন কী হতে পারে${o.live ? ' (এখন থেকে শেষ পর্যন্ত)' : ''}</div><div class="olk">`;
+  let h = `<div class="sub2">কখন কী হতে পারে${o.live ? ' (এখন থেকে শেষ পর্যন্ত)' : ''}</div><div class="olk">`;
   h += `<div class="olr"><span>${o.live ? 'পরের গোল' : 'প্রথম গোল'}</span><div class="olbar"><i style="flex:${o.next.a}" class="a"></i><i style="flex:${o.next.none}" class="n"></i><i style="flex:${o.next.b}" class="b"></i></div><small>${A} ${pc(o.next.a)} · ${o.live ? 'আর গোল নয়' : 'কোনো গোল নয়'} ${pc(o.next.none)} · ${B} ${pc(o.next.b)}</small></div>`;
   h += `<div class="olc">`;
   h += `<div><small>দুই দলই গোল করবে</small><b>${pc(o.btts)}</b></div>`;
@@ -391,7 +391,7 @@ function outlookHtml(m, o) {
     h += `<div class="sub3">কোন সময়ে গোলের সম্ভাবনা বেশি</div><div class="slots">${o.slots.map(([t, v]) => `<div class="${v === mx ? 'hi' : ''}"><i style="height:${Math.round(18 + v / mx * 42)}px"></i><b>${pc(v)}</b><small>${t}'</small></div>`).join('')}</div>`;
   }
   h += `<div class="sub3">সবচেয়ে সম্ভাব্য ফল</div><div class="scs">${o.scores.map(([x, y, q]) => `<span><b>${bn(x)} - ${bn(y)}</b><small>${pc(q)}</small></span>`).join('')}</div>`;
-  if (o.n != null && o.n < 3) h += `<div class="olw">⚠️ এই দলগুলোর খেলার তথ্য এখনো কম, তাই হিসাব দুর্বল। খেলাঘর প্রতিদিনের ফল থেকে শিখছে।</div>`;
+  if (o.n != null && o.n < 3) h += `<div class="olw">এই দলগুলোর সাম্প্রতিক খেলার তথ্য কম, তাই সংখ্যাগুলো মোটামুটি ধারণা মাত্র।</div>`;
   return h + '</div>';
 }
 // খেলাঘর AI: ম্যাচ নিয়ে প্রশ্ন (উত্তর আসে ম্যাচের তথ্য থেকে)
@@ -399,10 +399,10 @@ function aiBox(m) {
   const sug = m.state === 'upcoming' ? ['কে জিততে পারে, কেন?', m.sport === 'football' ? 'কত গোল হতে পারে?' : 'কত রান হতে পারে?', 'দুই দলের ফর্ম কেমন?']
     : m.state === 'live' ? ['এখন কে এগিয়ে, কেন?', 'খেলা কোন দিকে যাচ্ছে?', 'এখন পর্যন্ত সেরা কে?'] : ['খেলাটা কীভাবে শেষ হলো?', 'কে সেরা খেললো?', 'মূল মুহূর্ত কী ছিল?'];
   const last = S.ai && S.ai.id === m.id ? S.ai : null;
-  return `<div class="aib"><div class="sub2">🤖 খেলাঘর AI-কে জিজ্ঞেস করুন</div>
+  return `<div class="aib"><div class="sub2">এই খেলা নিয়ে প্রশ্ন করুন</div>
 <div class="aisg">${sug.map(q => `<button type="button" data-aiq="${esc(q)}">${esc(q)}</button>`).join('')}</div>
 <form class="aif" data-aiform><input name="q" maxlength="300" placeholder="এই খেলা নিয়ে যেকোনো প্রশ্ন…" autocomplete="off"><button type="submit">➤</button></form>
-<div class="aia" id="aiAns">${last ? `<p class="aiq">❓ ${esc(last.q)}</p>${last.busy ? '<p class="ait">ভাবছে…</p>' : `<p class="ait">${esc(last.a).replace(/\n/g, '<br>')}</p>${last.left != null ? `<small>আজ আরও ${bn(last.left)}টা প্রশ্ন করা যাবে</small>` : ''}`}` : '<small>উত্তর আসে এই খেলার তথ্য থেকে। আন্দাজ ভুলও হতে পারে।</small>'}</div></div>`;
+<div class="aia" id="aiAns">${last ? `<p class="aiq">${esc(last.q)}</p>${last.busy ? '<p class="ait">ভাবছে…</p>' : `<p class="ait">${esc(last.a).replace(/\n/g, '<br>')}</p>${last.left != null ? `<small>আজ আরও ${bn(last.left)}টা প্রশ্ন করা যাবে</small>` : ''}`}` : '<small>উত্তর দেওয়া হয় এই খেলার তথ্য দেখে।</small>'}</div></div>`;
 }
 async function askAi(q) {
   const m = S.open && S.feed && (S.feed.matches.find(x => x.id === S.open) || (S.det && S.det.m));
@@ -415,7 +415,7 @@ async function askAi(q) {
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(j.error || 'উত্তর আসেনি');
     S.ai = { id: m.id, q, a: j.a, left: j.left };
-  } catch (e) { S.ai = { id: m.id, q, a: '⚠️ ' + e.message }; }
+  } catch (e) { S.ai = { id: m.id, q, a: '' + e.message }; }
   renderInsight(m);
 }
 document.addEventListener('click', e => { const b = e.target.closest('[data-aiq]'); if (b) askAi(b.dataset.aiq); });
@@ -423,8 +423,8 @@ document.addEventListener('submit', e => { const f = e.target.closest('[data-aif
 // ক্রিকেট: কখন কী হতে পারে
 function crOutlookHtml(m, o) {
   const pc = v => bn(Math.round(v * 100)) + '%';
-  if (o.up) return o.par ? `<div class="sub2">⏱️ কী আশা করা যায়</div><div class="olc"><div><small>প্রথম ইনিংসে সাধারণ স্কোর</small><b>${bn(o.par[1])}-${bn(o.par[2])}</b></div><div><small>গড় স্কোর (${bn(o.mo)} ওভারের খেলা)</small><b>${bn(o.par[0])}</b></div></div><div class="olw" style="color:var(--faint)">মাঠ, পিচ আর আবহাওয়া অনুযায়ী এর চেয়ে কম-বেশি হতে পারে। টস জিতে কে কী নেয়, খেলার শুরুতে এখানে দেখাবে।</div>` : '';
-  let h = `<div class="sub2">⏱️ কখন কী হতে পারে <small style="font-weight:500">· এখন ${o.phase}</small></div><div class="olc">`;
+  if (o.up) return o.par ? `<div class="sub2">কী আশা করা যায়</div><div class="olc"><div><small>প্রথম ইনিংসে সাধারণ স্কোর</small><b>${bn(o.par[1])}-${bn(o.par[2])}</b></div><div><small>গড় স্কোর (${bn(o.mo)} ওভারের খেলা)</small><b>${bn(o.par[0])}</b></div></div><div class="olw" style="color:var(--faint)">মাঠ, পিচ আর আবহাওয়া অনুযায়ী এর চেয়ে কম-বেশি হতে পারে। টস জিতে কে কী নেয়, খেলার শুরুতে এখানে দেখাবে।</div>` : '';
+  let h = `<div class="sub2">কখন কী হতে পারে <small style="font-weight:500">· এখন ${o.phase}</small></div><div class="olc">`;
   h += `<div><small>পরের ওভারে আনুমানিক রান</small><b>${bn(Math.max(0, Math.floor(o.nextOver - 1)))}-${bn(Math.ceil(o.nextOver + 2))}</b></div>`;
   h += `<div><small>পরের ওভারে উইকেট পড়ার সম্ভাবনা</small><b>${pc(o.wOver)}</b></div>`;
   if (o.mile) h += `<div><small>${bn(o.mile[0])} রান হতে পারে</small><b>${bn(o.mile[1])} ওভারে</b></div>`;
@@ -438,7 +438,7 @@ function bigHtml(all) {
     .sort((x, y) => (y.state === 'live') - (x.state === 'live') || (isFav(y) - isFav(x)) || x.start - y.start).slice(0, 8);
   if (L.length < 2) return '';
   const sc = (m, s) => m.sport === 'football' ? bn(m[s].g ?? 0) : (m[s].inn && m[s].inn.length ? bn(m[s].inn[m[s].inn.length - 1].r + '/' + m[s].inn[m[s].inn.length - 1].w) : '');
-  return `<div class="bigs"><div class="bigh">⭐ আজকের বড় খেলা</div><div class="bigr">${L.map(m => `<button type="button" class="bigm${m.state === 'live' ? ' on' : ''}" data-open="${esc(m.id)}"><small>${m.state === 'live' ? `● লাইভ${m.sport === 'football' && m.min ? ' ' + bn(liveMin(m)) + "'" : ''}` : when(m.start)}</small><span>${badge(m.a)}<b>${esc(tname(m.a))}</b>${m.state === 'live' ? `<i>${sc(m, 'a')}</i>` : ''}</span><span>${badge(m.b)}<b>${esc(tname(m.b))}</b>${m.state === 'live' ? `<i>${sc(m, 'b')}</i>` : ''}</span></button>`).join('')}</div></div>`;
+  return `<div class="bigs"><div class="bigh">আজকের বড় খেলা</div><div class="bigr">${L.map(m => `<button type="button" class="bigm${m.state === 'live' ? ' on' : ''}" data-open="${esc(m.id)}"><small>${m.state === 'live' ? `● লাইভ${m.sport === 'football' && m.min ? ' ' + bn(liveMin(m)) + "'" : ''}` : when(m.start)}</small><span>${badge(m.a)}<b>${esc(tname(m.a))}</b>${m.state === 'live' ? `<i>${sc(m, 'a')}</i>` : ''}</span><span>${badge(m.b)}<b>${esc(tname(m.b))}</b>${m.state === 'live' ? `<i>${sc(m, 'b')}</i>` : ''}</span></button>`).join('')}</div></div>`;
 }
 // প্রেডিকশন পাতা: খেলাঘরের হিসাবে আজকের ফ্রি কম্বো (শুধু পয়েন্টের খেলা)
 function freeCombos() {
@@ -466,12 +466,12 @@ function freeComboHtml() {
   const { safe, big } = freeCombos();
   S.free = { safe, big };
   const ac = S.feed && S.feed.acc;
-  const accLine = ac && ac.t >= 20 ? `<p class="fca">📊 খেলাঘরের হিসাব গত ৭ দিনে <b>${bn(Math.round(ac.h / ac.t * 100))}%</b> মিলেছে (${bn(ac.t)}টা খেলায়, যেখানে একদল স্পষ্ট এগিয়ে ছিল)</p>` : '';
-  if (!safe && !big) return `<div class="fcb"><h3>🎁 খেলাঘরের ফ্রি কম্বো</h3><p class="fcn">খেলাঘরের হিসাব এখন দলগুলোর আগের ফল থেকে শিখছে। যথেষ্ট নিশ্চিত খেলা পেলে এখানে আজকের কম্বো চলে আসবে।</p>${accLine}</div>`;
+  const accLine = ac && ac.t >= 20 ? `<p class="fca">খেলাঘরের পূর্বাভাস গত ৭ দিনে <b>${bn(Math.round(ac.h / ac.t * 100))}%</b> মিলেছে (${bn(ac.t)}টা খেলায়, যেখানে একদল স্পষ্ট এগিয়ে ছিল)</p>` : '';
+  if (!safe && !big) return ''; // নিশ্চিত খেলা না থাকলে বাক্সই দেখাই না
   const pc = v => bn(Math.round(Math.min(0.99, v) * 100)) + '%';
   const leg = l => `<li><span>${esc(tname(l.m.a))} বনাম ${esc(tname(l.m.b))}<small>${when(l.m.start)}</small></span><b>${l.mk === 'ou' ? `${l.pick === 'o' ? 'বেশি' : 'কম'} গোল (${bn(l.m.oul)})` : `${esc(tname(l.m[l.pick]))} জিতবে`}<small>${pc(l.p)}</small></b></li>`;
-  const card = (k, t, L) => L ? `<div class="fc"><div class="fch"><b>${t}</b><span>সব মিললে +${bn((S.combo || {})[L.length] || 0)} পয়েন্ট · সম্ভাবনা ${pc(L.reduce((x, l) => x * Math.min(0.99, l.p), 1))}</span></div><ul>${L.map(leg).join('')}</ul><button type="button" class="fcgo" data-free="${k}">🎯 এই কম্বো আমার স্লিপে নিন</button></div>` : '';
-  return `<div class="fcb"><h3>🎁 খেলাঘরের ফ্রি কম্বো <span>বিশ্লেষণ থেকে, বিনামূল্যে</span></h3>${card('safe', '🛡️ নিরাপদ কম্বো (২টা)', safe)}${card('big', '🚀 বড় কম্বো', big)}${accLine}<p class="fcn">এটা শুধু খেলাঘরের পয়েন্টের খেলা, টাকার বাজির জন্য নয়। আন্দাজ ভুলও হতে পারে।</p></div>`;
+  const card = (k, t, L) => L ? `<div class="fc"><div class="fch"><b>${t}</b><span>সব মিললে +${bn((S.combo || {})[L.length] || 0)} পয়েন্ট · সম্ভাবনা ${pc(L.reduce((x, l) => x * Math.min(0.99, l.p), 1))}</span></div><ul>${L.map(leg).join('')}</ul><button type="button" class="fcgo" data-free="${k}">এই কম্বো স্লিপে নিন</button></div>` : '';
+  return `<div class="fcb"><h3>আজকের কম্বো <span>খেলাঘর বিশ্লেষণ</span></h3>${card('safe', 'নিরাপদ কম্বো · ২টা খেলা', safe)}${card('big', 'বড় কম্বো', big)}${accLine}<p class="fcn">এটা শুধু খেলাঘরের পয়েন্টের খেলা, টাকার বাজির জন্য নয়। আন্দাজ ভুলও হতে পারে।</p></div>`;
 }
 // পূর্বাভাসের কারণ সহজ ভাষায়
 function why(m) {
@@ -560,7 +560,7 @@ function commHtml(m, det) {
   if (!comm.length) {
     const t = m.state === 'upcoming' ? `খেলা শুরু হলে এখানে বাংলায় ${m.sport === 'cricket' ? 'বল-বাই-বল' : 'গোল, কার্ড আর বদলির'} খবর আসবে`
       : m.state === 'live' ? 'খবর আসছে… কিছুক্ষণ পর আবার দেখুন' : (m.sport === 'cricket' ? 'এই ম্যাচের বল-বাই-বল নেই, স্কোরকার্ড দেখুন' : 'কোনো ঘটনা নেই');
-    return `<div class="empty"><span class="em">${m.sport === 'cricket' ? '🏏' : '⚽'}</span>${t}</div>`;
+    return `<div class="empty"><span class="em"></span>${t}</div>`;
   }
   let html = '';
   if (m.sport === 'cricket') {
@@ -638,7 +638,7 @@ function wormChart(det) {
   const W = 320, H = 130, X = i => 6 + (i + 1) / n * (W - 12), Y = v => H - 16 - v / max * (H - 26);
   const line = (arr, col) => `<polyline fill="none" stroke="${col}" stroke-width="2.4" stroke-linejoin="round" points="6,${H - 16} ${arr.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')}"/>`;
   const dots = (x, arr, col) => x.o.map((o, i) => o[1] ? `<circle cx="${X(i).toFixed(1)}" cy="${Y(arr[i]).toFixed(1)}" r="3.2" fill="${col}" stroke="#fff" stroke-width="1"/>` : '').join('');
-  return `<div class="ovc"><div class="sub2">📈 রানের দৌড় (ওভার ধরে মোট রান, বিন্দু = উইকেট)</div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="দুই ইনিংসের রানের তুলনা">${line(A, '#38bdf8')}${line(B, '#fbbf24')}${dots(ov[0], A, '#38bdf8')}${dots(ov[1], B, '#fbbf24')}<text x="0" y="${H - 2}" fill="#737bb3" font-size="9">০</text><text x="${W - 14}" y="${H - 2}" fill="#737bb3" font-size="9">${bn(n)}</text></svg><div class="wlg"><span><i style="background:#38bdf8"></i>${esc(ov[0].t)}</span><span><i style="background:#fbbf24"></i>${esc(ov[1].t)}</span></div></div>`;
+  return `<div class="ovc"><div class="sub2">রানের দৌড় <small>ওভার ধরে মোট রান, বিন্দু মানে উইকেট</small></div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="দুই ইনিংসের রানের তুলনা">${line(A, '#38bdf8')}${line(B, '#fbbf24')}${dots(ov[0], A, '#38bdf8')}${dots(ov[1], B, '#fbbf24')}<text x="0" y="${H - 2}" fill="#737bb3" font-size="9">০</text><text x="${W - 14}" y="${H - 2}" fill="#737bb3" font-size="9">${bn(n)}</text></svg><div class="wlg"><span><i style="background:#38bdf8"></i>${esc(ov[0].t)}</span><span><i style="background:#fbbf24"></i>${esc(ov[1].t)}</span></div></div>`;
 }
 function cardTbl(det) {
   const card = (det && det.card) || [];
@@ -671,9 +671,9 @@ function renderFun(m, react) {
   const names = `${m.a.name} vs ${m.b.name}`;
   const hl = `https://www.youtube.com/results?search_query=${q(names + ' highlights ' + (m.tour || ''))}`;
   const tv = `https://www.google.com/search?q=${q(names + ' live TV channel Bangladesh')}`;
-  $('fBox').innerHTML = `<h3>🎉 দর্শকদের প্রতিক্রিয়া<span>চাপ দিন!</span></h3>
+  $('fBox').innerHTML = `<h3>দর্শকদের প্রতিক্রিয়া<span>চাপ দিন!</span></h3>
 <div class="rx">${RX.map(([k, e]) => `<button type="button" data-rx="${k}" aria-label="${e}">${e}<small>${bn(r[k] || 0)}</small></button>`).join('')}</div>
-<div class="lnk">${m.state === 'done' ? `<a href="${hl}" target="_blank" rel="noopener">▶ অফিসিয়াল হাইলাইটস</a>` : `<a class="tv" href="${tv}" target="_blank" rel="noopener">📺 টিভিতে কোথায় দেখাচ্ছে</a>`}</div>`;
+<div class="lnk">${m.state === 'done' ? `<a href="${hl}" target="_blank" rel="noopener">▶ অফিসিয়াল হাইলাইটস</a>` : `<a class="tv" href="${tv}" target="_blank" rel="noopener">টিভিতে কোথায় দেখাচ্ছে</a>`}</div>`;
 }
 function sendRx() {
   const q = rxQueue; rxQueue = {}; rxTimer = null;
@@ -720,7 +720,7 @@ async function enablePush() {
     if (!token) throw new Error('no token');
     try { localStorage.setItem('kh-live-push', token); } catch (e) {}
     await pushSync(token);
-    toast('🔔 চালু হলো! প্রিয় দলের খেলা শুরু, উইকেট আর গোলের খবর ফোনে পাবেন');
+    toast('চালু হলো! প্রিয় দলের খেলা শুরু, উইকেট আর গোলের খবর ফোনে পাবেন');
     return true;
   } catch (e) { toast('নোটিফিকেশন চালু করা গেল না, একটু পরে আবার চেষ্টা করুন'); return false; }
 }
@@ -763,7 +763,7 @@ function renderSlip() {
   if (!n) { bar.hidden = true; return; }
   bar.hidden = false;
   const bonus = (S.combo || {})[n];
-  bar.innerHTML = `<button type="button" class="slipb" data-slip-open>🎯 কম্বো: ${bn(n)}টা ম্যাচ <small>${n >= 2 ? `সব মিললে +${bn(bonus)}` : 'আরও অন্তত ১টা যোগ করুন'}</small></button>`;
+  bar.innerHTML = `<button type="button" class="slipb" data-slip-open>কম্বো: ${bn(n)}টা ম্যাচ <small>${n >= 2 ? `সব মিললে +${bn(bonus)}` : 'আরও অন্তত ১টা যোগ করুন'}</small></button>`;
 }
 function openSlip() {
   const n = S.slip.length, bonus = (S.combo || {})[n];
@@ -781,7 +781,7 @@ async function sendSlip() {
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(j.error || 'কম্বো জমা হয়নি');
     S.slip = []; S.comboOn = false; saveSlip(); $('slipSheet').hidden = true;
-    toast(`🎯 কম্বো জমা হলো! সব মিললে +${bn(j.bonus)} পয়েন্ট`);
+    toast(`কম্বো জমা হলো! সব মিললে +${bn(j.bonus)} পয়েন্ট`);
     loadMe();
   } catch (e) { toast(e.message); $('slipGo').disabled = S.slip.length < 2; }
 }
@@ -799,7 +799,7 @@ function renderVote(m, votes) {
   const sel = mine || (S.draft && S.draft.id === m.id ? S.draft.pick : null);
   const btn = ([k, t]) => `<button type="button" data-vote="${k}" aria-pressed="${sel === k}" ${!open || mine ? 'disabled' : ''}>${t ? badge(t) : '<span class="mn" style="background:#475569">ড্র</span>'}<span>${t ? esc(tname(t)) : 'ড্র'}</span></button>`;
   const fb = m.sport === 'football';
-  let html = `<h3>🗳️ কে জিতবে?<span>সঠিক হলে +${bn(S.pts)}${fb ? `, সঠিক স্কোরে আরও +${bn(S.exact)}` : ''}</span></h3><div class="vbtns">${opts.map(btn).join('')}</div>`;
+  let html = `<h3>কে জিতবে?<span>সঠিক হলে +${bn(S.pts)}${fb ? `, সঠিক স্কোরে আরও +${bn(S.exact)}` : ''}</span></h3><div class="vbtns">${opts.map(btn).join('')}</div>`;
   // ফুটবল: দল বাছাইয়ের পর সঠিক স্কোর আন্দাজ (ইচ্ছা হলে)
   if (fb && open && !mine && S.draft && S.draft.id === m.id) {
     const d = S.draft;
@@ -813,12 +813,12 @@ function renderVote(m, votes) {
     const myOu = S.me && S.me.ou && S.me.ou[m.id];
     const what = m.sport === 'football' ? `মোট গোল ${bn(m.oul)}` : `দুই দল মিলে মোট রান ${bn(m.oul)}`;
     const inSlip = S.slip.find(l => l.id === m.id && l.mk === 'ou');
-    html += `<div class="ouq">${m.sport === 'football' ? '⚽' : '🏏'} ${what}-এর বেশি না কম?</div><div class="vbtns ou">
+    html += `<div class="ouq">${what}-এর বেশি না কম?</div><div class="vbtns ou">
 <button type="button" data-ou="o" aria-pressed="${(myOu && myOu.side === 'o') || (S.comboOn && inSlip && inSlip.pick === 'o')}" ${!open || (myOu && !S.comboOn) ? 'disabled' : ''}>⬆️ <span>বেশি</span></button>
 <button type="button" data-ou="u" aria-pressed="${(myOu && myOu.side === 'u') || (S.comboOn && inSlip && inSlip.pick === 'u')}" ${!open || (myOu && !S.comboOn) ? 'disabled' : ''}>⬇️ <span>কম</span></button></div>`;
-    if (myOu) html += `<div class="vmsg ok">✓ আপনার অনুমান: ${myOu.side === 'o' ? 'বেশি' : 'কম'} (${bn(myOu.line)})</div>`;
+    if (myOu) html += `<div class="vmsg ok">আপনার অনুমান: ${myOu.side === 'o' ? 'বেশি' : 'কম'} (${bn(myOu.line)})</div>`;
   }
-  if (open && !m.demo) html += `<label class="ctog"><input type="checkbox" id="comboOn" ${S.comboOn ? 'checked' : ''}> 🎯 কম্বো মোড: এখানে চাপলে ভোট নয়, কম্বোতে যোগ হবে</label>`;
+  if (open && !m.demo) html += `<label class="ctog"><input type="checkbox" id="comboOn" ${S.comboOn ? 'checked' : ''}> কম্বো মোড: এখানে চাপলে ভোট নয়, কম্বোতে যোগ হবে</label>`;
   if (mine || !open) {
     if (total) {
       const col = { a: 'var(--cyan)', d: '#64748b', b: 'var(--gold)' };
@@ -833,11 +833,11 @@ function renderVote(m, votes) {
     if (m.result === 'void') msg = 'ম্যাচের ফল হয়নি, তাই পয়েন্ট নেই';
     else if (m.result === mine) {
       const cl = !ex && myScore && fb && (myScore[0] - myScore[1]) === ((m.a.g || 0) - (m.b.g || 0));
-      msg = m.demo ? '🎉 আপনার অনুমান মিলেছে! (নমুনা ম্যাচ, পয়েন্ট যোগ হয় না)' : `🎉 আপনার অনুমান মিলেছে! +${bn(S.pts + (ex ? S.exact : 0) + (cl ? 5 : 0))} পয়েন্ট${ex ? ' (একদম সঠিক স্কোর!)' : cl ? ' (স্কোরও কাছাকাছি!)' : ''}`; cls = 'ok';
+      msg = m.demo ? 'আপনার অনুমান মিলেছে! (নমুনা ম্যাচ, পয়েন্ট যোগ হয় না)' : `আপনার অনুমান মিলেছে! +${bn(S.pts + (ex ? S.exact : 0) + (cl ? 5 : 0))} পয়েন্ট${ex ? ' (একদম সঠিক স্কোর!)' : cl ? ' (স্কোরও কাছাকাছি!)' : ''}`; cls = 'ok';
     }
     else msg = 'এবার মেলেনি, পরের ম্যাচে আবার চেষ্টা করুন';
   } else if (mine) { msg = `✓ আপনার ভোট: ${mine === 'd' ? 'ড্র' : esc(tname(m[mine]))}${scTxt}। খেলা শেষে ফল মিলিয়ে পয়েন্ট দেওয়া হবে`; cls = 'ok'; }
-  else if (open) msg = (m.demo ? 'নমুনা ম্যাচ: ভোট দেওয়া যায়, তবে পয়েন্ট যোগ হয় না' : (fb ? 'দল বাছাই করুন, চাইলে সঠিক স্কোরও বলুন' : 'খেলা শুরুর আগ পর্যন্ত ভোট দেওয়া যাবে')) + ` · ⏳ ভোট বন্ধ হবে <span data-cd="${m.start}">${cdText(m.start - Date.now())}</span> পরে`;
+  else if (open) msg = (m.demo ? 'নমুনা ম্যাচ: ভোট দেওয়া যায়, তবে পয়েন্ট যোগ হয় না' : (fb ? 'দল বাছাই করুন, চাইলে সঠিক স্কোরও বলুন' : 'খেলা শুরুর আগ পর্যন্ত ভোট দেওয়া যাবে')) + ` · ভোট বন্ধ হবে <span data-cd="${m.start}">${cdText(m.start - Date.now())}</span> পরে`;
   else msg = m.state === 'live' ? (paused(m) ? 'টেস্ট চলছে, ভোট বন্ধ' : 'খেলা শুরু হয়ে গেছে, ভোট বন্ধ') : 'ভোট বন্ধ';
   html += `<div class="vmsg ${cls}" id="vMsg">${msg}${total ? ` · মোট ${bn(total)} ভোট` : ''}</div>`;
   $('vBox').innerHTML = html;
@@ -916,7 +916,7 @@ async function loadMe() {
     // আগের বারের চেয়ে পয়েন্ট বাড়লে জানানো (খেলা শেষে অনুমান মিলেছে)
     try {
       const key = 'kh-live-pts-' + S.user.uid, before = localStorage.getItem(key);
-      if (before != null && S.me.pts > +before) toast(`🎉 আপনার অনুমান মিলেছে! +${bn(S.me.pts - +before)} পয়েন্ট`);
+      if (before != null && S.me.pts > +before) toast(`আপনার অনুমান মিলেছে! +${bn(S.me.pts - +before)} পয়েন্ট`);
       localStorage.setItem(key, String(S.me.pts));
     } catch (e) {}
   } catch (e) { S.me = null; }
@@ -928,7 +928,7 @@ async function loadMe() {
 async function openBoard() {
   $('lbSheet').hidden = false;
   const cb = S.combo || {};
-  $('lbRules').innerHTML = `খেলা শুরুর আগে অনুমান দিন: কে জিতবে, আর মোট গোল/রান বেশি না কম। প্রতিটা মিললে +${bn(S.pts)}। ফুটবলে একদম সঠিক স্কোরে আরও +${bn(S.exact)}, বিজয়ী আর গোলের ব্যবধান মিললে +৫। টানা মিললে 🔥 স্ট্রিক বাড়ে।<br>🎯 কম্বো: কয়েকটা ম্যাচের অনুমান একসাথে, সব মিললে বোনাস (২টা +${bn(cb[2])}, ৩টা +${bn(cb[3])}, ৪টা +${bn(cb[4])}, ৫টা +${bn(cb[5])}, ৬টা +${bn(cb[6])})।<br><b>এটা শুধু মজার অনুমানের খেলা: পয়েন্ট কেনা যায় না, টাকা বা পুরস্কারে বদলানো যায় না।</b> সাপ্তাহিক লিডারবোর্ড প্রতি সোমবার নতুন করে শুরু হয়।`;
+  $('lbRules').innerHTML = `খেলা শুরুর আগে অনুমান দিন: কে জিতবে, আর মোট গোল/রান বেশি না কম। প্রতিটা মিললে +${bn(S.pts)}। ফুটবলে একদম সঠিক স্কোরে আরও +${bn(S.exact)}, বিজয়ী আর গোলের ব্যবধান মিললে +৫। টানা মিললে 🔥 স্ট্রিক বাড়ে।<br>কম্বো: কয়েকটা ম্যাচের অনুমান একসাথে, সব মিললে বোনাস (২টা +${bn(cb[2])}, ৩টা +${bn(cb[3])}, ৪টা +${bn(cb[4])}, ৫টা +${bn(cb[5])}, ৬টা +${bn(cb[6])})।<br><b>এটা শুধু মজার অনুমানের খেলা: পয়েন্ট কেনা যায় না, টাকা বা পুরস্কারে বদলানো যায় না।</b> সাপ্তাহিক লিডারবোর্ড প্রতি সোমবার নতুন করে শুরু হয়।`;
   meBox();
   loadBoard();
 }
@@ -936,9 +936,9 @@ async function openBoard() {
 function renderGroups() {
   const box = $('grpBox'); if (!box) return;
   const gs = (S.me && S.me.groups) || [];
-  box.innerHTML = `<div class="gtabs"><button type="button" data-grp="" aria-pressed="${!S.grp}">🌍 সবাই</button>${gs.map(g => `<button type="button" data-grp="${esc(g.code)}" aria-pressed="${S.grp === g.code}">👥 ${esc(g.name)}</button>`).join('')}</div>
-${S.grp ? `<div class="ginv">বন্ধুদের ডাকুন: <b>${esc(S.grp)}</b> <button type="button" class="lbtn" data-ginv>🔗 লিংক শেয়ার</button> <button type="button" class="lbtn" data-gleave>গ্রুপ ছাড়ুন</button></div>` : ''}
-${S.user ? `<details class="gnew"><summary>➕ বন্ধুদের নিয়ে নতুন গ্রুপ / কোড দিয়ে যোগ দিন</summary><div class="grow"><input id="gName" maxlength="30" placeholder="গ্রুপের নাম (যেমন: অফিসের বন্ধুরা)"><button type="button" class="cbtn" data-gnew>বানান</button></div><div class="grow"><input id="gCode" maxlength="6" placeholder="৬ অক্ষরের কোড"><button type="button" class="lbtn" data-gjoin>যোগ দিন</button></div></details>` : ''}`;
+  box.innerHTML = `<div class="gtabs"><button type="button" data-grp="" aria-pressed="${!S.grp}">সবাই</button>${gs.map(g => `<button type="button" data-grp="${esc(g.code)}" aria-pressed="${S.grp === g.code}">${esc(g.name)}</button>`).join('')}</div>
+${S.grp ? `<div class="ginv">বন্ধুদের ডাকুন: <b>${esc(S.grp)}</b> <button type="button" class="lbtn" data-ginv>লিংক শেয়ার</button> <button type="button" class="lbtn" data-gleave>গ্রুপ ছাড়ুন</button></div>` : ''}
+${S.user ? `<details class="gnew"><summary>বন্ধুদের নিয়ে নতুন গ্রুপ / কোড দিয়ে যোগ দিন</summary><div class="grow"><input id="gName" maxlength="30" placeholder="গ্রুপের নাম (যেমন: অফিসের বন্ধুরা)"><button type="button" class="cbtn" data-gnew>বানান</button></div><div class="grow"><input id="gCode" maxlength="6" placeholder="৬ অক্ষরের কোড"><button type="button" class="lbtn" data-gjoin>যোগ দিন</button></div></details>` : ''}`;
 }
 async function grpAct(body) {
   const t = await token(); if (!t) { toast('আগে Gmail দিয়ে লগইন করুন'); return null; }
@@ -953,7 +953,7 @@ async function joinFromLink() {
   if (!S.user && !(await login())) { toast('গ্রুপে যোগ দিতে Gmail দিয়ে লগইন করুন'); return; }
   const j = await grpAct({ act: 'join', code });
   history.replaceState(null, '', location.pathname);
-  if (j) { await loadMe(); S.grp = j.code; toast(`👥 "${j.name}" গ্রুপে যোগ দিয়েছেন!`); openBoard(); }
+  if (j) { await loadMe(); S.grp = j.code; toast(`"${j.name}" গ্রুপে যোগ দিয়েছেন!`); openBoard(); }
 }
 async function loadBoard() {
   renderGroups();
@@ -974,7 +974,7 @@ function meBox() {
   if (S.user && S.me) {
     const cs = (S.me.combos || []).slice(0, 5);
     const rIc = r => (r === true ? '✅' : r === false ? '❌' : r === 'void' ? '➖' : '⏳');
-    const cHtml = cs.length ? `<div class="sub2">আমার কম্বো</div><ul class="mycb">${cs.map(c => `<li><div>${c.legs.map(l => `<span>${rIc(l.r)} ${esc(l.t)}</span>`).join('')}</div><b class="${c.res === true ? 'w' : c.res === false ? 'l' : ''}">${c.res === true ? '+' + bn(c.bonus) : c.res === false ? 'মেলেনি' : c.res === 'void' ? 'বাতিল' : '⏳ +' + bn(c.bonus)}</b></li>`).join('')}</ul>` : '';
+    const cHtml = cs.length ? `<div class="sub2">আমার কম্বো</div><ul class="mycb">${cs.map(c => `<li><div>${c.legs.map(l => `<span>${rIc(l.r)} ${esc(l.t)}</span>`).join('')}</div><b class="${c.res === true ? 'w' : c.res === false ? 'l' : ''}">${c.res === true ? '+' + bn(c.bonus) : c.res === false ? 'মেলেনি' : c.res === 'void' ? 'বাতিল' : '+' + bn(c.bonus)}</b></li>`).join('')}</ul>` : '';
     $('lbMe').innerHTML = `<div class="me"><div class="n"><b>${esc(S.me.name || S.user.displayName || 'আমি')}${S.me.st >= 2 ? ` 🔥${bn(S.me.st)}` : ''}</b><small>${bn(S.me.ok)}টি সঠিক · ${bn(S.me.n)}টি ভোট · এই সপ্তাহে ${bn(S.me.week || 0)}${S.me.best >= 3 ? ` · সেরা স্ট্রিক ${bn(S.me.best)}` : ''}</small></div><div class="p">${bn(S.me.pts)}</div></div>${cHtml}`;
   } else {
     $('lbMe').innerHTML = `<button class="gbtn" type="button" id="lbLogin"><svg viewBox="0 0 24 24"><path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.3-1.6 3.8-5.5 3.8-3.3 0-6-2.7-6-6.1S8.7 5.7 12 5.7c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.2 14.6 2.2 12 2.2 6.6 2.2 2.3 6.6 2.3 12s4.3 9.8 9.7 9.8c5.6 0 9.3-3.9 9.3-9.5 0-.6-.1-1.1-.2-1.6z"/></svg>Gmail দিয়ে লগইন করে পয়েন্ট দেখুন</button>`;
@@ -1145,7 +1145,7 @@ $('slipSheet').addEventListener('click', e => {
 });
 $('lbSheet').addEventListener('click', async e => {
   const gt = e.target.closest('[data-grp]'); if (gt) { S.grp = gt.dataset.grp || null; loadBoard(); return; }
-  if (e.target.closest('[data-gnew]')) { const j = await grpAct({ act: 'create', name: $('gName').value }); if (j) { await loadMe(); S.grp = j.code; toast('👥 গ্রুপ তৈরি! এবার লিংক শেয়ার করে বন্ধুদের ডাকুন'); loadBoard(); } return; }
+  if (e.target.closest('[data-gnew]')) { const j = await grpAct({ act: 'create', name: $('gName').value }); if (j) { await loadMe(); S.grp = j.code; toast('গ্রুপ তৈরি! এবার লিংক শেয়ার করে বন্ধুদের ডাকুন'); loadBoard(); } return; }
   if (e.target.closest('[data-gjoin]')) { const j = await grpAct({ act: 'join', code: $('gCode').value }); if (j) { await loadMe(); S.grp = j.code; loadBoard(); } return; }
   if (e.target.closest('[data-gleave]')) { if (!confirm('এই গ্রুপ ছেড়ে দেবেন?')) return; const j = await grpAct({ act: 'leave', code: S.grp }); if (j) { S.grp = null; await loadMe(); loadBoard(); } return; }
   if (e.target.closest('[data-ginv]')) {

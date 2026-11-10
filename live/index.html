@@ -12,7 +12,7 @@
 <link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://flagcdn.com">
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wdth,wght@75..100,500..800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <link rel="preload" as="fetch" href="/api/live?f=feed" crossorigin>
 <style>
 /* লাইভ স্কোর: গাঢ় নীল খেলার মাঠের রাতের আলো। কার্ডে দুই দল, ডানে স্কোর; লাইভে লাল স্পন্দন। */
@@ -399,6 +399,7 @@ table.onf tr.bw td{color:var(--cyan)}
 .aia{margin-top:8px;font-size:13.5px}.aia small{color:var(--faint);font-size:11.5px}
 .aiq{margin:0 0 4px;color:var(--faint)}.ait{margin:0 0 4px;line-height:1.6;background:rgba(34,197,94,.08);border-radius:12px;padding:9px 11px}
 </style>
+<link rel="stylesheet" href="/live/theme.css">
 </head><body>
 <header class="top"><div class="wrap bar">
   <a class="ib" href="/" aria-label="খেলাঘরে ফিরুন"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></a>
@@ -409,15 +410,15 @@ table.onf tr.bw td{color:var(--cyan)}
 <div class="wrap">
   <div class="seg" role="group" aria-label="খেলার ধরন">
     <button type="button" data-s="all" aria-pressed="true">সব</button>
-    <button type="button" data-s="cricket" aria-pressed="false">🏏 ক্রিকেট</button>
-    <button type="button" data-s="football" aria-pressed="false">⚽ ফুটবল</button>
+    <button type="button" data-s="cricket" aria-pressed="false">ক্রিকেট</button>
+    <button type="button" data-s="football" aria-pressed="false">ফুটবল</button>
   </div>
   <div class="chips" role="group" aria-label="ম্যাচ বাছাই">
     <button type="button" class="chip lv" data-f="live" aria-pressed="false">লাইভ <b id="nLive">০</b></button>
     <button type="button" class="chip" data-f="upcoming" aria-pressed="false">আসন্ন <b id="nUp">০</b></button>
     <button type="button" class="chip" data-f="done" aria-pressed="false">শেষ <b id="nDone">০</b></button>
   </div>
-  <input class="srch" id="q" type="search" placeholder="🔎 দল বা লিগ খুঁজুন (যেমন Bangladesh, Barcelona)" aria-label="খুঁজুন" autocomplete="off">
+  <input class="srch" id="q" type="search" placeholder="দল বা লিগ খুঁজুন (যেমন Bangladesh, Barcelona)" aria-label="খুঁজুন" autocomplete="off">
   <div class="days" id="days" hidden role="group" aria-label="দিন বাছাই"></div>
   <div class="note" id="demoNote" hidden></div>
   <main id="list" aria-live="polite"><div class="skel"></div><div class="skel"></div><div class="skel"></div></main>
@@ -446,20 +447,20 @@ table.onf tr.bw td{color:var(--cyan)}
 <div class="sheet" id="slipSheet" hidden>
   <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="slipT">
     <button class="ib xb" type="button" data-x aria-label="বন্ধ করুন">✕</button>
-    <h2 id="slipT">🎯 আমার কম্বো</h2>
+    <h2 id="slipT">আমার কম্বো</h2>
     <ol class="lb sl2" id="slipList"></ol>
     <p class="rules" id="slipInfo"></p>
-    <div class="sact"><button type="button" class="cbtn" id="slipGo">✓ কম্বো জমা দিন</button><button type="button" class="lbtn" id="slipClear">সব মুছুন</button></div>
+    <div class="sact"><button type="button" class="cbtn" id="slipGo">কম্বো জমা দিন</button><button type="button" class="lbtn" id="slipClear">সব মুছুন</button></div>
     <p class="rules" style="font-size:.74rem">শুধু মজার অনুমানের খেলা, পয়েন্ট কেনা বা টাকায় বদলানো যায় না।</p>
   </div>
 </div>
 <div class="sheet" id="lbSheet" hidden>
   <div class="sbox" role="dialog" aria-modal="true" aria-labelledby="lbT">
     <button class="ib xb" type="button" data-x aria-label="বন্ধ করুন">✕</button>
-    <h2 id="lbT">🏆 কে জিতবে? লিডারবোর্ড</h2>
+    <h2 id="lbT">লিডারবোর্ড</h2>
     <div id="lbMe"></div>
     <div class="lbtabs" role="group" aria-label="সময়"><button type="button" data-per="week" aria-pressed="true">এই সপ্তাহ</button><button type="button" data-per="all" aria-pressed="false">সব সময়</button></div>
-    <div class="lbtabs lbsort" role="group" aria-label="কীভাবে সাজানো"><button type="button" data-sort="pts" aria-pressed="true">🏆 পয়েন্ট</button><button type="button" data-sort="acc" aria-pressed="false">🎯 সঠিকতা</button><button type="button" data-sort="st" aria-pressed="false">🔥 টানা সঠিক</button></div>
+    <div class="lbtabs lbsort" role="group" aria-label="কীভাবে সাজানো"><button type="button" data-sort="pts" aria-pressed="true">পয়েন্ট</button><button type="button" data-sort="acc" aria-pressed="false">সঠিকতা</button><button type="button" data-sort="st" aria-pressed="false">টানা সঠিক</button></div>
     <p class="rules" id="lbRules"></p>
     <ol class="lb" id="lbList"></ol>
   </div>

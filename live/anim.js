@@ -35,7 +35,7 @@ export function drawAnim(box, m, det, tname) {
 
 /* ---------------- ফুটবল ---------------- */
 function fbBuild(box, m, tname) {
-  box.innerHTML = `<h3>🎬 খেলার অ্যানিমেশন<span>ঘটনা থেকে আঁকা, আসল ভিডিও নয়</span></h3>
+  box.innerHTML = `<h3>মাঠের ছবি<span>ঘটনা অনুযায়ী</span></h3>
 <div class="anv"><svg class="pitch" viewBox="0 0 300 180" role="img" aria-label="ফুটবল মাঠ">
 <defs><pattern id="stp" width="40" height="180" patternUnits="userSpaceOnUse"><rect width="20" height="180" fill="#1f7a3a"/><rect x="20" width="20" height="180" fill="#23843f"/></pattern>
 <linearGradient id="pa" x1="0" x2="1"><stop offset="0" stop-color="#38bdf8" stop-opacity="0"/><stop offset="1" stop-color="#38bdf8" stop-opacity=".35"/></linearGradient>
@@ -52,7 +52,7 @@ function fbBuild(box, m, tname) {
 <div class="side sa">${esc(tname(m.a))} →</div><div class="side sb">← ${esc(tname(m.b))}</div>
 <div class="ban" hidden></div></div>
 <div class="tl"><div class="tlb"></div><div class="tlm"></div></div>
-<div class="anb"><button type="button" class="rp">▶ খেলার সারাংশ দেখুন</button><span class="poss"></span></div>`;
+<div class="anb"><button type="button" class="rp">গোলগুলো আবার দেখুন</button><span class="poss"></span></div>`;
   cur.el = box.querySelector('.anv');
   cur.ball = box.querySelector('.ball');
   place(cur.ball, 150, 90, 0);
@@ -137,7 +137,7 @@ async function fbReplay() {
   if (!me || me.busy) return;
   const gl = ((me.det && me.det.gl) || []).filter(x => !(me.m.pen && x.k === 'P' && /^120\+/.test(String(x.m))));
   if (!gl.length) return;
-  banner(me, '▶ সারাংশ: শুরু', '');
+  banner(me, 'শুরু থেকে', '');
   await sleep(1000);
   await playFb(gl);
   if (!me.dead) banner(me, me.m.state === 'done' ? `শেষ: ${bn(me.m.a.g ?? 0)} - ${bn(me.m.b.g ?? 0)}` : `এখন: ${bn(me.m.a.g ?? 0)} - ${bn(me.m.b.g ?? 0)}`, '');
@@ -146,7 +146,7 @@ async function fbReplay() {
 /* ---------------- ক্রিকেট ---------------- */
 const CX = 150, CY = 100, RX = 132, RY = 86;
 function crBuild(box, m) {
-  box.innerHTML = `<h3>🎬 খেলার অ্যানিমেশন<span>বলের ফল থেকে আঁকা, আসল ভিডিও নয়</span></h3>
+  box.innerHTML = `<h3>মাঠের ছবি<span>প্রতি বলের ফল অনুযায়ী</span></h3>
 <div class="anv"><svg class="pitch" viewBox="0 0 300 200" role="img" aria-label="ক্রিকেট মাঠ">
 <defs><radialGradient id="grd"><stop offset="0" stop-color="#2f9e4f"/><stop offset="1" stop-color="#1c6e35"/></radialGradient></defs>
 <ellipse cx="${CX}" cy="${CY}" rx="146" ry="96" fill="url(#grd)"/>
@@ -162,7 +162,7 @@ function crBuild(box, m) {
 <g class="ball"><circle r="2.6" fill="#ef4444" stroke="#fff" stroke-width=".6"/></g>
 </svg><div class="ban" hidden></div></div>
 <div class="ovr"><small>এই ওভার</small><span class="ovb"></span></div>
-<div class="anb"><button type="button" class="rp">▶ শেষ ৬ বল আবার দেখুন</button><span class="poss"></span></div>`;
+<div class="anb"><button type="button" class="rp">শেষ ৬ বল আবার দেখুন</button><span class="poss"></span></div>`;
   cur.el = box.querySelector('.anv');
   const q = s => box.querySelector(s);
   cur.ball = q('.ball'); cur.bwl = q('.bwl'); cur.bt1 = q('.bt1'); cur.bt2 = q('.bt2');

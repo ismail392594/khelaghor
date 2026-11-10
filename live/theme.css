@@ -1,0 +1,151 @@
+/* খেলাঘর লাইভ: নকশার শেষ স্তর (১০ নভেম্বর)। রাতের ফ্লাডলাইটে মাঠ: বোতল-সবুজ জমিন, পতাকার লাল দিয়ে "চলছে",
+   ট্রফির সোনালি দিয়ে পয়েন্ট। স্কোর সরু-লম্বা স্কোরবোর্ড অক্ষরে (Anek Bangla), পড়ার লেখা Hind Siliguri।
+   আগের বেগুনি আভা, ঝলমলে ছায়া আর রঙিন লেখা এখানে বাতিল। পাতার ভেতরের <style>-এর পরে লোড হয়, তাই এটাই জেতে। */
+:root{
+  --bg:#06180f;--bg2:#0a2117;--card:#0d281c;--card2:#123224;--line:rgba(226,238,214,.09);--line2:rgba(226,238,214,.16);
+  --ink:#eef2e4;--dim:#a9b9a6;--faint:#728a75;
+  --live:#f42a41;--gold:#e8b649;--green:#43c97c;--cyan:#6cc6e0;--violet:#b49cf5;--orange:#f0954a;
+  --ta:#6cc6e0;--tb:#e8b649;
+  --display:'Anek Bangla','Hind Siliguri',system-ui,sans-serif;--body:'Hind Siliguri','Noto Sans Bengali',system-ui,sans-serif;
+}
+html,body{background:var(--bg)}
+body{background:var(--bg);font-size:15.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
+/* স্কোর আর বড় সংখ্যা: সরু স্কোরবোর্ড অক্ষর */
+.sc,.vs .t .s,.vs .mid .g,.hcd b,.me .p,.lb li .p,.cd,.rts b,.wpl b,.stp b,.olc b,.scs b,.inn summary b,.bigm span i{
+  font-family:var(--display);font-variation-settings:'wdth' 78;font-weight:700;letter-spacing:0;font-variant-numeric:tabular-nums}
+h2,h3,.ttl,.sec b,.bigh{font-family:var(--display);font-variation-settings:'wdth' 92}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* উপরের বার: কোনো ঝলমলে রং নয় */
+.top{background:rgba(6,24,15,.92);border-bottom-color:var(--line)}
+.ttl{background:none;-webkit-background-clip:initial;background-clip:initial;color:var(--ink);font-size:1.25rem;font-weight:700;letter-spacing:.005em}
+.ttl>span[aria-hidden]{display:none}
+.ib{background:transparent;border:1px solid var(--line2);border-radius:10px}
+.pts{background:var(--gold);color:#241a02;box-shadow:none;border-radius:10px;font-weight:700}
+.dot{background:var(--live)}
+
+/* খেলার ধরন আর বাছাই */
+.seg{background:transparent;border:1px solid var(--line2);border-radius:12px;padding:3px}
+.seg button{border-radius:9px;color:var(--dim);font-weight:600}
+.seg button[aria-pressed=true]{background:var(--ink);color:#0a2117;box-shadow:none}
+.chip{background:transparent;border-color:var(--line2);font-weight:600}
+.chip b{background:rgba(226,238,214,.1)}
+.chip[aria-pressed=true]{background:var(--card2);color:var(--ink);border-color:var(--ink)}
+.chip[aria-pressed=true] b{background:var(--ink);color:#0a2117}
+.chip.lv[aria-pressed=true]{background:var(--live);border-color:var(--live)}
+.srch{background:var(--bg2)!important;border:1px solid var(--line2)!important;border-radius:12px!important}
+.day{background:transparent;border:1px solid var(--line)}
+.day[aria-pressed=true]{background:var(--gold);color:#241a02;border-color:var(--gold)}
+
+/* খেলার ভাগের মাথা: রঙের পটি বাদ, বাঁ দিকে খেলার রঙের ছোট দাগ */
+.sec,.sec.cricket,.sec.football{background:none;box-shadow:none;padding:6px 2px 6px 14px;border-radius:0;margin:22px 0 8px;position:relative}
+.sec::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:4px;border-radius:2px;background:var(--green)}
+.sec.football::before{background:var(--cyan)}
+.sec span{display:none}
+.sec b{font-size:1.35rem;font-weight:700}
+.sec em{background:none;border:1px solid var(--line2);color:var(--dim)}
+.grp{color:var(--faint);font-weight:600;letter-spacing:0;margin-top:16px}
+
+/* ম্যাচ কার্ড: সমান জমিন, হালকা দাগ; চলমান খেলায় শুধু বাঁ দিকে লাল */
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:none;padding:12px 14px 10px}
+.card::before{top:0;bottom:0;width:3px;border-radius:0;opacity:1;background:transparent}
+.card.live{background:var(--card);border-color:rgba(244,42,65,.35);box-shadow:none}
+.card.live::before{background:var(--live);box-shadow:none}
+.card.done::before{background:transparent}
+.card:hover{border-color:var(--line2)}
+.chead{color:var(--faint)}
+.pill{border-radius:6px;font-weight:700;background:transparent;border:1px solid var(--line2)}
+.pill.live{background:var(--live);border-color:var(--live)}
+.pill.done{background:transparent;color:var(--green);border-color:rgba(67,201,124,.35)}
+.tm .nm{font-weight:600;font-size:1.04rem}
+.sc{font-size:1.6rem}
+.sc small{font-family:var(--body);font-variation-settings:normal}
+.cfoot{border-top:1px solid var(--line)}
+.cfoot .st.hot{color:#ffc9cf;font-weight:500}
+.vt{border-radius:6px;background:transparent;border:1px solid rgba(108,198,224,.35);color:var(--cyan)}
+.vt.mine{border-color:rgba(67,201,124,.4);color:var(--green);background:transparent}
+.fl{border-radius:3px;box-shadow:0 0 0 1px rgba(226,238,214,.18)}
+.mn{box-shadow:none;font-family:var(--display);font-variation-settings:'wdth' 85}
+.skel{border-radius:14px;background:linear-gradient(90deg,var(--card) 0,var(--card2) 50%,var(--card) 100%);background-size:200% 100%}
+.wbar{background:rgba(226,238,214,.06)}
+.wbar .pa{background:var(--ta)}.wbar .pb{background:var(--tb)}.wbar .pd{background:#4d6253}
+.note{color:#f3d58c;background:rgba(232,182,73,.07);border-color:rgba(232,182,73,.22)}
+
+/* ম্যাচের পাতা: স্কোরবোর্ড। এটাই পাতার একমাত্র জমকালো অংশ */
+.pane{background:var(--bg)}
+.hero{background:
+  radial-gradient(60% 120px at 50% 0,rgba(238,242,228,.07),transparent),
+  linear-gradient(180deg,#0b2a1c,var(--bg));border-bottom:1px solid var(--line);padding-bottom:18px}
+.vs .mid .g{font-size:3.6rem;letter-spacing:.02em;line-height:.95}
+.vs .mid .v{font-family:var(--body);font-variation-settings:normal;font-size:.85rem}
+.vs .t .s{font-size:2rem}
+.vs .t b{font-weight:600}
+.hst{font-weight:600}.hst.hot{color:#ffc9cf}
+.hcd div{background:transparent;border:1px solid var(--line2);border-radius:10px}
+.hcd b{font-size:1.7rem}
+.share{background:transparent;border:1px solid var(--line2);border-radius:10px}
+.stale{background:transparent!important;border-color:rgba(232,182,73,.35)!important;color:#f3d58c!important}
+.ics{background:transparent!important;border-color:var(--line2)!important;border-radius:10px!important;font-weight:600!important}
+.gls{color:var(--dim)}
+
+/* বাক্স: পটি নয়, পাতলা দাগে ভাগ করা অংশ */
+.box{background:var(--bg2);border:1px solid var(--line);border-radius:14px}
+.box h3{font-size:1.2rem;font-weight:700}
+.box h3 span{color:var(--faint)!important;font-family:var(--body);font-weight:500}
+.sub2{color:var(--dim)!important;font-weight:600!important}
+.rts div,.olc div,.ops.big span,.scs span,.sbox2,.inn summary{background:rgba(226,238,214,.045)!important;border-radius:10px!important}
+.why{background:transparent!important;border-left:3px solid var(--gold);border-radius:0!important;padding:4px 0 4px 12px!important;color:var(--dim)}
+.olw{color:#f3d58c}
+.slots i{background:rgba(108,198,224,.4)}.slots .hi i{background:var(--gold)}
+.olbar i.a{background:var(--ta)}.olbar i.b{background:var(--tb)}
+.ops span{background:transparent;border:1px solid var(--line2);border-radius:6px}
+.ops b.sa{color:var(--ta)}.ops b.sb{color:var(--tb)}
+
+/* ভোট, কম্বো, শিট */
+.vbtns button{background:var(--card);border-radius:12px;font-weight:600}
+.vbtns button[aria-pressed=true]{border-color:var(--green);background:rgba(67,201,124,.1)}
+.cbtn{background:var(--green);color:#03200f;box-shadow:none;border-radius:10px;font-weight:700}
+.lbtn{border-radius:10px}
+.gbtn{border-radius:10px;color:#0a2117}
+.sheet{background:rgba(2,10,6,.7)}
+.sbox{background:var(--bg2);border-top:1px solid var(--line2);border-radius:18px 18px 0 0}
+.me{background:var(--gold);color:#241a02;border-radius:12px}
+.lbtabs{background:transparent;border:1px solid var(--line2);border-radius:10px}
+.lbtabs button[aria-pressed=true]{background:var(--ink);color:#0a2117}
+.lb li .p{color:var(--gold)}
+.toast{background:var(--ink);color:#0a2117;border-radius:10px}
+.tabs{background:var(--bg)}
+.tabs button[aria-selected=true]{border-color:var(--gold)}
+.fcb{background:var(--bg2)!important;border:1px solid var(--line2)!important;border-radius:14px!important}
+.fcb h3 span{color:var(--faint)!important;font-weight:500!important}
+.fc{background:var(--card)!important;border-radius:10px!important}
+.fcgo{background:var(--gold)!important;color:#241a02!important;border-radius:10px!important;font-weight:700!important}
+.fca{color:var(--green)!important}
+.aisg button,.aif input{border-color:var(--line2)!important}
+.aif button{background:var(--green)!important;color:#03200f!important;border-radius:10px!important}
+.ait{background:rgba(67,201,124,.07)!important;border-left:3px solid var(--green);border-radius:0 10px 10px 0!important}
+
+/* আজকের বড় খেলা */
+.bigh{font-size:1.15rem;font-weight:700}
+.bigm{background:var(--card);border:1px solid var(--line);border-radius:12px}
+.bigm.on{border-color:rgba(244,42,65,.5);box-shadow:none}
+.bigm.on small{color:#ff8d9a}
+
+/* মাঠের ছবি */
+.anv{border-radius:12px}
+.anv .ban{border-radius:8px;font-weight:700}
+.anv .ban.goal{background:#0f5b35}
+.tlb::after{background:var(--gold)}
+.ovb i.k4{background:#2b8fb0}.ovb i.k6{background:#6f55c9}.ovb i.kW{background:var(--live)}
+
+@media (min-width:720px){
+  .wrap{max-width:680px}
+  .vs .mid .g{font-size:4.2rem}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+.empty .em{display:none}
+.vt:empty{display:none}
+.bigm .fl,.bigm .mn{transform:none;width:26px;height:26px;font-size:.62rem}
+.bigm .fl{height:18px}
+.vs .t .bat{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gold);margin-left:6px;vertical-align:middle}
+table.onf td small{display:inline}
