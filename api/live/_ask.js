@@ -86,15 +86,18 @@ export async function aiPing() {
   if (!aiOn()) return { ai: false };
   const out = [];
   for (const model of [process.env.LIVE_AI_MODEL, 'gemini-flash-latest', 'gemini-2.5-flash'].filter(Boolean)) {
+    const ac = new AbortController(), t0 = Date.now(); const tm = setTimeout(() => ac.abort(), 8000);
     try {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-        method: 'POST', headers: { 'content-type': 'application/json', 'x-goog-api-key': process.env.GEMINI_API_KEY },
+        method: 'POST', signal: ac.signal, headers: { 'content-type': 'application/json', 'x-goog-api-key': process.env.GEMINI_API_KEY },
         body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: 'এক শব্দে বলুন: ঠিক আছে' }] }], generationConfig: { maxOutputTokens: 20 } })
       });
       const j = await r.json().catch(() => ({}));
-      out.push({ model, status: r.status, ok: r.ok, err: j.error ? String(j.error.message || '').slice(0, 160) : null });
+      out.push({ model, status: r.status, ok: r.ok, ms: Date.now() - t0, err: j.error ? String(j.error.message || '').slice(0, 160) : null });
       if (r.status !== 404) break;
-    } catch (e) { out.push({ model, err: 'net' }); }
+    } catch (e) { out.push({ model, ms: Date.now() - t0, err: e.name === 'AbortError' ? 'সময় পেরিয়ে গেছে (৮ সেকেন্ড)' : String(e.message || e).slice(0, 120) }); }
+    finally { clearTimeout(tm); }
   }
+  console.log('aiPing', JSON.stringify(out));
   return { ai: true, tries: out };
 }
