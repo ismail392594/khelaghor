@@ -195,7 +195,7 @@ function cardHtml(m) {
     foot = `<span class="st">${esc(m.status || '')}</span>`;
   } else if (m.state === 'live') {
     pill = `<span class="pill live">${m.sport === 'football' && m.min ? bn(liveMin(m)) + "'" : 'লাইভ'}</span>`;
-    foot = `<span class="st hot">${esc(m.status || '')}</span>${m.upd && Date.now() - m.upd > 5 * 60000 ? `<span class="st old">🕒 ${bn(Math.floor((Date.now() - m.upd) / 60000))} মিনিট আগের</span>` : ''}`;
+    foot = `<span class="st hot">${esc(m.status || '')}</span>${m.upd && !halted(m) && Date.now() - m.upd > 5 * 60000 ? `<span class="st old">🕒 ${bn(Math.floor((Date.now() - m.upd) / 60000))} মিনিট আগের</span>` : ''}`;
   } else if (m.state === 'upcoming') {
     pill = `<span class="pill">${when(m.start)}</span>`;
     foot = m.start - Date.now() < 864e5 ? `<span class="st">শুরু হতে <span class="cd" data-cd="${m.start}">${cdText(m.start - Date.now())}</span></span>` : `<span class="st">${esc(m.status && m.status !== 'খেলা এখনো শুরু হয়নি' && m.status !== 'শুরু হয়নি' ? m.status : 'খেলা শুরু ' + when(m.start))}</span>`;
@@ -315,6 +315,8 @@ function renderDetail(m, det, votes) {
   if (S.tab === 'l') { $('pBody').innerHTML = luHtml(det); return; }
   $('pBody').innerHTML = det === null && !S.det ? '<div class="skel" style="margin-top:12px"></div>' : (S.tab === 'c' ? commHtml(m, det) : (m.sport === 'cricket' ? cardTbl(det) : statsHtml(det)));
 }
+// বৃষ্টি বা বিরতিতে খেলা থেমে আছে: তখন স্কোর না বদলানোই স্বাভাবিক, "পুরনো" লেখা দেখাই না
+const halted = m => paused(m) || /বৃষ্টি|দেরি|বন্ধ|বিরতি/.test(m.status || '');
 // ফুটবলের ঘড়ি: শেষবার জানা মিনিট থেকে নিজে নিজে চলে (সব স্কোর অ্যাপ যেমন করে), তবে ১৫ মিনিটের বেশি আন্দাজ নয়
 function liveMin(m) {
   if (!m.min || !m.upd || ['HT', 'BT', 'P', 'SUSP', 'INT'].includes(m.per)) return m.min;
@@ -324,7 +326,7 @@ function liveMin(m) {
 }
 // স্কোর কতক্ষণ আগের: ৩ মিনিটের বেশি পুরনো হলে সৎভাবে জানিয়ে দিই
 function fresh(m) {
-  if (m.state !== 'live' || !m.upd) return '';
+  if (m.state !== 'live' || !m.upd || halted(m)) return '';
   const mins = Math.floor((Date.now() - m.upd) / 60000);
   if (mins < 3) return '';
   return `<div class="stale">🕒 এই স্কোর ${bn(mins)} মিনিট আগের${m.id[0] === 'c' ? '। এই খেলার তথ্য ধীরে আসে, মাঠে এর মধ্যে আরও কিছু হয়ে থাকতে পারে' : ''}</div>`;
