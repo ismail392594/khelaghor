@@ -219,7 +219,9 @@ async function refresh(F, doc, due, now) {
       }
     }
     for (const k of Object.keys(P)) if (now - (P[k].at || 0) > 4 * DAY) delete P[k];
-    const out = { v: CACHE_V, c, f, s: sm, p: P, cq, fq };
+    // ম্যাচ খুলে জানা "শেষ" ফল তালিকা নতুন করার পরেও রাখি (API-র তালিকা পুরনো থাকলে যেন আবার "চলছে" না দেখায়)
+    const keep = Object.fromEntries(Object.entries(doc.fresh || {}).filter(([, m]) => m && m.state === 'done' && now - (m._at || 0) < 36 * HOUR));
+    const out = { v: CACHE_V, c, f, s: sm, p: P, cq, fq, fresh: keep };
     await db.doc('liveCache/feed').set(out);
     // প্রিয় দলের খবর ফোনে (খেলা শুরু, উইকেট, গোল, শেষ)
     try { await sendEvents(F, events(compose(doc, now), compose(out, now))); } catch (e) { console.error('push events', e); }
@@ -358,6 +360,8 @@ export async function getMatch(id, now = Date.now()) {
   }
   // ফিড আর বিস্তারিত: যেটা নতুন সেটাই দেখাই
   let sum = md && md.sum && (md.final || (md.at || 0) >= (feed.at - 2 * MIN) || (md.at || 0) > (S.upd || 0) + MIN) ? md.sum : S;
+  // খেলা শেষ জানা গেল কিন্তু তালিকায় এখনো "চলছে": তালিকাকেও জানিয়ে দিই
+  if (sum !== S && sum.state === 'done' && S.state !== 'done') await db.doc('liveCache/feed').set({ fresh: { [id]: { ...sum, _at: now } } }, { merge: true }).catch(() => {});
   if (sum !== S && sum.state === 'live') sum = { ...sum, upd: Math.max(md.at || 0, S.upd || 0), tour: S.tour };
   const m = extra && extra.pr && sum.state !== 'done' ? { ...sum, pred: extra.pr } : (sum.pred || S.pred ? { ...sum, pred: sum.pred || S.pred } : sum);
   return { m, det: (md && md.det) || null, votes: await votesOf(F, id), react: await reactsOf(F, id), x: extra ? extra.x : null };

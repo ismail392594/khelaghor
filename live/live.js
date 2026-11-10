@@ -193,7 +193,7 @@ function cardHtml(m) {
     foot = `<span class="st">${esc(m.status || '')}</span>`;
   } else if (m.state === 'live') {
     pill = `<span class="pill live">${m.sport === 'football' && m.min ? bn(m.min) + "'" : 'লাইভ'}</span>`;
-    foot = `<span class="st hot">${esc(m.status || '')}</span>`;
+    foot = `<span class="st hot">${esc(m.status || '')}</span>${m.upd && Date.now() - m.upd > 5 * 60000 ? `<span class="st old">🕒 ${bn(Math.floor((Date.now() - m.upd) / 60000))} মিনিট আগের</span>` : ''}`;
   } else if (m.state === 'upcoming') {
     pill = `<span class="pill">${when(m.start)}</span>`;
     foot = m.start - Date.now() < 864e5 ? `<span class="st">শুরু হতে <span class="cd" data-cd="${m.start}">${cdText(m.start - Date.now())}</span></span>` : `<span class="st">${esc(m.status && m.status !== 'খেলা এখনো শুরু হয়নি' && m.status !== 'শুরু হয়নি' ? m.status : 'খেলা শুরু ' + when(m.start))}</span>`;
