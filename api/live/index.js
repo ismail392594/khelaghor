@@ -9,7 +9,7 @@
 //
 // GET  /api/live?f=feed            → সব ম্যাচ (CDN-এ ১৫ সেকেন্ড জমা থাকে)
 // GET  /api/live?f=match&id=c_xxx  → এক ম্যাচের বিস্তারিত + ভোটের গোনা
-// GET  /api/live?f=board[&p=week]  → লিডারবোর্ড (সব সময় / এই সপ্তাহ)
+// GET  /api/live?f=board[&p=week][&s=acc|st] → লিডারবোর্ড (সব সময় / এই সপ্তাহ; পয়েন্ট / সঠিকতা / টানা সঠিক)
 // GET  /api/live?f=table&lg=39&season=2026 → ফুটবল লিগের পয়েন্ট টেবিল
 // GET  /api/live?f=me              → (লগইন) আমার পয়েন্ট আর ভোট
 // GET  /live/m/{id} (= ?f=page&id=) → Google-এর জন্য ম্যাচের পাতা;  /live/sitemap.xml (= ?f=sitemap)
@@ -54,7 +54,7 @@ export default async function handler(req, res) {
     }
     if (f === 'ctable') { cache(res, 1800, 3600); return res.status(200).json(await ctable(q.sid)); }
     if (f === 'gboard') { cache(res, 30, 60); return res.status(200).json(await gboard(q.code, q.p === 'week' ? 'week' : 'all')); }
-    if (f === 'board') { cache(res, 60, 120); return res.status(200).json(await board(q.p === 'week' ? 'week' : 'all')); }
+    if (f === 'board') { cache(res, 60, 120); return res.status(200).json(await board(q.p === 'week' ? 'week' : 'all', Date.now(), ['acc', 'st'].includes(q.s) ? q.s : 'pts')); }
     if (f === 'table') { cache(res, 1800, 3600); return res.status(200).json(await table(q.lg, q.season)); }
     if (f === 'page') {
       // Google-এর জন্য ম্যাচের পাতা (/live/m/{id})

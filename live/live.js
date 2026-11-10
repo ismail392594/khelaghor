@@ -206,9 +206,20 @@ function cardHtml(m) {
   return `<button type="button" class="card ${m.state}" data-id="${esc(m.id)}" aria-label="${esc(tname(m.a))} বনাম ${esc(tname(m.b))}">
 <div class="chead"><span class="lb">${esc(m.label || '')}</span>${m.demo ? '<span class="demo">নমুনা</span>' : ''}${pill}</div>
 ${row('a')}${row('b')}
-${probBar(m)}<div class="cfoot">${foot}${voteChip(m)}</div></button>`;
+${probBar(m)}${PRED && m.state === 'upcoming' ? opinions(m) : ''}<div class="cfoot">${foot}${voteChip(m)}</div></button>`;
 }
 // কার্ডের নিচে জেতার সম্ভাবনার সরু দাগ
+// তিন মত: খেলাঘরের হিসাব, দর্শকের ভোট, সেরা অনুমানকারীদের ভোট (প্রতিটায় কে এগিয়ে, কত %)
+function opinions(m, big) {
+  const top = (arr, n) => { const t = arr[0] + arr[1] + arr[2]; if (!t || t < n) return null; const i = arr.indexOf(Math.max(...arr)); return [['a', 'b', 'd'][i], arr[i] / t]; };
+  const lab = k => k === 'd' ? 'ড্র' : esc(tname(m[k]));
+  const out = [];
+  if (m.pred && m.pred.a != null) { const r = top([m.pred.a, m.pred.b, m.pred.d || 0], 0); if (r) out.push(['🤖', 'হিসাব', r]); }
+  if (m.fan) { const r = top(m.fan, 3); if (r) out.push(['👥', 'দর্শক', r]); }
+  if (m.exv) { const r = top(m.exv, 2); if (r) out.push(['🎓', 'সেরারা', r]); }
+  if (out.length < 2) return ''; // শুধু হিসাব থাকলে জেতার দাগেই দেখা যায়
+  return `<div class="ops${big ? ' big' : ''}">${out.map(([ic, t, [k, v]]) => `<span title="${t}">${ic} <small>${t}</small> ${big ? `<b>${lab(k)}</b> ` : `<b class="s${k}">${k === 'd' ? 'ড্র' : esc((m[k].bn || m[k].name || '').slice(0, 10))}</b> `}${bn(Math.round(v * 100))}%</span>`).join('')}</div>`;
+}
 function probBar(m, big) {
   // খেলা চললে চলমান হিসাব, না চললে আগের পূর্বাভাস
   const p = winProb(m) || (m.state === 'upcoming' && m.pred ? m.pred : null);
@@ -335,6 +346,7 @@ function renderInsight(m) {
   }
   if (p) html += `<div class="wpt">${m.state === 'upcoming' ? '📈 কে জিততে পারে (খেলাঘরের পূর্বাভাস)' : 'জেতার সম্ভাবনা'}</div>${p}`;
   if (m.state === 'upcoming' && m.pred) html += `<div class="why">💡 ${why(m)}</div>`;
+  if (m.state === 'upcoming') { const op = opinions(m, true); if (op) html += `<div class="sub2">তিন মত: খেলাঘরের হিসাব, দর্শক আর সেরা অনুমানকারীরা</div>${op}`; }
   if (m.state === 'upcoming' && vt >= 3) html += `<div class="wpt" style="margin-top:8px">🗳️ জনতার ভোট: ${esc(tname(m.a))} ${bn(Math.round(v.a / vt * 100))}%${m.sport === 'football' || m.test ? ` · ড্র ${bn(Math.round(v.d / vt * 100))}%` : ''} · ${esc(tname(m.b))} ${bn(Math.round(v.b / vt * 100))}%</div>`;
   const chips = r.concat(ou.map(([k, val]) => [k, bn(val) + '%']));
   if (chips.length) html += `<div class="rts">${chips.map(([k, val]) => `<div><small>${k}</small><b>${val}</b></div>`).join('')}</div>`;
@@ -914,10 +926,13 @@ async function loadBoard() {
   document.querySelectorAll('[data-per]').forEach(b => b.setAttribute('aria-pressed', b.dataset.per === S.period));
   $('lbList').innerHTML = '<div class="skel" style="height:60px"></div>';
   try {
-    const d = S.grp ? await get(`f=gboard&code=${encodeURIComponent(S.grp)}&p=${S.period}`) : await get('f=board&p=' + S.period);
+    document.querySelectorAll('[data-sort]').forEach(b => b.setAttribute('aria-pressed', b.dataset.sort === (S.lbSort || 'pts')));
+    const d = S.grp ? await get(`f=gboard&code=${encodeURIComponent(S.grp)}&p=${S.period}`) : await get('f=board&p=' + S.period + '&s=' + (S.lbSort || 'pts'));
     const medal = ['🥇', '🥈', '🥉'];
-    const list = d.list.filter(x => x.pts > 0 || S.period === 'all');
-    $('lbList').innerHTML = list.length ? list.map((x, i) => `<li><span class="rk">${medal[i] || bn(i + 1)}</span><span class="nm">${esc(x.name)}${x.st >= 3 ? ` <i class="stk">🔥${bn(x.st)}</i>` : ''}<small>${bn(x.ok)}টি সঠিক${x.ex ? ` · ${bn(x.ex)}টি একদম সঠিক স্কোর` : ''} · ${bn(x.n)}টি ভোট</small></span><span class="p">${bn(x.pts)}</span></li>`).join('')
+    const so = S.grp ? 'pts' : (S.lbSort || 'pts');
+    const list = d.list.filter(x => so !== 'pts' || x.pts > 0 || S.period === 'all');
+    const big = x => so === 'acc' ? `${bn(x.acc ?? 0)}%` : so === 'st' ? `🔥${bn(x.st)}` : bn(x.pts);
+    $('lbList').innerHTML = list.length ? list.map((x, i) => `<li><span class="rk">${medal[i] || bn(i + 1)}</span><span class="nm">${esc(x.name)}${x.st >= 3 && so !== 'st' ? ` <i class="stk">🔥${bn(x.st)}</i>` : ''}<small>${x.acc != null ? `সঠিক ${bn(x.acc)}% · ` : ''}${bn(x.ok)}টি সঠিক${x.ex ? ` · ${bn(x.ex)}টি একদম সঠিক স্কোর` : ''} · ${bn(x.n)}টি ভোট${x.best >= 3 ? ` · সেরা টানা ${bn(x.best)}` : ''}</small></span><span class="p">${big(x)}</span></li>`).join('')
       : `<div class="empty"><span class="em">🏆</span>${S.period === 'week' ? 'এই সপ্তাহে এখনো কেউ পয়েন্ট পায়নি। প্রথম হোন!' : 'এখনো কেউ পয়েন্ট পায়নি। প্রথম হোন!'}</div>`;
   } catch (e) { $('lbList').innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
 }
@@ -962,6 +977,7 @@ $('list').addEventListener('click', e => {
 $('q').addEventListener('input', e => { S.q = e.target.value; clearTimeout(S.qT); S.qT = setTimeout(renderList, 150); });
 $('days').addEventListener('click', e => { const b = e.target.closest('[data-day]'); if (!b) return; S.day = b.dataset.day || null; renderList(); });
 document.querySelector('.lbtabs').addEventListener('click', e => { const b = e.target.closest('[data-per]'); if (!b) return; S.period = b.dataset.per; loadBoard(); });
+document.querySelector('.lbsort')?.addEventListener('click', e => { const b = e.target.closest('[data-sort]'); if (!b) return; S.lbSort = b.dataset.sort; loadBoard(); });
 // প্রিয় দল
 $('pHero').addEventListener('click', e => {
   const b = e.target.closest('[data-fav]'); if (!b) return;

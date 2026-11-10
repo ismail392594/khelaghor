@@ -382,6 +382,14 @@ table.onf tr.bw td{color:var(--cyan)}
 .bigm span b{flex:1;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bigm span i{font-style:normal;font-weight:800}
 .bigm .flag,.bigm .mono{transform:scale(.8);transform-origin:left center}
+.lbsort{grid-template-columns:1fr 1fr 1fr;margin-top:6px}
+.ops{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.ops span{font-size:11.5px;background:rgba(255,255,255,.07);border-radius:99px;padding:3px 9px;white-space:nowrap}
+.ops small{color:var(--faint);font-size:10.5px}
+.ops b{font-weight:800}.ops b.sa{color:#7dd3fc}.ops b.sb{color:#fcd34d}
+.ops.big{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr))}
+.ops.big span{border-radius:12px;padding:8px 10px;white-space:normal;font-size:13px}
+.ops.big b{display:block;margin:2px 0}
 </style>
 </head><body>
 <header class="top"><div class="wrap bar">
@@ -443,6 +451,7 @@ table.onf tr.bw td{color:var(--cyan)}
     <h2 id="lbT">🏆 কে জিতবে? লিডারবোর্ড</h2>
     <div id="lbMe"></div>
     <div class="lbtabs" role="group" aria-label="সময়"><button type="button" data-per="week" aria-pressed="true">এই সপ্তাহ</button><button type="button" data-per="all" aria-pressed="false">সব সময়</button></div>
+    <div class="lbtabs lbsort" role="group" aria-label="কীভাবে সাজানো"><button type="button" data-sort="pts" aria-pressed="true">🏆 পয়েন্ট</button><button type="button" data-sort="acc" aria-pressed="false">🎯 সঠিকতা</button><button type="button" data-sort="st" aria-pressed="false">🔥 টানা সঠিক</button></div>
     <p class="rules" id="lbRules"></p>
     <ol class="lb" id="lbList"></ol>
   </div>

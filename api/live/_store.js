@@ -84,7 +84,10 @@ export async function getFeed(now = Date.now()) {
   let doc = (await ref.get()).data() || {};
   const due = plan(doc, has(doc, now), now);
   if (due.any) doc = await refresh(F, doc, due, now) || doc;
-  return { at: now, matches: compose(doc, now).concat(demo), demo: !!demo.length, acc: (doc.f && doc.f.acc) || null };
+  let vc = {};
+  try { vc = (await db.doc('liveCache/votes').get()).data() || {}; } catch (e) {}
+  const withV = m => { const v = vc[m.id]; return v ? { ...m, fan: [v.a || 0, v.b || 0, v.d || 0], exv: [v.ea || 0, v.eb || 0, v.ed || 0] } : m; };
+  return { at: now, matches: compose(doc, now).map(withV).concat(demo), demo: !!demo.length, acc: (doc.f && doc.f.acc) || null };
 }
 
 function plan(doc, H, now) {
@@ -264,6 +267,15 @@ async function refresh(F, doc, due, now) {
     // প্রিয় দলের খবর ফোনে (খেলা শুরু, উইকেট, গোল, শেষ)
     try { await sendEvents(F, events(compose(doc, now), compose(out, now))); } catch (e) { console.error('push events', e); }
     const metaUp = { until: 0, cq, fq };
+    // পুরনো ম্যাচের ভোট-গোনা মুছে ফেলা (দিনে একবার)
+    if (now - (meta.vcAt || 0) > DAY) {
+      metaUp.vcAt = now;
+      try {
+        const vr = db.doc('liveCache/votes'), vd = (await vr.get()).data() || {};
+        const old = Object.keys(vd).filter(k => (vd[k].t || 0) < now - 3 * DAY);
+        if (old.length) await vr.update(Object.fromEntries(old.slice(0, 400).map(k => [k, FV.delete()])));
+      } catch (e) { console.error('vc prune', e); }
+    }
     if (now - (meta.settleAt || 0) > 5 * MIN) {
       metaUp.settleAt = now;
       await settleDue(F, compose(out, now), now).catch(e => console.error('settle', e));
@@ -520,8 +532,12 @@ export async function vote(req, now = Date.now()) {
   if (hasScore && m.sport !== 'football') throw new HttpErr(400, 'স্কোর আন্দাজ শুধু ফুটবলে');
   const u = (await db.doc('users/' + t.uid).get()).data() || {};
   const name = String(u.username ? '@' + u.username : (u.name || t.name || 'খেলোয়াড়')).slice(0, 24);
+  // "সেরা অনুমানকারী": অন্তত ১০টা ফল মেলানো ভোট আর ৬০% বা বেশি সঠিক
+  const lp = (await db.doc('livePoints/' + t.uid).get()).data() || {};
+  const done = (lp.ok || 0) + (lp.bad || 0);
+  const expert = done >= 10 && (lp.ok || 0) / done >= 0.6;
   try {
-    await db.doc(`liveVotes/${id}/v/${t.uid}`).create({ pick, at: now, name, res: null, ...(hasScore ? { ga, gb } : {}) });
+    await db.doc(`liveVotes/${id}/v/${t.uid}`).create({ pick, at: now, name, res: null, ...(hasScore ? { ga, gb } : {}), ...(expert ? { ex: true } : {}) });
   } catch (e) {
     if (e.code === 6 || /already exists/i.test(e.message)) throw new HttpErr(409, 'আপনি এই ম্যাচে আগেই ভোট দিয়েছেন');
     throw e;
@@ -532,6 +548,8 @@ export async function vote(req, now = Date.now()) {
   const pu = { name, recent: { [id]: pick + '|' + m.start + (hasScore ? `|${ga}-${gb}` : '') }, at: now };
   if (!demo) Object.assign(pu, { n: FV.increment(1), pts: FV.increment(0), ok: FV.increment(0) });
   bt.set(db.doc('livePoints/' + t.uid), pu, { merge: true });
+  // ম্যাচ তালিকায় দেখানোর জন্য ছোট গোনা: দর্শকের ভোট আর সেরা অনুমানকারীদের ভোট
+  if (!demo) bt.set(db.doc('liveCache/votes'), { [id]: { [pick]: FV.increment(1), ...(expert ? { ['e' + pick]: FV.increment(1) } : {}), t: m.start } }, { merge: true });
   await bt.commit();
   return { ok: true, pick, score: hasScore ? [ga, gb] : null };
 }
@@ -627,16 +645,22 @@ export async function me(req, now = Date.now()) {
   return { groups, st: d.st || 0, best: d.best || 0, name: d.name || null, pts: d.pts || 0, ok: d.ok || 0, n: d.n || 0, ex: d.ex || 0, cw: d.cw || 0, week: (d.wk || {})[weekKey(now)] || 0, picks, scores, ou, combos };
 }
 
-export async function board(period = 'all', now = Date.now()) {
+export async function board(period = 'all', now = Date.now(), sort = 'pts') {
   const F = await fb();
   if (!F) return { list: [] };
   const wk = weekKey(now);
-  const field = period === 'week' ? `wk.${wk}` : 'pts';
-  const q = await F.db.collection('livePoints').orderBy(field, 'desc').limit(50).get();
-  return {
-    period, week: wk,
-    list: q.docs.map(d => { const x = d.data(); return { name: x.name || 'খেলোয়াড়', pts: period === 'week' ? ((x.wk || {})[wk] || 0) : (x.pts || 0), ok: x.ok || 0, n: x.n || 0, ex: x.ex || 0, st: x.st || 0 }; })
-  };
+  const W = period === 'week';
+  // sort: pts (পয়েন্ট), acc (সঠিকতার হার, অন্তত ৫টা মেলানো ভোট), st (টানা সঠিক)
+  const field = sort === 'st' ? 'st' : sort === 'acc' ? (W ? `wo.${wk}` : 'ok') : (W ? `wk.${wk}` : 'pts');
+  const q = await F.db.collection('livePoints').orderBy(field, 'desc').limit(sort === 'acc' ? 300 : 50).get();
+  let list = q.docs.map(d => {
+    const x = d.data();
+    const ok = W ? ((x.wo || {})[wk] || 0) : (x.ok || 0);
+    const bad = W ? ((x.wb || {})[wk] || 0) : (x.bad != null ? x.bad : Math.max(0, (x.n || 0) - (x.ok || 0)));
+    return { name: x.name || 'খেলোয়াড়', pts: W ? ((x.wk || {})[wk] || 0) : (x.pts || 0), ok: x.ok || 0, n: x.n || 0, ex: x.ex || 0, st: x.st || 0, best: x.best || 0, acc: ok + bad ? Math.round(ok / (ok + bad) * 100) : null, dn: ok + bad };
+  });
+  if (sort === 'acc') list = list.filter(x => x.dn >= 5).sort((a, b) => b.acc - a.acc || b.dn - a.dn).slice(0, 50);
+  return { period, sort, week: wk, list };
 }
 
 /* ---------- খেলা শেষে পয়েন্ট দেওয়া ---------- */
@@ -707,7 +731,8 @@ async function settleOne({ db, FV }, id, result, score = null, total = null) {
       const voidIt = result === 'void' || total == null;
       const ok = !voidIt && (x.side === 'o' ? total > x.line : total < x.line);
       b.update(v.ref, { res: voidIt ? 'void' : ok });
-      if (ok) b.set(db.doc('livePoints/' + v.id), { pts: FV.increment(POINTS), ok: FV.increment(1), wk: { [wk]: FV.increment(POINTS) } }, { merge: true });
+      if (ok) b.set(db.doc('livePoints/' + v.id), { pts: FV.increment(POINTS), ok: FV.increment(1), wk: { [wk]: FV.increment(POINTS) }, wo: { [wk]: FV.increment(1) } }, { merge: true });
+      else if (!voidIt) b.set(db.doc('livePoints/' + v.id), { bad: FV.increment(1), wb: { [wk]: FV.increment(1) } }, { merge: true });
     }
     await b.commit();
     if (q.size < 200) break;
@@ -723,8 +748,8 @@ async function settleOne({ db, FV }, id, result, score = null, total = null) {
       const pts = (ok ? POINTS : 0) + (exact ? EXACT : 0) + (close ? CLOSE : 0);
       b.update(v.ref, { res: result === 'void' ? 'void' : ok, ...(exact ? { exact: true } : {}), ...(close ? { close: true } : {}) });
       // টানা সঠিক অনুমানের স্ট্রিক: মিললে বাড়ে, না মিললে শূন্য
-      if (pts) b.set(db.doc('livePoints/' + v.id), { pts: FV.increment(pts), ok: FV.increment(1), st: FV.increment(1), ...(exact ? { ex: FV.increment(1) } : {}), wk: { [wk]: FV.increment(pts) } }, { merge: true });
-      else if (result !== 'void') b.set(db.doc('livePoints/' + v.id), { st: 0 }, { merge: true });
+      if (pts) b.set(db.doc('livePoints/' + v.id), { pts: FV.increment(pts), ok: FV.increment(1), st: FV.increment(1), ...(exact ? { ex: FV.increment(1) } : {}), wk: { [wk]: FV.increment(pts) }, wo: { [wk]: FV.increment(1) } }, { merge: true });
+      else if (result !== 'void') b.set(db.doc('livePoints/' + v.id), { st: 0, bad: FV.increment(1), wb: { [wk]: FV.increment(1) } }, { merge: true });
     }
     if (q.size < 200) b.set(db.doc('liveVotes/' + id), { settled: true, result, total, settledAt: Date.now() }, { merge: true });
     await b.commit();
