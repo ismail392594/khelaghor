@@ -1,5 +1,6 @@
 // লাইভ স্কোর: দেশের নাম → পতাকার কোড (flagcdn.com) আর বাংলা নাম।
 // শুধু দেশের পতাকা ব্যবহার হয়। ক্লাব বা লিগের লোগো কখনো নয়: ক্লাবের জন্য নামের আদ্যক্ষর দিয়ে গোল ছাপ (মনোগ্রাম)।
+import { gen, bnNum } from './_bn.js';
 
 const C = {
   'bangladesh': ['bd', 'বাংলাদেশ'], 'india': ['in', 'ভারত'], 'pakistan': ['pk', 'পাকিস্তান'],
@@ -72,3 +73,14 @@ export const isCountry = name => {
   for (const [re] of SUF) base = base.replace(re, '');
   return !!C[base.toLowerCase()];
 };
+
+// সিরিজের নাম বাংলায়: "England Lions tour of West Indies, 2026" → "ইংল্যান্ড লায়ন্সের ওয়েস্ট ইন্ডিজ সফর, ২০২৬"
+export function tourBn(t) {
+  const s = String(t || '');
+  const m = s.match(/^(.+?) tour of (.+?)(?:,?\s+(\d{4}(?:[-/]\d{2,4})?))?$/i);
+  if (!m) return s;
+  const a = team(m[1]).bn, b = team(m[2]).bn;
+  if (!a || !b) return s;
+  const yr = m[3] ? ', ' + bnNum(m[3]) : '';
+  return `${gen(a)} ${b} সফর${yr}`;
+}

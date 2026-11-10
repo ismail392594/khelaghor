@@ -13,6 +13,7 @@ import { fbCall, fbSummary, fbDetail, leagues } from './_football.js';
 import { demoAll, demoMatch } from './_demo.js';
 import { hasSm, smCall, smSummary, smDetail, LIST_INC, DETAIL_INC } from './_smonks.js';
 import { normTeam } from './_bn.js';
+import { tourBn } from './_teams.js';
 import { pushSub, events, sendEvents } from './_push.js';
 import { cricPred, fbPredFrom, fbExtraFrom } from './_predict.js';
 
@@ -261,9 +262,15 @@ function compose(doc, now) {
     }
     for (const [id, m] of smMap) map.set(id, m);
   }
+  const atOf = id => id[0] === 'c' ? (c.at || 0) : id[0] === 's' ? (sm.at || 0) : (f.at || 0);
   for (const [id, m] of Object.entries(doc.fresh || {})) {
-    const listAt = id[0] === 'c' ? (c.at || 0) : id[0] === 's' ? (sm.at || 0) : (f.at || 0);
-    if ((m._at || 0) > listAt && map.has(id)) map.set(id, m);
+    if ((m._at || 0) > atOf(id) && map.has(id)) map.set(id, m);
+  }
+  // স্কোরটা কখন আনা (দর্শককে জানাতে, পুরনো হলে পাতায় লেখা ওঠে) আর সিরিজের নাম বাংলায়
+  for (const [id, m] of map) {
+    const upd = m.state === 'live' ? Math.max(m._at || 0, m.via === 'c' ? (c.at || 0) : atOf(id)) : 0;
+    const tour = m.sport === 'cricket' ? tourBn(m.tour) : m.tour;
+    if (upd || tour !== m.tour) map.set(id, { ...m, tour, ...(upd ? { upd } : {}) });
   }
   // "লাইভ" বলছে কিন্তু স্কোর নেই আর লেখা "শুরু হয়নি": আসলে আসন্ন (দুই উৎস মেলানোর সময় এমন হতে পারে)
   for (const [id, m] of map) {
@@ -343,9 +350,18 @@ export async function getMatch(id, now = Date.now()) {
     }
   }
   // ফিড আর বিস্তারিত: যেটা নতুন সেটাই দেখাই
-  const sum = md && md.sum && (md.at || 0) >= (feed.at - 2 * MIN) ? md.sum : S;
+  let sum = md && md.sum && (md.at || 0) >= (feed.at - 2 * MIN) ? md.sum : S;
+  if (sum !== S && sum.state === 'live') sum = { ...sum, upd: Math.max(md.at || 0, S.upd || 0), tour: S.tour };
   const m = extra && extra.pr && sum.state !== 'done' ? { ...sum, pred: extra.pr } : (sum.pred || S.pred ? { ...sum, pred: sum.pred || S.pred } : sum);
   return { m, det: (md && md.det) || null, votes: await votesOf(F, id), react: await reactsOf(F, id), x: extra ? extra.x : null };
+}
+
+// CricketData-র স্কোরকার্ড থেকে "এখন মাঠে": শুধু অপরাজিত দুই ব্যাটার (এখন কে বল করছেন বা জুটি এখানে নিশ্চিত জানা যায় না)
+function curFromCard(card, sum) {
+  if (sum.state !== 'live' || !card || !card.length) return null;
+  const inn = card[card.length - 1];
+  const bat = inn.bat.filter(x => /অপরাজিত|ব্যাট করছেন/.test(x[1])).slice(0, 2).map(x => [x[0], x[2], x[3], x[4], x[5]]);
+  return bat.length ? { bat, bowl: [], part: null, last: null, fow: [] } : null;
 }
 
 async function refreshMatch(F, id, S, md, now) {
@@ -383,7 +399,7 @@ async function refreshMatch(F, id, S, md, now) {
       const snap = snapOf(sum, card);
       let comm = bb && bb.ok ? bbbLines(bb.data) : [];
       if (!comm.length) comm = diffLines(md && md.snap, snap, sum).map(x => ({ ...x, at: now })).concat((md && md.det && md.det.comm) || []);
-      out = { at: now, until: 0, sum, snap, det: { card, comm: comm.slice(0, 150) }, final: sum.state === 'done' };
+      out = { at: now, until: 0, sum, snap, det: { card, comm: comm.slice(0, 150), cur: curFromCard(card, sum) }, final: sum.state === 'done' };
     } else {
       const r = await fbCall('fixtures', { id: rid });
       await db.doc('liveMeta/state').set({ fq: qOf(r, now, st.fq) }, { merge: true });
