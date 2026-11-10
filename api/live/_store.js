@@ -109,7 +109,9 @@ function plan(doc, H, now) {
   const sLive = [...(s.live || []), ...(s.fx || [])].some(m => (m.state === 'live' && !m.pause) || (m.state === 'upcoming' && m.start <= now && m.start > now - 3 * HOUR));
   d.sLive = H.s && (stale || now - (s.at || 0) > (sLive ? 50e3 : 10 * MIN));
   d.sFx = H.s && (stale || now - (s.fxAt || 0) > 30 * MIN);
-  d.any = d.cList || d.cUp || d.fLive || d.fDay || d.sLive || d.sFx;
+  // খেলাঘরের নিজের পূর্বাভাস হালনাগাদ (API ডাক লাগে না)
+  d.elo = H.f && (f.day || []).length > 0 && now - (f.eloAt || 0) > 20 * MIN;
+  d.any = d.cList || d.cUp || d.fLive || d.fDay || d.sLive || d.sFx || d.elo;
   return d;
 }
 
@@ -216,7 +218,9 @@ async function refresh(F, doc, due, now) {
       }
     }
     // খেলাঘরের নিজের ফুটবল পূর্বাভাস: শেষ হওয়া খেলা থেকে দলের শক্তি শেখা, তারপর আসন্ন/চলমান খেলায় হিসাব
-    if (f.dayAt === now || f.liveOk === now) {
+    // ফুটবলের API সেদিন বন্ধ থাকলেও (সীমা শেষ) হাতে থাকা ফল দিয়ে শেখা চলে, ২০ মিনিটে একবার
+    if ((f.day || []).length && (f.dayAt === now || f.liveOk === now || now - (f.eloAt || 0) > 20 * MIN)) {
+      f.eloAt = now;
       try {
         const eref = db.doc('liveElo/fb');
         const E = (await eref.get()).data() || { r: {}, seen: {}, bf: [] };
