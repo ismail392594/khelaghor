@@ -173,6 +173,7 @@ async function refresh(F, doc, due, now) {
       if (l) { c.up = l.filter(m => m.state === 'upcoming' && m.start > now - HOUR && m.start < now + 8 * DAY).sort((x, y) => (y.rk || 0) - (x.rk || 0) || x.start - y.start).slice(0, 50); c.upAt = now; }
     }));
     const lg = leagues();
+    let learnAll = [];
     if (due.fDay) {
       // ফ্রি প্ল্যানে সাশ্রয়: দিনের শুরুতে গতকাল-আজ-আগামীকাল (৩ ডাক), তারপর সারাদিন শুধু আজকেরটা (১ ডাক)
       const full = f.dayKey !== dhakaDay(now) || !(f.day || []).length;
@@ -181,6 +182,8 @@ async function refresh(F, doc, due, now) {
         for (const r of rs) fq = qOf(r, now, fq);
         if (rs.every(r => r.ok)) {
           const fresh = rs.flatMap(r => r.data).filter(x => !lg || lg.includes(x.league && x.league.id)).map(fbSummary);
+          // পূর্বাভাস শেখার জন্য সব শেষ হওয়া খেলা (তালিকা ৪৫০-এ কাটার আগে)
+          learnAll = fresh.filter(m => m.state === 'done');
           const today = dhakaDay(now);
           const kept = full ? [] : (f.day || []).filter(m => dhakaDay(m.start) !== today);
           // সব লিগ (বা Vercel-এ বাছাই করা কয়েকটা); বড় লিগ আগে রেখে সর্বোচ্চ ৪৫০টা
@@ -237,11 +240,11 @@ async function refresh(F, doc, due, now) {
           for (const want of wants) {
             const r = await fbCall('fixtures', { date: want, timezone: 'Asia/Dhaka' });
             fq = qOf(r, now, fq);
-            if (!r.ok) break;
+            if (!r.ok) { console.error('elo bf', want, r.err); break; }
             learn(E, r.data.map(fbSummary), want); E.bf = (E.bf || []).concat(want).slice(-20); ch = true;
           }
         }
-        if (learn(E, f.day || [], dhakaDay(now))) ch = true;
+        if (learn(E, learnAll.concat(f.day || []), dhakaDay(now))) ch = true;
         prune(E, dhakaDay(now));
         f.acc = accOf(E, dhakaDay(now));
         const tag = m => (m.state === 'done' ? m : { ...m, mp: model(E, m) });
