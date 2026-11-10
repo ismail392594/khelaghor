@@ -1,6 +1,7 @@
 // খেলাঘর লাইভ স্কোর: পাতার সব কাজ। ডাটা আসে শুধু আমাদের সার্ভার (/api/live) থেকে, সরাসরি কোনো API থেকে নয়।
 import { winProb, rates, overUnder } from '/live/insight.js';
 import { VAPID_KEY } from '/live/push-config.js';
+import { drawAnim } from '/live/anim.js';
 const API = '/api/live';
 // একই কোড দুই পাতায়: লাইভ স্কোর (/live/) আর আলাদা প্রেডিকশন চ্যানেল (/live/predict/)। দুটোর মধ্যে কোনো মিশ্রণ নেই
 const PRED = document.body.dataset.mode === 'predict';
@@ -88,7 +89,7 @@ function scoreOf(m, side) {
   const pen = m.pen ? ` <span class="pen">(${bn(m.pen[side === 'a' ? 0 : 1])})</span>` : '';
   return bn(t.g) + pen;
 }
-const kindIcon = { G: '⚽', Y: '🟨', R: '🟥', S: '🔁', V: '📺', x: '❌', i: '⏱' };
+const kindIcon = { G: '⚽', Y: '🟨', R: '🟥', S: '🔁', V: '📺', x: '❌', P: '🎯', i: '⏱' };
 
 /* ---------- তালিকা ---------- */
 async function loadFeed() {
@@ -287,6 +288,7 @@ function renderDetail(m, det, votes) {
   $('pHero').innerHTML = `<div class="hsub" style="padding-top:12px">${m.sport === 'cricket' ? '🏏' : '⚽'} ${esc(m.tour)}${m.demo ? ' <span class="demo">নমুনা</span>' : ''}</div>
 <div class="vs">${team('a')}<div class="mid">${mid}</div>${team('b')}</div>${st}<div class="hsub">${sub}</div>${fresh(m)}${det && det.mom && m.state === 'done' ? `<div class="mom">🏅 ম্যান অব দ্য ম্যাচ: <b>${esc(det.mom)}</b></div>` : ''}`;
   renderInsight(m);
+  if (!PRED) drawAnim($('aBox'), m, det, tname);
   if (PRED) { renderVote(m, votes); $('pTabs').innerHTML = ''; $('pBody').innerHTML = ''; return; }
   renderFun(m, S.det && S.det.id === m.id ? S.det.react : null);
   const tabs = m.sport === 'cricket' ? [['c', 'বল-বাই-বল'], ['s', 'স্কোরকার্ড']] : [['c', 'ঘটনা'], ['s', 'পরিসংখ্যান']];

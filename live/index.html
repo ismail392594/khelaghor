@@ -302,6 +302,39 @@ table.onf tr.bw td{color:var(--cyan)}
 .why{font-size:.82rem;color:var(--dim);background:rgba(56,189,248,.07);border-radius:12px;padding:8px 10px;margin-top:10px;line-height:1.6}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 .stale{margin:8px auto 0;max-width:340px;font-size:12.5px;line-height:1.5;color:#fcd34d;background:rgba(252,211,77,.1);border:1px solid rgba(252,211,77,.3);border-radius:10px;padding:6px 10px;text-align:center}
+.anim h3 span{font-weight:500}
+.anv{position:relative;border-radius:14px;overflow:hidden;margin-top:8px;background:#0b3d1d}
+.anv svg{display:block;width:100%;height:auto}
+.anv .ball,.anv .p{transform-box:view-box}
+.anv .side{position:absolute;top:6px;font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.35);padding:2px 8px;border-radius:99px}
+.anv .sa{left:8px}.anv .sb{right:8px}
+.anv .za,.anv .zb{transition:opacity 1.2s}
+.anv .gl.shake{animation:net .6s ease 2}
+@keyframes net{0%,100%{transform:none}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
+.anv .stB{transform-box:fill-box;transform-origin:50% 100%}
+.anv .stB.fly{animation:fly 1.4s ease}
+@keyframes fly{0%{transform:none}30%{transform:translateY(-6px) rotate(-35deg);fill:#ef4444}100%{transform:none}}
+.anv .ban{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);max-width:92%;text-align:center;font-weight:800;font-size:14px;color:#fff;background:rgba(10,15,40,.82);border:1px solid rgba(255,255,255,.25);padding:6px 14px;border-radius:12px;animation:pop .35s ease}
+.anv .ban.goal{background:linear-gradient(90deg,#16a34a,#0ea5e9)}
+.anv .ban.red{background:#dc2626}
+@keyframes pop{from{transform:translateX(-50%) scale(.6);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}
+.anv .cft{position:absolute;top:-8px;width:6px;height:10px;border-radius:2px;animation:cft 1.5s ease-in forwards;pointer-events:none}
+@keyframes cft{to{transform:translate(var(--dx),240px) rotate(540deg);opacity:0}}
+.tl{position:relative;margin:14px 4px 4px;height:60px}
+.tlb{position:absolute;left:0;right:0;top:22px;height:5px;border-radius:9px;background:rgba(255,255,255,.12)}
+.tlb::after{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--p,0%);border-radius:9px;background:linear-gradient(90deg,#38bdf8,#fbbf24);transition:width 1s}
+.tlm i{position:absolute;font-style:normal;font-size:13px;transform:translateX(-50%)}
+.tlm i.a{top:0}.tlm i.b{top:30px}
+.tlm b{position:absolute;top:46px;font-size:10px;color:var(--faint);font-weight:500}
+.tlm b[style*="50%"]{transform:translateX(-50%)}
+.anb{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:8px;font-size:12.5px;color:var(--faint)}
+.anb .rp{border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-weight:700;padding:7px 12px;border-radius:10px;cursor:pointer}
+.ovr{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.ovr small{color:var(--faint)}
+.ovb{display:flex;gap:6px;flex-wrap:wrap}
+.ovb i{font-style:normal;min-width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13px;background:rgba(255,255,255,.1);color:#fff}
+.ovb i.k4{background:#0ea5e9}.ovb i.k6{background:#7c3aed}.ovb i.kW{background:#dc2626}.ovb i.kx{background:#a16207;font-size:11px}
+@media (prefers-reduced-motion:reduce){.anv *{animation:none!important;transition:none!important}}
 </style>
 </head><body>
 <header class="top"><div class="wrap bar">
@@ -336,6 +369,7 @@ table.onf tr.bw td{color:var(--cyan)}
   </div></div>
   <div class="hero"><div class="wrap" id="pHero"></div></div>
   <div class="wrap">
+    <div class="box anim" id="aBox" hidden></div>
     <div class="box ins" id="iBox" hidden></div>
     <div class="box" id="vBox"></div>
     <div class="box fun" id="fBox"></div>
