@@ -16,7 +16,7 @@ import { normTeam } from './_bn.js';
 import { tourBn } from './_teams.js';
 import { pushSub, events, sendEvents } from './_push.js';
 import { cricPred, fbPredFrom, fbExtraFrom } from './_predict.js';
-import { learn, prune, model } from './_elo.js';
+import { learn, prune, model, accOf } from './_elo.js';
 
 export const POINTS = 10; // সঠিক অনুমানে কত পয়েন্ট
 // ওভার/আন্ডার অনুমানের সীমা: ফুটবলে মোট গোল, ক্রিকেটে (সীমিত ওভার) দুই দল মিলিয়ে মোট রান। টেস্টে নেই
@@ -84,7 +84,7 @@ export async function getFeed(now = Date.now()) {
   let doc = (await ref.get()).data() || {};
   const due = plan(doc, has(doc, now), now);
   if (due.any) doc = await refresh(F, doc, due, now) || doc;
-  return { at: now, matches: compose(doc, now).concat(demo), demo: !!demo.length };
+  return { at: now, matches: compose(doc, now).concat(demo), demo: !!demo.length, acc: (doc.f && doc.f.acc) || null };
 }
 
 function plan(doc, H, now) {
@@ -240,6 +240,7 @@ async function refresh(F, doc, due, now) {
         }
         if (learn(E, f.day || [], dhakaDay(now))) ch = true;
         prune(E, dhakaDay(now));
+        f.acc = accOf(E, dhakaDay(now));
         const tag = m => (m.state === 'done' ? m : { ...m, mp: model(E, m) });
         f.day = (f.day || []).map(tag); f.live = (f.live || []).map(tag);
         if (ch) await eref.set(E);

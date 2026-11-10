@@ -25,6 +25,13 @@ export function learn(E, list, day) {
     if (!ka || !kb) continue;
     const ra = E.r[ka] || [startOf(m), 0], rb = E.r[kb] || [startOf(m), 0];
     const ea = 1 / (1 + Math.pow(10, (rb[0] - ra[0] - HOME) / 400));
+    // খেলার আগের নম্বর দিয়ে আমাদের অনুমান মিলত কিনা (দুই দলেরই অন্তত ৩টা খেলা জানা আর একদল স্পষ্ট এগিয়ে থাকলে)
+    if (ra[1] >= 3 && rb[1] >= 3 && Math.abs(ea - 0.5) >= 0.12) {
+      const d = new Date(m.start + 6 * 3600e3).toISOString().slice(0, 10);
+      E.acc = E.acc || {};
+      const x = E.acc[d] || [0, 0];
+      E.acc[d] = [x[0] + ((ea > 0.5 ? m.a.g > m.b.g : m.b.g > m.a.g) ? 1 : 0), x[1] + 1];
+    }
     // টাইব্রেকারে জিতলেও মূল খেলাটা ড্র ধরা হয়
     const sa = m.a.g > m.b.g ? 1 : m.a.g < m.b.g ? 0 : 0.5;
     const gd = Math.abs(m.a.g - m.b.g);
@@ -42,6 +49,15 @@ export function learn(E, list, day) {
 export function prune(E, today) {
   const cut = new Date(Date.parse(today) - 6 * 864e5).toISOString().slice(0, 10);
   for (const [id, d] of Object.entries(E.seen || {})) if (d < cut) delete E.seen[id];
+  const cut2 = new Date(Date.parse(today) - 15 * 864e5).toISOString().slice(0, 10);
+  for (const d of Object.keys(E.acc || {})) if (d < cut2) delete E.acc[d];
+}
+// গত ৭ দিনে খেলাঘরের হিসাব কতটা মিলেছে: { h: মিলেছে, t: মোট }
+export function accOf(E, today) {
+  const cut = new Date(Date.parse(today) - 7 * 864e5).toISOString().slice(0, 10);
+  let h = 0, t = 0;
+  for (const [d, x] of Object.entries(E.acc || {})) if (d >= cut) { h += x[0]; t += x[1]; }
+  return { h, t };
 }
 
 const pois = (l, k) => { let p = Math.exp(-l); for (let i = 1; i <= k; i++) p *= l / i; return p; };

@@ -155,3 +155,44 @@ export function overProb(m, line) {
   for (let k = 0; k <= line; k++) under += pois(lt, k);
   return 1 - under;
 }
+
+// ক্রিকেট (সীমিত ওভার): কখন কী হতে পারে — পরের ওভারে রান, উইকেটের সম্ভাবনা, পরের মাইলফলক কখন, শেষে কত
+const WPB = { 20: 0.052, 50: 0.027, 10: 0.075 }; // গড়ে প্রতি বলে উইকেটের সম্ভাবনা
+const PAR = { 20: [165, 140, 190], 50: [280, 240, 320], 10: [110, 90, 130] };
+export function crOutlook(m) {
+  if (m.sport !== 'cricket') return null;
+  const mo = maxOvers(m);
+  if (!mo) return null;
+  if (m.state === 'upcoming') return { up: true, par: PAR[mo] || null, mo };
+  if (m.state !== 'live' || m.pause) return null;
+  const inns = m.inns || [];
+  if (!inns.length) return null;
+  const cur = inns[inns.length - 1], b = balls(cur.o), left = mo * 6 - b;
+  if (left <= 0 || cur.w >= 10) return null;
+  const base = mo === 20 ? 8.2 : mo === 50 ? 5.6 : 10;
+  const crr = b ? cur.r / (b / 6) : base;
+  const wc = 0.5 * Math.min(1, b / (mo * 3));
+  const ov = Math.floor(b / 6);
+  // খেলার কোন অংশ: শুরুর ফিল্ডিং বিধিনিষেধ, মাঝের ওভার, শেষের ঝড়
+  const pp = mo === 20 ? 6 : mo === 50 ? 10 : 2, death = mo === 20 ? 16 : mo === 50 ? 40 : 8;
+  const phase = ov < pp ? 'পাওয়ারপ্লে' : ov >= death ? 'শেষের ঝড়ের ওভার' : 'মাঝের ওভার';
+  const pBoost = ov >= death ? 1.22 : ov < pp ? 1.05 : 0.95;
+  const wf = Math.pow(Math.min(1, (10 - cur.w + 2) / 8), 0.6);
+  const rate = (wc * crr + (1 - wc) * base) * wf * pBoost;
+  const nextOver = Math.max(1, rate);
+  const pw = (WPB[mo] || 0.04) * (ov >= death ? 1.35 : 1) * (cur.w >= 7 ? 1.25 : 1);
+  const wOver = 1 - Math.pow(1 - pw, Math.min(6, left));
+  const out = { up: false, phase, nextOver, wOver, mo };
+  // পরের মাইলফলক (৫০, ১০০, ১৫০ ...) কখন
+  const ms = (Math.floor(cur.r / 50) + 1) * 50;
+  const bNeed = Math.ceil((ms - cur.r) / (rate / 6));
+  if (bNeed <= left) { const at = b + bNeed; out.mile = [ms, Math.floor(at / 6) + (at % 6 ? '.' + (at % 6) : '')]; }
+  if (inns.length === 1) {
+    const proj = cur.r + rate * 0.97 * left / 6, sd = Math.max(6, Math.sqrt(left) * 2.2);
+    out.proj = [Math.round(proj - sd), Math.round(proj + sd)];
+  } else {
+    const need = inns[0].r + 1 - cur.r;
+    if (need > 0) out.chase = { need, left, rr: need / (left / 6) };
+  }
+  return out;
+}

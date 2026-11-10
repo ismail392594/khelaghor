@@ -1,5 +1,5 @@
 // খেলাঘর লাইভ স্কোর: পাতার সব কাজ। ডাটা আসে শুধু আমাদের সার্ভার (/api/live) থেকে, সরাসরি কোনো API থেকে নয়।
-import { winProb, rates, overUnder, fbOutlook, overProb } from '/live/insight.js';
+import { winProb, rates, overUnder, fbOutlook, overProb, crOutlook } from '/live/insight.js';
 import { VAPID_KEY } from '/live/push-config.js';
 import { drawAnim } from '/live/anim.js';
 const API = '/api/live';
@@ -166,7 +166,7 @@ function renderList() {
     }
     if (minor.length) html += `<button type="button" class="more" data-minor>▾ আরও ${bn(minor.length)}টি খেলা (ছোট লিগ) দেখুন</button>`;
   }
-  if (PRED && S.filter === 'upcoming' && S.sport !== 'cricket' && !q) html = freeComboHtml() + html;
+  if (PRED && S.filter === 'upcoming' && !q) html = freeComboHtml() + html;
   $('list').innerHTML = html;
 }
 
@@ -345,8 +345,10 @@ function renderInsight(m) {
   }
   const ol = fbOutlook(m);
   if (ol) html += outlookHtml(m, ol);
+  const co = crOutlook(m);
+  if (co) html += crOutlookHtml(m, co);
   html += `<div id="wx"></div>`;
-  if (!p && !chips.length && !x && !m.city && !ol) { box.hidden = true; return; }
+  if (!p && !chips.length && !x && !m.city && !ol && !co) { box.hidden = true; return; }
   box.hidden = false;
   box.innerHTML = `<h3>📊 খেলার হিসাব<span>আনুমানিক</span></h3>${html}`;
   weather(m);
@@ -371,10 +373,27 @@ function outlookHtml(m, o) {
   if (o.n != null && o.n < 3) h += `<div class="olw">⚠️ এই দলগুলোর খেলার তথ্য এখনো কম, তাই হিসাব দুর্বল। খেলাঘর প্রতিদিনের ফল থেকে শিখছে।</div>`;
   return h + '</div>';
 }
+// ক্রিকেট: কখন কী হতে পারে
+function crOutlookHtml(m, o) {
+  const pc = v => bn(Math.round(v * 100)) + '%';
+  if (o.up) return o.par ? `<div class="sub2">⏱️ কী আশা করা যায়</div><div class="olc"><div><small>প্রথম ইনিংসে সাধারণ স্কোর</small><b>${bn(o.par[1])}-${bn(o.par[2])}</b></div><div><small>গড় স্কোর (${bn(o.mo)} ওভারের খেলা)</small><b>${bn(o.par[0])}</b></div></div><div class="olw" style="color:var(--faint)">মাঠ, পিচ আর আবহাওয়া অনুযায়ী এর চেয়ে কম-বেশি হতে পারে। টস জিতে কে কী নেয়, খেলার শুরুতে এখানে দেখাবে।</div>` : '';
+  let h = `<div class="sub2">⏱️ কখন কী হতে পারে <small style="font-weight:500">· এখন ${o.phase}</small></div><div class="olc">`;
+  h += `<div><small>পরের ওভারে আনুমানিক রান</small><b>${bn(Math.max(0, Math.floor(o.nextOver - 1)))}-${bn(Math.ceil(o.nextOver + 2))}</b></div>`;
+  h += `<div><small>পরের ওভারে উইকেট পড়ার সম্ভাবনা</small><b>${pc(o.wOver)}</b></div>`;
+  if (o.mile) h += `<div><small>${bn(o.mile[0])} রান হতে পারে</small><b>${bn(o.mile[1])} ওভারে</b></div>`;
+  if (o.proj) h += `<div><small>ইনিংস শেষে সম্ভাব্য স্কোর</small><b>${bn(o.proj[0])}-${bn(o.proj[1])}</b></div>`;
+  return h + '</div>';
+}
 // প্রেডিকশন পাতা: খেলাঘরের হিসাবে আজকের ফ্রি কম্বো (শুধু পয়েন্টের খেলা)
 function freeCombos() {
   const now = Date.now(), c = [];
   for (const m of (S.feed && S.feed.matches) || []) {
+    // ক্রিকেট: দেশের দলের শক্তির তালিকায় একদল বেশ এগিয়ে থাকলে (টেস্ট বাদ)
+    if (m.sport === 'cricket' && m.state === 'upcoming' && !m.demo && !m.test && m.pred && m.pred.src === 'rating' && m.start > now + 15 * 60000 && m.start < now + 30 * 3600e3) {
+      const pick = m.pred.a >= m.pred.b ? 'a' : 'b', pp = m.pred[pick];
+      if (pp >= 0.62) c.push({ m, mk: 'w', pick, p: pp + 0.01 });
+      continue;
+    }
     if (m.sport !== 'football' || m.state !== 'upcoming' || m.demo || !m.pred || m.pred.la == null) continue;
     if (m.start < now + 15 * 60000 || m.start > now + 30 * 3600e3 || (m.pred.n ?? 9) < 3) continue;
     const opts = [['w', 'a', m.pred.a], ['w', 'b', m.pred.b]];
@@ -390,11 +409,13 @@ function freeCombos() {
 function freeComboHtml() {
   const { safe, big } = freeCombos();
   S.free = { safe, big };
-  if (!safe && !big) return `<div class="fcb"><h3>🎁 খেলাঘরের ফ্রি কম্বো</h3><p class="fcn">খেলাঘরের হিসাব এখন দলগুলোর আগের ফল থেকে শিখছে। যথেষ্ট নিশ্চিত খেলা পেলে এখানে আজকের কম্বো চলে আসবে।</p></div>`;
+  const ac = S.feed && S.feed.acc;
+  const accLine = ac && ac.t >= 20 ? `<p class="fca">📊 খেলাঘরের হিসাব গত ৭ দিনে <b>${bn(Math.round(ac.h / ac.t * 100))}%</b> মিলেছে (${bn(ac.t)}টা খেলায়, যেখানে একদল স্পষ্ট এগিয়ে ছিল)</p>` : '';
+  if (!safe && !big) return `<div class="fcb"><h3>🎁 খেলাঘরের ফ্রি কম্বো</h3><p class="fcn">খেলাঘরের হিসাব এখন দলগুলোর আগের ফল থেকে শিখছে। যথেষ্ট নিশ্চিত খেলা পেলে এখানে আজকের কম্বো চলে আসবে।</p>${accLine}</div>`;
   const pc = v => bn(Math.round(Math.min(0.99, v) * 100)) + '%';
   const leg = l => `<li><span>${esc(tname(l.m.a))} বনাম ${esc(tname(l.m.b))}<small>${when(l.m.start)}</small></span><b>${l.mk === 'ou' ? `${l.pick === 'o' ? 'বেশি' : 'কম'} গোল (${bn(l.m.oul)})` : `${esc(tname(l.m[l.pick]))} জিতবে`}<small>${pc(l.p)}</small></b></li>`;
   const card = (k, t, L) => L ? `<div class="fc"><div class="fch"><b>${t}</b><span>সব মিললে +${bn((S.combo || {})[L.length] || 0)} পয়েন্ট · সম্ভাবনা ${pc(L.reduce((x, l) => x * Math.min(0.99, l.p), 1))}</span></div><ul>${L.map(leg).join('')}</ul><button type="button" class="fcgo" data-free="${k}">🎯 এই কম্বো আমার স্লিপে নিন</button></div>` : '';
-  return `<div class="fcb"><h3>🎁 খেলাঘরের ফ্রি কম্বো <span>বিশ্লেষণ থেকে, বিনামূল্যে</span></h3>${card('safe', '🛡️ নিরাপদ কম্বো (২টা)', safe)}${card('big', '🚀 বড় কম্বো', big)}<p class="fcn">এটা শুধু খেলাঘরের পয়েন্টের খেলা, টাকার বাজির জন্য নয়। আন্দাজ ভুলও হতে পারে।</p></div>`;
+  return `<div class="fcb"><h3>🎁 খেলাঘরের ফ্রি কম্বো <span>বিশ্লেষণ থেকে, বিনামূল্যে</span></h3>${card('safe', '🛡️ নিরাপদ কম্বো (২টা)', safe)}${card('big', '🚀 বড় কম্বো', big)}${accLine}<p class="fcn">এটা শুধু খেলাঘরের পয়েন্টের খেলা, টাকার বাজির জন্য নয়। আন্দাজ ভুলও হতে পারে।</p></div>`;
 }
 // পূর্বাভাসের কারণ সহজ ভাষায়
 function why(m) {
