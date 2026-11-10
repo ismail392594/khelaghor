@@ -42,8 +42,8 @@ export function fbSummary(f) {
   const fx = f.fixture || {}, lg = f.league || {}, tm = f.teams || {}, g = f.goals || {}, sc = f.score || {};
   const st = (fx.status && fx.status.short) || 'NS';
   const national = lg.country === 'World' || (isCountry(tm.home && tm.home.name) && isCountry(tm.away && tm.away.name));
-  const a = { ...team(tm.home && tm.home.name, national), g: g.home };
-  const b = { ...team(tm.away && tm.away.name, national), g: g.away };
+  const a = { ...team(tm.home && tm.home.name, national), g: g.home, tid: tm.home && tm.home.id };
+  const b = { ...team(tm.away && tm.away.name, national), g: g.away, tid: tm.away && tm.away.id };
   const state = LIVE.includes(st) ? 'live' : DONE.includes(st) ? 'done' : 'upcoming';
   const out = {
     id: 'f_' + fx.id, sport: 'football', state, start: (fx.timestamp || 0) * 1000,
@@ -70,6 +70,8 @@ function roundBn(r) {
   let m;
   if ((m = t.match(/Regular Season - (\d+)/i))) return `ম্যাচডে ${bnNum(m[1])}`;
   if ((m = t.match(/Group ([A-Z])\s*-\s*(\d+)/i))) return `গ্রুপ ${m[1]} · ম্যাচ ${bnNum(m[2])}`;
+  if ((m = t.match(/Group Stage\s*-\s*(\d+)/i))) return `গ্রুপ পর্ব · ম্যাচ ${bnNum(m[1])}`;
+  if ((m = t.match(/League Stage\s*-\s*(\d+)/i))) return `লিগ পর্ব · ম্যাচ ${bnNum(m[1])}`;
   if (/round of 16|8th finals/i.test(t)) return 'শেষ ষোলো';
   if (/quarter/i.test(t)) return 'কোয়ার্টার ফাইনাল';
   if (/semi/i.test(t)) return 'সেমিফাইনাল';
@@ -90,6 +92,11 @@ export function fbDetail(f, sum) {
     const who = (e.player && e.player.name) || '';
     const tn = tnm(e.team && e.team.name);
     const type = String(e.type || ''), det = String(e.detail || '');
+    if (type === 'Goal' && /shootout/i.test(e.comments || '')) {
+      // টাইব্রেকারের শট: মূল খেলার গোলে গোনা হয় না
+      comm.push({ o: '', k: /missed/i.test(det) ? 'x' : 'P', t: `টাইব্রেকার: ${who} (${tn}) ${/missed/i.test(det) ? 'মিস করলেন' : 'গোল করলেন'}` });
+      continue;
+    }
     if (type === 'Goal') {
       if (/missed/i.test(det)) { comm.push({ o, k: 'x', t: `পেনাল্টি মিস! ${who} (${tn})` }); continue; }
       if (side(e.team && e.team.name) === sum.a) ga++; else gb++;
@@ -126,7 +133,7 @@ export function fbDetail(f, sum) {
     sub: (l.substitutes || []).map(p => [p.player && p.player.number, p.player && p.player.name, p.player && p.player.pos])
   })).filter(l => l.xi.length);
   // গোলদাতা আর লাল কার্ড (দলের নামের নিচে দেখানোর জন্য)
-  const gl = (f.events || []).filter(e => (e.type === 'Goal' && !/missed/i.test(e.detail || '')) || (e.type === 'Card' && /red/i.test(e.detail || ''))).map(e => {
+  const gl = (f.events || []).filter(e => (e.type === 'Goal' && !/missed/i.test(e.detail || '') && !/shootout/i.test(e.comments || '')) || (e.type === 'Card' && /red/i.test(e.detail || ''))).map(e => {
     const sd = side(e.team && e.team.name) === sum.a ? 'a' : 'b';
     const min = e.time ? (e.time.elapsed || 0) + (e.time.extra ? '+' + e.time.extra : '') : '';
     return { s: sd, m: min, n: (e.player && e.player.name) || '', k: e.type === 'Card' ? 'R' : /own/i.test(e.detail || '') ? 'OG' : /penalty/i.test(e.detail || '') ? 'P' : 'G' };

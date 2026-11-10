@@ -91,7 +91,7 @@ export function overUnder(m) {
   if (m.sport === 'football') {
     let have = (m.a.g || 0) + (m.b.g || 0), lam;
     if (m.state === 'live') lam = 2.5 * Math.max(0, 90 - Math.min(90, m.min || (m.per === 'HT' ? 45 : 0))) / 90;
-    else if (m.state === 'upcoming') { have = 0; lam = m.pred && m.pred.gh != null && m.pred.ga != null ? m.pred.gh + m.pred.ga : 2.6; }
+    else if (m.state === 'upcoming') { have = 0; lam = m.pred && m.pred.la != null ? m.pred.la + m.pred.lb : m.pred && m.pred.gh != null && m.pred.ga != null ? m.pred.gh + m.pred.ga : 2.6; }
     else return out;
     for (const line of [1.5, 2.5, 3.5]) {
       if (have > line) continue;
@@ -110,6 +110,89 @@ export function overUnder(m) {
     const sd = Math.max(6, Math.sqrt(left) * 2.2);
     const line = Math.round(proj / 5) * 5 + 0.5;
     out.push([`${bn(Math.floor(line))}-এর বেশি রান`, Math.round((1 - ncdf((line - proj) / sd)) * 100)]);
+  }
+  return out;
+}
+
+// ফুটবল: খেলার কোন ১৫ মিনিটে সাধারণত কত ভাগ গোল হয় (শেষের দিকে বেশি)
+const SLOT = [0.13, 0.15, 0.16, 0.16, 0.19, 0.21];
+const SLOT_T = ['০-১৫', '১৫-৩০', '৩০-৪৫', '৪৫-৬০', '৬০-৭৫', '৭৫-৯০'];
+// এখন থেকে খেলার শেষ পর্যন্ত গোলের কত ভাগ বাকি
+function leftShare(min) {
+  let s = 0;
+  for (let i = 0; i < 6; i++) { const a = i * 15, b = a + 15; if (min <= a) s += SLOT[i]; else if (min < b) s += SLOT[i] * (b - min) / 15; }
+  return s;
+}
+// কখন কী হতে পারে: পরের/প্রথম গোল, দুই দলই গোল, প্রথমার্ধে গোল, কোন সময়ে গোল বেশি, সম্ভাব্য ফল।
+// খেলাঘরের হিসাবের গোল (pred.la, pred.lb) লাগে; না থাকলে null
+export function fbOutlook(m) {
+  const p = m.pred;
+  if (m.sport !== 'football' || !p || p.la == null || !['live', 'upcoming'].includes(m.state)) return null;
+  const live = m.state === 'live';
+  const min = live ? Math.min(90, m.min || (m.per === 'HT' ? 45 : 0)) : 0;
+  const fr = leftShare(min);
+  const la = p.la * fr, lb = p.lb * fr, lt = la + lb;
+  const ga = live ? m.a.g || 0 : 0, gb = live ? m.b.g || 0 : 0;
+  const any = 1 - Math.exp(-lt);
+  const out = { live, n: p.n, next: { a: lt ? la / lt * any : 0, b: lt ? lb / lt * any : 0, none: 1 - any } };
+  out.btts = (ga ? 1 : 1 - Math.exp(-la)) * (gb ? 1 : 1 - Math.exp(-lb));
+  if (min < 45) out.half = 1 - Math.exp(-(p.la + p.lb) * (leftShare(min) - leftShare(45)));
+  out.slots = SLOT.map((s, i) => {
+    const a = i * 15; if (a + 15 <= min) return null;
+    const part = min > a ? s * (a + 15 - min) / 15 : s;
+    return [SLOT_T[i], 1 - Math.exp(-(p.la + p.lb) * part)];
+  }).filter(Boolean);
+  const sc = [];
+  for (let i = 0; i <= 6; i++) for (let j = 0; j <= 6; j++) sc.push([ga + i, gb + j, pois(la, i) * pois(lb, j) * (ga + i === gb + j ? 1.08 : 1)]);
+  const tot = sc.reduce((t, x) => t + x[2], 0);
+  out.scores = sc.sort((x, y) => y[2] - x[2]).slice(0, 3).map(([x, y, q]) => [x, y, q / tot]);
+  return out;
+}
+// বেশি/কম গোলের সম্ভাবনা (মোট গোল line-এর বেশি)
+export function overProb(m, line) {
+  const p = m.pred; if (!p || p.la == null) return null;
+  const lt = p.la + p.lb; let under = 0;
+  for (let k = 0; k <= line; k++) under += pois(lt, k);
+  return 1 - under;
+}
+
+// ক্রিকেট (সীমিত ওভার): কখন কী হতে পারে — পরের ওভারে রান, উইকেটের সম্ভাবনা, পরের মাইলফলক কখন, শেষে কত
+const WPB = { 20: 0.052, 50: 0.027, 10: 0.075 }; // গড়ে প্রতি বলে উইকেটের সম্ভাবনা
+const PAR = { 20: [165, 140, 190], 50: [280, 240, 320], 10: [110, 90, 130] };
+export function crOutlook(m) {
+  if (m.sport !== 'cricket') return null;
+  const mo = maxOvers(m);
+  if (!mo) return null;
+  if (m.state === 'upcoming') return { up: true, par: PAR[mo] || null, mo };
+  if (m.state !== 'live' || m.pause) return null;
+  const inns = m.inns || [];
+  if (!inns.length) return null;
+  const cur = inns[inns.length - 1], b = balls(cur.o), left = mo * 6 - b;
+  if (left <= 0 || cur.w >= 10) return null;
+  const base = mo === 20 ? 8.2 : mo === 50 ? 5.6 : 10;
+  const crr = b ? cur.r / (b / 6) : base;
+  const wc = 0.5 * Math.min(1, b / (mo * 3));
+  const ov = Math.floor(b / 6);
+  // খেলার কোন অংশ: শুরুর ফিল্ডিং বিধিনিষেধ, মাঝের ওভার, শেষের ঝড়
+  const pp = mo === 20 ? 6 : mo === 50 ? 10 : 2, death = mo === 20 ? 16 : mo === 50 ? 40 : 8;
+  const phase = ov < pp ? 'পাওয়ারপ্লে' : ov >= death ? 'শেষের ঝড়ের ওভার' : 'মাঝের ওভার';
+  const pBoost = ov >= death ? 1.22 : ov < pp ? 1.05 : 0.95;
+  const wf = Math.pow(Math.min(1, (10 - cur.w + 2) / 8), 0.6);
+  const rate = (wc * crr + (1 - wc) * base) * wf * pBoost;
+  const nextOver = Math.max(1, rate);
+  const pw = (WPB[mo] || 0.04) * (ov >= death ? 1.35 : 1) * (cur.w >= 7 ? 1.25 : 1);
+  const wOver = 1 - Math.pow(1 - pw, Math.min(6, left));
+  const out = { up: false, phase, nextOver, wOver, mo };
+  // পরের মাইলফলক (৫০, ১০০, ১৫০ ...) কখন
+  const ms = (Math.floor(cur.r / 50) + 1) * 50;
+  const bNeed = Math.ceil((ms - cur.r) / (rate / 6));
+  if (bNeed <= left) { const at = b + bNeed; out.mile = [ms, Math.floor(at / 6) + (at % 6 ? '.' + (at % 6) : '')]; }
+  if (inns.length === 1) {
+    const proj = cur.r + rate * 0.97 * left / 6, sd = Math.max(6, Math.sqrt(left) * 2.2);
+    out.proj = [Math.round(proj - sd), Math.round(proj + sd)];
+  } else {
+    const need = inns[0].r + 1 - cur.r;
+    if (need > 0) out.chase = { need, left, rr: need / (left / 6) };
   }
   return out;
 }

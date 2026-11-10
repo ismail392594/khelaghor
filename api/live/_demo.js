@@ -153,6 +153,8 @@ function fbMatch(id, A, B, pa, pb, start, now, tour, label, seed, national = tru
   const pos = ['G', 'D', 'D', 'D', 'D', 'M', 'M', 'M', 'F', 'F', 'F'];
   const xi = ps => pos.map((p, i) => [i + 1, (ps[i % ps.length] || 'খেলোয়াড়') + (i >= ps.length ? ' ' + (i + 1) : ''), p]);
   const lu = state === 'upcoming' ? [] : [{ t: a.bn || a.name, f: '4-3-3', coach: 'নমুনা কোচ', xi: xi(pa), sub: [] }, { t: b.bn || b.name, f: '4-4-2', coach: 'নমুনা কোচ', xi: xi(pb), sub: [] }];
+  // নমুনায় খেলাঘরের হিসাবের মতো পূর্বাভাস (পাতা কেমন দেখায় বোঝাতে)
+  if (state !== 'done') { m.pred = { a: 0.63, d: 0.22, b: 0.15, la: 1.9, lb: 0.8, n: 6, src: 'elo' }; m.oul = 2.5; }
   return { m, det: { comm, stats, lu, gl } };
 }
 

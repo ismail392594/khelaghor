@@ -16,6 +16,7 @@ import { normTeam } from './_bn.js';
 import { tourBn } from './_teams.js';
 import { pushSub, events, sendEvents } from './_push.js';
 import { cricPred, fbPredFrom, fbExtraFrom } from './_predict.js';
+import { learn, prune, model, accOf } from './_elo.js';
 
 export const POINTS = 10; // সঠিক অনুমানে কত পয়েন্ট
 // ওভার/আন্ডার অনুমানের সীমা: ফুটবলে মোট গোল, ক্রিকেটে (সীমিত ওভার) দুই দল মিলিয়ে মোট রান। টেস্টে নেই
@@ -83,7 +84,7 @@ export async function getFeed(now = Date.now()) {
   let doc = (await ref.get()).data() || {};
   const due = plan(doc, has(doc, now), now);
   if (due.any) doc = await refresh(F, doc, due, now) || doc;
-  return { at: now, matches: compose(doc, now).concat(demo), demo: !!demo.length };
+  return { at: now, matches: compose(doc, now).concat(demo), demo: !!demo.length, acc: (doc.f && doc.f.acc) || null };
 }
 
 function plan(doc, H, now) {
@@ -94,20 +95,24 @@ function plan(doc, H, now) {
   const fAll = [...(f.day || []), ...(f.live || [])];
   const fLive = fAll.some(m => m.state === 'live' || (m.state === 'upcoming' && m.start <= now + MIN && m.start > now - 3 * HOUR));
   const stale = doc.v !== CACHE_V;
+  const fOn = !(doc.fq && doc.fq.off > now);
   const d = {
     // ফ্রি প্ল্যানে সাশ্রয়: খেলা চললে বাকি ডাটার বেশিরভাগ (৬০%) তালিকায়; কিছু না চললে ঘণ্টায় একবার
     cList: H.c && stale || H.c && now - (c.at || 0) > (cLive ? every(cRem, now, MIN, 0.6) : Math.max(60 * MIN, every(cRem, now, 60 * MIN, 0.1))),
     // আসন্ন খেলা মূল তালিকাতেই (cricScore) আসে, তাই আলাদা তালিকা দিনে একবার যথেষ্ট
     cUp: H.c && now - (c.upAt || 0) > 24 * HOUR,
-    fLive: H.f && fLive && now - (f.at || 0) > every(fRem, now, MIN, 0.6),
-    fDay: H.f && stale || H.f && (now - (f.dayAt || 0) > Math.max(2 * HOUR, every(fRem, now, 2 * HOUR, 0.15)) || f.dayKey !== dhakaDay(now))
+    // ফ্রি প্ল্যানে বাকি ডাকের ৮৫% চলমান খেলায় (এক ডাকেই পৃথিবীর সব চলমান খেলা আসে)
+    fLive: H.f && fOn && fLive && now - (f.at || 0) > every(fRem, now, 2 * MIN, 0.85),
+    fDay: H.f && stale || H.f && fOn && (now - (f.dayAt || 0) > Math.max(4 * HOUR, every(fRem, now, 4 * HOUR, 0.06)) || f.dayKey !== dhakaDay(now))
   };
   // Sportmonks: ঘণ্টায় ২,০০০ বার ডাকা যায়, তাই খেলা চললে প্রায় প্রতি মিনিটে
   const s = doc.s || {};
   const sLive = [...(s.live || []), ...(s.fx || [])].some(m => (m.state === 'live' && !m.pause) || (m.state === 'upcoming' && m.start <= now && m.start > now - 3 * HOUR));
   d.sLive = H.s && (stale || now - (s.at || 0) > (sLive ? 50e3 : 10 * MIN));
   d.sFx = H.s && (stale || now - (s.fxAt || 0) > 30 * MIN);
-  d.any = d.cList || d.cUp || d.fLive || d.fDay || d.sLive || d.sFx;
+  // খেলাঘরের নিজের পূর্বাভাস হালনাগাদ (API ডাক লাগে না)
+  d.elo = H.f && (f.day || []).length > 0 && now - (f.eloAt || 0) > 20 * MIN;
+  d.any = d.cList || d.cUp || d.fLive || d.fDay || d.sLive || d.sFx || d.elo;
   return d;
 }
 
@@ -122,7 +127,11 @@ async function lock(db, now, ms = 25e3) {
     return m;
   }).catch(() => null);
 }
-const qOf = (r, now, old) => (r && r.rem != null ? { day: utcDay(now), rem: r.rem, lim: r.lim || (old && old.lim) || null } : old || null);
+const qOf = (r, now, old) => {
+  // "সীমা শেষ" বললে ৩০ মিনিট বিরতি (এই ভুল মাঝে মাঝে এসে আবার ঠিক হয়ে যায়, তাই পুরো দিন বন্ধ রাখি না)
+  if (r && !r.ok && /request limit|limit for the day/i.test(r.err || '')) return { ...(old || { day: utcDay(now), rem: 50, lim: null }), off: now + 30 * MIN };
+  return r && r.rem != null ? { day: utcDay(now), rem: r.rem, lim: r.lim || (old && old.lim) || null } : old || null;
+};
 
 async function refresh(F, doc, due, now) {
   const { db, FV } = F;
@@ -162,19 +171,25 @@ async function refresh(F, doc, due, now) {
     }));
     const lg = leagues();
     if (due.fDay) {
-      jobs.push(Promise.all([-1, 0, 1].map(k => fbCall('fixtures', { date: dhakaDay(now + k * DAY), timezone: 'Asia/Dhaka' }))).then(rs => {
+      // ফ্রি প্ল্যানে সাশ্রয়: দিনের শুরুতে গতকাল-আজ-আগামীকাল (৩ ডাক), তারপর সারাদিন শুধু আজকেরটা (১ ডাক)
+      const full = f.dayKey !== dhakaDay(now) || !(f.day || []).length;
+      const ks = full ? [-1, 0, 1] : [0];
+      jobs.push(Promise.all(ks.map(k => fbCall('fixtures', { date: dhakaDay(now + k * DAY), timezone: 'Asia/Dhaka' }))).then(rs => {
         for (const r of rs) fq = qOf(r, now, fq);
         if (rs.every(r => r.ok)) {
+          const fresh = rs.flatMap(r => r.data).filter(x => !lg || lg.includes(x.league && x.league.id)).map(fbSummary);
+          const today = dhakaDay(now);
+          const kept = full ? [] : (f.day || []).filter(m => dhakaDay(m.start) !== today);
           // সব লিগ (বা Vercel-এ বাছাই করা কয়েকটা); বড় লিগ আগে রেখে সর্বোচ্চ ৪৫০টা
-          f.day = rs.flatMap(r => r.data).filter(x => !lg || lg.includes(x.league && x.league.id)).map(fbSummary)
-            .sort((x, y) => (y.rk || 0) - (x.rk || 0) || x.start - y.start).slice(0, 450);
-          f.dayAt = now; f.dayKey = dhakaDay(now);
+          f.day = kept.concat(fresh).sort((x, y) => (y.rk || 0) - (x.rk || 0) || x.start - y.start).slice(0, 450);
+          f.dayAt = now; f.dayKey = today;
         } else f.err = (rs.find(r => !r.ok) || {}).err;
       }));
     }
     if (due.fLive) jobs.push(fbCall('fixtures', { live: lg ? lg.join('-') : 'all' }).then(async r => {
       fq = qOf(r, now, fq);
       if (!r.ok) { f.err = r.err; return; }
+      f.err = null;
       f.live = r.data.map(fbSummary).sort((x, y) => (y.rk || 0) - (x.rk || 0)).slice(0, 200); f.at = now; f.liveOk = now;
     }));
     if (due.sLive) jobs.push(smCall('livescores', { include: LIST_INC }).then(r => {
@@ -204,10 +219,37 @@ async function refresh(F, doc, due, now) {
         if (g.ok) { const upd = new Map(g.data.map(fbSummary).map(m => [m.id, m])); f.day = (f.day || []).map(m => upd.get(m.id) || m); }
       }
     }
+    // খেলাঘরের নিজের ফুটবল পূর্বাভাস: শেষ হওয়া খেলা থেকে দলের শক্তি শেখা, তারপর আসন্ন/চলমান খেলায় হিসাব
+    // ফুটবলের API সেদিন বন্ধ থাকলেও (সীমা শেষ) হাতে থাকা ফল দিয়ে শেখা চলে, ২০ মিনিটে একবার
+    if ((f.day || []).length && (f.dayAt === now || f.liveOk === now || now - (f.eloAt || 0) > 20 * MIN)) {
+      f.eloAt = now;
+      try {
+        const eref = db.doc('liveElo/fb');
+        const E = (await eref.get()).data() || { r: {}, seen: {}, bf: [] };
+        let ch = false;
+        // শুরুতে শেখার জন্য আগের দিনগুলোর ফল (দিনে এক ডাক করে, হাতে ডাক বেশি থাকলে তবেই, ১৪ দিন পর্যন্ত)
+        if (remOf(fq, now) > 55) {
+          const bf = E.bf || [];
+          const wants = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(k => dhakaDay(now - k * DAY)).filter(d => !bf.includes(d)).slice(0, 2);
+          for (const want of wants) {
+            const r = await fbCall('fixtures', { date: want, timezone: 'Asia/Dhaka' });
+            fq = qOf(r, now, fq);
+            if (!r.ok) break;
+            learn(E, r.data.map(fbSummary), want); E.bf = (E.bf || []).concat(want).slice(-20); ch = true;
+          }
+        }
+        if (learn(E, f.day || [], dhakaDay(now))) ch = true;
+        prune(E, dhakaDay(now));
+        f.acc = accOf(E, dhakaDay(now));
+        const tag = m => (m.state === 'done' ? m : { ...m, mp: model(E, m) });
+        f.day = (f.day || []).map(tag); f.live = (f.live || []).map(tag);
+        if (ch) await eref.set(E);
+      } catch (e) { console.error('elo', e); }
+    }
     // বড় আসন্ন ফুটবল খেলার পূর্বাভাস (প্রতিবার সর্বোচ্চ ৩টা, দিনের সীমার বেশিরভাগ বাকি থাকলে তবেই)
     const P = { ...(doc.p || {}) };
-    if (due.fDay && remOf(fq, now) > 40) {
-      const want = (f.day || []).filter(m => m.state === 'upcoming' && m.rk >= 3 && !P[m.id] && m.start < now + 2 * DAY).slice(0, 3);
+    if (due.fDay && remOf(fq, now) > 50) {
+      const want = (f.day || []).filter(m => m.state === 'upcoming' && m.rk >= 3 && !P[m.id] && m.start < now + 2 * DAY).slice(0, 2);
       for (const m of want) {
         const r = await fbCall('predictions', { fixture: m.id.slice(2) });
         fq = qOf(r, now, fq);
@@ -215,7 +257,9 @@ async function refresh(F, doc, due, now) {
       }
     }
     for (const k of Object.keys(P)) if (now - (P[k].at || 0) > 4 * DAY) delete P[k];
-    const out = { v: CACHE_V, c, f, s: sm, p: P, cq, fq };
+    // ম্যাচ খুলে জানা "শেষ" ফল তালিকা নতুন করার পরেও রাখি (API-র তালিকা পুরনো থাকলে যেন আবার "চলছে" না দেখায়)
+    const keep = Object.fromEntries(Object.entries(doc.fresh || {}).filter(([, m]) => m && m.state === 'done' && now - (m._at || 0) < 36 * HOUR));
+    const out = { v: CACHE_V, c, f, s: sm, p: P, cq, fq, fresh: keep };
     await db.doc('liveCache/feed').set(out);
     // প্রিয় দলের খবর ফোনে (খেলা শুরু, উইকেট, গোল, শেষ)
     try { await sendEvents(F, events(compose(doc, now), compose(out, now))); } catch (e) { console.error('push events', e); }
@@ -264,7 +308,9 @@ function compose(doc, now) {
   }
   const atOf = id => id[0] === 'c' ? (c.at || 0) : id[0] === 's' ? (sm.at || 0) : (f.at || 0);
   for (const [id, m] of Object.entries(doc.fresh || {})) {
-    if ((m._at || 0) > atOf(id) && map.has(id)) map.set(id, m);
+    // ম্যাচ খুলে আনা ফল নতুন হলে সেটা; আর একবার "শেষ" জানা গেলে পুরনো "চলছে" তালিকা দিয়ে আর ফেরানো হয় না
+    const L = map.get(id);
+    if (L && ((m._at || 0) > atOf(id) || (m.state === 'done' && L.state !== 'done'))) map.set(id, m);
   }
   // স্কোরটা কখন আনা (দর্শককে জানাতে, পুরনো হলে পাতায় লেখা ওঠে) আর সিরিজের নাম বাংলায়
   for (const [id, m] of map) {
@@ -280,12 +326,16 @@ function compose(doc, now) {
   const P = doc.p || {};
   for (const [id, m] of map) {
     if (m.state === 'done') continue;
-    const p = m.sport === 'football' ? (P[id] && P[id].pr) : cricPred(m);
+    // ফুটবল: API-র পূর্বাভাস থাকলে (আর সব দল সমান না দেখালে) সেটা, সঙ্গে আমাদের হিসাবের গোল; না থাকলে খেলাঘরের হিসাব
+    const ap = m.sport === 'football' && P[id] && P[id].pr, mp = m.mp;
+    const p = m.sport !== 'football' ? cricPred(m)
+      : ap && Math.abs(ap.a - ap.b) > 0.02 ? { ...ap, ...(mp ? { la: mp.la, lb: mp.lb, n: mp.n } : {}) } : mp || ap || null;
     const oul = ouLine(m);
     if (p || oul) map.set(id, { ...m, ...(p ? { pred: p } : {}), ...(oul ? { oul } : {}) });
   }
   return [...map.values()].filter(m =>
-    m.state === 'live' ||
+    // ফুটবলের "চলছে" তথ্য ৩ ঘণ্টার বেশি পুরনো হলে (API-র দিনের সীমা শেষ) দেখাই না, ভুল দেখানোর চেয়ে না দেখানো ভালো
+    (m.state === 'live' && !(m.sport === 'football' && m.upd && now - m.upd > 3 * HOUR)) ||
     (m.state === 'upcoming' && m.start > now - 12 * HOUR && m.start < now + 8 * DAY) ||
     (m.state === 'done' && m.start > now - 36 * HOUR));
 }
@@ -350,7 +400,9 @@ export async function getMatch(id, now = Date.now()) {
     }
   }
   // ফিড আর বিস্তারিত: যেটা নতুন সেটাই দেখাই
-  let sum = md && md.sum && (md.at || 0) >= (feed.at - 2 * MIN) ? md.sum : S;
+  let sum = md && md.sum && (md.final || (md.at || 0) >= (feed.at - 2 * MIN) || (md.at || 0) > (S.upd || 0) + MIN) ? md.sum : S;
+  // খেলা শেষ জানা গেল কিন্তু তালিকায় এখনো "চলছে": তালিকাকেও জানিয়ে দিই
+  if (sum !== S && sum.state === 'done' && S.state !== 'done') await db.doc('liveCache/feed').set({ fresh: { [id]: { ...sum, _at: now } } }, { merge: true }).catch(() => {});
   if (sum !== S && sum.state === 'live') sum = { ...sum, upd: Math.max(md.at || 0, S.upd || 0), tour: S.tour };
   const m = extra && extra.pr && sum.state !== 'done' ? { ...sum, pred: extra.pr } : (sum.pred || S.pred ? { ...sum, pred: sum.pred || S.pred } : sum);
   return { m, det: (md && md.det) || null, votes: await votesOf(F, id), react: await reactsOf(F, id), x: extra ? extra.x : null };
