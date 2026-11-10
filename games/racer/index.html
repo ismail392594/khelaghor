@@ -1056,7 +1056,7 @@ function stopStep(st, dt) {
     if (!s.said && dz < 110 && dz > 30) { s.said = true; talkT = 0; helperSay('near'); sfx('beep2'); } // ১০০ মিটার আগে সংকেত
     if (!s.served && dz > 9 && dz < 160) { $('stopHint').hidden = false; $('stopHint').innerHTML = `🚏 ${stopName}: ${bn(Math.round(dz))} মিটার সামনে<br><small>বাম কিনারায় হলুদ দাগে ব্রেক চেপে থামুন</small>`; }
     else if (!s.served && dz < -9 && dz > -95 && stopWait.length) { $('stopHint').hidden = false; $('stopHint').innerHTML = `↩️ স্টপেজ পার হয়ে গেছেন! থেমে ${SIM ? 'নিচে বামের গিয়ার বোতাম চেপে R করে' : 'ব্রেক চেপে ধরে'} পেছান`; if (SIM) $('gearB').classList.toggle('nudge', S.gear !== 'R'); }
-    const atBay = Math.abs(dz) < 9 && st.x < LANES[0] + .6 && Math.abs(st.v) < 7 / KMH && !st.crashed;
+    const atBay = Math.abs(dz) < 10 && st.x < LANES[0] + 1.4 && Math.abs(st.v) < 7 / KMH && !st.crashed;
     // পার্কিং জোনে থামলে: ক্যামেরা পাশে গিয়ে দেখায় যাত্রী নামছে-উঠছে (একজন একজন করে দরজা দিয়ে), শেষে হেল্পার "ডাবল!"
     if (atBay && !s.served && !s.seq) { // নিয়ম: আগে যাত্রী নামবে, তারপর লাইন ধরে একজন একজন করে উঠবে
       const offN = st.paxList.filter(p => p.dest <= 0).length, onN = Math.min(R.pax - (st.paxList.length - offN), stopWait.length);
@@ -1298,8 +1298,14 @@ function step(dt) {
       st.v += acc * dt; if (!gas && Math.sign(st.v) !== Math.sign(was) && was !== 0) st.v = 0; st.v = clamp(st.v, -RV, VMAX);
     } else {
       // রেস: অটো এক্সিলারেটর; থেমে ব্রেক চেপে ধরে রাখলে ব্যাক গিয়ার
-      if (Math.abs(st.v) < .3 && brake) { if ((st.revT += dt) > .7 && !st.rev) { st.rev = true; pop('↩️ ব্যাক গিয়ার'); } } else if (!brake) st.revT = 0;
-      if (st.rev) { if (brake) st.v = Math.max(-RV, st.v - 3.5 * dt); else { st.v = Math.min(0, st.v + 6 * dt); if (st.v >= 0) st.rev = false; } }
+      // যাত্রীর গাড়ি: স্টপেজে ওঠানামা চলার সময় পার্কিং ব্রেক (ব্রেক ছাড়লেও দাঁড়িয়ে থাকে, পেছনে যায় না);
+      // থেমে ব্রেক চেপে রাখলে পেছানো শুধু তখন, যখন স্টপেজ পার হয়ে গেছে। অন্য গাড়িতে ১ সেকেন্ড থেমে চেপে রাখলে ব্যাক গিয়ার।
+      const sp = st.stop, sdz = sp ? st.z - sp.z : 0, hold = R.pax && sp && sp.seq && !sp.served;
+      const canRev = !R.pax || (sp && !sp.served && sdz < -9 && sdz > -95);
+      if (hold) { st.v = Math.max(0, st.v - 14 * dt); st.rev = false; st.revT = 0; }
+      else if (Math.abs(st.v) < .3 && brake && canRev) { if ((st.revT += dt) > 1 && !st.rev) { st.rev = true; pop('↩️ ব্যাক গিয়ার'); } } else if (!brake) st.revT = 0;
+      if (hold) {}
+      else if (st.rev) { if (brake) st.v = Math.max(-RV, st.v - 3.5 * dt); else { st.v = Math.min(0, st.v + 6 * dt); if (st.v >= 0) st.rev = false; } }
       else { const vmax = nitro ? VNIT : VMAX; const acc = brake ? -11 - R.acc : (nitro ? R.acc * 1.7 : R.acc) * (1 - st.v / vmax) + (st.v > vmax ? -4 : 0); st.v = clamp(st.v + acc * dt, 0, VNIT); }
     }
     if (st.v < -.2 && R.snd === 'diesel' && (st.beepT = (st.beepT || 0) - dt) <= 0) { st.beepT = .7; sfx('revBeep'); } // পেছানোর বিপ
@@ -1707,6 +1713,7 @@ function start(level) {
   cam.position.set(S.x, 2.6, S.z + 9); com('start'); sfx('go'); if (SIM) { S.v = 0; S.gear = 'D'; gearUI(); pop('🚌 এক্সিলারেটর চেপে ধরে চালান'); } if (store.get('kh-racer-radio', false) && !radio) radioToggle();
 }
 document.querySelectorAll('[data-lv]').forEach(b => b.onclick = () => start(+b.dataset.lv));
+window.KHR = { get S() { return S; }, keys, get ready() { return ready; }, start, LANES, KMH }; /* পরীক্ষার জন্য */
 $('againBtn').onclick = () => start(lv);
 $('menuBtn').onclick = () => { $('endO').hidden = true; $('startO').hidden = false; resetWorld(lv); };
 $('shareBtn').onclick = () => { const t = `হাইওয়ে রাজায় ${bn(lastScore)} পয়েন্ট! 🚗💨 ঢাকা-চট্টগ্রাম মহাসড়কে কান ঘেঁষে চালাইতে পারবা? ${location.origin}/games/racer/`; try { navigator.clipboard.writeText(t).then(() => { $('shareBtn').textContent = 'কপি হয়েছে ✓'; setTimeout(() => $('shareBtn').textContent = 'কপি করে শেয়ার', 2000); }, () => {}); } catch (e) {} };
