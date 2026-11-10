@@ -4,6 +4,9 @@
 import { fb, getMatch, HttpErr } from './_store.js';
 
 export const aiOn = () => !!process.env.GEMINI_API_KEY;
+// একটা মডেল ব্যস্ত (৫০৩/৪২৯) বা নাম না মিললে (৪০৪) পরেরটা
+const MODELS = () => [process.env.LIVE_AI_MODEL, 'gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-2.5-flash'].filter(Boolean);
+const retry = st => st === 404 || st === 429 || st >= 500;
 const LIMIT = 10;
 
 const SYS = `তুমি "খেলাঘর AI", বাংলাদেশের একটা খেলার স্কোর সাইটের সহকারী।
@@ -54,8 +57,8 @@ export async function ask(req, now = Date.now()) {
   if (left < 0) throw new HttpErr(429, "আজকের ১০টা প্রশ্ন শেষ, কাল আবার করুন");
   let ctx = 'কোনো নির্দিষ্ট ম্যাচ নয়।';
   if (/^[a-z]_[A-Za-z0-9_-]{1,60}$/.test(id)) { try { const d = await getMatch(id, now); ctx = brief(d.m, d.det, d.votes, d.x); } catch (e) {} }
-  // মডেলের নাম Google মাঝে মাঝে বদলায়: আগে "সর্বশেষ Flash" নাম, না পেলে পরেরটা
-  const models = [process.env.LIVE_AI_MODEL, 'gemini-flash-latest', 'gemini-2.5-flash'].filter(Boolean);
+  // মডেলের নাম Google মাঝে মাঝে বদলায়, আর কখনো কখনো ব্যস্ত থাকে: না পেলে পরেরটা
+  const models = MODELS();
   const ac = new AbortController(); const tm = setTimeout(() => ac.abort(), 20000);
   try {
     let r;
@@ -69,7 +72,7 @@ export async function ask(req, now = Date.now()) {
           generationConfig: { temperature: 0.4, maxOutputTokens: 500 }
         })
       });
-      if (r.status !== 404) break;
+      if (!retry(r.status)) break;
     }
     const j = await r.json().catch(() => ({}));
     const text = (((j.candidates || [])[0] || {}).content || {}).parts?.map(p => p.text || '').join('').trim();
@@ -85,7 +88,7 @@ export async function ask(req, now = Date.now()) {
 export async function aiPing() {
   if (!aiOn()) return { ai: false };
   const out = [];
-  for (const model of [process.env.LIVE_AI_MODEL, 'gemini-flash-latest', 'gemini-2.5-flash'].filter(Boolean)) {
+  for (const model of MODELS()) {
     const ac = new AbortController(), t0 = Date.now(); const tm = setTimeout(() => ac.abort(), 8000);
     try {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
@@ -94,7 +97,7 @@ export async function aiPing() {
       });
       const j = await r.json().catch(() => ({}));
       out.push({ model, status: r.status, ok: r.ok, ms: Date.now() - t0, err: j.error ? String(j.error.message || '').slice(0, 160) : null });
-      if (r.status !== 404) break;
+      if (!retry(r.status)) break;
     } catch (e) { out.push({ model, ms: Date.now() - t0, err: e.name === 'AbortError' ? 'সময় পেরিয়ে গেছে (৮ সেকেন্ড)' : String(e.message || e).slice(0, 120) }); }
     finally { clearTimeout(tm); }
   }

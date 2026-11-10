@@ -75,8 +75,13 @@ export const isCountry = name => {
 };
 
 // সিরিজের নাম বাংলায়: "England Lions tour of West Indies, 2026" → "ইংল্যান্ড লায়ন্সের ওয়েস্ট ইন্ডিজ সফর, ২০২৬"
+const SER = { 'one day international': 'ওয়ানডে আন্তর্জাতিক', 'twenty20 international': 'টি-টোয়েন্টি আন্তর্জাতিক', 't20 international': 'টি-টোয়েন্টি আন্তর্জাতিক', 'test series': 'টেস্ট সিরিজ', 'test match': 'টেস্ট', 'odi series': 'ওয়ানডে সিরিজ', 't20i series': 'টি-টোয়েন্টি সিরিজ' };
 export function tourBn(t) {
-  const s = String(t || '');
+  const s0 = String(t || '');
+  // "One Day International · India tour of New Zealand": প্রতিটা অংশ আলাদা করে
+  if (s0.includes(' · ')) return s0.split(' · ').map(tourBn).join(' · ');
+  if (SER[s0.trim().toLowerCase()]) return SER[s0.trim().toLowerCase()];
+  const s = s0;
   const m = s.match(/^(.+?) tour of (.+?)(?:,?\s+(\d{4}(?:[-/]\d{2,4})?))?$/i);
   if (!m) return s;
   const a = team(m[1]).bn, b = team(m[2]).bn;

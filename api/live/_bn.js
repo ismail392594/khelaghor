@@ -45,6 +45,12 @@ export function cricStatusBn(s, nameBn = x => x) {
     const rest = cricStatusBn(t, nameBn);
     return rest ? `${pre} · ${rest}` : pre;
   }
+  // "Start delayed due to rain (India opt to bowl)": দুই অংশ আলাদা করে বাংলায়
+  if ((m = t.match(/^(.+?)\s*\((.+)\)\s*$/)) && !/won|need/i.test(m[1])) {
+    const a = cricStatusBn(m[1], nameBn), b = cricStatusBn(m[2], nameBn);
+    return b && b !== m[2] ? `${a} (${b})` : a;
+  }
+  if (/start delayed|delayed start/i.test(t)) return /rain/i.test(t) ? 'বৃষ্টির কারণে খেলা শুরু হতে দেরি' : /wet|outfield/i.test(t) ? 'ভেজা মাঠের কারণে খেলা শুরু হতে দেরি' : 'খেলা শুরু হতে দেরি';
   if ((m = t.match(/^(.+?) won by (\d+) (run|wkt|wicket)s?/i))) return `${nameBn(m[1])} ${bnNum(m[2])} ${/run/i.test(m[3]) ? 'রানে' : 'উইকেটে'} জিতেছে`;
   if ((m = t.match(/^(.+?) won (the super over|by super over)/i))) return `সুপার ওভারে ${nameBn(m[1])} জিতেছে`;
   if ((m = t.match(/^(.+?) won/i))) return `${nameBn(m[1])} জিতেছে`;
