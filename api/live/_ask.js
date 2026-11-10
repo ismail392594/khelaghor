@@ -80,3 +80,21 @@ export async function ask(req, now = Date.now()) {
     throw new HttpErr(502, 'AI এখন উত্তর দিতে পারছে না, একটু পরে চেষ্টা করুন');
   } finally { clearTimeout(tm); }
 }
+
+// সমস্যা খোঁজার জন্য: AI চলছে কিনা (?f=diag&q=ai) — key দেখায় না, ছোট একটা প্রশ্ন পাঠিয়ে উত্তর আসে কিনা দেখে
+export async function aiPing() {
+  if (!aiOn()) return { ai: false };
+  const out = [];
+  for (const model of [process.env.LIVE_AI_MODEL, 'gemini-flash-latest', 'gemini-2.5-flash'].filter(Boolean)) {
+    try {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+        method: 'POST', headers: { 'content-type': 'application/json', 'x-goog-api-key': process.env.GEMINI_API_KEY },
+        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: 'এক শব্দে বলুন: ঠিক আছে' }] }], generationConfig: { maxOutputTokens: 20 } })
+      });
+      const j = await r.json().catch(() => ({}));
+      out.push({ model, status: r.status, ok: r.ok, err: j.error ? String(j.error.message || '').slice(0, 160) : null });
+      if (r.status !== 404) break;
+    } catch (e) { out.push({ model, err: 'net' }); }
+  }
+  return { ai: true, tries: out };
+}

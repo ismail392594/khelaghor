@@ -24,7 +24,7 @@
 // POST /api/live?f=ask {id,q}      → (লগইন) খেলাঘর AI-কে ম্যাচ নিয়ে প্রশ্ন (GEMINI_API_KEY থাকলে; দিনে ১০টা)
 // POST /api/live?f=react {id,e,n}  → দর্শকের ইমোজি প্রতিক্রিয়া (fire, wow, clap, sad, love)
 import { shareHtml } from './_share.js';
-import { ask, aiOn } from './_ask.js';
+import { ask, aiOn, aiPing } from './_ask.js';
 import { matchPage, sitemapXml } from './_seo.js';
 import { group, gboard, ctable } from './_store.js';
 import { getFeed, getMatch, vote, combo, me, board, diag, table, react, push, HttpErr, POINTS, EXACT, COMBO } from './_store.js';
@@ -85,6 +85,7 @@ export default async function handler(req, res) {
       res.setHeader('content-type', 'text/html; charset=utf-8');
       return res.status(200).send(shareHtml(m, id, q.p === '1'));
     }
+    if (f === 'diag' && q.q === 'ai') { cache(res, 0); return res.status(200).json(await aiPing()); }
     if (f === 'diag') { cache(res, 0); return res.status(200).json(await diag(String(q.q || '').slice(0, 40))); }
     if (f === 'me') { cache(res, 0); return res.status(200).json(await me(req)); }
     throw new HttpErr(404, 'পাওয়া যায়নি');
