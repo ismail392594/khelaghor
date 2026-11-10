@@ -48,8 +48,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .caps{position:absolute;left:10px;right:10px;top:34px;z-index:3;font-size:1.2rem;letter-spacing:-2px;text-align:center;min-height:1.3em;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,.6)}.caps.bot{top:auto;bottom:6px}
 .stopB.sm{padding:9px 11px;font-size:.85rem}
 .stopB{border:0;border-radius:14px;padding:10px 14px;font:800 .95rem var(--display);color:#2a1a08;background:linear-gradient(180deg,#ffe08a,#f2b23a);box-shadow:0 4px 0 #9a6410;cursor:pointer}
-.over{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:16px;background:rgba(12,8,3,.74);backdrop-filter:blur(2px)}
-.card{width:100%;max-width:390px;background:linear-gradient(180deg,#3a2c44,#1e1726);border:1px solid var(--line);border-radius:24px;padding:20px 18px;display:flex;flex-direction:column;gap:12px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5);max-height:100%;overflow:auto}
+.over{position:absolute;inset:0;z-index:5;display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;align-items:center;padding:16px;background:rgba(12,8,3,.74);backdrop-filter:blur(2px)}
+.card{width:100%;min-width:0;box-sizing:border-box;max-width:390px;background:linear-gradient(180deg,#3a2c44,#1e1726);border:1px solid var(--line);border-radius:24px;padding:20px 18px;display:flex;flex-direction:column;gap:12px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5);max-height:100%;overflow:auto}
 .card h1{font-family:var(--display);font-size:2.4rem;margin:0;line-height:1.05;color:var(--accent)}
 .card h2{font-family:var(--display);font-size:1.8rem;margin:0;line-height:1.1}
 .card p{margin:0;color:var(--muted);font-size:.9rem}
@@ -418,4 +418,5 @@ window.KHChess = { get g() { return g; }, get over() { return over; }, get busy(
 <script src="/js/update.js"></script>
 <script src="/js/catalog.js"></script>
 <script src="/js/more-games.js"></script>
+<script src="/js/kh-fullscreen.js"></script>
 </body></html>

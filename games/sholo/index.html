@@ -45,8 +45,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .ctl{padding:8px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:linear-gradient(0deg,#2a1c0e,#120d07);display:flex;align-items:center;gap:10px;z-index:2;min-height:62px}
 .hint{flex:1;text-align:center;font-weight:700;font-size:.88rem;color:var(--muted)}
 .stopB{border:0;border-radius:14px;padding:10px 14px;font:800 .95rem var(--display);color:#2a1a08;background:linear-gradient(180deg,#ffe08a,#f2b23a);box-shadow:0 4px 0 #9a6410;cursor:pointer}
-.over{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:16px;background:rgba(12,8,3,.74);backdrop-filter:blur(2px)}
-.card{width:100%;max-width:390px;background:linear-gradient(180deg,#45301a,#26190c);border:1px solid var(--line);border-radius:24px;padding:20px 18px;display:flex;flex-direction:column;gap:12px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5);max-height:100%;overflow:auto}
+.over{position:absolute;inset:0;z-index:5;display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;align-items:center;padding:16px;background:rgba(12,8,3,.74);backdrop-filter:blur(2px)}
+.card{width:100%;min-width:0;box-sizing:border-box;max-width:390px;background:linear-gradient(180deg,#45301a,#26190c);border:1px solid var(--line);border-radius:24px;padding:20px 18px;display:flex;flex-direction:column;gap:12px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5);max-height:100%;overflow:auto}
 .card h1{font-family:var(--display);font-size:2.4rem;margin:0;line-height:1.05;color:var(--accent)}
 .card h2{font-family:var(--display);font-size:1.8rem;margin:0;line-height:1.1}
 .card p{margin:0;color:var(--muted);font-size:.9rem}
@@ -512,4 +512,5 @@ window.KHSholo = { get B() { return B; }, get turn() { return turn; }, get over(
 <script src="/js/update.js"></script>
 <script src="/js/catalog.js"></script>
 <script src="/js/more-games.js"></script>
+<script src="/js/kh-fullscreen.js"></script>
 </body></html>

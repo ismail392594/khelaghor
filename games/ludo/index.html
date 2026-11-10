@@ -164,7 +164,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--teal);outline-offse
 .leave.sure{border-color:#ff8a9a;color:#ff8a9a}
 
 /* result + gate */
-.over{position:fixed;inset:0;z-index:30;display:grid;place-items:center;background:rgba(10,6,40,.85);padding:20px}
+.over{position:fixed;inset:0;z-index:30;display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;align-items:center;background:rgba(10,6,40,.85);padding:20px}
 .rbox{background:linear-gradient(180deg,#fff,#efeaff);color:#1d1640;border-radius:24px;padding:22px 18px;max-width:360px;width:100%;display:flex;flex-direction:column;gap:12px;text-align:center;box-shadow:0 10px 0 rgba(0,0,0,.25);animation:pop .4s cubic-bezier(.2,1.6,.4,1)}
 @keyframes pop{from{transform:scale(.6);opacity:0}}
 .rbox h2{font-family:var(--display);font-size:2rem;margin:0;color:#5a1fa8;line-height:1.1}
@@ -704,4 +704,5 @@ function boot() {
 <script src="/js/update.js"></script>
 <script src="/js/catalog.js"></script>
 <script src="/js/more-games.js"></script>
+<script src="/js/kh-fullscreen.js"></script>
 </body></html>
