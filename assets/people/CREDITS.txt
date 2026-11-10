@@ -1,0 +1,11 @@
+বাংলাদেশি চেহারার মানুষ: সব মডেল Sketchfab থেকে, লাইসেন্স CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+খেলাঘর মডেলগুলো ছোট করেছে (পলিগন কমানো, টেক্সচার webp) আর মূল ফাইলের অ্যানিমেশন বাদ দিয়েছে। হাঁটা/দাঁড়ানোর নড়াচড়া Renderpeople-এর (CC-BY, /games/racer/assets/CREDITS.txt), খেলাঘরের কোড (js/kh-people.js) হাড়ে হাড়ে বসায়। টুল: tools/animal-asset.mjs
+
+bd_pj_blue.glb      "Indian-man-with-blue-clothes" — Himanshuvaid — https://sketchfab.com/3d-models/indian-man-with-blue-clothes-7cdbd4f668524e42982acb09cba57152
+bd_pj_red.glb       "indian-man-with-red-clothes" — Himanshuvaid — https://sketchfab.com/3d-models/indian-man-with-red-clothes-3f6bb2c1c9e743febfd970f795192504
+bd_oldman.glb       "Indian Old man walking" — anandmohan662 — https://sketchfab.com/3d-models/indian-old-man-walking-e70a140ad4334c2e8648ac78d61545b3
+bd_shalwar_sit.glb  "Man in Shalwar Kameez Sitting Idle" — Imran Aziz — https://sketchfab.com/3d-models/man-in-shalwar-kameez-sitting-idle-067d9f2848064011b61f6faf65982dda
+bd_saree.glb        "Woman" — dk8026854 — https://sketchfab.com/3d-models/woman-5ac7e1f0153646539e49c2cb49e08fa1
+bd_w_saree_red.glb  "Indian aunty red saree women 3 model fts a.i" — Sunny khude 3d model — https://sketchfab.com/3d-models/indian-aunty-red-saree-women-3-model-fts-ai-bd79b7975eec4b8e93b7d9c55f7a886c
+bd_w_saree_blue.glb "Indian poor aunty 3d model fts" — Sunny khude 3d model — https://sketchfab.com/3d-models/indian-poor-aunty-3d-model-fts-e2188cd9c28743aeb89bbf6c8b7dd21e
+bd_w_abaya.glb      "woman hijab" — P151292 — https://sketchfab.com/3d-models/woman-hijab-1dc6d6210ebf41548c6b0c8849f94ef7

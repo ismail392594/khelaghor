@@ -256,7 +256,7 @@ body .khViral small{font-size:.66rem!important}
         <div class="acts"><button class="gbtn ghost mini" id="setB2">⚙️ নিয়ন্ত্রণ আর সেটিংস</button><a class="gbtn ghost mini" href="/">🏠 খেলা থেকে বের হই</a></div>
         <p class="small" id="bestTxt"></p>
         <div class="lb" id="lb1"></div>
-        <p class="credit"><span id="vcred"></span> আমার গাড়ি: <a href="https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept" target="_blank" rel="noopener">Car Concept</a> (Khronos Group, মূল মডেল Unity Fan), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0</a>, খেলাঘর ছোট করেছে আর লোগো সরিয়েছে। স্টপেজের মানুষ: Renderpeople-এর 3D স্ক্যান (<a href="/games/racer/assets/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। আকাশ, গাছ, ব্যারিয়ার, বাজারের দেয়াল-টিন, পিচ আর ঘাসের টেক্সচার: <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a> (CC0)।</p>
+        <p class="credit"><span id="vcred"></span> আমার গাড়ি: <a href="https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept" target="_blank" rel="noopener">Car Concept</a> (Khronos Group, মূল মডেল Unity Fan), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0</a>, খেলাঘর ছোট করেছে আর লোগো সরিয়েছে। স্টপেজের মানুষ: Sketchfab-এর শিল্পী Himanshuvaid, anandmohan662, Imran Aziz, dk8026854, Sunny khude, P151292 (<a href="/assets/people/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>) আর Renderpeople-এর 3D স্ক্যান (<a href="/games/racer/assets/CREDITS.txt" target="_blank" rel="noopener">CC-BY 4.0</a>)। আকাশ, গাছ, ব্যারিয়ার, বাজারের দেয়াল-টিন, পিচ আর ঘাসের টেক্সচার: <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a> (CC0)।</p>
       </div>
     </div>
 
@@ -854,13 +854,11 @@ const WALKERS = []; let walkersLoading = false, lastWalkT = 0;
 async function loadWalkers() {
   if (walkersLoading || tier.id < 1 || !renderer) return; walkersLoading = true;
   try {
-    const L = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), ks = ['nathan', 'carla', 'claudia', 'eric', 'sophia'];
-    const gs = await Promise.all(ks.map(k => L.loadAsync(A + 'p_' + k + '.glb'))), walk = gs[0].animations[0], idle = gs[4].animations[0];
+    const { loadPeople } = await import('/js/kh-people.js'); const P = await loadPeople(THREE, GLTFLoader, MeshoptDecoder, cloneSkinned);
     for (let i = 0; i < 10; i++) {
-      const o = cloneSkinned(gs[i % 5].scene); o.scale.setScalar(.01); o.visible = false;
-      o.traverse(m => { if (m.isMesh) { m.castShadow = !LOW; m.frustumCulled = false; bendMat(m.material); } }); scene.add(o);
-      const mx = new THREE.AnimationMixer(o), w = mx.clipAction(walk), id = mx.clipAction(idle); w.play(); id.play(); w.time = Math.random() * 2; id.time = Math.random() * 3; w.weight = 0;
-      WALKERS.push({ o, mx, w, id, b: 0 });
+      const h = P.make(i, { scale: 1, shadow: !LOW }), o = h.root; o.visible = false;
+      o.traverse(m => { if (m.isMesh) bendMat(m.material); }); scene.add(o);
+      WALKERS.push({ o, h, b: 0 });
     }
   } catch (e) { console.warn('walkers', e); }
 }
@@ -872,7 +870,7 @@ function drawStopPeople() {
   WALKERS.forEach((W, i) => {
     const p = vis[i]; if (!use3d || !p) { W.o.visible = false; return; }
     W.o.visible = true; W.o.position.set(p.x, groundY(p.x) + (p.y || 0), stopG.position.z + p.z); W.o.rotation.y = p.look;
-    W.b += ((p.moving ? 1 : 0) - W.b) * Math.min(1, dt * 6); W.w.weight = W.b; W.id.weight = 1 - W.b; W.mx.update(dt);
+    W.h.update(dt, p.moving ? 1 : 0, 1);
   });
   vis.forEach((p, k) => { // ছবির মানুষ: ৩ডি না থাকলে সবাই, থাকলে ১০ জনের বেশি হলে বাকিরা
     if (use3d && k < WALKERS.length) return; const wx = p.x, wz = stopG.position.z + p.z, i = n++, h = PPL_H[Math.floor(p.cell / 3)];
