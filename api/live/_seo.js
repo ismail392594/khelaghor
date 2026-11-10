@@ -21,6 +21,39 @@ function score(m, s) {
 }
 const flag = t => (t.flag ? `<img src="https://flagcdn.com/w80/${esc(t.flag)}.png" alt="${esc(t.name)} পতাকা" width="48" height="32" loading="lazy">` : `<span class="mn">${esc(t.mono || '?')}</span>`);
 
+// খেলাঘরের নিজের লেখা ছোট বাংলা প্রতিবেদন (আগে: প্রিভিউ, চলার সময়: এখনকার অবস্থা, শেষে: ফলাফল)। সব তথ্য আমাদের ডাটা থেকে।
+const pc = v => bn(Math.round(v * 100)) + '%';
+const pois = (l, k) => { let p = Math.exp(-l); for (let i = 1; i <= k; i++) p *= l / i; return p; };
+export function story(m) {
+  const A = nm(m.a), B = nm(m.b), out = [];
+  const where = m.venue ? `${m.venue}${m.city && !String(m.venue).includes(m.city) ? ', ' + m.city : ''}` : '';
+  if (m.state === 'upcoming') {
+    out.push(`${m.tour ? m.tour + '-এর ' : ''}${m.label ? m.label + ' ' : ''}খেলায় মুখোমুখি হচ্ছে ${A} আর ${B}। খেলা শুরু ${dhaka(m.start)}${where ? `, মাঠ ${where}` : ''}।`);
+    const p = m.pred;
+    if (p && p.a != null) {
+      const fav = p.a >= p.b ? A : B, gap = Math.abs(p.a - p.b);
+      out.push(gap < 0.08 ? `খেলাঘরের হিসাবে দুই দল প্রায় সমান: ${A} ${pc(p.a)}, ${B} ${pc(p.b)}${p.d ? `, ড্র ${pc(p.d)}` : ''}।`
+        : `খেলাঘরের হিসাবে ${fav} এগিয়ে: ${A} জেতার সম্ভাবনা ${pc(p.a)}, ${B} ${pc(p.b)}${p.d ? `, ড্র ${pc(p.d)}` : ''}।`);
+      if (m.sport === 'football' && p.la != null) {
+        let best = [0, 0, 0];
+        for (let i = 0; i <= 5; i++) for (let j = 0; j <= 5; j++) { const q = pois(p.la, i) * pois(p.lb, j); if (q > best[2]) best = [i, j, q]; }
+        const btts = (1 - Math.exp(-p.la)) * (1 - Math.exp(-p.lb));
+        out.push(`আনুমানিক গোল: ${A} ${bn(p.la.toFixed(1))}, ${B} ${bn(p.lb.toFixed(1))}। সবচেয়ে সম্ভাব্য ফল ${bn(best[0])}-${bn(best[1])}, আর দুই দলই গোল করার সম্ভাবনা ${pc(btts)}।`);
+      }
+    }
+    out.push('খেলা শুরু হলে এই পাতায় আর খেলাঘরের লাইভ পাতায় বাংলায় স্কোর আসবে। খেলার আগে "কে জিতবে" অনুমান দিয়ে পয়েন্ট জেতা যায়।');
+  } else if (m.state === 'live') {
+    out.push(`${A} বনাম ${B} খেলা এখন চলছে${m.tour ? ` (${m.tour})` : ''}। ${m.sport === 'football' ? `স্কোর ${A} ${bn(m.a.g ?? 0)}, ${B} ${bn(m.b.g ?? 0)}${m.min ? `, খেলার ${bn(m.min)} মিনিট` : ''}।` : `${m.status || ''}।`}`);
+    out.push('প্রতিটা ঘটনা, জেতার সম্ভাবনা আর খেলার অ্যানিমেশন দেখতে লাইভ পাতা খুলুন।');
+  } else {
+    const sa = score(m, 'a'), sb = score(m, 'b');
+    out.push(`${m.tour ? m.tour + '-এর ' : ''}খেলায় ${A} ${sa || ''} আর ${B} ${sb || ''}। ${m.status || 'খেলা শেষ'}।`);
+    if (m.pen) out.push(`নির্ধারিত সময়ে খেলা ড্র থাকায় টাইব্রেকার হয়, সেখানে ফল ${bn(m.pen[0])}-${bn(m.pen[1])}।`);
+    if (where) out.push(`খেলা হয়েছে ${where}-এ, ${dhaka(m.start)}।`);
+  }
+  return out.join(' ');
+}
+
 export function matchPage(m, id) {
   const live = `/live/#m=${encodeURIComponent(id)}`;
   if (!m) {
@@ -74,6 +107,7 @@ nav{font-size:.8rem;color:#a9b0e0}nav a{color:#a9b0e0}h1{font-size:1.3rem;margin
 <div class="r">${flag(m.b)}<b>${esc(nm(m.b))}</b><i>${sb}</i></div>
 ${m.status ? `<p class="st">${esc(m.status)}</p>` : ''}
 <p class="mt">🕒 ${esc(dhaka(m.start))}${m.venue ? ` · 📍 ${esc(m.venue)}` : ''}${m.toss ? ` · ${esc(m.toss)}` : ''}</p></section>
+<section class="c" style="margin-top:14px"><h3 style="margin:0 0 6px;font-size:1rem">${m.state === 'upcoming' ? '📝 ম্যাচ প্রিভিউ' : m.state === 'live' ? '📝 এখনকার অবস্থা' : '📝 ম্যাচ রিপোর্ট'}</h3><p style="margin:0">${esc(story(m))}</p></section>
 <a class="go" href="${esc(live)}">${m.state === 'done' ? '📋 পুরো স্কোরকার্ড দেখুন' : '🔴 লাইভ স্কোর আর বল-বাই-বল দেখুন'} ›</a>
 ${m.state === 'upcoming' ? `<a class="go y" href="/live/predict/#m=${encodeURIComponent(id)}">🎯 কে জিতবে? অনুমান করে পয়েন্ট জিতুন ›</a>` : ''}
 <p class="mt">খেলাঘরে ${esc(vsBn)} (${esc(vsEn)}) ম্যাচের ${m.state === 'live' ? 'লাইভ স্কোর' : 'স্কোর'} বাংলায় দেখুন। প্রতি মিনিটে আপডেট, বল-বাই-বল ধারাভাষ্য, স্কোরকার্ড, জেতার সম্ভাবনা আর মাঠের আবহাওয়া।</p>
