@@ -285,7 +285,7 @@ function renderDetail(m, det, votes) {
   else st = `<div class="hst">${esc(m.status)}</div>`;
   const sub = [m.label, m.toss, m.venue].filter(Boolean).map(esc).join(' · ');
   $('pHero').innerHTML = `<div class="hsub" style="padding-top:12px">${m.sport === 'cricket' ? '🏏' : '⚽'} ${esc(m.tour)}${m.demo ? ' <span class="demo">নমুনা</span>' : ''}</div>
-<div class="vs">${team('a')}<div class="mid">${mid}</div>${team('b')}</div>${st}<div class="hsub">${sub}</div>${det && det.mom && m.state === 'done' ? `<div class="mom">🏅 ম্যান অব দ্য ম্যাচ: <b>${esc(det.mom)}</b></div>` : ''}`;
+<div class="vs">${team('a')}<div class="mid">${mid}</div>${team('b')}</div>${st}<div class="hsub">${sub}</div>${fresh(m)}${det && det.mom && m.state === 'done' ? `<div class="mom">🏅 ম্যান অব দ্য ম্যাচ: <b>${esc(det.mom)}</b></div>` : ''}`;
   renderInsight(m);
   if (PRED) { renderVote(m, votes); $('pTabs').innerHTML = ''; $('pBody').innerHTML = ''; return; }
   renderFun(m, S.det && S.det.id === m.id ? S.det.react : null);
@@ -298,6 +298,13 @@ function renderDetail(m, det, votes) {
   if (S.tab === 't') { tableHtml(m); return; }
   if (S.tab === 'l') { $('pBody').innerHTML = luHtml(det); return; }
   $('pBody').innerHTML = det === null && !S.det ? '<div class="skel" style="margin-top:12px"></div>' : (S.tab === 'c' ? commHtml(m, det) : (m.sport === 'cricket' ? cardTbl(det) : statsHtml(det)));
+}
+// স্কোর কতক্ষণ আগের: ৩ মিনিটের বেশি পুরনো হলে সৎভাবে জানিয়ে দিই
+function fresh(m) {
+  if (m.state !== 'live' || !m.upd) return '';
+  const mins = Math.floor((Date.now() - m.upd) / 60000);
+  if (mins < 3) return '';
+  return `<div class="stale">🕒 এই স্কোর ${bn(mins)} মিনিট আগের${m.id[0] === 'c' ? '। এই খেলার তথ্য ধীরে আসে, মাঠে এর মধ্যে আরও কিছু হয়ে থাকতে পারে' : ''}</div>`;
 }
 // খেলার হিসাব: জেতার সম্ভাবনা আর রান রেট
 function renderInsight(m) {
@@ -312,7 +319,7 @@ function renderInsight(m) {
   const cur = dd && dd.cur;
   if (!PRED && m.sport === 'cricket' && m.state === 'live' && cur && (cur.bat.length || cur.bowl.length)) {
     html += `<div class="wpt">🏏 এখন মাঠে</div><table class="onf"><tbody>${cur.bat.map(b => `<tr><td>${esc(b[0])}</td><td class="r">${bn(b[1])}<small> (${bn(b[2])} বল)</small></td><td><small>৪×${bn(b[3])} ৬×${bn(b[4])}</small></td></tr>`).join('')}${cur.bowl.map(b => `<tr class="bw"><td>⚾ ${esc(b[0])}</td><td class="r">${bn(b[3])}/${bn(b[2])}</td><td><small>${bn(b[1])} ওভার</small></td></tr>`).join('')}</tbody></table>
-<div class="onm">${cur.part != null ? `<span>🤝 জুটি <b>${bn(cur.part)}</b></span>` : ''}${cur.last ? `<span>☝️ শেষ উইকেট: ${esc(cur.last[0])} ${bn(cur.last[1])} (দলের রান ${bn(cur.last[2])})</span>` : ''}</div>`;
+<div class="onm">${cur.part != null ? `<span>🤝 জুটি <b>${bn(cur.part)}</b></span>` : ''}${cur.last ? `<span>☝️ শেষ উইকেট: ${esc(cur.last[0])} ${bn(cur.last[1])}${cur.last[2] != null ? ` (দলের রান ${bn(cur.last[2])})` : ''}</span>` : ''}</div>`;
   }
   if (p) html += `<div class="wpt">${m.state === 'upcoming' ? '📈 কে জিততে পারে (খেলাঘরের পূর্বাভাস)' : 'জেতার সম্ভাবনা'}</div>${p}`;
   if (m.state === 'upcoming' && m.pred) html += `<div class="why">💡 ${why(m)}</div>`;
