@@ -54,18 +54,23 @@ export async function ask(req, now = Date.now()) {
   if (left < 0) throw new HttpErr(429, "আজকের ১০টা প্রশ্ন শেষ, কাল আবার করুন");
   let ctx = 'কোনো নির্দিষ্ট ম্যাচ নয়।';
   if (/^[a-z]_[A-Za-z0-9_-]{1,60}$/.test(id)) { try { const d = await getMatch(id, now); ctx = brief(d.m, d.det, d.votes, d.x); } catch (e) {} }
-  const model = process.env.LIVE_AI_MODEL || 'gemini-2.5-flash';
+  // মডেলের নাম Google মাঝে মাঝে বদলায়: আগে "সর্বশেষ Flash" নাম, না পেলে পরেরটা
+  const models = [process.env.LIVE_AI_MODEL, 'gemini-flash-latest', 'gemini-2.5-flash'].filter(Boolean);
   const ac = new AbortController(); const tm = setTimeout(() => ac.abort(), 20000);
   try {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-      method: 'POST', signal: ac.signal,
-      headers: { 'content-type': 'application/json', 'x-goog-api-key': process.env.GEMINI_API_KEY },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYS }] },
-        contents: [{ role: 'user', parts: [{ text: `ম্যাচের তথ্য:\n${ctx}\n\nপ্রশ্ন: ${q}` }] }],
-        generationConfig: { temperature: 0.4, maxOutputTokens: 500 }
-      })
-    });
+    let r;
+    for (const model of models) {
+      r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+        method: 'POST', signal: ac.signal,
+        headers: { 'content-type': 'application/json', 'x-goog-api-key': process.env.GEMINI_API_KEY },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYS }] },
+          contents: [{ role: 'user', parts: [{ text: `ম্যাচের তথ্য:\n${ctx}\n\nপ্রশ্ন: ${q}` }] }],
+          generationConfig: { temperature: 0.4, maxOutputTokens: 500 }
+        })
+      });
+      if (r.status !== 404) break;
+    }
     const j = await r.json().catch(() => ({}));
     const text = (((j.candidates || [])[0] || {}).content || {}).parts?.map(p => p.text || '').join('').trim();
     if (!r.ok || !text) { console.error('ask', r.status, JSON.stringify(j).slice(0, 300)); throw new HttpErr(502, 'AI এখন উত্তর দিতে পারছে না, একটু পরে চেষ্টা করুন'); }
