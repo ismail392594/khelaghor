@@ -122,7 +122,11 @@ async function lock(db, now, ms = 25e3) {
     return m;
   }).catch(() => null);
 }
-const qOf = (r, now, old) => (r && r.rem != null ? { day: utcDay(now), rem: r.rem, lim: r.lim || (old && old.lim) || null } : old || null);
+const qOf = (r, now, old) => {
+  // দিনের সীমা শেষ বললে আজ প্রায় আর ডাকি না, কয়েক ঘণ্টা পরপর একবার দেখি (না হলে পুরনো গোনা দেখে বারবার ডেকে ব্যর্থ হয়)
+  if (r && !r.ok && /request limit|limit for the day/i.test(r.err || '')) return { day: utcDay(now), rem: 4, lim: (old && old.lim) || null };
+  return r && r.rem != null ? { day: utcDay(now), rem: r.rem, lim: r.lim || (old && old.lim) || null } : old || null;
+};
 
 async function refresh(F, doc, due, now) {
   const { db, FV } = F;
@@ -264,7 +268,9 @@ function compose(doc, now) {
   }
   const atOf = id => id[0] === 'c' ? (c.at || 0) : id[0] === 's' ? (sm.at || 0) : (f.at || 0);
   for (const [id, m] of Object.entries(doc.fresh || {})) {
-    if ((m._at || 0) > atOf(id) && map.has(id)) map.set(id, m);
+    // ম্যাচ খুলে আনা ফল নতুন হলে সেটা; আর একবার "শেষ" জানা গেলে পুরনো "চলছে" তালিকা দিয়ে আর ফেরানো হয় না
+    const L = map.get(id);
+    if (L && ((m._at || 0) > atOf(id) || (m.state === 'done' && L.state !== 'done'))) map.set(id, m);
   }
   // স্কোরটা কখন আনা (দর্শককে জানাতে, পুরনো হলে পাতায় লেখা ওঠে) আর সিরিজের নাম বাংলায়
   for (const [id, m] of map) {
@@ -285,7 +291,8 @@ function compose(doc, now) {
     if (p || oul) map.set(id, { ...m, ...(p ? { pred: p } : {}), ...(oul ? { oul } : {}) });
   }
   return [...map.values()].filter(m =>
-    m.state === 'live' ||
+    // ফুটবলের "চলছে" তথ্য ৩ ঘণ্টার বেশি পুরনো হলে (API-র দিনের সীমা শেষ) দেখাই না, ভুল দেখানোর চেয়ে না দেখানো ভালো
+    (m.state === 'live' && !(m.sport === 'football' && m.upd && now - m.upd > 3 * HOUR)) ||
     (m.state === 'upcoming' && m.start > now - 12 * HOUR && m.start < now + 8 * DAY) ||
     (m.state === 'done' && m.start > now - 36 * HOUR));
 }
@@ -350,7 +357,7 @@ export async function getMatch(id, now = Date.now()) {
     }
   }
   // ফিড আর বিস্তারিত: যেটা নতুন সেটাই দেখাই
-  let sum = md && md.sum && (md.at || 0) >= (feed.at - 2 * MIN) ? md.sum : S;
+  let sum = md && md.sum && (md.final || (md.at || 0) >= (feed.at - 2 * MIN) || (md.at || 0) > (S.upd || 0) + MIN) ? md.sum : S;
   if (sum !== S && sum.state === 'live') sum = { ...sum, upd: Math.max(md.at || 0, S.upd || 0), tour: S.tour };
   const m = extra && extra.pr && sum.state !== 'done' ? { ...sum, pred: extra.pr } : (sum.pred || S.pred ? { ...sum, pred: sum.pred || S.pred } : sum);
   return { m, det: (md && md.det) || null, votes: await votesOf(F, id), react: await reactsOf(F, id), x: extra ? extra.x : null };

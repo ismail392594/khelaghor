@@ -84,7 +84,7 @@ function fbIdle() {
 function fbUpdate() {
   const { m, det } = cur;
   const box = cur.el.closest('.box');
-  const gl = (det && det.gl) || [];
+  const gl = ((det && det.gl) || []).filter(x => !(m.pen && x.k === 'P' && /^120\+/.test(String(x.m))));
   // মিনিটের দাগ: উপরে প্রথম দল, নিচে দ্বিতীয় দল
   const mins = gl.map(e => toNum(String(e.m).split('+')[0]) + (String(e.m).includes('+') ? toNum(String(e.m).split('+')[1]) : 0));
   const end = Math.max(90, m.min || 0, ...mins) > 95 ? 120 : 90;
@@ -135,7 +135,7 @@ async function fbEvent(me, e) {
 async function fbReplay() {
   const me = cur;
   if (!me || me.busy) return;
-  const gl = (me.det && me.det.gl) || [];
+  const gl = ((me.det && me.det.gl) || []).filter(x => !(me.m.pen && x.k === 'P' && /^120\+/.test(String(x.m))));
   if (!gl.length) return;
   banner(me, '▶ সারাংশ: শুরু', '');
   await sleep(1000);

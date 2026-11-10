@@ -275,7 +275,8 @@ function renderDetail(m, det, votes) {
   let mid;
   if (m.sport === 'football' && m.state !== 'upcoming') mid = `<div class="g">${bn(m.a.g ?? 0)} - ${bn(m.b.g ?? 0)}</div>${m.pen ? `<div class="v">টাইব্রেকার ${bn(m.pen[0])}-${bn(m.pen[1])}</div>` : ''}`;
   else mid = '<div class="v">বনাম</div>';
-  const gl = (det && det.gl) || [];
+  // পুরনো জমা তথ্যে টাইব্রেকারের শট গোলের তালিকায় থাকতে পারে: টাইব্রেকার হলে ১২০ মিনিটের পরের পেনাল্টি বাদ
+  const gl = ((det && det.gl) || []).filter(x => !(m.pen && x.k === 'P' && /^120\+/.test(String(x.m))));
   const goals = s => { const g = gl.filter(x => x.s === s); return g.length ? `<div class="gls">${g.map(x => `<span>${x.k === 'R' ? '🟥' : '⚽'} ${esc(x.n)} ${bn(x.m)}'${x.k === 'P' ? ' (পে.)' : x.k === 'OG' ? ' (আত্মঘাতী)' : ''}</span>`).join('')}</div>` : ''; };
   const team = s => `<div class="t big">${badge(m[s], true)}<b>${esc(tname(m[s]))}${bs === s ? ' 🏏' : ''}</b>${heroScore(m, s)}${goals(s)}<button type="button" class="fav" data-fav="${esc(m[s].name)}" aria-pressed="${S.fav.has(m[s].name)}">${S.fav.has(m[s].name) ? '★ প্রিয়' : '☆ প্রিয়'}</button></div>`;
   let st;
