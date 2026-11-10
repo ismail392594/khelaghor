@@ -362,8 +362,14 @@ function renderInsight(m) {
   if (co) html += crOutlookHtml(m, co);
   html += `<div id="wx"></div>`;
   if (!p && !chips.length && !x && !m.city && !ol && !co) { box.hidden = true; return; }
+  if (S.feed && S.feed.ai && !m.demo) html += aiBox(m);
   box.hidden = false;
+  // নতুন ডাটা এলে বাক্স আবার আঁকা হয়: AI প্রশ্নে যা লেখা হচ্ছিল তা হারাতে দিই না
+  const inp = box.querySelector('[data-aiform] input'), typed = inp ? inp.value : '', foc = inp && document.activeElement === inp;
   box.innerHTML = `<h3>📊 খেলার হিসাব<span>আনুমানিক</span></h3>${html}`;
+  const inp2 = box.querySelector('[data-aiform] input');
+  if (inp2 && typed && !(S.ai && S.ai.busy)) inp2.value = typed;
+  if (inp2 && foc) inp2.focus();
   weather(m);
 }
 // ফুটবল: কখন কী হতে পারে
@@ -386,6 +392,32 @@ function outlookHtml(m, o) {
   if (o.n != null && o.n < 3) h += `<div class="olw">⚠️ এই দলগুলোর খেলার তথ্য এখনো কম, তাই হিসাব দুর্বল। খেলাঘর প্রতিদিনের ফল থেকে শিখছে।</div>`;
   return h + '</div>';
 }
+// খেলাঘর AI: ম্যাচ নিয়ে প্রশ্ন (উত্তর আসে ম্যাচের তথ্য থেকে)
+function aiBox(m) {
+  const sug = m.state === 'upcoming' ? ['কে জিততে পারে, কেন?', m.sport === 'football' ? 'কত গোল হতে পারে?' : 'কত রান হতে পারে?', 'দুই দলের ফর্ম কেমন?']
+    : m.state === 'live' ? ['এখন কে এগিয়ে, কেন?', 'খেলা কোন দিকে যাচ্ছে?', 'এখন পর্যন্ত সেরা কে?'] : ['খেলাটা কীভাবে শেষ হলো?', 'কে সেরা খেললো?', 'মূল মুহূর্ত কী ছিল?'];
+  const last = S.ai && S.ai.id === m.id ? S.ai : null;
+  return `<div class="aib"><div class="sub2">🤖 খেলাঘর AI-কে জিজ্ঞেস করুন</div>
+<div class="aisg">${sug.map(q => `<button type="button" data-aiq="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+<form class="aif" data-aiform><input name="q" maxlength="300" placeholder="এই খেলা নিয়ে যেকোনো প্রশ্ন…" autocomplete="off"><button type="submit">➤</button></form>
+<div class="aia" id="aiAns">${last ? `<p class="aiq">❓ ${esc(last.q)}</p>${last.busy ? '<p class="ait">ভাবছে…</p>' : `<p class="ait">${esc(last.a).replace(/\n/g, '<br>')}</p>${last.left != null ? `<small>আজ আরও ${bn(last.left)}টা প্রশ্ন করা যাবে</small>` : ''}`}` : '<small>উত্তর আসে এই খেলার তথ্য থেকে। আন্দাজ ভুলও হতে পারে।</small>'}</div></div>`;
+}
+async function askAi(q) {
+  const m = S.open && S.feed && (S.feed.matches.find(x => x.id === S.open) || (S.det && S.det.m));
+  if (!m || !q) return;
+  if (!S.user && !(await login())) return;
+  S.ai = { id: m.id, q, busy: true }; renderInsight(m);
+  try {
+    const t = await token();
+    const r = await fetch(API + '?f=ask', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + t }, body: JSON.stringify({ id: m.id, q }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || 'উত্তর আসেনি');
+    S.ai = { id: m.id, q, a: j.a, left: j.left };
+  } catch (e) { S.ai = { id: m.id, q, a: '⚠️ ' + e.message }; }
+  renderInsight(m);
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-aiq]'); if (b) askAi(b.dataset.aiq); });
+document.addEventListener('submit', e => { const f = e.target.closest('[data-aiform]'); if (!f) return; e.preventDefault(); askAi(String(new FormData(f).get('q') || '').trim()); });
 // ক্রিকেট: কখন কী হতে পারে
 function crOutlookHtml(m, o) {
   const pc = v => bn(Math.round(v * 100)) + '%';

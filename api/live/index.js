@@ -6,6 +6,7 @@
 //   FOOTBALL_API_KEY         : dashboard.api-football.com থেকে পাওয়া key (না থাকলে ফুটবলে নমুনা ডাটা)
 //   FIREBASE_SERVICE_ACCOUNT : আগে থেকেই আছে
 //   LIVE_FB_LEAGUES          : (ইচ্ছা হলে) কোন ফুটবল প্রতিযোগিতা দেখাবে, যেমন "1,2,39"
+//   GEMINI_API_KEY           : (ইচ্ছা হলে) খেলাঘর AI চালু করতে, aistudio.google.com থেকে
 //
 // GET  /api/live?f=feed            → সব ম্যাচ (CDN-এ ১৫ সেকেন্ড জমা থাকে)
 // GET  /api/live?f=match&id=c_xxx  → এক ম্যাচের বিস্তারিত + ভোটের গোনা
@@ -20,8 +21,10 @@
 // POST /api/live?f=combo {legs:[{id,mk,pick}]} → কম্বো (২-৬টা ম্যাচ, সব মিললে বোনাস)
 // POST /api/live?f=group {act:'create'|'join'|'leave', name|code} → বন্ধুদের গ্রুপ;  GET ?f=gboard&code=&p= → গ্রুপের লিডারবোর্ড
 // POST /api/live?f=push {token,teams} → প্রিয় দলের খবর ফোনে পেতে নাম লেখানো (teams খালি = বন্ধ)
+// POST /api/live?f=ask {id,q}      → (লগইন) খেলাঘর AI-কে ম্যাচ নিয়ে প্রশ্ন (GEMINI_API_KEY থাকলে; দিনে ১০টা)
 // POST /api/live?f=react {id,e,n}  → দর্শকের ইমোজি প্রতিক্রিয়া (fire, wow, clap, sad, love)
 import { shareHtml } from './_share.js';
+import { ask, aiOn } from './_ask.js';
 import { matchPage, sitemapXml } from './_seo.js';
 import { group, gboard, ctable } from './_store.js';
 import { getFeed, getMatch, vote, combo, me, board, diag, table, react, push, HttpErr, POINTS, EXACT, COMBO } from './_store.js';
@@ -39,13 +42,14 @@ export default async function handler(req, res) {
       if (f === 'group') return res.status(200).json(await group(req));
       if (f === 'react') return res.status(200).json(await react(req));
       if (f === 'push') return res.status(200).json(await push(req));
+      if (f === 'ask') return res.status(200).json(await ask(req));
       throw new HttpErr(405, 'ভুল অনুরোধ');
     }
     if (req.method !== 'GET') throw new HttpErr(405, 'ভুল অনুরোধ');
     if (f === 'feed') {
       const d = await getFeed();
       cache(res, 15, 45);
-      return res.status(200).json({ ...d, points: POINTS, exact: EXACT, combo: COMBO });
+      return res.status(200).json({ ...d, points: POINTS, exact: EXACT, combo: COMBO, ai: aiOn() });
     }
     if (f === 'match') {
       const d = await getMatch(String(q.id || ''));
