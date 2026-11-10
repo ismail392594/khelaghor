@@ -95,14 +95,15 @@ function plan(doc, H, now) {
   const fAll = [...(f.day || []), ...(f.live || [])];
   const fLive = fAll.some(m => m.state === 'live' || (m.state === 'upcoming' && m.start <= now + MIN && m.start > now - 3 * HOUR));
   const stale = doc.v !== CACHE_V;
+  const fOn = !(doc.fq && doc.fq.off > now);
   const d = {
     // ফ্রি প্ল্যানে সাশ্রয়: খেলা চললে বাকি ডাটার বেশিরভাগ (৬০%) তালিকায়; কিছু না চললে ঘণ্টায় একবার
     cList: H.c && stale || H.c && now - (c.at || 0) > (cLive ? every(cRem, now, MIN, 0.6) : Math.max(60 * MIN, every(cRem, now, 60 * MIN, 0.1))),
     // আসন্ন খেলা মূল তালিকাতেই (cricScore) আসে, তাই আলাদা তালিকা দিনে একবার যথেষ্ট
     cUp: H.c && now - (c.upAt || 0) > 24 * HOUR,
     // ফ্রি প্ল্যানে বাকি ডাকের ৮৫% চলমান খেলায় (এক ডাকেই পৃথিবীর সব চলমান খেলা আসে)
-    fLive: H.f && fLive && now - (f.at || 0) > every(fRem, now, 2 * MIN, 0.85),
-    fDay: H.f && stale || H.f && (now - (f.dayAt || 0) > Math.max(4 * HOUR, every(fRem, now, 4 * HOUR, 0.06)) || f.dayKey !== dhakaDay(now))
+    fLive: H.f && fOn && fLive && now - (f.at || 0) > every(fRem, now, 2 * MIN, 0.85),
+    fDay: H.f && stale || H.f && fOn && (now - (f.dayAt || 0) > Math.max(4 * HOUR, every(fRem, now, 4 * HOUR, 0.06)) || f.dayKey !== dhakaDay(now))
   };
   // Sportmonks: ঘণ্টায় ২,০০০ বার ডাকা যায়, তাই খেলা চললে প্রায় প্রতি মিনিটে
   const s = doc.s || {};
@@ -127,8 +128,8 @@ async function lock(db, now, ms = 25e3) {
   }).catch(() => null);
 }
 const qOf = (r, now, old) => {
-  // দিনের সীমা শেষ বললে আজ প্রায় আর ডাকি না, কয়েক ঘণ্টা পরপর একবার দেখি (না হলে পুরনো গোনা দেখে বারবার ডেকে ব্যর্থ হয়)
-  if (r && !r.ok && /request limit|limit for the day/i.test(r.err || '')) return { day: utcDay(now), rem: 4, lim: (old && old.lim) || null };
+  // "সীমা শেষ" বললে ৩০ মিনিট বিরতি (এই ভুল মাঝে মাঝে এসে আবার ঠিক হয়ে যায়, তাই পুরো দিন বন্ধ রাখি না)
+  if (r && !r.ok && /request limit|limit for the day/i.test(r.err || '')) return { ...(old || { day: utcDay(now), rem: 50, lim: null }), off: now + 30 * MIN };
   return r && r.rem != null ? { day: utcDay(now), rem: r.rem, lim: r.lim || (old && old.lim) || null } : old || null;
 };
 
@@ -188,6 +189,7 @@ async function refresh(F, doc, due, now) {
     if (due.fLive) jobs.push(fbCall('fixtures', { live: lg ? lg.join('-') : 'all' }).then(async r => {
       fq = qOf(r, now, fq);
       if (!r.ok) { f.err = r.err; return; }
+      f.err = null;
       f.live = r.data.map(fbSummary).sort((x, y) => (y.rk || 0) - (x.rk || 0)).slice(0, 200); f.at = now; f.liveOk = now;
     }));
     if (due.sLive) jobs.push(smCall('livescores', { include: LIST_INC }).then(r => {
