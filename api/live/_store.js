@@ -771,7 +771,8 @@ export async function diag(q = '', now = Date.now()) {
       sample: (c.list || []).filter(m => !q || (m.a.name + ' ' + m.b.name + ' ' + m.tour).toLowerCase().includes(String(q).toLowerCase())).slice(0, 20)
         .map(m => `${m.state} (${m.ms || '-'}) | ${m.a.name} v ${m.b.name} | ${m.tour} | ${new Date(m.start).toISOString().slice(0, 16)} | ${m.raw || ''}`) },
     sportmonks: { on: hasSm(), err: (d.s || {}).err || null, at: (d.s || {}).at ? new Date(d.s.at).toISOString() : null, live: cnt((d.s || {}).live), fx: cnt((d.s || {}).fx) },
-    football: { err: f.err || null, at: f.at ? new Date(f.at).toISOString() : null, day: cnt(f.day), live: cnt(f.live), left: d.fq }
+    football: { err: f.err || null, at: f.at ? new Date(f.at).toISOString() : null, day: cnt(f.day), live: cnt(f.live), left: d.fq, eloAt: f.eloAt ? new Date(f.eloAt).toISOString() : null, tid: (f.day || []).filter(m => m.a && m.a.tid).length },
+    elo: await F.db.doc('liveElo/fb').get().then(x => { const E = x.data() || {}; const r = Object.values(E.r || {}); return { teams: r.length, n3: r.filter(v => v[1] >= 3).length, seen: Object.keys(E.seen || {}).length, bf: E.bf || [], acc: E.acc || {} }; }).catch(e => ({ err: String(e.message).slice(0, 100) }))
   };
 }
 
