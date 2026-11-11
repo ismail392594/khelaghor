@@ -55,6 +55,17 @@ export function smSummary(x) {
   else if (/^int/i.test(status)) st = 'খেলা থেমে আছে';
   else st = cricStatusBn(status, bnOf) || status;
   const fmt = FMT(x.type);
+  // সীমিত ওভারের চলমান খেলায় পরিস্থিতিটা মানুষের ভাষায়: কে ব্যাট করছে, জিততে কত দরকার
+  if (state === 'live' && ['t20', 't10', 'odi'].includes(fmt) && inns.length && !/বৃষ্টি|দেরি|বন্ধ|বিরতি|জিতেছে|টাই|ড্র/.test(st || '')) {
+    const cur = inns[inns.length - 1], T = cur.side === 'a' ? a : b, tn = T.bn || T.name;
+    const tgt = /^target (\d+)/i.exec(x.note || status);
+    if (tgt && inns.length === 1) { const O = cur.side === 'a' ? b : a; st = `ইনিংস বিরতি · ${gen(O.bn || O.name)} লক্ষ্য ${bnNum(tgt[1])} রান`; }
+    else if (inns.length === 1) st = `${tn} ব্যাট করছে`;
+    else if (inns.length === 2) {
+      const need = inns[0].r + 1 - cur.r;
+      if (need > 0 && cur.w < 10) st = `${gen(tn)} জিততে আর ${bnNum(need)} রান দরকার, হাতে ${bnNum(10 - cur.w)} উইকেট`;
+    }
+  }
   const out = {
     id: 's_' + x.id, sport: 'cricket', src: 'sm', state, start: Date.parse(x.starting_at) || 0,
     tour: (x.league && x.league.name ? x.league.name : '') + (x.stage && x.stage.name && x.league && x.stage.name !== x.league.name ? ' · ' + x.stage.name : ''),
