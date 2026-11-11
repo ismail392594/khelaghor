@@ -28,7 +28,7 @@ export function shareHtml(m, id, pred = false) {
 <meta property="og:url" content="${esc(url)}"><meta property="og:image" content="https://khelaghorbd.online/icons/og.jpg">
 <meta name="twitter:card" content="summary_large_image"><meta name="robots" content="noindex">
 <meta http-equiv="refresh" content="0;url=${esc(url)}"><link rel="canonical" href="${esc(url)}">
-</head><body style="background:#0d1238;color:#fff;font-family:sans-serif;text-align:center;padding:40px">
-<p>${esc(title)}</p><p><a style="color:#ffc727" href="${esc(url)}">ম্যাচ দেখুন ›</a></p>
+</head><body style="background:#06180f;color:#eef2e4;font-family:sans-serif;text-align:center;padding:40px">
+<p>${esc(title)}</p><p><a style="color:#e8b649" href="${esc(url)}">ম্যাচ দেখুন ›</a></p>
 <script>location.replace(${JSON.stringify(url)})</script></body></html>`;
 }

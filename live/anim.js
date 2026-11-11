@@ -216,7 +216,7 @@ async function playCr(list) {
 }
 async function crBall(me, c) {
   const box = me.el.closest('.box');
-  const lbl = { '4': '🏏 চার!', '6': '🚀 ছক্কা!', W: '☝️ আউট!', '0': 'ডট বল', x: 'অতিরিক্ত' }[c.k] || `${bn(runsOf(c))} রান`;
+  const lbl = { '4': 'চার!', '6': 'ছক্কা!', W: 'আউট!', '0': 'রান হয়নি', x: 'বাড়তি রান' }[c.k] || `${bn(runsOf(c))} রান`;
   const txt = `${bn(c.o)} · ${lbl}`;
   if (calm()) { banner(me, txt, c.k === 'W' ? 'red' : c.k === '6' || c.k === '4' ? 'goal' : ''); await sleep(1600); return; }
   crReset(me); await sleep(250);

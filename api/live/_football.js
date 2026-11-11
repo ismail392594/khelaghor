@@ -65,18 +65,33 @@ export function fbSummary(f) {
   return out;
 }
 
-function roundBn(r) {
-  const t = String(r || '');
+export function roundBn(r) {
+  const t = String(r || '').trim();
   let m;
-  if ((m = t.match(/Regular Season - (\d+)/i))) return `ম্যাচডে ${bnNum(m[1])}`;
-  if ((m = t.match(/Group ([A-Z])\s*-\s*(\d+)/i))) return `গ্রুপ ${m[1]} · ম্যাচ ${bnNum(m[2])}`;
+  const nth = n => bnNum(n) + (n == 1 ? 'ম' : n == 2 ? 'য়' : n == 3 ? 'য়' : n == 4 ? 'র্থ' : n == 5 || n == 7 || n == 8 || n == 9 || n == 10 ? 'ম' : n == 6 ? 'ষ্ঠ' : 'তম');
+  if ((m = t.match(/^Regular Season - (\d+)$/i))) return `ম্যাচডে ${bnNum(m[1])}`;
+  if (/^Regular Season$/i.test(t)) return 'লিগ পর্ব';
+  if ((m = t.match(/^(Apertura|Clausura)(?: - (Quadrangular|Play-?offs|Final|Semi-?finals|Quarter-?finals))?(?: - (\d+))?$/i))) {
+    const ph = { quadrangular: 'চার দলের পর্ব', playoffs: 'প্লে-অফ', final: 'ফাইনাল', semifinals: 'সেমিফাইনাল', quarterfinals: 'কোয়ার্টার ফাইনাল' }[(m[2] || '').toLowerCase().replace('-', '')];
+    return [/^a/i.test(m[1]) ? 'আপের্তুরা' : 'ক্লাউসুরা', ph, m[3] ? `ম্যাচ ${bnNum(m[3])}` : ''].filter(Boolean).join(' · ');
+  }
   if ((m = t.match(/Group Stage\s*-\s*(\d+)/i))) return `গ্রুপ পর্ব · ম্যাচ ${bnNum(m[1])}`;
+  if (/^Group Stage$/i.test(t)) return 'গ্রুপ পর্ব';
   if ((m = t.match(/League Stage\s*-\s*(\d+)/i))) return `লিগ পর্ব · ম্যাচ ${bnNum(m[1])}`;
-  if (/round of 16|8th finals/i.test(t)) return 'শেষ ষোলো';
+  if ((m = t.match(/Group (North|South|East|West)\s*-\s*(\d+)$/i))) return `${{ north: 'উত্তর', south: 'দক্ষিণ', east: 'পূর্ব', west: 'পশ্চিম' }[m[1].toLowerCase()]} গ্রুপ · ম্যাচ ${bnNum(m[2])}`;
+  if ((m = t.match(/Group ([A-Z]|\d+)\s*-\s*(\d+)$/i))) return `গ্রুপ ${bnNum(m[1])} · ম্যাচ ${bnNum(m[2])}`;
+  if ((m = t.match(/^League ([A-D])\s*-\s*(\d+)$/i))) return `লিগ ${{ A: 'এ', B: 'বি', C: 'সি', D: 'ডি' }[m[1].toUpperCase()]} · ম্যাচ ${bnNum(m[2])}`;
+  if ((m = t.match(/^(\d+)(?:st|nd|rd|th) (Phase|Round)(?:\s*-\s*(\d+))?$/i))) return `${nth(+m[1])} ${/phase/i.test(m[2]) ? 'পর্ব' : 'রাউন্ড'}${m[3] ? ` · ম্যাচ ${bnNum(m[3])}` : ''}`;
+  if ((m = t.match(/^Round of (\d+)$/i))) return m[1] === '16' ? 'শেষ ষোলো' : `শেষ ${bnNum(m[1])}`;
+  if (/8th finals/i.test(t)) return 'শেষ ষোলো';
+  if (/^Friendly International( Women)?$/i.test(t) || /^Club Friendlies/i.test(t) || /^Friendlies/i.test(t)) return '';
+  if (/preliminary round/i.test(t)) return 'প্রাথমিক রাউন্ড';
+  if (/play-?offs?/i.test(t)) return 'প্লে-অফ';
   if (/quarter/i.test(t)) return 'কোয়ার্টার ফাইনাল';
   if (/semi/i.test(t)) return 'সেমিফাইনাল';
   if (/3rd place/i.test(t)) return 'তৃতীয় স্থান';
-  if (/^final$/i.test(t)) return 'ফাইনাল';
+  if (/^finals?$/i.test(t)) return 'ফাইনাল';
+  if ((m = t.match(/^(.{1,22}?)\s*-\s*(\d+)$/))) return `ম্যাচ ${bnNum(m[2])}`;
   return t.length < 30 ? t : '';
 }
 

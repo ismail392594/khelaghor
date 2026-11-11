@@ -78,6 +78,30 @@ const list = v => (Array.isArray(v) ? v : (v && v.data) || []);
 export function smDetail(x, sum) {
   const runs = list(x.runs);
   const teamOfBoard = sb => { const n = +String(sb || '').replace(/\D/g, '') || 1; const r = runs.find(q => +q.inning === n); return r ? (r.team_id === x.localteam_id ? sum.a : sum.b) : null; };
+  // খেলোয়াড়ের নম্বর → নাম (এই ম্যাচে যাঁরা ব্যাট বা বল করেছেন), আউটের বিবরণে বোলার আর ফিল্ডারের নাম বসাতে
+  const P = new Map();
+  for (const b of list(x.batting)) if (b.player_id && b.batsman) P.set(b.player_id, pname(b.batsman));
+  for (const b of list(x.bowling)) if (b.player_id && b.bowler) P.set(b.player_id, pname(b.bowler));
+  for (const b of list(x.balls)) { if (b.batsman_id && b.batsman) P.set(b.batsman_id, pname(b.batsman)); if (b.bowler_id && b.bowler) P.set(b.bowler_id, pname(b.bowler)); }
+  // আউটের ধরন বাংলায়, পত্রিকার স্কোরকার্ডের মতো: "ক্যাচ কোয়েটজি, বল ফরচুইন"
+  const outBn = b => {
+    const r = String((b.result && b.result.name) || '').toLowerCase();
+    const bw = P.get(b.bowling_player_id), f = P.get(b.catch_stump_player_id), ro = P.get(b.runout_by_id);
+    if (!r) return b.active ? 'ব্যাট করছেন' : 'অপরাজিত';
+    if (/not out/.test(r)) return b.active ? 'ব্যাট করছেন' : 'অপরাজিত';
+    if (/catch|caught/.test(r)) return f && bw && f === bw ? `কট অ্যান্ড বোল্ড ${bw}` : `ক্যাচ${f ? ' ' + f : ''}${bw ? ', বল ' + bw : ''}`;
+    if (/bowled/.test(r)) return `বোল্ড${bw ? ' ' + bw : ''}`;
+    if (/lbw/.test(r)) return `এলবিডব্লিউ${bw ? ' ' + bw : ''}`;
+    if (/stump/.test(r)) return `স্টাম্পড${f ? ' ' + f : ''}${bw ? ', বল ' + bw : ''}`;
+    if (/run ?out/.test(r)) return `রান আউট${ro || f ? ` (${ro || f})` : ''}`;
+    if (/hit ?wicket/.test(r)) return `হিট উইকেট${bw ? ', বল ' + bw : ''}`;
+    if (/retired/.test(r)) return /hurt/.test(r) ? 'আহত হয়ে মাঠ ছেড়েছেন' : 'অবসর';
+    if (/absent/.test(r)) return 'অনুপস্থিত';
+    if (/obstruct|handled|timed/.test(r)) return 'আউট';
+    return b.result.name;
+  };
+  const outOf = new Map(); // ব্যাটারের নম্বর → আউটের বিবরণ (ধারাভাষ্যে লাগে)
+  for (const b of list(x.batting)) if (b.player_id && b.result && !/not out/i.test(b.result.name || '')) outOf.set(b.scoreboard + ':' + b.player_id, outBn(b));
   const boards = [...new Set([...list(x.batting).map(b => b.scoreboard), ...list(x.bowling).map(b => b.scoreboard)])].filter(Boolean).sort();
   const card = boards.map(sb => {
     const T = teamOfBoard(sb);
@@ -87,33 +111,56 @@ export function smDetail(x, sum) {
       t: (T ? T.bn || T.name : '') + ` · ${ord(Math.ceil(n / 2) || 1)} ইনিংস`,
       tot: r ? { r: +r.score || 0, w: +r.wickets || 0, o: +r.overs || 0 } : null,
       bat: list(x.batting).filter(b => b.scoreboard === sb).sort((p, q) => (p.sort || 0) - (q.sort || 0))
-        .map(b => [pname(b.batsman), b.result && b.result.name ? b.result.name : (b.active ? 'ব্যাট করছেন' : dismissalBn('not out')), +b.score || 0, +b.ball || 0, +(b.four_x ?? b.fout_x) || 0, +b.six_x || 0]),
+        .map(b => [pname(b.batsman), outBn(b), +b.score || 0, +b.ball || 0, +(b.four_x ?? b.fout_x) || 0, +b.six_x || 0]),
       bowl: list(x.bowling).filter(b => b.scoreboard === sb).sort((p, q) => (p.sort || 0) - (q.sort || 0))
         .map(b => [pname(b.bowler), +b.overs || 0, +b.medians || 0, +b.runs || 0, +b.wickets || 0]),
       ext: null
     };
   });
-  const balls = list(x.balls).slice().sort((p, q) => String(p.scoreboard).localeCompare(String(q.scoreboard)) || (+p.ball - +q.ball) || ((p.id || 0) - (q.id || 0)));
+  // বল নম্বর ০.০ মানে উৎসের ভুল তথ্য, বাদ
+  const balls = list(x.balls).filter(b => Number(b.ball) > 0).sort((p, q) => String(p.scoreboard).localeCompare(String(q.scoreboard)) || (+p.ball - +q.ball) || ((p.id || 0) - (q.id || 0)));
   const comm = [];
-  let lastSb = null;
-  for (const bl of balls) {
-    if (bl.scoreboard !== lastSb && lastSb) { const T = teamOfBoard(bl.scoreboard); comm.push({ o: '', k: 'i', t: `নতুন ইনিংস শুরু${T ? ': ' + (T.bn || T.name) + ' ব্যাট করছে' : ''}` }); }
+  const cardRuns = new Map(); // ব্যাটারের আসল রান (স্কোরকার্ড থেকে), মাইলফলক ঘোষণার আগে মিলিয়ে নিতে
+  for (const b of list(x.batting)) cardRuns.set(b.scoreboard + ':' + b.player_id, +b.score || 0);
+  let lastSb = null, ovNo = -1, ovR = 0, ovW = 0, mine = new Map();
+  const endOver = () => { if (ovNo >= 0) comm.push({ o: '', k: 'i', t: `${bnNum(ovNo + 1)} ওভার শেষ · এই ওভারে ${ovR ? bnNum(ovR) + ' রান' : 'কোনো রান হয়নি'}${ovW ? `, ${bnNum(ovW)} উইকেট` : ''}` }); };
+  for (let bi = 0; bi < balls.length; bi++) {
+    const bl = balls[bi];
+    const thisOv = Math.floor(Number(bl.ball) + 1e-9);
+    if (bl.scoreboard !== lastSb) {
+      if (lastSb) { const T = teamOfBoard(bl.scoreboard); comm.push({ o: '', k: 'i', t: `নতুন ইনিংস শুরু${T ? ': ' + (T.bn || T.name) + ' ব্যাট করছে' : ''}` }); }
+      ovNo = thisOv; ovR = 0; ovW = 0; mine = new Map();
+    } else if (thisOv !== ovNo) { endOver(); ovNo = thisOv; ovR = 0; ovW = 0; }
     lastSb = bl.scoreboard;
     const s = bl.score || {};
     const bat = pname(bl.batsman), bow = pname(bl.bowler);
     const o = Number(bl.ball).toFixed(1);
     const nmS = String(s.name || '');
+    const offBat = +s.runs || 0, extra = (+s.bye || 0) + (+s.leg_bye || 0) + (+s.noball_runs || 0);
+    const who = `${bow} থেকে ${bat}`;
     let k = 'r', t;
-    if (s.is_wicket || s.out) { k = 'W'; t = `আউট! ${bat} (${nmS || 'উইকেট'}), বোলার ${bow}`; }
-    else if (s.six) { k = '6'; t = `ছক্কা! ${gen(bow)} বলে ${bat}`; }
-    else if (s.four) { k = '4'; t = `চার! ${gen(bow)} বলে ${bat}`; }
-    else if (/wide/i.test(nmS) || s.noball) { k = 'x'; t = `${/wide/i.test(nmS) ? 'ওয়াইড' : 'নো বল'}! অতিরিক্ত ${bnNum((+s.runs || 0) + (+s.noball_runs || 0) + (+s.bye || 0) + (+s.leg_bye || 0) || 1)} রান`; }
-    else {
-      const rr = (+s.runs || 0) + (+s.bye || 0) + (+s.leg_bye || 0);
-      if (!rr) { k = '0'; t = `ডট বল। ${bow} থেকে ${bat}`; }
-      else t = `${bnNum(rr)} রান${s.bye || s.leg_bye ? ' (বাই/লেগ বাই)' : ''}। ${bow} থেকে ${bat}`;
+    if (s.is_wicket || s.out) {
+      k = 'W';
+      const how = outOf.get(bl.scoreboard + ':' + (bl.batsmanout_id || bl.batsman_id));
+      const rr = cardRuns.get(bl.scoreboard + ':' + (bl.batsmanout_id || bl.batsman_id));
+      t = `আউট! ${bat}${how ? ', ' + how : ''}${rr != null && !bl.batsmanout_id ? ` · ${bnNum(rr)} রানে ফিরলেন` : ''}`;
+      ovW++;
     }
+    else if (s.six) { k = '6'; t = `${who}, ছক্কা!`; }
+    else if (s.four) { k = '4'; t = `${who}, চার!`; }
+    else if (/wide/i.test(nmS)) { k = 'x'; t = `${who}, ওয়াইড · বাড়তি ${bnNum(offBat + extra || 1)} রান`; }
+    else if (s.noball) { k = 'x'; t = `${who}, নো বল · ${bnNum(offBat + extra || 1)} রান`; }
+    else if (!(offBat + extra)) { k = '0'; t = `${who}, রান হয়নি`; }
+    else if (s.bye || s.leg_bye) t = `${who}, ${s.leg_bye ? 'লেগ বাই' : 'বাই'} ${bnNum(offBat + extra)} রান`;
+    else t = `${who}, ${bnNum(offBat)} রান`;
     comm.push({ o, k, t });
+    ovR += offBat + extra + (/wide/i.test(nmS) && !offBat && !extra ? 1 : 0);
+    // অর্ধশতক আর শতক (বল থেকে গোনা রান স্কোরকার্ডের সাথে মিললে তবেই)
+    if (!/wide/i.test(nmS) && !s.bye && !s.leg_bye && bl.batsman_id) {
+      const key = bl.scoreboard + ':' + bl.batsman_id, was = mine.get(key) || 0, now2 = was + offBat;
+      mine.set(key, now2);
+      for (const [mark, word] of [[50, 'অর্ধশতক'], [100, 'শতক'], [150, 'দেড়শ'], [200, 'দ্বিশতক']]) if (was < mark && now2 >= mark && (cardRuns.get(key) || 0) >= mark) comm.push({ o: '', k: 'i', t: `${word}! ${bat} ${bnNum(mark)} পেরোলেন` });
+    }
   }
   // ওভার প্রতি রান আর উইকেট (গ্রাফের জন্য), প্রতি ইনিংসে আলাদা
   const ovMap = new Map();
@@ -138,7 +185,7 @@ export function smDetail(x, sum) {
     const last = fow[fow.length - 1];
     const tot = r ? +r.score || 0 : 0;
     cur = {
-      bat: bat.filter(b => b.active).map(b => [pname(b.batsman), +b.score || 0, +b.ball || 0, +(b.four_x ?? b.fout_x) || 0, +b.six_x || 0]),
+      bat: (bat.some(b => b.active) ? bat.filter(b => b.active || !b.result || /not out/i.test(b.result.name || '')) : bat.filter(b => !b.result || /not out/i.test(b.result.name || ''))).slice(-2).map(b => [pname(b.batsman), +b.score || 0, +b.ball || 0, +(b.four_x ?? b.fout_x) || 0, +b.six_x || 0]),
       bowl: bowl.filter(b => b.active).map(b => [pname(b.bowler), +b.overs || 0, +b.runs || 0, +b.wickets || 0]).slice(0, 1),
       part: r ? tot - (last ? last.at : 0) : null,
       last: last ? [last.n, last.r, last.at, last.ov] : null,

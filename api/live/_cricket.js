@@ -119,12 +119,13 @@ export function bbbLines(d) {
     const out1 = x.dismissal || x.wicket || x.out;
     const o = `${x.over}.${x.ball}`;
     let k = 'r', t;
-    if (out1) { k = 'W'; t = `আউট! ${bat}${typeof out1 === 'string' ? ' (' + out1 + ')' : ''}`; }
-    else if (runs === 4) { k = '4'; t = `চার! ${gen(bowl)} বলে ${bat}`; }
-    else if (runs === 6) { k = '6'; t = `ছক্কা! ${gen(bowl)} বলে ${bat}`; }
-    else if (ext) { k = 'x'; t = `অতিরিক্ত ${bnNum(ext + runs)} রান`; }
-    else if (!runs) { k = '0'; t = `ডট বল। ${bowl} থেকে ${bat}`; }
-    else t = `${bnNum(runs)} রান। ${bowl} থেকে ${bat}`;
+    const who = `${bowl} থেকে ${bat}`;
+    if (out1) { k = 'W'; t = `আউট! ${bat}${typeof out1 === 'string' ? ', ' + dismissalBn(out1) : ''}`; }
+    else if (runs === 4) { k = '4'; t = `${who}, চার!`; }
+    else if (runs === 6) { k = '6'; t = `${who}, ছক্কা!`; }
+    else if (ext) { k = 'x'; t = `${who}, বাড়তি ${bnNum(ext + runs)} রান`; }
+    else if (!runs) { k = '0'; t = `${who}, রান হয়নি`; }
+    else t = `${who}, ${bnNum(runs)} রান`;
     out.push({ o, k, t, inn: +x.inning || 0 });
   }
   return out.reverse(); // নতুনটা উপরে
@@ -163,7 +164,7 @@ export function diffLines(prev, snap, sum) {
   const gone = [], hits = [];
   for (const [name, now] of Object.entries(snap.bats || {})) {
     const was = (prev.bats || {})[name];
-    if (was && /অপরাজিত|ব্যাট করছেন/.test(was[0]) && !/অপরাজিত|ব্যাট করছেন/.test(now[0])) gone.push(`${name} (${now[0]}) ${bnNum(now[1])} রান`);
+    if (was && /অপরাজিত|ব্যাট করছেন/.test(was[0]) && !/অপরাজিত|ব্যাট করছেন/.test(now[0])) gone.push(`${name}, ${now[0]} · ${bnNum(now[1])} রানে ফিরলেন`);
     const f = now[3] - (was ? was[3] : 0), s = now[4] - (was ? was[4] : 0);
     if (f > 0) hits.push({ n: name, f, s: 0, t: `${name} ${bnNum(f)}টি চার` });
     if (s > 0) hits.push({ n: name, f: 0, s, t: `${name} ${bnNum(s)}টি ছক্কা` });
@@ -175,7 +176,7 @@ export function diffLines(prev, snap, sum) {
     else if (dB === 0) { k = 'x'; t = `অতিরিক্ত ${bnNum(dR)} রান (ওয়াইড/নো বল)`; }
     else if (dR === 4) { k = '4'; t = 'চার!' + who('f'); }
     else if (dR === 6) { k = '6'; t = 'ছক্কা!' + who('s'); }
-    else if (dR === 0) { k = '0'; t = 'ডট বল'; }
+    else if (dR === 0) { k = '0'; t = 'রান হয়নি'; }
     else t = `${bnNum(dR)} রান`;
     out.push({ o: ov, k, t: `${t} · স্কোর ${sc}` });
   } else {

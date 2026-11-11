@@ -39,7 +39,7 @@ function simT20(seed, A, B, pa, pb, balls) {
         const pre = legal; legal++; st[3]++;
         let k, t, run = 0;
         if (x < 0.085) {
-          w++; bw[4]++; st[1] = `b ${bw[0]}`;
+          w++; bw[4]++; st[1] = `বোল্ড ${bw[0]}`;
           k = 'W'; t = `আউট! ${st[0]} ${bnNum(st[2])} রান করে বোল্ড, বোলার ${bw[0]}`;
         } else if (x < 0.40) { k = '0'; t = `ডট বল। ${tag}`; }
         else if (x < 0.72) { run = 1; k = 'r'; t = `১ রান। ${tag}`; }

@@ -9,11 +9,11 @@
 //   liveVotes/{id}        "কে জিতবে?" ভোটের গোনা;  liveVotes/{id}/v/{uid} প্রত্যেকের ভোট
 //   livePoints/{uid}      প্রত্যেকের পয়েন্ট (লিডারবোর্ড)
 import { cricCall, cricSummary, cricScoreSummary, cricCard, bbbLines, snapOf, diffLines } from './_cricket.js';
-import { fbCall, fbSummary, fbDetail, leagues } from './_football.js';
+import { roundBn, fbCall, fbSummary, fbDetail, leagues } from './_football.js';
 import { demoAll, demoMatch } from './_demo.js';
 import { hasSm, smCall, smSummary, smDetail, LIST_INC, DETAIL_INC } from './_smonks.js';
 import { normTeam } from './_bn.js';
-import { tourBn } from './_teams.js';
+import { localize, localizeDet } from './_teams.js';
 import { pushSub, events, sendEvents } from './_push.js';
 import { cricPred, fbPredFrom, fbExtraFrom } from './_predict.js';
 import { learn, prune, model, accOf } from './_elo.js';
@@ -331,8 +331,7 @@ function compose(doc, now) {
   // স্কোরটা কখন আনা (দর্শককে জানাতে, পুরনো হলে পাতায় লেখা ওঠে) আর সিরিজের নাম বাংলায়
   for (const [id, m] of map) {
     const upd = m.state === 'live' ? Math.max(m._at || 0, m.via === 'c' ? (c.at || 0) : atOf(id)) : 0;
-    const tour = m.sport === 'cricket' ? tourBn(m.tour) : m.tour;
-    if (upd || tour !== m.tour) map.set(id, { ...m, tour, ...(upd ? { upd } : {}) });
+    map.set(id, { ...localize(m, roundBn), ...(upd ? { upd } : {}) });
   }
   // "লাইভ" বলছে কিন্তু স্কোর নেই আর লেখা "শুরু হয়নি": আসলে আসন্ন (দুই উৎস মেলানোর সময় এমন হতে পারে)
   for (const [id, m] of map) {
@@ -421,7 +420,8 @@ export async function getMatch(id, now = Date.now()) {
   if (sum !== S && sum.state === 'done' && S.state !== 'done') await db.doc('liveCache/feed').set({ fresh: { [id]: { ...sum, _at: now } } }, { merge: true }).catch(() => {});
   if (sum !== S && sum.state === 'live') sum = { ...sum, upd: Math.max(md.at || 0, S.upd || 0), tour: S.tour };
   const m = extra && extra.pr && sum.state !== 'done' ? { ...sum, pred: extra.pr } : (sum.pred || S.pred ? { ...sum, pred: sum.pred || S.pred } : sum);
-  return { m, det: (md && md.det) || null, votes: await votesOf(F, id), react: await reactsOf(F, id), x: extra ? extra.x : null };
+  const mL = localize(m, roundBn);
+  return { m: mL, det: localizeDet((md && md.det) || null, m, mL), votes: await votesOf(F, id), react: await reactsOf(F, id), x: extra ? extra.x : null };
 }
 
 // CricketData-র স্কোরকার্ড থেকে "এখন মাঠে": শুধু অপরাজিত দুই ব্যাটার (এখন কে বল করছেন বা জুটি এখানে নিশ্চিত জানা যায় না)

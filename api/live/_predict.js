@@ -16,10 +16,12 @@ export function cricPred(m) {
   const ra = CR[base(m.a.name)], rb = CR[base(m.b.name)];
   if (ra == null || rb == null) return null;
   // "India tour of New Zealand" → নিউজিল্যান্ড স্বাগতিক
-  const host = (String(m.tour || '').match(/tour of ([A-Za-z ]+?)(?:,|\s\d|$)/i) || [])[1];
+  const host = (String(m.tourEn || m.tour || '').match(/tour of ([A-Za-z ]+?)(?:,|\s\d|$)/i) || [])[1];
   const ha = host && base(host) === base(m.a.name) ? 4 : 0, hb = host && base(host) === base(m.b.name) ? 4 : 0;
   let pa = sig(((ra + ha) - (rb + hb)) / 12);
   let d = m.test ? 0.22 : 0;
+  // তালিকাটা মূল পুরুষ দলের শক্তি ধরে বানানো: নারী, অনূর্ধ্ব আর "এ" দলে এতটা নিশ্চিত হওয়া যায় না, তাই ৫০%-এর দিকে টেনে আনা
+  if (/women|\bu-?\d\d|under|\ba$|lions|emerging/i.test(m.a.name + ' ' + m.b.name)) pa = 0.5 + (pa - 0.5) * 0.6;
   pa = Math.min(0.9, Math.max(0.1, pa));
   return { a: +(pa * (1 - d)).toFixed(3), b: +((1 - pa) * (1 - d)).toFixed(3), d, src: 'rating' };
 }

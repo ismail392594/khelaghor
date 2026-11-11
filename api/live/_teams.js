@@ -1,6 +1,7 @@
 // লাইভ স্কোর: দেশের নাম → পতাকার কোড (flagcdn.com) আর বাংলা নাম।
 // শুধু দেশের পতাকা ব্যবহার হয়। ক্লাব বা লিগের লোগো কখনো নয়: ক্লাবের জন্য নামের আদ্যক্ষর দিয়ে গোল ছাপ (মনোগ্রাম)।
 import { gen, bnNum } from './_bn.js';
+import { MORE_C, CLUBS, FB_COMP, CR_COMP } from './_names.js';
 
 const C = {
   'bangladesh': ['bd', 'বাংলাদেশ'], 'india': ['in', 'ভারত'], 'pakistan': ['pk', 'পাকিস্তান'],
@@ -43,13 +44,28 @@ const C = {
   'fiji': ['fj', 'ফিজি'], 'new caledonia': ['nc', 'নিউ ক্যালেডোনিয়া']
 };
 
-// দলের নামের শেষে যা থাকতে পারে (মহিলা দল, অনূর্ধ্ব-১৯ ইত্যাদি)
-const SUF = [
-  [/\s+(women|w)$/i, ' (মহিলা)'], [/\s+(u-?19|under[- ]19)$/i, ' অনূর্ধ্ব-১৯'], [/\s+(u-?21|under[- ]21)$/i, ' অনূর্ধ্ব-২১'],
-  [/\s+(u-?23|under[- ]23)$/i, ' অনূর্ধ্ব-২৩'], [/\s+a$/i, ' এ দল'], [/\s+lions$/i, ' লায়ন্স'], [/\s+xi$/i, ' একাদশ'], [/\s+(emerging)$/i, ' ইমার্জিং']
-];
+Object.assign(C, MORE_C);
 
-const COLS = ['#e5484d', '#3b78f0', '#2fa36b', '#f2b100', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#0ea5e9', '#84cc16'];
+// দলের নামের শেষে যা থাকতে পারে (নারী দল, অনূর্ধ্ব-১৯ ইত্যাদি)
+const SUF = [
+  [/\s+(women|w)$/i, ' নারী দল'], [/\s+(?:u-?|under[- ])(\d{2})$/i, m => ' অনূর্ধ্ব-' + bnNum(m[1])],
+  [/\s+a$/i, ' এ দল'], [/\s+lions$/i, ' লায়ন্স'], [/\s+xi$/i, ' একাদশ'], [/\s+(emerging)$/i, ' ইমার্জিং']
+];
+// দেশের চাবি: ছোট হাতের, দাগ-চিহ্ন ছাড়া ("Saudi-Arabia" → "saudi arabia")
+const ckey = n => String(n || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
+// ক্লাবের চাবি: FC/CF/AFC আর চিহ্ন বাদ
+const clubKey = n => ckey(n).replace(/[^a-z0-9 ]/g, ' ').replace(/\b(fc|cf|afc)\b/g, ' ').replace(/\s+/g, ' ').trim();
+// নামের শেষের অংশ (নারী, অনূর্ধ্ব) আলাদা করা: [মূল নাম, বাংলা শেষাংশ]
+function split(raw) {
+  let base = raw, suf = '';
+  for (let i = 0; i < 2; i++) for (const [re, b] of SUF) {
+    const m = base.match(re);
+    if (m) { base = base.replace(re, ''); suf = (typeof b === 'function' ? b(m) : b) + suf; break; }
+  }
+  return [base, suf];
+}
+
+const COLS = ['#c8384a', '#2f6fc9', '#2c8f5f', '#c99a1c', '#7a5cc4', '#c2507f', '#1f9a8c', '#d0742a', '#2a8fb8', '#6f9a2a'];
 
 function mono(name) {
   const w = String(name || '?').replace(/[^\p{L}\p{N}\s]/gu, ' ').trim().split(/\s+/).filter(Boolean);
@@ -58,34 +74,103 @@ function mono(name) {
   return { mono: ini, col: COLS[h % COLS.length] };
 }
 
+// ক্লাব/রাজ্য দলের বাংলা নাম (না জানা থাকলে null)
+export function clubBn(raw) {
+  const full = CLUBS[clubKey(raw)];
+  if (full) return full;
+  const [base, suf] = split(raw);
+  const hit = CLUBS[clubKey(base)];
+  return hit ? hit + suf : null;
+}
+
 // name: API-র ইংরেজি নাম। national=false হলে (ক্লাব) পতাকা দেওয়া হয় না।
 export function team(name, national = true) {
   const raw = String(name || '').trim();
-  let base = raw, suf = '';
-  for (const [re, b] of SUF) { if (re.test(base)) { base = base.replace(re, ''); suf = b; break; } }
-  const hit = national ? C[base.toLowerCase()] : null;
+  if (/^(tbc|tba|tbd)$/i.test(raw)) return { name: raw, bn: 'এখনো ঠিক হয়নি', flag: null, mono: '?', col: '#5b6b60' };
+  const [base, suf] = split(raw);
+  const hit = national ? C[ckey(base)] : null;
   const m = mono(raw);
-  return { name: raw, bn: hit ? hit[1] + suf : null, flag: hit ? hit[0] : null, mono: m.mono, col: m.col };
+  return { name: raw, bn: hit ? hit[1] + suf : clubBn(raw), flag: hit ? hit[0] : null, mono: m.mono, col: m.col };
 }
 
-export const isCountry = name => {
-  let base = String(name || '').trim();
-  for (const [re] of SUF) base = base.replace(re, '');
-  return !!C[base.toLowerCase()];
-};
+export const isCountry = name => !!C[ckey(split(String(name || '').trim())[0])];
+const countryBn = n => { const h = C[ckey(n)]; return h ? h[1] : null; };
 
-// সিরিজের নাম বাংলায়: "England Lions tour of West Indies, 2026" → "ইংল্যান্ড লায়ন্সের ওয়েস্ট ইন্ডিজ সফর, ২০২৬"
+// ক্রিকেট সিরিজ/টুর্নামেন্টের নাম বাংলায়: "England Lions tour of West Indies, 2026" → "ইংল্যান্ড লায়ন্সের ওয়েস্ট ইন্ডিজ সফর, ২০২৬"
 const SER = { 'one day international': 'ওয়ানডে আন্তর্জাতিক', 'twenty20 international': 'টি-টোয়েন্টি আন্তর্জাতিক', 't20 international': 'টি-টোয়েন্টি আন্তর্জাতিক', 'test series': 'টেস্ট সিরিজ', 'test match': 'টেস্ট', 'odi series': 'ওয়ানডে সিরিজ', 't20i series': 'টি-টোয়েন্টি সিরিজ' };
 export function tourBn(t) {
-  const s0 = String(t || '');
+  const s0 = String(t || '').trim();
   // "One Day International · India tour of New Zealand": প্রতিটা অংশ আলাদা করে
   if (s0.includes(' · ')) return s0.split(' · ').map(tourBn).join(' · ');
-  if (SER[s0.trim().toLowerCase()]) return SER[s0.trim().toLowerCase()];
-  const s = s0;
-  const m = s.match(/^(.+?) tour of (.+?)(?:,?\s+(\d{4}(?:[-/]\d{2,4})?))?$/i);
-  if (!m) return s;
-  const a = team(m[1]).bn, b = team(m[2]).bn;
-  if (!a || !b) return s;
-  const yr = m[3] ? ', ' + bnNum(m[3]) : '';
-  return `${gen(a)} ${b} সফর${yr}`;
+  const low = s0.toLowerCase();
+  if (SER[low]) return SER[low];
+  let m = s0.match(/^(.+?) tour of (.+?)(?:,?\s+(\d{4}(?:[-/]\d{2,4})?))?$/i);
+  if (m) {
+    const a = team(m[1]).bn, b = team(m[2]).bn;
+    return a && b ? `${gen(a)} ${b} সফর${m[3] ? ', ' + bnNum(m[3]) : ''}` : s0;
+  }
+  // "Afghanistan vs Zimbabwe in UAE"
+  if ((m = s0.match(/^(.+?) vs?\.? (.+?)(?: in (.+?))?(?:,?\s+(\d{4}(?:[-/]\d{2,4})?))?$/i))) {
+    const a = team(m[1]).bn, b = team(m[2]).bn, w = m[3] && countryBn(m[3]);
+    if (a && b) return `${a} বনাম ${b}${w ? ` (মাঠ: ${w})` : ''}${m[4] ? ', ' + bnNum(m[4]) : ''}`;
+  }
+  // টুর্নামেন্ট: শেষের সাল আলাদা করে নাম মেলানো ("The Ford Trophy 2026-27" → "ফোর্ড ট্রফি ২০২৬-২৭")
+  m = s0.match(/^(?:the\s+)?(.+?)(?:,?\s+(\d{4}(?:[-/]\d{2,4})?))?$/i);
+  const hit = m && CR_COMP[m[1].toLowerCase().trim()];
+  return hit ? hit + (m[2] ? ' ' + bnNum(m[2]) : '') : s0;
+}
+
+const FB = {};
+// ফুটবল প্রতিযোগিতার নাম বাংলায়। না জানা নাম ইংরেজিতেই থাকে, শুধু বন্ধনীর দেশটা বাংলা হয়।
+export function compBn(t) {
+  if (!FB.ok) { for (const [k, v] of Object.entries(FB_COMP)) FB[ckey(k)] = v; FB.ok = 1; }
+  const s = String(t || '').trim(), low = ckey(s);
+  if (typeof FB[low] === 'string') return FB[low];
+  let m;
+  const conf = { uefa: 'উয়েফা', afc: 'এএফসি', caf: 'আফ্রিকা', concacaf: 'কনকাকাফ', conmebol: 'দক্ষিণ আমেরিকা', saff: 'সাফ' };
+  if ((m = s.match(/^(UEFA|AFC|CAF|CONCACAF|CONMEBOL|SAFF) U(\d{2}) (Championship|Asian Cup|Cup of Nations)( Women)?( - Qualification)?$/i))) {
+    const what = /asian/i.test(m[3]) ? 'এশিয়ান কাপ' : /nations/i.test(m[3]) ? 'কাপ অব নেশনস' : 'চ্যাম্পিয়নশিপ';
+    return `${conf[m[1].toLowerCase()]} অনূর্ধ্ব-${bnNum(m[2])}${m[4] ? ' নারী' : ''} ${what}${m[5] ? ' বাছাই' : ''}`;
+  }
+  if ((m = s.match(/^World Cup - Qualification (.+)$/i))) {
+    const z = { africa: 'আফ্রিকা', asia: 'এশিয়া', europe: 'ইউরোপ', oceania: 'ওশেনিয়া', 'south america': 'দক্ষিণ আমেরিকা', concacaf: 'কনকাকাফ', 'intercontinental play-offs': 'আন্তঃমহাদেশীয় প্লে-অফ' }[m[1].toLowerCase()];
+    return 'বিশ্বকাপ বাছাই' + (z ? ` (${z})` : '');
+  }
+  if ((m = s.match(/^(.+?) - Qualification$/i)) && typeof FB[ckey(m[1])] === 'string') return FB[ckey(m[1])] + ' বাছাই';
+  if ((m = s.match(/^(.+) \(([^)]+)\)$/))) { const c = countryBn(m[2]); if (c) return `${m[1]} (${c})`; }
+  return s;
+}
+
+// এক ম্যাচের সব নাম বাংলায় (জমানো পুরনো তথ্যেও কাজ করে): দল, প্রতিযোগিতা, ধাপ, মাঠ, ফলের লেখা। ইংরেজি নাম খোঁজার জন্য tourEn-এ থাকে।
+export function localize(m, roundBn) {
+  if (!m || !m.a || !m.b) return m;
+  const fix = t => {
+    if (t.bn && !/মহিলা/.test(t.bn)) return t;
+    const x = team(t.name, m.sport === 'cricket' || !!m.intl || isCountry(t.name));
+    return x.bn ? { ...t, bn: x.bn, ...(x.flag && !t.flag && (m.sport === 'cricket' || m.intl) ? { flag: x.flag } : {}) } : t;
+  };
+  const a = fix(m.a), b = fix(m.b);
+  const tour = m.sport === 'cricket' ? tourBn(m.tour) : compBn(m.tour);
+  let status = m.status || '';
+  for (const [o, n] of [[m.a, a], [m.b, b]]) if (n.bn && n.bn !== o.bn && status.includes(o.name)) status = status.split(o.name).join(n.bn);
+  const out = { ...m, a, b, tour, status };
+  if (tour !== m.tour) out.tourEn = m.tourEn || m.tour;
+  // যুব আর নারী দলের প্রীতি ম্যাচ "বড় খেলা"র সারিতে নয়
+  if (m.sport === 'football' && (m.rk || 0) >= 3 && /\bU\d\d\b| W$| Women$/i.test(m.a.name + ' | ' + m.b.name + ' ')) out.rk = 2;
+  if (m.sport === 'football' && roundBn && /[A-Za-z]{3}/.test(m.label || '')) out.label = roundBn(m.label);
+  if (m.venue) out.venue = String(m.venue).replace(/\s*,\s*/g, ', ').replace(/\s{2,}/g, ' ').trim();
+  if (m.toss && /[A-Za-z]{3}/.test(m.toss)) for (const [o, n] of [[m.a, a], [m.b, b]]) if (n.bn && m.toss.includes(o.name)) out.toss = m.toss.split(o.name).join(n.bn);
+  return out;
+}
+
+// বিস্তারিত তথ্যের ভেতরের দলের নামও বাংলায় (স্কোরকার্ডের শিরোনাম, ওভারের গ্রাফ, একাদশ)
+export function localizeDet(det, before, after) {
+  if (!det) return det;
+  const pairs = [[before.a, after.a], [before.b, after.b]].filter(([o, n]) => n.bn && o.name && n.bn !== o.name);
+  if (!pairs.length) return det;
+  const tr = t => { let x = String(t || ''); for (const [o, n] of pairs) if (x.includes(o.name)) x = x.split(o.name).join(n.bn); return x; };
+  const out = { ...det };
+  for (const k of ['card', 'ov', 'lu']) if (Array.isArray(det[k])) out[k] = det[k].map(r => (r && r.t ? { ...r, t: tr(r.t) } : r));
+  if (Array.isArray(det.comm)) out.comm = det.comm.map(c => (c.k === 'i' || c.k === 'G' || c.k === 'R' || c.k === 'Y' || c.k === 'S' || c.k === 'V' || c.k === 'x' || c.k === 'P' ? { ...c, t: tr(c.t) } : c));
+  return out;
 }

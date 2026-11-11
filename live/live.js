@@ -120,7 +120,7 @@ function renderList() {
   document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === S.sport));
   let list = by[S.filter].slice();
   const q = (S.q || '').trim().toLowerCase();
-  if (q) list = list.filter(m => (m.a.name + ' ' + m.b.name + ' ' + (m.a.bn || '') + ' ' + (m.b.bn || '') + ' ' + (m.tour || '')).toLowerCase().includes(q));
+  if (q) list = list.filter(m => (m.a.name + ' ' + m.b.name + ' ' + (m.a.bn || '') + ' ' + (m.b.bn || '') + ' ' + (m.tour || '') + ' ' + (m.tourEn || '')).toLowerCase().includes(q));
   // তারিখের বোতাম (আসন্ন আর শেষ খেলায়)
   const daysEl = $('days');
   if (S.filter !== 'live') {

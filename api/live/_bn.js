@@ -29,7 +29,7 @@ export const fmtType = t => ({ t20: 'টি-টোয়েন্টি', odi: '
 
 // ক্রিকেটের অবস্থার লেখা বাংলায়। nameBn: ইংরেজি দলের নাম → বাংলা নাম (না থাকলে ইংরেজিই)
 // দলের নাম মেলানো: "Bangladesh U19" = "Bangladesh Under-19", "Kathmandu" = "Kathmandu Gorkhas"
-export const normTeam = n => String(n || '').toLowerCase().replace(/under[- ]?(\d+)/g, 'u$1').replace(/\bwomen\b/g, 'w').replace(/[^a-z0-9]/g, '');
+export const normTeam = n => String(n || '').toLowerCase().replace(/under[- ]?(\d+)/g, 'u$1').replace(/\bwomen\b/g, 'w').replace(/\bchamps\b/g, 'champions').replace(/[^a-z0-9]/g, '');
 export const sameTeam = (x, name) => { const a = normTeam(x), b = normTeam(name); return !!a && !!b && (a === b || b.startsWith(a) || a.startsWith(b)); };
 
 export function cricStatusBn(s, nameBn = x => x) {
@@ -98,6 +98,18 @@ export function dismissalBn(d) {
   const t = String(d || '').trim();
   if (!t || /^not out$/i.test(t)) return 'অপরাজিত';
   if (/^batting$/i.test(t)) return 'ব্যাট করছেন';
+  // স্কোরকার্ডের চেনা সংক্ষেপ: "c Kohli b Bumrah", "lbw b Starc", "st Pant b Jadeja", "run out (Smith)"
+  let m;
+  if ((m = t.match(/^c (?:&|and) b (.+)$/i))) return `কট অ্যান্ড বোল্ড ${m[1]}`;
+  if ((m = t.match(/^c (?:†|sub )?\(?(.+?)\)? b (.+)$/i))) return `ক্যাচ ${m[1]}, বল ${m[2]}`;
+  if ((m = t.match(/^lbw b (.+)$/i))) return `এলবিডব্লিউ ${m[1]}`;
+  if ((m = t.match(/^st (?:†)?(.+?) b (.+)$/i))) return `স্টাম্পড ${m[1]}, বল ${m[2]}`;
+  if ((m = t.match(/^b (.+)$/i))) return `বোল্ড ${m[1]}`;
+  if ((m = t.match(/^hit wicket b (.+)$/i))) return `হিট উইকেট, বল ${m[1]}`;
+  if ((m = t.match(/^run ?out\s*(?:\((.+)\))?$/i))) return `রান আউট${m[1] ? ` (${m[1]})` : ''}`;
+  if (/^retired hurt/i.test(t)) return 'আহত হয়ে মাঠ ছেড়েছেন';
+  if (/^retired/i.test(t)) return 'অবসর';
+  if (/^absent/i.test(t)) return 'অনুপস্থিত';
   return t;
 }
 
