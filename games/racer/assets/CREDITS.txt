@@ -29,3 +29,6 @@ Poly Haven (https://polyhaven.com), সব CC0:
 রাস্তার পাশের গ্রামের বাড়ি, CC-BY 4.0 (পলিগন কমানো, টেক্সচার webp):
   house_old.glb ...... "Indian House Old" — bhagathartworks — https://sketchfab.com/3d-models/indian-house-old-3beb064c1ae841c5beb556b5aa267036
   house_veranda.glb .. "indian house - gameasset" — nayan pachori — https://sketchfab.com/3d-models/indian-house-gameasset-3f2b22855bd14cbf877b1ab5f6689582
+
+বাসের স্টিয়ারিং, CC-BY 4.0:
+  wheel_leyland.glb .. "Leyland Steering Wheel" — Fishboe (ministephen) — https://sketchfab.com/3d-models/leyland-steering-wheel-01e3c476a3cd4d1db9dc8ded131a6d13
