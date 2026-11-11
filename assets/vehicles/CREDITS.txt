@@ -15,3 +15,4 @@ cng.glb        "CNG" — asrafullislamsiam — https://sketchfab.com/3d-models/c
 moto.glb       "Motorcycle" — eriklys — https://sketchfab.com/3d-models/motorcycle-135b505f55bb4da0b82b8987a34443b2
 rickshaw.glb   "Rickshaw" — asrafullislamsiam — https://sketchfab.com/3d-models/rickshaw-e9f24ba4a27a4072a6372ed9dc37dbba
 easybike.glb   "E Rickshaw" — Shivang Jindal — https://sketchfab.com/3d-models/e-rickshaw-23a8190b0b16412fa44751af2ea8fd98
+bus_viking.glb "2008 Ashok Leyland Viking Bus" — Kevin studio Ltd — https://sketchfab.com/3d-models/2008-ashok-leyland-viking-bus-4daaa992332f43419f85783a120cea44 (সাদা গা লাল রং করা)

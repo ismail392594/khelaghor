@@ -633,7 +633,7 @@ async function buildPlayer() {
 // ট্রাফিক: একই মডেল উপাদান অনুযায়ী জোড়া লাগিয়ে InstancedMesh, যাতে ৩০টা গাড়ি মাত্র ~২০টা ড্র-কলে আঁকা যায়
 // ট্রাফিক: বাংলাদেশের আসল গাড়ি, বাস, ট্রাক, সিএনজি, মোটরসাইকেল (js/kh-vehicles.js)
 let fleet = null, FKEYS = [];
-const WEIGHT = { corolla: 14, noah: 9, hiace: 9, hilux: 5, bus_hino: 8, bus_coach: 6, bus_aero: 6, bus_mini: 7, truck_al: 8, truck_tata: 8, cng: 6, moto: 4 };
+const WEIGHT = { corolla: 14, noah: 9, hiace: 9, hilux: 5, bus_hino: 8, bus_viking: 9, bus_coach: 6, bus_aero: 6, bus_mini: 7, truck_al: 8, truck_tata: 8, cng: 6, moto: 4 };
 async function buildTraffic() {
   fleet = await loadFleet(THREE, gl, [...(tier.id === 0 ? HIGHWAY_LITE : HIGHWAY), 'rickshaw']); FKEYS = Object.keys(fleet).filter(k => WEIGHT[k]); // রিকশা শুধু উল্টো পথে
   traffic = createTraffic(THREE, scene, fleet, { per: tier.id >= 2 ? 6 : 5, shadows: tier.id >= 3 });
