@@ -55,6 +55,9 @@ export function smSummary(x) {
   else if (/^int/i.test(status)) st = 'খেলা থেমে আছে';
   else st = cricStatusBn(status, bnOf) || status;
   const fmt = FMT(x.type);
+  // উৎস মাঝে মাঝে "২০.১ ওভার" পাঠায় (২০ ওভারের খেলায়): সর্বোচ্চ ওভারে আটকে দিই
+  const cap = { t20: 20, t10: 10, odi: 50 }[fmt];
+  if (cap) for (const L of [inns, a.inn, b.inn]) for (const i of L) if (i.o > cap) i.o = cap;
   // সীমিত ওভারের চলমান খেলায় পরিস্থিতিটা মানুষের ভাষায়: কে ব্যাট করছে, জিততে কত দরকার
   if (state === 'live' && ['t20', 't10', 'odi'].includes(fmt) && inns.length && !/বৃষ্টি|দেরি|বন্ধ|বিরতি|জিতেছে|টাই|ড্র/.test(st || '')) {
     const cur = inns[inns.length - 1], T = cur.side === 'a' ? a : b, tn = T.bn || T.name;
@@ -152,9 +155,10 @@ export function smDetail(x, sum) {
     let k = 'r', t;
     if (s.is_wicket || s.out) {
       k = 'W';
-      const how = outOf.get(bl.scoreboard + ':' + (bl.batsmanout_id || bl.batsman_id));
-      const rr = cardRuns.get(bl.scoreboard + ':' + (bl.batsmanout_id || bl.batsman_id));
-      t = `আউট! ${bat}${how ? ', ' + how : ''}${rr != null && !bl.batsmanout_id ? ` · ${bnNum(rr)} রানে ফিরলেন` : ''}`;
+      const oid = bl.batsmanout_id || bl.batsman_id;
+      const how = outOf.get(bl.scoreboard + ':' + oid);
+      const rr = cardRuns.get(bl.scoreboard + ':' + oid);
+      t = `আউট! ${P.get(oid) || bat}${how ? ', ' + how : ''}${rr != null ? ` · ${bnNum(rr)} রানে ফিরলেন` : ''}`;
       ovW++;
     }
     else if (s.six) { k = '6'; t = `${who}, ছক্কা!`; }
