@@ -10,7 +10,7 @@
   document.head.appendChild(css);
   function pick() { const pool = CAT.filter(c => c !== me); const score = c => (me ? c.m.filter(m => me.m.includes(m)).length : 0) + Math.random() * .9; return pool.map(c => [c, score(c)]).sort((a, b) => b[1] - a[1]).slice(0, 4).map(x => x[0]); }
   function add() { const card = document.querySelector('#endO .card'); if (!card || card.querySelector('.mg')) return; const box = document.createElement('div'); box.className = 'mg';
-    box.innerHTML = '<h3>🎮 আরো খেলুন</h3><div class="mg-row">' + pick().map(c => `<a href="${c.u}"><span style="background-image:url(/icons/shots/${c.k}.webp)"></span>${c.n}</a>`).join('') + '</div>';
+    box.innerHTML = '<h3>আরো খেলুন</h3><div class="mg-row">' + pick().map(c => `<a href="${c.u}"><span style="background-image:url(/icons/shots/${c.k}.webp)"></span>${c.n}</a>`).join('') + '</div>';
     const lb = card.querySelector('.lb:last-of-type, #lb2'); if (lb) card.insertBefore(box, lb); else card.appendChild(box); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', add); else add();
 })();

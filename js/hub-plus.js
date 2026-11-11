@@ -29,9 +29,9 @@
   const day = Math.floor(Date.now() / 864e5); let seed = day * 9301 + 49297; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
   const picks = [...CAT].sort(() => rnd() - .5).slice(0, 4);
   const moodName = Object.fromEntries(MOODS.map(m => [m[0], m[2]]));
-  host.innerHTML = `<div class="hp-sec"><h2>✨ আজকের বাছাই</h2><small>প্রতিদিন নতুন</small></div><div class="hp-row" id="hpPicks"></div>
-    <div id="hpFavBox" hidden><div class="hp-sec"><h2>❤️ আপনার প্রিয় গেম</h2></div><div class="hp-row" id="hpFav"></div></div>
-    <div class="hp-sec"><h2>🎭 আজ কী মুডে?</h2><small>চাপলে নিচের তালিকা বদলাবে</small></div><div class="hp-moods" id="hpMoods"></div>`;
+  host.innerHTML = `<div class="hp-sec"><h2>আজকের বাছাই</h2><small>প্রতিদিন নতুন</small></div><div class="hp-row" id="hpPicks"></div>
+    <div id="hpFavBox" hidden><div class="hp-sec"><h2>আপনার প্রিয় গেম</h2></div><div class="hp-row" id="hpFav"></div></div>
+    <div class="hp-sec"><h2>আজ কী খেলতে মন চাইছে?</h2><small>চাপলে নিচের তালিকা বদলাবে</small></div><div class="hp-moods" id="hpMoods"></div>`;
   picks.forEach((c, i) => { const b = document.createElement('button'); b.className = 'hp-pick'; b.style.backgroundImage = shot(c); b.innerHTML = `<i>${i === 0 ? 'আজকের সেরা' : isNew(c) ? 'নতুন' : moodName[c.m[0]] || ''}</i><b>${c.n}</b><span>${c.m.map(m => moodName[m]).filter(Boolean).slice(0, 2).join(' · ')}</span>`; b.onclick = () => go(c); host.querySelector('#hpPicks').appendChild(b); });
   // মুড
   let mood = null;
@@ -48,6 +48,6 @@
     let h = t.querySelector('.hp-fav'); if (!h) { h = document.createElement('span'); h.className = 'hp-fav'; h.setAttribute('role', 'button'); h.onclick = e => { e.stopPropagation(); toggleFav(n); }; t.appendChild(h); }
     h.textContent = f.includes(n) ? '❤️' : '🤍'; h.setAttribute('aria-label', f.includes(n) ? 'প্রিয় থেকে সরান' : 'প্রিয়তে রাখুন'); }); };
   // যেকোনো একটা খেলি
-  const sr = document.querySelector('label.search'); if (sr) { const wrap = document.createElement('div'); wrap.className = 'hp-srow'; sr.parentNode.insertBefore(wrap, sr); wrap.appendChild(sr); const r = document.createElement('button'); r.className = 'hp-rand'; r.type = 'button'; r.textContent = '🎲 যেকোনো একটা'; r.onclick = () => { const pool = K.mood ? CAT.filter(c => K.mood.includes(c.n)) : CAT; go(pool[Math.floor(Math.random() * pool.length)]); }; wrap.appendChild(r); }
+  const sr = document.querySelector('label.search'); if (sr) { const wrap = document.createElement('div'); wrap.className = 'hp-srow'; sr.parentNode.insertBefore(wrap, sr); wrap.appendChild(sr); const r = document.createElement('button'); r.className = 'hp-rand'; r.type = 'button'; r.textContent = 'যেকোনো একটা'; r.onclick = () => { const pool = K.mood ? CAT.filter(c => K.mood.includes(c.n)) : CAT; go(pool[Math.floor(Math.random() * pool.length)]); }; wrap.appendChild(r); }
   drawFav(); if (typeof drawGrid === 'function') drawGrid(); else K.afterGrid();
 })();

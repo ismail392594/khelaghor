@@ -76,7 +76,7 @@ const liveCard = m => {
   const pill = on ? (m.sport === 'football' && m.min ? bn(m.min) + "'" : 'লাইভ') : when(m.start);
   const p = on ? winProb(m) : null;
   return `<a class="lvm${on ? ' on' : ''}" href="/live/#m=${encodeURIComponent(m.id)}">
-<div class="h"><span>${m.sport === 'cricket' ? '🏏' : '⚽'} ${esc(m.tour || '')}</span><em class="p">${pill}</em></div>
+<div class="h"><span>${m.sport === 'cricket' ? 'ক্রিকেট' : 'ফুটবল'}, ${esc(m.tour || '')}</span><em class="p">${pill}</em></div>
 <div class="r">${badge(m.a)}<b>${nm(m.a)}</b><i>${score(m, 'a')}</i></div>
 <div class="r">${badge(m.b)}<b>${nm(m.b)}</b><i>${score(m, 'b')}</i></div>
 ${bar(p)}<div class="s">${esc(on ? m.status || '' : '⏱ ' + left(m.start))}</div></a>`;
@@ -86,11 +86,11 @@ const predCard = m => {
   const p = m.pred;
   const pc = x => bn(Math.round(x * 100)) + '%';
   return `<a class="lvm" href="/live/predict/#m=${encodeURIComponent(m.id)}">
-<div class="h"><span>${m.sport === 'cricket' ? '🏏' : '⚽'} ${esc(m.tour || '')}</span><em class="p">${when(m.start)}</em></div>
+<div class="h"><span>${m.sport === 'cricket' ? 'ক্রিকেট' : 'ফুটবল'}, ${esc(m.tour || '')}</span><em class="p">${when(m.start)}</em></div>
 <div class="r">${badge(m.a)}<b>${nm(m.a)}</b></div>
 <div class="r">${badge(m.b)}<b>${nm(m.b)}</b></div>
 ${p ? `${bar(p)}<div class="wl"><span>${pc(p.a)}</span>${p.d > 0.01 ? `<span>ড্র ${pc(p.d)}</span>` : ''}<span>${pc(p.b)}</span></div>` : ''}
-<span class="go">🎯 অনুমান দিন</span></a>`;
+<span class="go">কে জিতবে? বলুন</span></a>`;
 };
 
 // প্রেডিকশন আর খবরের বোতামের নিচে নতুন জায়গা (বোতামগুলো অন্য অংশের, তাই শুধু পাশে বসাই)
@@ -107,7 +107,7 @@ const prdFill = wrap('a.prdbtn', 'prdbox');
 const newsFill = wrap('a.newsbtn', 'newsbox');
 // লাইভ স্কোর বোতামের নিচের লেখা (প্রেডিকশন এখন আলাদা চ্যানেল)
 const sub = document.querySelector('.livebtn small');
-if (sub && /ভোট/.test(sub.textContent)) sub.textContent = '🏏 ক্রিকেট · ⚽ ফুটবল · বল-বাই-বল আর জেতার সম্ভাবনা';
+if (sub && /ভোট/.test(sub.textContent)) sub.textContent = 'ক্রিকেট আর ফুটবল, বল-বাই-বল';
 
 const ensurePrd = () => { if (prdFill && !prdFill.querySelector('.ptop')) prdFill.innerHTML = '<div class="lvstrip"></div><div class="ptop"></div>'; };
 const setHtml = (el, html) => { if (el && html !== el.dataset.h) { el.innerHTML = html; el.dataset.h = html; } };
