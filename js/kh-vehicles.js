@@ -15,14 +15,15 @@ export const FLEET = {
   bus_mini:   { name: 'লোকাল মিনিবাস', len: 7.2, flip: true, kind: 'bus', tail: 1, w: 2.2 },
   truck_al:   { name: 'অশোক লেল্যান্ড ট্রাক', len: 7.2, flip: true, kind: 'truck', tail: .95, w: 2.35 },
   truck_tata: { name: 'টাটা ট্রাক', len: 7.6, flip: true, kind: 'truck', tail: .95, w: 2.35 },
+  truck_2515: { name: 'টাটা ২৫১৫ ট্রাক', len: 8.6, flip: true, kind: 'truck', tail: .95, w: 2.45 },
   cng:        { name: 'সিএনজি', len: 2.65, flip: false, kind: 'cng', tail: .55, w: 1.3 },
   moto:       { name: 'মোটরসাইকেল', len: 2.05, flip: true, kind: 'moto', tail: .8, w: .8 },
   rickshaw:   { name: 'রিকশা', len: 2.6, flip: true, kind: 'rickshaw', tail: 0, w: 1.15 },
   easybike:   { name: 'ইজিবাইক', len: 2.75, flip: false, kind: 'easy', tail: .6, w: 1.1, tint: '#2f7d5b' }
 };
-export const HIGHWAY = ['corolla', 'noah', 'hiace', 'hilux', 'bus_hino', 'bus_viking', 'bus_coach', 'bus_aero', 'bus_mini', 'truck_al', 'truck_tata', 'cng', 'moto'];
+export const HIGHWAY = ['corolla', 'noah', 'hiace', 'hilux', 'bus_hino', 'bus_viking', 'bus_coach', 'bus_aero', 'bus_mini', 'truck_al', 'truck_tata', 'truck_2515', 'cng', 'moto'];
 export const HIGHWAY_LITE = ['corolla', 'noah', 'hiace', 'bus_mini', 'truck_tata', 'cng']; // দুর্বল ফোনে কম ডাউনলোড
-export const CREDIT_HTML = 'গাড়ি, বাস, ট্রাক, সিএনজি: Sketchfab-এর শিল্পীরা (Kevin studio Ltd, ItsDiyor, Nieve5677, DisneyCars, BHP3D, taeemtasbi, agungkuncoro13021986, ImperialBlue3D, 119100, asrafullislamsiam, eriklys, Shivang Jindal), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0</a>, বিস্তারিত <a href="/assets/vehicles/CREDITS.txt" target="_blank" rel="noopener">এখানে</a>';
+export const CREDIT_HTML = 'গাড়ি, বাস, ট্রাক, সিএনজি: Sketchfab-এর শিল্পীরা (Kevin studio Ltd, danieljorge435, ItsDiyor, Nieve5677, DisneyCars, BHP3D, taeemtasbi, agungkuncoro13021986, ImperialBlue3D, 119100, asrafullislamsiam, eriklys, Shivang Jindal), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0</a>, বিস্তারিত <a href="/assets/vehicles/CREDITS.txt" target="_blank" rel="noopener">এখানে</a>';
 
 function toFloat(THREE, g, withColor) {
   const out = new THREE.BufferGeometry(), n = g.attributes.position.count;
