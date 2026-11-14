@@ -151,3 +151,8 @@ body .tile,body .tile.shot,body .hp-pick,body .livebox,body .prdbtn,body .newsbt
 body .chip{border-radius:22px}
 body .chip[aria-pressed="true"]{background:var(--kh-gold);color:#121212;border-color:var(--kh-gold)}
 body .nav button[aria-current="true"]{color:var(--kh-gold)}
+/* বড় পর্দায় (কম্পিউটার) হলুদ অংশ পুরো চওড়া, দুই পাশে কালো ফাঁক নয় */
+@media (min-width:590px){
+  body .top,body .khb{box-shadow:0 0 0 100vmax var(--kh-gold);clip-path:inset(0 -100vmax)}
+  body .khb{border-radius:0}
+}
