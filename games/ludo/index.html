@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
-<meta name="theme-color" content="#1b1640">
+<meta name="theme-color" content="#0e0e10">
 <link rel="icon" href="/icons/icon-192.png">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -179,6 +179,57 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--teal);outline-offse
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 .tip{color:inherit;margin:0;background:rgba(54,209,196,.14);border:1px solid rgba(54,209,196,.4);border-radius:12px;padding:8px 10px;text-align:left;font-size:.82rem!important;line-height:1.45}
 </style>
+<style id="premium">
+/* প্রিমিয়াম রূপ (১৪ নভেম্বর): কালো জমিন, সোনালি ফ্রেমের বোর্ড, হাতির দাঁত রঙের ঘর। শুধু চেহারা; খেলার নিয়ম, পয়েন্ট বা কোড কিছু বদলায়নি। */
+:root{--bg:#0e0e10;--panel:#19191d;--panel2:#232329;--line:#34343c;--fg:#f6f3ea;--muted:#aaa69b;--accent:#ffd400;--teal:#ffd400;--gold1:#f3d37a;--gold2:#c9a03c;--gold3:#7d5f17}
+html{background:var(--bg)}
+body{background:radial-gradient(820px 460px at 50% -120px,#2b2410 0,transparent 70%),radial-gradient(600px 400px at 50% 110%,#17140b 0,transparent 70%),var(--bg)}
+button:focus-visible,a:focus-visible{outline-color:var(--accent)}
+.back b,.back b span{color:var(--accent)}
+.wallet{background:var(--panel);border:1px solid rgba(201,160,60,.45);color:var(--gold1);padding:5px 14px 5px 7px}
+.ib{background:var(--panel);border:1px solid var(--line)}
+.gbtn{background:linear-gradient(180deg,#ffe57a,#ffd400 55%,#e9b900);color:#1a1400;box-shadow:0 4px 0 #8f7200,inset 0 1px 0 rgba(255,255,255,.55)}
+.gbtn:active{box-shadow:0 1px 0 #8f7200}
+.gbtn.gold{background:linear-gradient(180deg,#ffe57a,#ffd400 55%,#e9b900);box-shadow:0 4px 0 #8f7200,inset 0 1px 0 rgba(255,255,255,.55);color:#1a1400}
+.gbtn.ghost{background:var(--panel2);color:var(--fg);box-shadow:0 4px 0 #060607,inset 0 0 0 1px var(--line)}
+.lobby h1{font-size:2.3rem;color:var(--fg)}
+.resume{background:var(--panel2);border:1px solid var(--gold2)}
+.mcard{background:linear-gradient(180deg,#1c1c21,#17171b);border:1px solid var(--line);border-radius:18px;box-shadow:0 10px 24px rgba(0,0,0,.35)}
+.mcard.hl{border-color:var(--gold2);box-shadow:0 0 0 3px rgba(255,212,0,.14),0 10px 24px rgba(0,0,0,.35)}
+.mcard i{border-radius:50%;box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--gold2),inset 0 -4px 0 rgba(0,0,0,.22)}
+.ent button{border:1px solid var(--line);background:var(--bg)}
+.ent button[aria-pressed="true"]{border-color:var(--accent);color:#1a1400;background:var(--accent)}
+.rules{background:var(--panel);border:1px solid var(--line)}
+.seatsW span{border-color:var(--line)}
+.pod{border-radius:18px;border:1px solid transparent}
+.pod.active{background:linear-gradient(180deg,rgba(255,212,0,.1),rgba(255,212,0,.03));border-color:rgba(201,160,60,.55)}
+.pava span{box-shadow:inset 0 -3px 0 rgba(0,0,0,.25),inset 0 2px 0 rgba(255,255,255,.25)}
+.pava .rbg{stroke:rgba(255,255,255,.1)}
+.pinfo b{font-size:.9rem;font-weight:700}
+.dice.mine.ready::after{border-color:var(--accent);border-width:2px}
+.face{background:linear-gradient(145deg,#fffdf4,#eadfc4);box-shadow:inset 0 0 0 1px rgba(125,95,23,.35)}
+.boardWrap{padding:11px;border-radius:22px;background:linear-gradient(145deg,#3b2f12 0,#1a1509 45%,#2c230d 100%);
+  box-shadow:inset 0 0 0 1.5px var(--gold2),inset 0 0 0 4px #120f07,inset 0 0 0 5px rgba(243,211,122,.35),0 34px 60px rgba(0,0,0,.65),0 8px 0 #080705}
+.boardWrap::after{inset:11px;border-radius:10px;background:linear-gradient(120deg,rgba(255,255,255,.14),rgba(255,255,255,0) 30%,rgba(255,255,255,0) 72%,rgba(255,255,255,.06))}
+.board{border-radius:10px;box-shadow:0 0 0 1.5px var(--gold2),0 0 0 3px #120f07}
+.board svg rect[fill="#fbf8f2"],.board svg rect[fill="#fff"]{fill:#fbf5e6}
+.board svg rect[stroke="#d9d2c3"]{stroke:#c9bd9f}
+.tok i{border:2px solid #fffaf0;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.95) 0 10%,rgba(255,255,255,.25) 22%,transparent 42%),radial-gradient(circle at 50% 120%,rgba(0,0,0,.35),transparent 60%),var(--tc);
+  box-shadow:0 2px 0 rgba(0,0,0,.3),0 5px 9px rgba(0,0,0,.4),inset 0 -3px 0 rgba(0,0,0,.2)}
+.msg{color:var(--gold1);font-weight:600;letter-spacing:.01em}
+.qbtn{background:var(--panel);border:1px solid var(--line);color:var(--fg)}
+.qlist button{background:var(--panel2);color:var(--fg);box-shadow:inset 0 0 0 1px var(--line)}
+.pbub{background:#fffaf0;color:#1a1400}
+.leave{border-color:var(--line);border-radius:12px}
+.over{background:rgba(5,5,6,.86)}
+.rbox{background:linear-gradient(180deg,#1f1f24,#151518);color:var(--fg);border:1px solid var(--gold2);box-shadow:0 0 0 4px rgba(255,212,0,.08),0 30px 60px rgba(0,0,0,.6)}
+.rbox h2{color:var(--accent)}
+.rbox p{color:var(--muted)}
+.rrow{background:var(--panel2);color:var(--fg)}
+.rrow em{color:var(--gold1)}
+.rrow .plus{color:#5ee28a}.rrow .minus{color:#ff8a9a}
+.tip{background:rgba(255,212,0,.08);border-color:rgba(201,160,60,.5)}
+</style>
 </head><body>
 <div class="wrap">
   <div class="top">
@@ -200,9 +251,9 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--teal);outline-offse
     <div class="mcard" id="c-friend"><i style="background:var(--c2)">ব</i><div><b>বন্ধুদের সাথে</b><small>হাবে রুম বানিয়ে ইউজারনেম দিয়ে ইনভাইট করুন</small></div><a class="gbtn gold" href="/">হাবে যান</a></div>
     <div class="mcard" id="c-local"><i style="background:var(--c1)">এ</i><div><b>এক ফোনে কয়েকজন</b><small>পাশে বসে পালা করে · পয়েন্ট ছাড়া</small>
       <div class="ent" id="locSel"><button data-n="2" aria-pressed="true">২ জন</button><button data-n="3" aria-pressed="false">৩ জন</button><button data-n="4" aria-pressed="false">৪ জন</button></div></div><button class="gbtn ghost" data-go="local">শুরু</button></div>
-    <div class="mcard" id="c-practice"><i style="background:#7c3aed">অ</i><div><b>অনুশীলন</b><small>কম্পিউটারের সাথে · পয়েন্ট ছাড়া · ইন্টারনেট ছাড়াও</small></div><button class="gbtn ghost" data-go="practice">শুরু</button></div>
+    <div class="mcard" id="c-practice"><i style="background:#8a8a94">অ</i><div><b>অনুশীলন</b><small>কম্পিউটারের সাথে · পয়েন্ট ছাড়া · ইন্টারনেট ছাড়াও</small></div><button class="gbtn ghost" data-go="practice">শুরু</button></div>
     <p class="lerr" id="lerr"></p>
-<a href="/help/#ludo" style="color:inherit;opacity:.85;font-size:.85rem;font-weight:700;text-decoration:underline;align-self:center">📖 কিভাবে খেলবেন? পুরো নিয়ম পড়ুন</a>
+<a href="/help/#ludo" style="color:inherit;opacity:.85;font-size:.85rem;font-weight:700;text-decoration:underline;align-self:center">কীভাবে খেলবেন? পুরো নিয়ম পড়ুন</a>
     <details class="rules"><summary>খেলার নিয়ম</summary><ul>
       <li>ঘর থেকে গুটি বের করতে ৬ লাগবে।</li>
       <li>৬ উঠলে আবার চাল। টানা তিনবার ৬ উঠলে সেই পালা বাতিল।</li>
@@ -231,7 +282,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--teal);outline-offse
     <div class="boardWrap"><div class="board" id="board"></div></div>
     <div class="pods" id="podsBot"></div>
     <p class="msg" id="msg" aria-live="polite"></p>
-    <div class="qchat"><button class="qbtn" id="qBtn" aria-expanded="false">💬 কথা বলুন</button><div class="qlist" id="qList" hidden></div></div>
+    <div class="qchat"><button class="qbtn" id="qBtn" aria-expanded="false">কথা বলুন</button><div class="qlist" id="qList" hidden></div></div>
     <div class="bar"><small id="info"></small><button class="leave" id="leaveBtn">খেলা ছাড়ুন</button></div>
   </section>
 </div>
@@ -249,7 +300,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--teal);outline-offse
 
 <div class="over" id="gate" hidden>
   <div class="rbox">
-    <div style="font-size:2.4rem;line-height:1">🙄</div>
+    
     <h2 id="gateT">দাঁড়ান ভাই! আগে লগইন</h2>
     <p id="gateP">গেস্ট হইয়া শুধু দেখা যায়, খেলতে হইলে একাউন্ট লাগে মামা!</p>
     <a class="gbtn" href="/" id="gateA">হাবে গিয়ে লগইন করুন</a>
