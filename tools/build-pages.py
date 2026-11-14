@@ -8,7 +8,7 @@ FB = ''    # যেমন 'https://facebook.com/khelaghorbd' (মালিক �
 MAIL = ''  # যেমন 'hello@khelaghorbd.online' (মালিক দেবেন)
 UPDATED = '১১ নভেম্বর ২০২৬'
 
-LOGO = '''<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 4 36 17v18H4V17z" fill="none" stroke="#e8b649" stroke-width="2.4" stroke-linejoin="round"/><path d="M10 21h20M10 27h20M10 33h20" stroke="#e8b649" stroke-width="2" stroke-dasharray="3 3"/><circle cx="20" cy="13.5" r="2.5" fill="#f42a41"/></svg>'''
+LOGO = '''<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 4 36 17v18H4V17z" fill="currentColor"/><circle cx="20" cy="24" r="5" fill="#ff3d81"/></svg>'''
 IC_FB = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-7h2.4l.4-3h-2.8V9.200c0-.9.300-1.500 1.600-1.500h1.300V5.100C16.100 5 15.300 5 14.400 5 12.300 5 10.900 6.300 10.900 8.600V11H8.500v3h2.400v7z"/></svg>'.replace('.200', '.2').replace('.300', '.3').replace('.500', '.5').replace('.100', '.1').replace('.600', '.6').replace('.400', '.4').replace('.900', '.9')
 IC_MAIL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>'
 
@@ -37,11 +37,11 @@ def page(path, title, desc, body, noindex=False):
 <title>{title} · খেলাঘর</title>
 <meta name="description" content="{desc}">
 {'<meta name="robots" content="noindex">' if noindex else f'<link rel="canonical" href="{url}">'}
-<meta name="theme-color" content="#06180f">
+<meta name="theme-color" content="#121212">
 <link rel="icon" href="/icons/logo.svg" type="image/svg+xml"><link rel="icon" href="/icons/icon-192.png" sizes="192x192"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <meta property="og:title" content="{title} · খেলাঘর"><meta property="og:description" content="{desc}"><meta property="og:image" content="https://khelaghorbd.online/icons/og.jpg"><meta property="og:locale" content="bn_BD">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wdth,wght@75..100,500..800&family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/css/kh-brand.css">
 </head><body class="khp">
 <header><a class="khlogo" href="/" aria-label="খেলাঘর, হোম পাতা">{LOGO}<b>খেলাঘর</b></a><a class="back" href="/">খেলতে যান</a></header>
@@ -218,6 +218,6 @@ if __name__ == '__main__':
     page('faq', 'প্রশ্নোত্তর', 'খেলাঘর নিয়ে সাধারণ প্রশ্নের উত্তর: পয়েন্ট, লগইন, লুডু, লাইভ স্কোর।', FAQ + '\n' + FAQ_LD)
     page('404.html', 'পাতা পাওয়া যায়নি', 'এই ঠিকানায় কোনো পাতা নেই।', NOTFOUND, noindex=True)
     open(os.path.join(ROOT, 'icons', 'logo.svg'), 'w', encoding='utf-8').write(
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0b2318"/><g transform="translate(8 8) scale(1.2)"><path d="M20 4 36 17v18H4V17z" fill="none" stroke="#e8b649" stroke-width="2.6" stroke-linejoin="round"/><path d="M10 21h20M10 27h20M10 33h20" stroke="#e8b649" stroke-width="2.1" stroke-dasharray="3 3"/><circle cx="20" cy="13.5" r="2.7" fill="#f42a41"/></g></svg>')
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#ffd400"/><g transform="translate(8 7) scale(1.2)"><path d="M20 4 36 17v18H4V17z" fill="#121212"/><circle cx="20" cy="24" r="5" fill="#ff3d81"/></g></svg>')
     open(os.path.join(ROOT, 'tools', '_footer.html'), 'w', encoding='utf-8').write(footer())
     print('লোগো আর ফুটার লেখা হলো')

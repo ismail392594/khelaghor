@@ -605,9 +605,9 @@ function ovChart(det) {
   return ov.filter(x => x.o.length >= 2).map(x => {
     const n = x.o.length, W = 320, H = 110, bw = Math.max(2, Math.min(14, W / Math.max(n, 1) - 2));
     const bars = x.o.map((o, i) => { const h = Math.max(1, o[0] / max * (H - 18)), xx = i * (W / n) + 1;
-      return `<rect x="${xx.toFixed(1)}" y="${(H - 14 - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="${o[0] >= 12 ? '#e8b649' : '#4fa3bd'}"/>${o[1] ? `<circle cx="${(xx + bw / 2).toFixed(1)}" cy="${(H - 18 - h).toFixed(1)}" r="3" fill="#f42a41"/>` : ''}`; }).join('');
+      return `<rect x="${xx.toFixed(1)}" y="${(H - 14 - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="${o[0] >= 12 ? '#ffd400' : '#4fa3bd'}"/>${o[1] ? `<circle cx="${(xx + bw / 2).toFixed(1)}" cy="${(H - 18 - h).toFixed(1)}" r="3" fill="#ff3d81"/>` : ''}`; }).join('');
     const tot = x.o.reduce((t, o) => t + o[0], 0);
-    return `<div class="ovc"><div class="sub2">${esc(x.t)} · ওভার প্রতি রান (মোট ${bn(tot)})</div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="ওভার প্রতি রানের গ্রাফ">${bars}<text x="0" y="${H - 2}" fill="#728a75" font-size="9">১</text><text x="${W - 14}" y="${H - 2}" fill="#728a75" font-size="9">${bn(n)}</text></svg></div>`;
+    return `<div class="ovc"><div class="sub2">${esc(x.t)} · ওভার প্রতি রান (মোট ${bn(tot)})</div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="ওভার প্রতি রানের গ্রাফ">${bars}<text x="0" y="${H - 2}" fill="#8f8f8f" font-size="9">১</text><text x="${W - 14}" y="${H - 2}" fill="#8f8f8f" font-size="9">${bn(n)}</text></svg></div>`;
   }).join('');
 }
 // খেলার সময় ফোনের ক্যালেন্ডারে (.ics ফাইল, সব ফোনে খোলে; ৩০ মিনিট আগে মনে করায়)
@@ -639,7 +639,7 @@ function wormChart(det) {
   const W = 320, H = 130, X = i => 6 + (i + 1) / n * (W - 12), Y = v => H - 16 - v / max * (H - 26);
   const line = (arr, col) => `<polyline fill="none" stroke="${col}" stroke-width="2.4" stroke-linejoin="round" points="6,${H - 16} ${arr.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')}"/>`;
   const dots = (x, arr, col) => x.o.map((o, i) => o[1] ? `<circle cx="${X(i).toFixed(1)}" cy="${Y(arr[i]).toFixed(1)}" r="3.2" fill="${col}" stroke="#fff" stroke-width="1"/>` : '').join('');
-  return `<div class="ovc"><div class="sub2">রানের দৌড় <small>ওভার ধরে মোট রান, বিন্দু মানে উইকেট</small></div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="দুই ইনিংসের রানের তুলনা">${line(A, '#6cc6e0')}${line(B, '#e8b649')}${dots(ov[0], A, '#6cc6e0')}${dots(ov[1], B, '#e8b649')}<text x="0" y="${H - 2}" fill="#728a75" font-size="9">০</text><text x="${W - 14}" y="${H - 2}" fill="#728a75" font-size="9">${bn(n)}</text></svg><div class="wlg"><span><i style="background:#6cc6e0"></i>${esc(ov[0].t)}</span><span><i style="background:#e8b649"></i>${esc(ov[1].t)}</span></div></div>`;
+  return `<div class="ovc"><div class="sub2">রানের দৌড় <small>ওভার ধরে মোট রান, বিন্দু মানে উইকেট</small></div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="দুই ইনিংসের রানের তুলনা">${line(A, '#19c2b0')}${line(B, '#ffd400')}${dots(ov[0], A, '#19c2b0')}${dots(ov[1], B, '#ffd400')}<text x="0" y="${H - 2}" fill="#8f8f8f" font-size="9">০</text><text x="${W - 14}" y="${H - 2}" fill="#8f8f8f" font-size="9">${bn(n)}</text></svg><div class="wlg"><span><i style="background:#19c2b0"></i>${esc(ov[0].t)}</span><span><i style="background:#ffd400"></i>${esc(ov[1].t)}</span></div></div>`;
 }
 function cardTbl(det) {
   const card = (det && det.card) || [];

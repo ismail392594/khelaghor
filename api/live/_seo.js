@@ -58,7 +58,7 @@ export function matchPage(m, id) {
   const live = `/live/#m=${encodeURIComponent(id)}`;
   if (!m) {
     return `<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>ম্যাচ পাওয়া যায়নি · খেলাঘর লাইভ স্কোর</title></head>
-<body style="background:#06180f;color:#eef2e4;font-family:sans-serif;text-align:center;padding:40px"><p>এই ম্যাচটা এখন আর তালিকায় নেই।</p><p><a style="color:#e8b649" href="/live/">সব লাইভ স্কোর দেখুন ›</a></p></body></html>`;
+<body style="background:#121212;color:#ffffff;font-family:sans-serif;text-align:center;padding:40px"><p>এই ম্যাচটা এখন আর তালিকায় নেই।</p><p><a style="color:#ffd400" href="/live/">সব লাইভ স্কোর দেখুন ›</a></p></body></html>`;
   }
   const ic = m.sport === 'cricket' ? '🏏' : '⚽';
   const sportBn = m.sport === 'cricket' ? 'ক্রিকেট' : 'ফুটবল';
@@ -87,17 +87,17 @@ export function matchPage(m, id) {
 <link rel="canonical" href="${esc(pageUrl(id))}">
 <meta property="og:type" content="website"><meta property="og:site_name" content="খেলাঘর"><meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc.slice(0, 200))}"><meta property="og:url" content="${esc(pageUrl(id))}"><meta property="og:image" content="${SITE}/icons/og.jpg">
-<meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#06180f"><link rel="icon" href="/icons/icon-192.png"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wdth,wght@85,700&family=Hind+Siliguri:wght@400;500;600&display=swap">
+<meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#121212"><link rel="icon" href="/icons/icon-192.png"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wdth,wght@85,700&family=Hind+Siliguri:wght@400;500;600&display=swap">
 <script type="application/ld+json">${JSON.stringify(ld).replace(/</g, '\\u003c')}</script>
 <script type="application/ld+json">${JSON.stringify(crumbs).replace(/</g, '\\u003c')}</script>
-<style>body{margin:0;background:#06180f;color:#eef2e4;font-family:'Hind Siliguri','Noto Sans Bengali',system-ui,sans-serif;line-height:1.55}main{max-width:600px;margin:0 auto;padding:16px}
-nav{font-size:.8rem;color:#a9b9a6}nav a{color:#a9b9a6}h1{font-family:'Anek Bangla','Hind Siliguri',sans-serif;font-size:1.5rem;line-height:1.2;margin:12px 0 4px}h2{font-size:.95rem;color:#a9b9a6;font-weight:500;margin:0 0 14px}
-.c{background:#0b2318;border:1px solid rgba(226,238,214,.1);border-radius:14px;padding:16px}.r{display:flex;align-items:center;gap:12px;padding:8px 0}.r b{flex:1;font-size:1.1rem;font-weight:600}
-.r i{font-style:normal;font-family:'Anek Bangla',sans-serif;font-weight:700;font-size:1.5rem}img,.mn{border-radius:4px}.mn{display:inline-grid;place-items:center;width:48px;height:32px;background:#2f6fc9;font-weight:700}
-.p{display:inline-block;border-radius:6px;padding:2px 10px;font-size:.8rem;font-weight:700;border:1px solid rgba(226,238,214,.16)}.p.lv{background:#f42a41;border-color:#f42a41}.p.dn{color:#43c97c;border-color:rgba(67,201,124,.35)}
-.st{margin:10px 0 0;color:#ffc9cf;font-weight:600}.mt{color:#a9b9a6;font-size:.85rem;margin-top:8px}
-.go{display:block;text-align:center;margin:16px 0 8px;padding:13px;border-radius:10px;background:#f42a41;color:#fff;font-weight:700;text-decoration:none}
-.go.y{background:#e8b649;color:#241a02}footer{color:#728a75;font-size:.75rem;text-align:center;margin:20px 0}</style></head>
+<style>body{margin:0;background:#121212;color:#ffffff;font-family:'Hind Siliguri','Noto Sans Bengali',system-ui,sans-serif;line-height:1.55}main{max-width:600px;margin:0 auto;padding:16px}
+nav{font-size:.8rem;color:#c4c4c4}nav a{color:#c4c4c4}h1{font-family:'Baloo Da 2','Hind Siliguri',sans-serif;font-size:1.5rem;line-height:1.2;margin:12px 0 4px}h2{font-size:.95rem;color:#c4c4c4;font-weight:500;margin:0 0 14px}
+.c{background:#1a1a1a;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px}.r{display:flex;align-items:center;gap:12px;padding:8px 0}.r b{flex:1;font-size:1.1rem;font-weight:600}
+.r i{font-style:normal;font-family:'Baloo Da 2',sans-serif;font-weight:700;font-size:1.5rem}img,.mn{border-radius:4px}.mn{display:inline-grid;place-items:center;width:48px;height:32px;background:#2f6fc9;font-weight:700}
+.p{display:inline-block;border-radius:6px;padding:2px 10px;font-size:.8rem;font-weight:700;border:1px solid rgba(255,255,255,.16)}.p.lv{background:#ff3d81;border-color:#ff3d81}.p.dn{color:#2fbf71;border-color:rgba(47,191,113,.35)}
+.st{margin:10px 0 0;color:#ffc9cf;font-weight:600}.mt{color:#c4c4c4;font-size:.85rem;margin-top:8px}
+.go{display:block;text-align:center;margin:16px 0 8px;padding:13px;border-radius:10px;background:#ff3d81;color:#fff;font-weight:700;text-decoration:none}
+.go.y{background:#ffd400;color:#121212}footer{color:#8f8f8f;font-size:.75rem;text-align:center;margin:20px 0}</style></head>
 <body><main>
 <nav><a href="/">খেলাঘর</a> › <a href="/live/">লাইভ স্কোর</a> › ${esc(vsBn)}</nav>
 <h1>${esc(vsBn)} ${esc(stateBn)}</h1>
