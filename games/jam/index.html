@@ -580,6 +580,17 @@ function mkBridge() {
   g.position.z = -400; scene.add(g); return g;
 }
 
+// মেট্রোরেলের উড়াল পথ: দুই পাশে থাম, উপরে পাটাতন, মাঝে মাঝে ট্রেন যায়। শুধু METRO তালিকার রাস্তায় দেখা যায়।
+const MGAP = 30, metroP = []; let metroG = null, metroTrain = null;
+function mkMetro() {
+  const g = new THREE.Group(), cm = M('#b4b1a8', { roughness: .9 }), dk = M('#77746d', { roughness: .95 }), len = BEHIND - FAR + 60, mid = (BEHIND + FAR) / 2;
+  box(g, 9.4, 1.5, len, 0, 12.6, mid, dk, false); [-1, 1].forEach(sd => box(g, .22, 1.2, len, sd * 4.6, 13.9, mid, cm, false));
+  for (let i = 0; i < 7; i++) { const pl = new THREE.Group(); [-1, 1].forEach(sd => box(pl, 1, 11.4, 1.5, sd * (ROAD_HALF + 1.1), 5.7, 0, cm, !LOWEND)); box(pl, ROAD_HALF * 2 + 3.6, 1.3, 1.9, 0, 11.4, 0, cm, false); pl.position.z = BEHIND + 10 - i * MGAP; g.add(pl); metroP.push(pl); }
+  const tr = new THREE.Group(), body = M('#eeeeea', { roughness: .35, metalness: .3 }), win = M('#1c2630', { roughness: .2, metalness: .5 });
+  for (let i = 0; i < 6; i++) { const z = i * 20.4; box(tr, 2.95, 3.1, 19.6, 0, 1.55, z, body, false); box(tr, 3, .95, 17.6, 0, 2.05, z, win, false); box(tr, 3.01, .22, 19.6, 0, .95, z, M('#d81f2a'), false); box(tr, 3.01, .16, 19.6, 0, .72, z, M('#0b7a45'), false); }
+  tr.position.set(-2.1, 13.35, 600); g.add(tr); metroTrain = tr; g.visible = false; scene.add(g); return g;
+}
+
 /* ---- গাড়ি ---- */
 const BUS_COLS = [['#2e7d32', '#ffd23f'], ['#c62828', '#ffffff'], ['#1565c0', '#ffd23f'], ['#6a1b9a', '#ffffff'], ['#ef6c00', '#1b1b1b'], ['#00838f', '#ffffff']];
 const ROUTES = ['গুলিস্তান-মিরপুর ১০', 'মতিঝিল-উত্তরা', 'সদরঘাট-গাজীপুর', 'যাত্রাবাড়ী-ফার্মগেট', 'লোকাল সিটিং সার্ভিস', 'আজিমপুর-আব্দুল্লাহপুর'];
@@ -741,8 +752,16 @@ function mkPed(dir) {
   const g = new THREE.Group(); const p = person(g, 0, 0, 0, pick(['#e74c3c', '#2f6fe0', '#16a085', '#f39c12', '#9b59b6', '#ecf0f1']), { lungi: Math.random() < .5 });
   p.rotation.y = dir > 0 ? -Math.PI / 2 : Math.PI / 2;
   const umb = new THREE.Group(); umb.position.y = 2.1; const u = new THREE.Mesh(G_UMB, M(pick(['#1f2937', '#be185d', '#0369a1']), { side: THREE.DoubleSide })); umb.add(u); cyl(umb, .02, .6, 0, -.3, 0, M('#333')); g.add(umb); umb.visible = false;
-  scene.add(g); return { g, p, umb };
+  scene.add(g); const pd = { g, p, umb, h: null };
+  const e = HUM.find(q => !q.owner || !q.owner.parent); // পুলে ফাঁকা থাকলে পুতুলের বদলে আসল চেহারার মানুষ
+  if (e) { e.owner = g; p.children.forEach(c => { if (c !== e.h.root) c.visible = false; }); p.add(e.h.root); e.h.root.visible = true; pd.h = e.h; }
+  return pd;
 }
+const HUM = [];
+if (renderer && TIER.id >= 1) import('/js/kh-people.js').then(async ({ loadPeople }) => {
+  const { clone } = await import('/js/vendor/addons/SkeletonUtils.js'), P = await loadPeople(THREE, GLTFLoader, MeshoptDecoder, clone);
+  for (let i = 0; i < (TIER.id >= 2 ? 12 : 8); i++) { const h = P.make(i, { scale: 1, shadow: false }); h.root.rotation.y = Math.PI; HUM.push({ h, owner: null }); }
+}).catch(e => console.warn('people', e));
 // ধোঁয়া
 const smokeTex = ctex(64, 64, (x) => { const r = x.createRadialGradient(32, 32, 2, 32, 32, 32); r.addColorStop(0, 'rgba(90,90,90,.7)'); r.addColorStop(1, 'rgba(90,90,90,0)'); x.fillStyle = r; x.fillRect(0, 0, 64, 64); });
 const smokes = [];
@@ -807,7 +826,7 @@ function drawRidesJ() {
   box.innerHTML = Object.entries(RJ).map(([k, r]) => `<button data-r="${k}" aria-pressed="${k === rideJ}" ${r.key && !(FL && FL[r.key]) ? 'disabled' : ''}><i>${r.ic}</i>${r.n}<small>পয়েন্ট ×${bn(r.mult)}</small></button>`).join('');
 }
 $('rides').addEventListener('click', e => { const b = e.target.closest('[data-r]'); if (!b || b.disabled || (S && !demo && !S.over)) return; setRideJ(b.dataset.r); });
-drawRidesJ(); $('vcred').innerHTML = 'আসল গাড়ির ৩ডি মডেল: ' + CREDIT_HTML + '। মানুষ: Renderpeople স্ক্যান (CC-BY 4.0)।';
+drawRidesJ(); $('vcred').innerHTML = 'আসল গাড়ির ৩ডি মডেল: ' + CREDIT_HTML + '। মানুষ: Sketchfab ও Renderpeople-এর মডেল (CC-BY 4.0), <a href="/assets/people/CREDITS.txt" style="color:inherit">কৃতজ্ঞতা</a>।';
 // আসল গাড়িগুলো পেছনে লোড হয় (দুর্বল ফোনে কম)
 if (renderer) loadFleet(THREE, new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), TIER.id === 0 ? ['bus_mini', 'corolla', 'cng', 'rickshaw', 'easybike'] : ['bus_mini', 'bus_hino', 'truck_tata', 'truck_al', 'corolla', 'noah', 'hiace', 'cng', 'rickshaw', 'easybike'])
   .then(f => { FL = f; drawRidesJ(); if (rideJ !== 'bike') setRideJ(rideJ); }).catch(e => console.warn('fleet', e));
@@ -818,18 +837,42 @@ let W = 0, H = 0;
 /* ================= শহরের ম্যাপ: বাসা থেকে অফিস ================= */
 const GN = 5, BLOCK = 170, JW = ROAD_HALF + WALK; // মোড়ের অর্ধেক চওড়া
 // ঢাকার আসল জায়গার নাম দিয়ে শহর (উত্তর উপরে): প্রতিটা মোড় একটা চেনা জায়গা
-const ST_H = ['শহীদ তাজউদ্দীন আহমদ সরণি', 'ফার্মগেট-তেজগাঁও রোড', 'পান্থপথ-মগবাজার রোড', 'এলিফ্যান্ট রোড', 'পুরানা পল্টন রোড'];
-const ST_V = ['মিরপুর রোড', 'গ্রিন রোড', 'কাজী নজরুল ইসলাম এভিনিউ', 'বীর উত্তম সি আর দত্ত সড়ক', 'প্রগতি সরণি'];
+// ১৪ নভেম্বর: মোড়গুলোর আসল অক্ষাংশ-দ্রাঘিমাংশ (কাছাকাছি মান), রাস্তার আসল নাম আর আসল দূরত্বের অনুপাত।
+// রাস্তা সোজা করে ধরা (খেলার সুবিধায়), কিন্তু কোন মোড়ের পর কোন মোড়, কোন রাস্তায় মেট্রো, সব ঢাকার ম্যাপ মিলিয়ে।
 const JN = [['আগারগাঁও', 'বিজয় সরণি', 'তেজগাঁও', 'মহাখালী', 'গুলশান-১'],
-            ['শ্যামলী', 'ফার্মগেট', 'কারওয়ান বাজার', 'সাতরাস্তা', 'বাড্ডা'],
+            ['শ্যামলী', 'ফার্মগেট', 'কারওয়ান বাজার', 'সাতরাস্তা', 'মেরুল বাড্ডা'],
             ['আসাদগেট', 'পান্থপথ', 'বাংলামোটর', 'মগবাজার', 'রামপুরা'],
             ['ধানমন্ডি ২৭', 'সায়েন্স ল্যাব', 'শাহবাগ', 'কাকরাইল', 'মালিবাগ'],
-            ['মোহাম্মদপুর', 'নিউমার্কেট', 'প্রেস ক্লাব', 'পল্টন', 'মতিঝিল']];
+            ['ঝিগাতলা', 'নিউমার্কেট', 'প্রেস ক্লাব', 'পল্টন', 'মতিঝিল']];
+const LL = [[[23.7775, 90.3795], [23.7645, 90.3890], [23.7685, 90.4005], [23.7780, 90.4040], [23.7806, 90.4168]],
+            [[23.7735, 90.3663], [23.7581, 90.3900], [23.7510, 90.3930], [23.7578, 90.4010], [23.7720, 90.4255]],
+            [[23.7600, 90.3728], [23.7513, 90.3870], [23.7458, 90.3945], [23.7487, 90.4035], [23.7612, 90.4208]],
+            [[23.7555, 90.3745], [23.7392, 90.3833], [23.7381, 90.3957], [23.7377, 90.4085], [23.7500, 90.4130]],
+            [[23.7390, 90.3745], [23.7335, 90.3848], [23.7302, 90.4063], [23.7335, 90.4120], [23.7265, 90.4215]]];
+// পাশাপাশি দুই মোড়ের মাঝের রাস্তার নাম: EH[সারি][বাঁ দিকের মোড়], EV[কলাম][উপরের মোড়]
+const EH = [['বেগম রোকেয়া সরণি', 'বিজয় সরণি', 'শহীদ তাজউদ্দীন আহমদ সরণি', 'মহাখালী-গুলশান সড়ক'],
+            ['মানিক মিয়া এভিনিউ', 'কাজী নজরুল ইসলাম এভিনিউ', 'কারওয়ান বাজার-সাতরাস্তা সড়ক', 'হাতিরঝিল সড়ক'],
+            ['পান্থপথ', 'পান্থপথ', 'নিউ ইস্কাটন রোড', 'ডিআইটি রোড'],
+            ['মিরপুর রোড', 'এলিফ্যান্ট রোড', 'শাহবাগ-কাকরাইল সড়ক', 'মালিবাগ-মৌচাক সড়ক'],
+            ['মিরপুর রোড', 'নীলক্ষেত রোড', 'তোপখানা রোড', 'পল্টন-মতিঝিল সড়ক']];
+const EV = [['আগারগাঁও রোড', 'মিরপুর রোড', 'মিরপুর রোড', 'সাত মসজিদ রোড'],
+            ['কাজী নজরুল ইসলাম এভিনিউ', 'গ্রিন রোড', 'গ্রিন রোড', 'মিরপুর রোড'],
+            ['তেজগাঁও-কারওয়ান বাজার সড়ক', 'কাজী নজরুল ইসলাম এভিনিউ', 'কাজী নজরুল ইসলাম এভিনিউ', 'শাহবাগ-প্রেস ক্লাব সড়ক'],
+            ['শহীদ তাজউদ্দীন আহমদ সরণি', 'শহীদ তাজউদ্দীন আহমদ সরণি', 'মগবাজার-কাকরাইল সড়ক', 'ভিআইপি রোড'],
+            ['প্রগতি সরণি', 'প্রগতি সরণি', 'ডিআইটি রোড', 'মালিবাগ-মতিঝিল সড়ক']];
+// মেট্রোরেল (এমআরটি লাইন-৬) যে রাস্তাগুলোর উপর দিয়ে গেছে: আগারগাঁও > বিজয় সরণি > ফার্মগেট > কারওয়ান বাজার > শাহবাগ > প্রেস ক্লাব > মতিঝিল
+const METRO = new Set(['h0,0', 'v1,0', 'h1,1', 'v2,1', 'v2,2', 'v2,3', 'h2,4', 'h3,4']);
+const edgeKey = (a, b) => a.y === b.y ? 'h' + Math.min(a.x, b.x) + ',' + a.y : 'v' + a.x + ',' + Math.min(a.y, b.y);
+const edgeName = (a, b) => a.y === b.y ? EH[a.y][Math.min(a.x, b.x)] : EV[a.x][Math.min(a.y, b.y)];
+function realM(a, b) { const A = LL[a.y][a.x], B = LL[b.y][b.x], k = Math.PI / 180, dy = (B[0] - A[0]) * k, dx = (B[1] - A[1]) * k * Math.cos(A[0] * k); return Math.sqrt(dx * dx + dy * dy) * 6371000 * 1.25; } // রাস্তা সোজা নয়, তাই ২৫% বেশি
+const segLen = (a, b) => Math.max(110, Math.min(260, realM(a, b) * .15)); // খেলার রাস্তা আসল দূরত্বের অনুপাতে ছোট-বড়
 const jn = n => JN[n.y] && JN[n.y][n.x] || '';
 const DIRS = [[0, -1], [1, 0], [0, 1], [-1, 0]]; // উত্তর, পূর্ব, দক্ষিণ, পশ্চিম
 const inGrid = (x, y) => x >= 0 && y >= 0 && x < GN && y < GN;
-const streetName = (n, dir) => dir % 2 === 0 ? ST_V[n.x] : ST_H[n.y];
-const crossName = (n, dir) => dir % 2 === 0 ? ST_H[n.y] : ST_V[n.x];
+const nb = (n, dir) => ({ x: n.x + DIRS[dir][0], y: n.y + DIRS[dir][1] });
+const streetName = (n, dir) => { const m = nb(n, dir); return inGrid(m.x, m.y) ? edgeName(n, m) : ''; };
+const crossName = (n, dir) => { for (const t of [1, 3]) { const m = nb(n, (dir + t) % 4); if (inGrid(m.x, m.y)) return edgeName(n, m); } return ''; };
+const onMetro = C => { const m = nextNode(C); return inGrid(m.x, m.y) && METRO.has(edgeKey(C.node, m)); };
 function pathLen(from, to) {
   const k = n => n.x + ',' + n.y, seen = { [k(from)]: 0 }, q = [from];
   while (q.length) { const n = q.shift(); if (n.x === to.x && n.y === to.y) return seen[k(n)]; for (const [dx, dy] of DIRS) { const m = { x: n.x + dx, y: n.y + dy }; if (inGrid(m.x, m.y) && !(k(m) in seen)) { seen[k(m)] = seen[k(n)] + 1; q.push(m); } } }
@@ -838,7 +881,8 @@ function pathLen(from, to) {
 function newCity() {
   const home = { x: Math.floor(Math.random() * GN), y: GN - 1 };
   let office; do { office = { x: Math.floor(Math.random() * GN), y: Math.floor(Math.random() * 2) }; } while (Math.abs(office.x - home.x) + Math.abs(office.y - home.y) < 5);
-  return { home, office, node: { ...home }, dir: 0, segLeft: BLOCK * .55, trail: [{ ...home }] };
+  const L0 = segLen(home, { x: home.x, y: home.y - 1 });
+  return { home, office, node: { ...home }, dir: 0, segLen: L0, segLeft: L0 * .55, trail: [{ ...home }] };
 }
 const nextNode = C => ({ x: C.node.x + DIRS[C.dir][0], y: C.node.y + DIRS[C.dir][1] });
 function allowed(C) { const n = nextNode(C), o = {}; [-1, 0, 1].forEach(t => { const d = (C.dir + t + 4) % 4; o[t] = inGrid(n.x + DIRS[d][0], n.y + DIRS[d][1]); }); return o; }
@@ -913,7 +957,7 @@ function passJunction() {
   S.turnReq = 0; turnUI();
   C.node = nextNode(C); C.trail.push({ ...C.node });
   if (C.node.x === C.office.x && C.node.y === C.office.y) { if (demo) { S.city = newCity(); S.juncs.forEach(j => scene.remove(j.g)); S.juncs = [mkJunction(S.city)]; return; } endGame('office'); return; }
-  C.dir = (C.dir + t + 4) % 4; C.segLeft = BLOCK;
+  C.dir = (C.dir + t + 4) % 4; C.segLen = segLen(C.node, nextNode(C)); C.segLeft = C.segLen;
   if (t !== 0) { sfx('swoosh'); turnStreet(t); }
   S.juncs.push(mkJunction(C));
   if (!demo) {
@@ -929,23 +973,34 @@ function news(kind) { if (demo) return; $('newsT').textContent = pick(NEWS[kind]
 // ছোট ম্যাপ
 const mapC = $('map'), mg = mapC.getContext('2d');
 function drawMap() {
-  const C = S.city, W2 = mapC.width, pad = 22, cell = (W2 - pad * 2) / (GN - 1), P = (x, y) => [pad + x * cell, pad + y * cell];
-  mg.clearRect(0, 0, W2, W2); mg.fillStyle = 'rgba(20,18,40,.82)'; mg.beginPath(); mg.roundRect ? mg.roundRect(0, 0, W2, W2, 26) : mg.rect(0, 0, W2, W2); mg.fill();
-  mg.strokeStyle = 'rgba(255,255,255,.28)'; mg.lineWidth = 7; mg.lineCap = 'round';
-  for (let i = 0; i < GN; i++) { mg.beginPath(); mg.moveTo(...P(i, 0)); mg.lineTo(...P(i, GN - 1)); mg.stroke(); mg.beginPath(); mg.moveTo(...P(0, i)); mg.lineTo(...P(GN - 1, i)); mg.stroke(); }
-  // ধানমন্ডি লেক আর হাতিরঝিল, প্রতিটা মোড়ের ছোট নাম
-  mg.fillStyle = 'rgba(56,140,220,.55)'; mg.beginPath(); mg.ellipse(...P(.45, 3.15), cell * .16, cell * .55, -.3, 0, 7); mg.fill(); mg.beginPath(); mg.ellipse(...P(3.35, 1.55), cell * .55, cell * .14, .35, 0, 7); mg.fill();
-  mg.font = '600 15px "Noto Sans Bengali",sans-serif'; mg.textAlign = 'center'; mg.fillStyle = 'rgba(255,255,255,.62)';
-  for (let y = 0; y < GN; y++) for (let x = 0; x < GN; x++) { const [qx, qy] = P(x, y); mg.fillText(JN[y][x].split(' ')[0], qx, qy + 20); }
+  const C = S.city, W2 = mapC.width, pad = 16, LA0 = 23.7235, LA1 = 23.7835, LO0 = 90.3625, LO1 = 90.4295;
+  const Q = (la, lo) => [pad + (lo - LO0) / (LO1 - LO0) * (W2 - pad * 2), pad + (LA1 - la) / (LA1 - LA0) * (W2 - pad * 2)];
+  // ভগ্নাংশ ঘরের জায়গা: চার কোনার মোড়ের আসল অবস্থান মিশিয়ে
+  const P = (x, y) => { const x0 = Math.min(GN - 2, Math.max(0, Math.floor(x))), y0 = Math.min(GN - 2, Math.max(0, Math.floor(y))), fx = x - x0, fy = y - y0, a = LL[y0][x0], b = LL[y0][x0 + 1], c = LL[y0 + 1][x0], e = LL[y0 + 1][x0 + 1];
+    return Q((a[0] * (1 - fx) + b[0] * fx) * (1 - fy) + (c[0] * (1 - fx) + e[0] * fx) * fy, (a[1] * (1 - fx) + b[1] * fx) * (1 - fy) + (c[1] * (1 - fx) + e[1] * fx) * fy); };
+  mg.clearRect(0, 0, W2, W2); mg.fillStyle = 'rgba(18,20,24,.86)'; mg.beginPath(); mg.roundRect ? mg.roundRect(0, 0, W2, W2, 26) : mg.rect(0, 0, W2, W2); mg.fill();
+  // রমনা পার্ক আর সংসদ ভবনের মাঠ (সবুজ), ধানমন্ডি লেক আর হাতিরঝিল (নীল)
+  const blob = (la, lo, rx, ry, rot, col) => { mg.fillStyle = col; mg.beginPath(); mg.ellipse(...Q(la, lo), rx, ry, rot, 0, 7); mg.fill(); };
+  blob(23.7372, 90.4008, 11, 8, 0, 'rgba(70,150,90,.5)'); blob(23.7625, 90.3785, 12, 8, 0, 'rgba(70,150,90,.5)');
+  blob(23.7470, 90.3775, 5, 17, -.25, 'rgba(56,140,220,.6)'); blob(23.7660, 90.4125, 24, 5, -.25, 'rgba(56,140,220,.6)');
+  mg.lineCap = 'round'; mg.lineJoin = 'round';
+  const edges = (w, col, only) => { mg.strokeStyle = col; mg.lineWidth = w; for (let y = 0; y < GN; y++) for (let x = 0; x < GN; x++) { const a = { x, y }; for (const b of [{ x: x + 1, y }, { x, y: y + 1 }]) { if (!inGrid(b.x, b.y) || (only && !METRO.has(edgeKey(a, b)))) continue; mg.beginPath(); mg.moveTo(...P(a.x, a.y)); mg.lineTo(...P(b.x, b.y)); mg.stroke(); } } };
+  edges(6, 'rgba(255,255,255,.3)'); mg.setLineDash([3, 7]); edges(2.5, '#ff7a7a', true); mg.setLineDash([]);
   // সবচেয়ে ছোট রাস্তা
-  const n = nextNode(C), pr = 1 - C.segLeft / BLOCK, me = [C.node.x + DIRS[C.dir][0] * pr, C.node.y + DIRS[C.dir][1] * pr];
+  const n = nextNode(C), pr = 1 - C.segLeft / (C.segLen || BLOCK), me = [C.node.x + DIRS[C.dir][0] * pr, C.node.y + DIRS[C.dir][1] * pr];
   const route = [me, [n.x, n.y]]; let cur = n, guard = 0;
   while ((cur.x !== C.office.x || cur.y !== C.office.y) && guard++ < 20) { let bestM = null, bl = 1e9; for (const [dx, dy] of DIRS) { const m = { x: cur.x + dx, y: cur.y + dy }; if (!inGrid(m.x, m.y)) continue; const l = pathLen(m, C.office); if (l < bl) { bl = l; bestM = m; } } cur = bestM; route.push([cur.x, cur.y]); }
-  mg.strokeStyle = '#ffd23f'; mg.lineWidth = 6; mg.setLineDash([10, 8]); mg.beginPath(); route.forEach((q, i) => i ? mg.lineTo(...P(...q)) : mg.moveTo(...P(...q))); mg.stroke(); mg.setLineDash([]);
-  mg.font = '30px sans-serif'; mg.textAlign = 'center'; mg.textBaseline = 'middle';
-  mg.fillText('🏠', ...P(C.home.x, C.home.y)); mg.fillText('🏢', ...P(C.office.x, C.office.y));
-  const [px, py] = P(...me); mg.save(); mg.translate(px, py); mg.rotate(C.dir * Math.PI / 2);
-  mg.fillStyle = '#ef4f5f'; mg.strokeStyle = '#fff'; mg.lineWidth = 4; mg.beginPath(); mg.moveTo(0, -16); mg.lineTo(11, 12); mg.lineTo(0, 6); mg.lineTo(-11, 12); mg.closePath(); mg.fill(); mg.stroke(); mg.restore();
+  mg.strokeStyle = '#ffd400'; mg.lineWidth = 6; mg.setLineDash([10, 8]); mg.beginPath(); route.forEach((q, i) => i ? mg.lineTo(...P(...q)) : mg.moveTo(...P(...q))); mg.stroke(); mg.setLineDash([]);
+  // বাসা (সাদা ঘর), অফিস (হলুদ চৌকো)
+  const [hx, hy] = P(C.home.x, C.home.y), [ox, oy] = P(C.office.x, C.office.y);
+  mg.fillStyle = '#fff'; mg.beginPath(); mg.moveTo(hx, hy - 11); mg.lineTo(hx + 10, hy - 2); mg.lineTo(hx + 10, hy + 9); mg.lineTo(hx - 10, hy + 9); mg.lineTo(hx - 10, hy - 2); mg.closePath(); mg.fill();
+  mg.fillStyle = '#ffd400'; mg.strokeStyle = '#121212'; mg.lineWidth = 3; mg.beginPath(); mg.rect(ox - 9, oy - 12, 18, 24); mg.fill(); mg.stroke();
+  // নাম শুধু দুটো: সামনের মোড় আর অফিসের এলাকা (ছোট ম্যাপে সব নাম দিলে পড়া যায় না)
+  mg.font = '700 21px "Hind Siliguri","Noto Sans Bengali",sans-serif'; mg.textBaseline = 'middle'; mg.lineWidth = 5; mg.strokeStyle = 'rgba(0,0,0,.75)';
+  const label = (t, qx, qy, col) => { const w = mg.measureText(t).width, tx = Math.max(6 + w / 2, Math.min(W2 - 6 - w / 2, qx)), ty = qy < 44 ? qy + 26 : qy - 24; mg.textAlign = 'center'; mg.strokeText(t, tx, ty); mg.fillStyle = col; mg.fillText(t, tx, ty); };
+  label(jn(C.office), ox, oy, '#ffd400'); if (n.x !== C.office.x || n.y !== C.office.y) label(jn(n), ...P(n.x, n.y), '#fff');
+  const [px, py] = P(...me), [ax, ay] = P(me[0] + DIRS[C.dir][0] * .3, me[1] + DIRS[C.dir][1] * .3); mg.save(); mg.translate(px, py); mg.rotate(Math.atan2(ax - px, -(ay - py)));
+  mg.fillStyle = '#ff3d81'; mg.strokeStyle = '#fff'; mg.lineWidth = 4; mg.beginPath(); mg.moveTo(0, -16); mg.lineTo(11, 12); mg.lineTo(0, 6); mg.lineTo(-11, 12); mg.closePath(); mg.fill(); mg.stroke(); mg.restore();
 }
 function setTurn(side) {
   if (!running || demo || !S) return; const J = S.juncs.find(j => !j.done); if (!J || !J.al[side]) return;
@@ -1137,6 +1192,8 @@ function step(dt) {
   builds.forEach(b => { b.position.z += d; const s = b.userData.side; minZ[s] = Math.min(minZ[s], b.position.z - b.userData.len / 2); });
   builds.forEach(b => { if (b.position.z - b.userData.len / 2 > BEHIND + 6) { const s = b.userData.side, L2 = b.userData.len; const gap = Math.random() < .12 ? rnd(3, 6) : rnd(.1, .6); let front = minZ[s] - gap; for (const J of S.juncs) if (J.gap[s] && front - L2 < J.z + JW + .6 && front > J.z - JW - .6) front = J.z - JW - .6; b.position.z = front - L2 / 2; minZ[s] = front - L2; } });
   poles.forEach(pl => { pl.position.z += d; if (pl.position.z > BEHIND + 30) pl.position.z -= poles.length * POLE_GAP; pl.visible = !S.juncs.some(J => J.gap[-1] && Math.abs(J.z - pl.position.z) < JW + 2); });
+  if (metroG) { const on = onMetro(S.city); metroG.visible = on; if (on) { metroP.forEach(pl => { pl.position.z += d; if (pl.position.z > BEHIND + 30) pl.position.z -= metroP.length * MGAP; });
+    metroTrain.position.z += d + 15 * dt; if (metroTrain.position.z > BEHIND + 140) metroTrain.position.z = FAR - 130 - rnd(300, 900); } }
   if (bridge) { bridge.position.z += d; if (bridge.position.z > BEHIND + 10 && S.dist > S.nextBridge && !S.juncs.some(J => Math.abs(J.z - (FAR - 40)) < 30)) { bridge.position.z = FAR - 40; S.nextBridge = S.dist + rnd(700, 1100); } }
   p.x += (LX(p.lane) - p.x) * Math.min(1, dt * 9);
   // নতুন গাড়ি ও জিনিস
@@ -1195,7 +1252,7 @@ function step(dt) {
   S.cross = S.cross.filter(o => { const k = Math.abs(o.x) < 50 && o.jz.z < BEHIND; if (!k) scene.remove(o.g); return k; });
   // ফুটপাতে হাঁটা মানুষ
   while (S.walkers.length < (LOWEND ? 6 : 12)) addWalker(rnd(FAR + 10, 4));
-  S.walkers.forEach(w => { w.z += d + w.dir * w.v * dt; w.g.position.set(w.x, .22, w.z); w.umb.visible = S.rain > 0; const sw = Math.sin(S.t * 7 + w.seed) * .5; w.p.userData.lL.rotation.x = sw; w.p.userData.lR.rotation.x = -sw; });
+  S.walkers.forEach(w => { w.z += d + w.dir * w.v * dt; w.g.position.set(w.x, .22, w.z); w.umb.visible = S.rain > 0; const sw = Math.sin(S.t * 7 + w.seed) * .5; w.p.userData.lL.rotation.x = sw; w.p.userData.lR.rotation.x = -sw; if (w.h) w.h.update(dt, 1, w.v / 1.25); });
   S.walkers = S.walkers.filter(w => { const k = w.z < BEHIND && w.z > FAR - 20; if (!k) scene.remove(w.g); return k; });
   // শহরের শব্দ: দূরে-কাছে হর্ন, রিকশার বেল
   if (!demo) {
@@ -1234,7 +1291,7 @@ function step(dt) {
   S.peds.forEach(pd => {
     pd.z += d; pd.x += pd.dir * pd.vx * dt * (S.signal && S.signal.state !== 'green' ? 1.3 : 1);
     pd.g.position.set(pd.x, .22 * (Math.abs(pd.x) > ROAD_HALF ? 1 : 0), pd.z); pd.umb.visible = S.rain > 0;
-    const sw = Math.sin(S.t * 8 + pd.seed) * .5; pd.p.userData.lL.rotation.x = sw; pd.p.userData.lR.rotation.x = -sw;
+    const sw = Math.sin(S.t * 8 + pd.seed) * .5; pd.p.userData.lL.rotation.x = sw; pd.p.userData.lR.rotation.x = -sw; if (pd.h) pd.h.update(dt, 1, pd.vx / 1.3);
     if (!demo && !pd.hit && Math.abs(pd.x - p.x) < RD.w + .3 && Math.abs(pd.z) < RD.hl + .2) { pd.hit = true; pd.vx *= 2.4;
       if (p.hit <= 0) { p.hit = 1.3; S.speed *= .3; S.coins = Math.max(0, S.coins - 5); sfx('brake'); fc('সাবধানে! −৫ কয়েন', '#ff9f9f', 20); talk(pd.g, 'ped'); } }
   });
@@ -1442,7 +1499,7 @@ async function saveScore(sc) {
 resize();
 if (!renderer) { $('no3d').hidden = false; $('startBtn').disabled = true; }
 else {
-  layoutBuildings(); for (let i = 0; i < 9; i++) mkPole().position.z = BEHIND + 20 - i * POLE_GAP; bridge = mkBridge(); bridge.position.z = -90;
+  layoutBuildings(); for (let i = 0; i < 9; i++) mkPole().position.z = BEHIND + 20 - i * POLE_GAP; bridge = mkBridge(); bridge.position.z = -90; metroG = mkMetro();
   // সব রকম জিনিস একবার আগেই আঁকিয়ে রাখি, যাতে খেলার মাঝে প্রথমবার দেখা দিলে ফোন আটকে না যায়
   (() => {
     const warm = new THREE.Group(); scene.add(warm);
